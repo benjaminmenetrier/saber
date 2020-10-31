@@ -1664,9 +1664,8 @@ call bump%geom%c0_to_fieldset(bump%mpl,bump%nam,fld_c0a*req,fieldset_req)
 call bump%geom%c0_to_fieldset(bump%mpl,bump%nam,fld_c0a*req**2,fieldset_reqsq)
 call bump%geom%c0_to_fieldset(bump%mpl,bump%nam,(1.0+fld_c0a)*(maxval(bump%geom%vunitavg)-minval(bump%geom%vunitavg)), &
  & fieldset_vert)
-call bump%geom%c0_to_fieldset(bump%mpl,bump%nam,((1.0+fld_c0a)*(maxval(bump%geom%vunitavg)-minval(bump%geom%vunitavg))), &
+call bump%geom%c0_to_fieldset(bump%mpl,bump%nam,((1.0+fld_c0a)*(maxval(bump%geom%vunitavg)-minval(bump%geom%vunitavg)))**2, &
  & fieldset_vertsq)
-!call bump%geom%c0_to_fieldset(bump%mpl,bump%nam,((1.0+fld_c0a)*(maxval(bump%geom%vunitavg)-minval(bump%geom%vunitavg)))**2,fieldset) TODO: bugfix
 
 ! Set parameter
 if (bump%nam%check_set_param_cor) then

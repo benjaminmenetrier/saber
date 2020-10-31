@@ -113,8 +113,8 @@ lattmp = lat
 call lonlatmod(lontmp,lattmp)
 
 ! Hash value
-lonlathash = aint((lontmp+pi)*1.0e6)+(lattmp+0.5*pi)*1.0e-1
-if (present(il)) lonlathash = lonlathash+real(il*1e7,kind_real)
+lonlathash = aint((lontmp+pi)*1.0e7)+(lattmp+0.5*pi)*1.0e-1
+if (present(il)) lonlathash = lonlathash+real(il*1e8,kind_real)
 
 end function lonlathash
 
