@@ -30,7 +30,7 @@ namespace fastlam {
 class LayerBase : public util::Printable,
                   private boost::noncopyable {
  public:
-  static const std::string classname() {return "saber::fastlam::Layer";}
+  static const std::string classname() {return "saber::fastlam::LayerBase";}
 
   // Constructor
   LayerBase(const FastLAMParametersBase & params,
