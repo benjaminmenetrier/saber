@@ -17,7 +17,6 @@
 #include "atlas/util/KDTree.h"
 #include "atlas/util/Point.h"
 
-#include "oops/generic/gc99.h"
 #include "oops/util/Logger.h"
 #include "oops/util/missingValues.h"
 #include "oops/util/Random.h"
