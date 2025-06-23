@@ -517,7 +517,6 @@ void Fields::schur_product_with(const Fields & fld2) {
 void Fields::random() {
   oops::Log::trace() << classname() << "::random starting" << std::endl;
 
-  fset_.clear();
   for (size_t groupIndex = 0; groupIndex < geom_->groups(); ++groupIndex) {
     // Mask and ghost points fields
     const std::string gmaskName = "gmask_" + std::to_string(groupIndex);
@@ -526,14 +525,14 @@ void Fields::random() {
 
     // Total size
     size_t n = 0;
-    std::vector<std::string> groupVars;
+    oops::Variables groupVars;
     for (const auto & var : vars_) {
       if (geom_->groupIndex(var.name()) == groupIndex) {
-        groupVars.push_back(var.name());
+        groupVars.push_back(var);
       }
     }
     for (const auto & var : groupVars) {
-      const atlas::Field field = fset_[var];
+      const atlas::Field field = fset_[var.name()];
       if (field.rank() == 2) {
         for (atlas::idx_t jnode = 0; jnode < field.shape(0); ++jnode) {
           for (atlas::idx_t jlevel = 0; jlevel < field.shape(1); ++jlevel) {
@@ -561,13 +560,11 @@ void Fields::random() {
 
     // Global data
     atlas::FieldSet globalData;
-    for (const auto & var : vars_) {
-      if (geom_->groupIndex(var.name()) == groupIndex) {
-        atlas::Field field = geom_->functionSpace().createField<double>(
-          atlas::option::name(var.name())
-          | atlas::option::levels(geom_->levels(var.name())) | atlas::option::global());
-        globalData.add(field);
-      }
+    for (const auto & var : groupVars) {
+      atlas::Field field = geom_->functionSpace().createField<double>(
+        atlas::option::name(var.name())
+        | atlas::option::levels(geom_->levels(var.name())) | atlas::option::global());
+      globalData.add(field);
     }
 
     // Gather masks on main processor
@@ -598,19 +595,17 @@ void Fields::random() {
       // Copy random values
       n = 0;
       const auto ghostView = atlas::array::make_view<int, 1>(globalMasks["ghost"]);
-      for (const auto & var : vars_) {
-        if (geom_->groupIndex(var.name()) == groupIndex) {
-          atlas::Field field = globalData[var.name()];
-          const std::string gmaskName = "gmask_" + std::to_string(groupIndex);
-          const auto gmaskView = atlas::array::make_view<int, 2>(globalMasks[gmaskName]);
-          if (field.rank() == 2) {
-            auto view = atlas::array::make_view<double, 2>(field);
-            for (atlas::idx_t jnode = 0; jnode < field.shape(0); ++jnode) {
-              for (atlas::idx_t jlevel = 0; jlevel < field.shape(1); ++jlevel) {
-                if (gmaskView(jnode, jlevel) == 1 && ghostView(jnode) == 0) {
-                  view(jnode, jlevel) = rand_vec[n];
-                  ++n;
-                }
+      for (const auto & var : groupVars) {
+        atlas::Field field = globalData[var.name()];
+        const std::string gmaskName = "gmask_" + std::to_string(groupIndex);
+        const auto gmaskView = atlas::array::make_view<int, 2>(globalMasks[gmaskName]);
+        if (field.rank() == 2) {
+          auto view = atlas::array::make_view<double, 2>(field);
+          for (atlas::idx_t jnode = 0; jnode < field.shape(0); ++jnode) {
+            for (atlas::idx_t jlevel = 0; jlevel < field.shape(1); ++jlevel) {
+              if (gmaskView(jnode, jlevel) == 1 && ghostView(jnode) == 0) {
+                view(jnode, jlevel) = rand_vec[n];
+                ++n;
               }
             }
           }
@@ -620,12 +615,10 @@ void Fields::random() {
 
     // Local data
     atlas::FieldSet localData;
-    for (const auto & var : vars_) {
-      if (geom_->groupIndex(var.name()) == groupIndex) {
-        atlas::Field field = geom_->functionSpace().createField<double>(
-          atlas::option::name(var.name()) | atlas::option::levels(var.getLevels()));
-        localData.add(field);
-      }
+    for (const auto & var : groupVars) {
+      atlas::Field field = geom_->functionSpace().createField<double>(
+        atlas::option::name(var.name()) | atlas::option::levels(var.getLevels()));
+      localData.add(field);
     }
 
     // Scatter data from main processor
@@ -649,15 +642,17 @@ void Fields::random() {
         " function space not supported yet", Here());
     }
 
+    // Remove fields for this group
+    util::removeFieldsFromFieldSet(fset_, groupVars.variables());
+
     // Copy data
-    for (const auto & var : vars_) {
-      if (geom_->groupIndex(var.name()) == groupIndex) {
-        fset_.add(localData[var.name()]);
-      }
+    for (const auto & var : groupVars) {
+      fset_.add(localData[var.name()]);
     }
   }
 
-  fset_.set_dirty();  // code is too complicated, mark dirty to be safe
+  // Code is too complicated, mark dirty to be safe
+  fset_.set_dirty();
 
   // Set duplicate points to the same value
   resetDuplicatePoints();
@@ -873,6 +868,12 @@ void Fields::fromFieldSet(const atlas::FieldSet & fset) {
 void Fields::read(const eckit::Configuration & config) {
   oops::Log::trace() << classname() << "::read starting" << std::endl;
 
+  // Check date if present
+  if (config.has("date")) {
+    const util::DateTime dateTime(config.getString("date"));
+    ASSERT(dateTime == time_);
+  }
+
   // Update variables names
   oops::Variables vars_in_file;
   for (const auto & var : vars_) {
@@ -916,6 +917,27 @@ void Fields::read(const eckit::Configuration & config) {
 void Fields::write(const eckit::Configuration & config) const {
   oops::Log::trace() << classname() << "::write starting" << std::endl;
 
+  // Prepare updated configuration
+  eckit::LocalConfiguration updatedConfig(config);
+
+  if (config.has("states")) {
+    for (const auto & confItem : config.getSubConfigurations("states")) {
+      // Get date
+      const util::DateTime dateTime(confItem.getString("date"));
+
+      // Copy configuration
+      if (dateTime == time_) {
+        updatedConfig = confItem;
+      }
+    }
+  } else {
+    // Check date if present
+    if (config.has("date")) {
+      const util::DateTime dateTime(config.getString("date"));
+      ASSERT(dateTime == time_);
+    }
+  }
+
   // Copy fieldset
   atlas::FieldSet fset = util::copyFieldSet(fset_);
 
@@ -930,14 +952,14 @@ void Fields::write(const eckit::Configuration & config) const {
 
   // Get output formats
   const std::vector<std::string> ioFormats =
-    config.getStringVector("formats", std::vector<std::string>({"default"}));
+    updatedConfig.getStringVector("formats", std::vector<std::string>({"default"}));
 
   for (const auto & ioFormat : ioFormats) {
     // Set FieldsIO list
     std::unique_ptr<FieldsIOBase> fieldsIO(FieldsIOFactory::create(ioFormat));
 
     // Write fields
-    fieldsIO->write(*geom_, config, fset);
+    fieldsIO->write(*geom_, updatedConfig, fset);
   }
 
   oops::Log::trace() << classname() << "::write done" << std::endl;
