@@ -18,7 +18,7 @@ background error:
     members from template:
       template:
         date: 2010-01-01T12:00:00Z
-        filepath: testdata/randomization_doc_5/_MPI_-_OMP__member_%mem%
+        filepath: testdata/randomization_doc_4/_MPI_-_OMP__member_%mem%
         state variables:
         - air_horizontal_streamfunction
       pattern: '%mem%'
@@ -29,7 +29,7 @@ background error:
     calibration:
       io:
         data directory: testdata
-        files prefix: error_covariance_training_doc_8/_MPI_-_OMP_
+        files prefix: error_covariance_training_doc_1/_MPI_-_OMP_
       drivers:
         compute covariance: true
         compute correlation: true
@@ -38,16 +38,12 @@ background error:
         write local sampling: true
         write sampling grids: true
         write diagnostics: true
-        compute nicas: true
-        write local nicas: true
-        write nicas grids: true
-        write nicas steps: true
         internal dirac test: true
       sampling:
         computation grid size: 1000
         diagnostic grid size: 200
         distance classes: 25
-        distance class width: 100.0e3
+        distance class width: 200.0e3
         reduced levels: 1
         local diagnostic: true
         averaging length-scale: 4000.0e3
@@ -59,7 +55,7 @@ background error:
         latitude: 0.0
         name: plot
       nicas:
-        resolution: 3.5
+        resolution: 10.0
         interpolation type:
         - groups:
           - air_horizontal_streamfunction
@@ -116,16 +112,13 @@ background error:
       output model files:
       - parameter: dirac_mom
         file:
-          filepath: testdata/error_covariance_training_doc_8/_MPI_-_OMP__dirac_mom
+          filepath: testdata/error_covariance_training_doc_1/_MPI_-_OMP__dirac_mom
       - parameter: dirac_diag_cor
         file:
-          filepath: testdata/error_covariance_training_doc_8/_MPI_-_OMP__dirac_cor
+          filepath: testdata/error_covariance_training_doc_1/_MPI_-_OMP__dirac_cor
       - parameter: cor_rh
         file:
-          filepath: testdata/error_covariance_training_doc_8/_MPI_-_OMP__cor_rh
+          filepath: testdata/error_covariance_training_doc_1/_MPI_-_OMP__cor_rh
       - parameter: cor_rv
         file:
-          filepath: testdata/error_covariance_training_doc_8/_MPI_-_OMP__cor_rv
-      - parameter: dirac_nicas
-        file:
-          filepath: testdata/error_covariance_training_doc_8/_MPI_-_OMP__dirac_nicas
+          filepath: testdata/error_covariance_training_doc_1/_MPI_-_OMP__cor_rv

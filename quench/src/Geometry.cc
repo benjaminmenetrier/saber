@@ -523,32 +523,29 @@ void Geometry::setupMask(groupData & group) {
     // Coordinates and land-sea mask
     std::vector<double> lon(nlon);
     std::vector<double> lat(nlat);
-    std::vector<int> lsm(nlat*nlon);
+    std::vector<double> lsm(nlat*nlon);
 
     if (comm_.rank() == 0) {
       // Get lon/lat
       if ((retval = nc_inq_varid(ncid, "lon", &lon_id))) ERR(retval, "lon");
       if ((retval = nc_inq_varid(ncid, "lat", &lat_id))) ERR(retval, "lat");
-      if ((retval = nc_inq_varid(ncid, "LSMASK", &lsm_id))) ERR(retval, "LMASK");
+      if ((retval = nc_inq_varid(ncid, "landseamask", &lsm_id))) ERR(retval, "landseamask");
 
       // Read data
-      std::vector<float> zlon(nlon);
-      std::vector<float> zlat(nlat);
-      std::vector<uint8_t> zlsm(nlat*nlon);
-      if ((retval = nc_get_var_float(ncid, lon_id, zlon.data()))) ERR(retval, "lon");
-      if ((retval = nc_get_var_float(ncid, lat_id, zlat.data()))) ERR(retval, "lat");
-      if ((retval = nc_get_var_ubyte(ncid, lsm_id, zlsm.data()))) ERR(retval, "LMASK");
+      std::vector<float> zlsm(nlat*nlon);
+      if ((retval = nc_get_var_double(ncid, lon_id, lon.data()))) ERR(retval, "lon");
+      if ((retval = nc_get_var_double(ncid, lat_id, lat.data()))) ERR(retval, "lat");
+      if ((retval = nc_get_var_float(ncid, lsm_id, zlsm.data()))) ERR(retval, "landseamask");
 
-      // Copy data
+      // Process data
       for (size_t ilon = 0; ilon < nlon; ++ilon) {
-        lon[ilon] = static_cast<double>(zlon[ilon]);
-      }
-      for (size_t ilat = 0; ilat < nlat; ++ilat) {
-        lat[ilat] = static_cast<double>(zlat[ilat]);
+        if (lon[ilon] > 180.0) {
+          lon[ilon] -= 360.0;
+        }
       }
       for (size_t ilat = 0; ilat < nlat; ++ilat) {
        for (size_t ilon = 0; ilon < nlon; ++ilon) {
-          lsm[ilat*nlon+ilon] = static_cast<int>(zlsm[ilat*nlon+ilon]);
+          lsm[ilat*nlon+ilon] = static_cast<double>(zlsm[ilat*nlon+ilon]);
         }
       }
 
@@ -592,21 +589,12 @@ void Geometry::setupMask(groupData & group) {
 
           // Ocean points for all levels
           for (size_t jlevel = 0; jlevel < group.levels_; ++jlevel) {
-            if (lsm[nn] == 0) {
-               maskView(jnode, jlevel) = 1;
-             } else {
-               maskView(jnode, jlevel) = 0;
-             }
-           }
-
-          // Ocean + small islands for:
-          // - the first level of 3D fields,
-          // - the 2D fields if lev2d = "first"
-          if (lsm[nn] == 3) {
-            if ((group.levels_ > 1) || (group.lev2d_ == "first")) {
-              maskView(jnode, 0) = 1;
+            if (lsm[nn] == 100.0) {
+              maskView(jnode, jlevel) = 1;
+            } else {
+              maskView(jnode, jlevel) = 0;
             }
-          }
+          }  
         }
       }
     } else {

@@ -1,29 +1,30 @@
 geometry:
   function space: StructuredColumns
   grid:
-    type: regular_gaussian
-    N: 50
+    type : regional
+    nx : 150
+    ny : 150
+    dx : 40e3
+    dy : 40e3
+    lonlat(centre) : [-78.0, 11.6]
+    projection :  
+      type : lambert_conformal_conic
+      latitude0  : 11.6
+      longitude0 : -78.0
+    y_numbering: 1
+  partitioner: checkerboard
   groups:
   - variables:
     - air_horizontal_streamfunction
     levels: 1
   halo: 1
+  latitude south to north: false
 background:
   date: 2010-01-01T12:00:00Z
   state variables:
   - air_horizontal_streamfunction
 background error:
   covariance model: SABER
-  ensemble:
-    members from template:
-      template:
-        date: 2010-01-01T12:00:00Z
-        filepath: testdata/randomization_doc_5/_MPI_-_OMP__member_%mem%
-        state variables:
-        - air_horizontal_streamfunction
-      pattern: '%mem%'
-      nmembers: 50
-      zero padding: 6
   saber central block:
     saber block name: BUMP_NICAS
     calibration:
@@ -31,101 +32,30 @@ background error:
         data directory: testdata
         files prefix: error_covariance_training_doc_6/_MPI_-_OMP_
       drivers:
-        compute covariance: true
-        compute correlation: true
         multivariate strategy: univariate
-        compute moments: true
-        write local sampling: true
-        write sampling grids: true
-        write diagnostics: true
         compute nicas: true
         write local nicas: true
         write nicas grids: true
         write nicas steps: true
         internal dirac test: true
-      sampling:
-        computation grid size: 1000
-        diagnostic grid size: 200
-        distance classes: 25
-        distance class width: 200.0e3
-        reduced levels: 1
-        local diagnostic: true
-        averaging length-scale: 4000.0e3
-        interpolation type: si
-      diagnostics:
-        target ensemble size: 50
-      local profiles:
-      - longitude: -45.0
-        latitude: 0.0
-        name: plot
       nicas:
-        resolution: 10.0
-        interpolation type:
+        resolution: 5.0
+        explicit length-scales: true
+        horizontal length-scale:
         - groups:
           - air_horizontal_streamfunction
-          type: si
+          value: 1500.0e3
+        vertical length-scale:
+        - groups:
+          - air_horizontal_streamfunction
+          value: 3.0
+        smooth interpolation factor: 0.5
       dirac:
-      - longitude: -45.0
-        latitude: 0.0
-        level: 1
-        variable: air_horizontal_streamfunction
-      - longitude: -135.0
-        latitude: 0.0
-        level: 1
-        variable: air_horizontal_streamfunction
-      - longitude: 45.0
-        latitude: 0.0
-        level: 1
-        variable: air_horizontal_streamfunction
-      - longitude: 135.0
-        latitude: 0.0
-        level: 1
-        variable: air_horizontal_streamfunction
-      - longitude: -135.0
-        latitude: 45.0
-        level: 1
-        variable: air_horizontal_streamfunction
-      - longitude: -45.0
-        latitude: 45.0
-        level: 1
-        variable: air_horizontal_streamfunction
-      - longitude: 45.0
-        latitude: 45.0
-        level: 1
-        variable: air_horizontal_streamfunction
-      - longitude: 135.0
-        latitude: 45.0
-        level: 1
-        variable: air_horizontal_streamfunction
-      - longitude: -135.0
-        latitude: -45.0
-        level: 1
-        variable: air_horizontal_streamfunction
-      - longitude: -45.0
-        latitude: -45.0
-        level: 1
-        variable: air_horizontal_streamfunction
-      - longitude: 45.0
-        latitude: -45.0
-        level: 1
-        variable: air_horizontal_streamfunction
-      - longitude: 135.0
-        latitude: -45.0
+      - longitude: -78.0
+        latitude: 11.6
         level: 1
         variable: air_horizontal_streamfunction
       output model files:
-      - parameter: dirac_mom
-        file:
-          filepath: testdata/error_covariance_training_doc_6/_MPI_-_OMP__dirac_mom
-      - parameter: dirac_diag_cor
-        file:
-          filepath: testdata/error_covariance_training_doc_6/_MPI_-_OMP__dirac_cor
-      - parameter: cor_rh
-        file:
-          filepath: testdata/error_covariance_training_doc_6/_MPI_-_OMP__cor_rh
-      - parameter: cor_rv
-        file:
-          filepath: testdata/error_covariance_training_doc_6/_MPI_-_OMP__cor_rv
       - parameter: dirac_nicas
         file:
           filepath: testdata/error_covariance_training_doc_6/_MPI_-_OMP__dirac_nicas

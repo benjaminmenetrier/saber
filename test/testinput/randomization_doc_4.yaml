@@ -15,7 +15,7 @@ background error:
   covariance model: SABER
   saber central block:
     saber block name: BUMP_NICAS
-    calibration:
+    read:
       io:
         data directory: testdata
         files prefix: randomization_doc_4/_MPI_-_OMP_
@@ -24,20 +24,19 @@ background error:
         compute nicas: true
       nicas:
         resolution: 12.0
-        explicit length-scales: true
-        horizontal length-scale:
-        - groups:
-          - air_horizontal_streamfunction
-          value: 10000.0e3
-        vertical length-scale:
-        - groups:
-          - air_horizontal_streamfunction
-          value: 0.0
-  saber outer blocks:
-  - saber block name: StdDev
-    read:
-      model file:
-        filepath: testdata/convertstate_doc_1/_MPI_-_OMP__rhc_pert
-  randomization size: 3
+      input model files:
+      - parameter: rh1
+        file:
+          filepath: testdata/randomization_doc_1/_MPI_-_OMP__rh1_000001
+      - parameter: rh2
+        file:
+          filepath: testdata/randomization_doc_2/_MPI_-_OMP__rh2_000001
+      - parameter: rhc
+        file:
+          filepath: testdata/randomization_doc_3/_MPI_-_OMP__rhc_000003
+      - parameter: rv
+        file:
+          filepath: testdata/convertstate_doc_1/rv
+  randomization size: 50
 output states:
-  filepath: testdata/randomization_doc_4/_MPI_-_OMP__rhc
+  filepath: testdata/randomization_doc_4/_MPI_-_OMP__member

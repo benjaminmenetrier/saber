@@ -575,7 +575,7 @@ integer :: inz,ic0a,il0
 @:probe_in()
 
 ! Count number of non-zero points
-steps%nnz = count((abs(fld)>zero).and.mpl%msv%isnot(fld))
+steps%nnz = count(mpl%msv%isnot(fld))
 
 if (steps%nnz>0) then
    ! Allocation
@@ -588,12 +588,16 @@ if (steps%nnz>0) then
    inz = 0
    do il0=1,geom%nl0
       do ic0a=1,geom%nc0a
-         if ((abs(fld(ic0a,il0))>zero).and.mpl%msv%isnot(fld(ic0a,il0))) then
+         if (mpl%msv%isnot(fld(ic0a,il0))) then
             inz = inz+1
             steps%lon(inz) = geom%lon_c0a(ic0a)*rad2deg
             steps%lat(inz) = geom%lat_c0a(ic0a)*rad2deg
             steps%lev(inz) = il0
-            steps%values(inz) = fld(ic0a,il0)
+            if (geom%gmask_c0a(ic0a,il0)) then
+               steps%values(inz) = fld(ic0a,il0)
+            else
+               steps%values(inz) = mpl%msv%valr
+            end if
          end if
       end do
    end do
@@ -631,7 +635,7 @@ integer :: inz,i
 @:probe_in()
 
 ! Count number of non-zero points
-steps%nnz = count((abs(vec)>zero).and.mpl%msv%isnot(vec))
+steps%nnz = count(mpl%msv%isnot(vec))
 
 if (steps%nnz>0) then
    ! Allocation
@@ -643,7 +647,7 @@ if (steps%nnz>0) then
    ! Copy
    inz = 0
    do i=1,n
-      if ((abs(vec(i))>zero).and.mpl%msv%isnot(vec(i))) then
+      if (mpl%msv%isnot(vec(i))) then
          inz = inz+1
          steps%lon(inz) = lon(i)*rad2deg
          steps%lat(inz) = lat(i)*rad2deg
