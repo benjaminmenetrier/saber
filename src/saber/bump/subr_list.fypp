@@ -541,6 +541,7 @@
 #:set subr_list = subr_list + ["samp_c2_to_proc"]
 #:set subr_list = subr_list + ["samp_c2_to_c2u"]
 #:set subr_list = subr_list + ["tree_init"]
+#:set subr_list = subr_list + ["tree_build"]
 #:set subr_list = subr_list + ["tree_dealloc"]
 #:set subr_list = subr_list + ["tree_find_nearest_neighbors"]
 #:set subr_list = subr_list + ["tree_count_nearest_neighbors"]

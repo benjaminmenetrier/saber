@@ -6,6 +6,7 @@
 ! Licensing: this code is distributed under the CeCILL-C license
 ! Copyright 2015-... UCAR, CERFACS, METEO-FRANCE and IRIT
 !----------------------------------------------------------------------
+
 module type_tree
 
 use atlas_module, only: atlas_geometry,atlas_indexkdtree
@@ -24,15 +25,17 @@ real(kind_real),parameter :: nn_inc = 1.5_kind_real !< Increase factor for the n
 
 ! Tree derived type
 type tree_type
-    integer :: n                              !< Data size
-    integer :: neff                           !< Effective tree size
-    logical,allocatable :: mask(:)            !< Mask
-    integer,allocatable :: from_eff(:)        !< Effective index conversion
-    real(kind_real),allocatable :: lon(:)     !< Longitudes
-    real(kind_real),allocatable :: lat(:)     !< Latitudes
-    type(atlas_indexkdtree) :: kd             !< KDTree from ATLAS
+    integer :: n                          !< Data size
+    integer :: neff                       !< Effective tree size
+    logical,allocatable :: mask(:)        !< Mask
+    integer,allocatable :: from_eff(:)    !< Effective index conversion
+    real(kind_real),allocatable :: lon(:) !< Longitudes
+    real(kind_real),allocatable :: lat(:) !< Latitudes
+    type(atlas_indexkdtree) :: kd         !< KDTree from ATLAS
+    logical,pointer :: built              !< Building flag
 contains
     procedure :: init => tree_init
+    procedure :: build => tree_build
     procedure :: dealloc => tree_dealloc
     procedure :: find_nearest_neighbors => tree_find_nearest_neighbors
     procedure :: count_nearest_neighbors => tree_count_nearest_neighbors
@@ -60,7 +63,6 @@ logical,intent(in),optional :: mask(n) !< Mask
 
 ! Local variables
 integer :: i,ieff
-real(kind_real),allocatable :: lon_deg(:),lat_deg(:)
 type(atlas_geometry) :: ageometry
 
 ! Set name
@@ -87,8 +89,6 @@ tree%neff = count(tree%mask)
 allocate(tree%lon(tree%neff))
 allocate(tree%lat(tree%neff))
 allocate(tree%from_eff(tree%neff))
-allocate(lon_deg(tree%neff))
-allocate(lat_deg(tree%neff))
 
 ! Loop over points
 ieff = 0
@@ -110,20 +110,50 @@ end do
 ageometry = atlas_geometry('UnitSphere')
 
 ! Create KDTree
-lon_deg = tree%lon*rad2deg
-lat_deg = tree%lat*rad2deg
 tree%kd = atlas_indexkdtree(ageometry)
 call tree%kd%reserve(tree%neff)
-call tree%kd%build(tree%neff,lon_deg,lat_deg)
+do i=1,tree%neff
+  call tree%kd%insert(tree%lon(i)*rad2deg, tree%lat(i)*rad2deg, i)
+end do
 
-! Release memory
-deallocate(lon_deg)
-deallocate(lat_deg)
+! Allocate and set building flag
+allocate(tree%built)
+tree%built = .false.
 
 ! Probe out
 @:probe_out()
 
 end subroutine tree_init
+
+!----------------------------------------------------------------------
+! Subroutine: tree_build
+!> Build
+!----------------------------------------------------------------------
+subroutine tree_build(tree)
+
+implicit none
+
+! Passed variables
+class(tree_type),intent(in) :: tree !< Tree
+
+! Set name
+@:set_name(tree_build)
+
+! Probe in
+@:probe_in()
+
+if (.not.tree%built) then
+   ! Build KDTree
+   call tree%kd%build()
+
+   ! Set building flag
+   tree%built = .true.
+end if
+
+! Probe out
+@:probe_out()
+
+end subroutine tree_build
 
 !----------------------------------------------------------------------
 ! Subroutine: tree_dealloc
@@ -190,6 +220,9 @@ logical :: separate
 
 ! Check nn
 if (nn<=0) call mpl%abort('${subr}$','number of nearest neighbors should be positive')
+
+! Build tree if needed
+call tree%build()
 
 ! Initialization
 separate = .false.
@@ -307,6 +340,9 @@ real(kind_real) :: ch
 
 ! Probe in
 @:probe_in()
+
+! Build tree if needed
+call tree%build()
 
 ! Spherical radius to chord
 ch = two*sin(half*min(sr,pi))
