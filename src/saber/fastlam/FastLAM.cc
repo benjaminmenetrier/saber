@@ -7,6 +7,7 @@
 
 #include "saber/fastlam/FastLAM.h"
 
+#include <Eigen/Dense>
 #include <math.h>
 #include <netcdf.h>
 #include <omp.h>
@@ -123,6 +124,60 @@ FastLAM::FastLAM(const oops::GeometryData & gdata,
     }
   }
 
+  if (params_.strategy.value() == "duplicated and weighted") {    
+/*
+         ! Release memory
+         if (allocated(nam%loc_wgt_sqrt)) deallocate(nam%loc_wgt_sqrt)
+
+         ! Allocation
+         allocate(loc_wgt(nam%nv,nam%nv))
+         allocate(nam%loc_wgt_sqrt(nam%nv,nam%nv))
+
+         ! Initialize diagonal weights at one, others at zero
+         loc_wgt = zero
+         do iv=1,nam%nv
+            loc_wgt(iv,iv) = one
+         end do
+
+         ! Copy weights
+         do iconf=1,size(confs)
+            ! Get row and column variables, and the value
+            call confs(iconf)%get_or_die('row variables',str_array_row)
+            call confs(iconf)%get_or_die('column variables',str_array_col)
+            call confs(iconf)%get_or_die('value',real_scalar)
+
+            ! Loop over row and column values
+            do ivv=1,size(str_array_row)
+               do iv=1,nam%nv
+                  if (trim(str_array_row(ivv))==trim(nam%variables(iv))) exit
+               end do
+               do jvv=1,size(str_array_col)
+                  do jv=1,nam%nv
+                     if (trim(str_array_col(jvv))==trim(nam%variables(jv))) then
+                        if (iv/=jv) then
+                           if (nam%group_index(iv)==nam%group_index(jv)) then
+                              loc_wgt(iv,jv) = real_scalar
+                              loc_wgt(jv,iv) = real_scalar
+                           else
+                              call mpl%abort('${subr}$','loc_wgt values should be within the same group')
+                           end if
+                        end if
+                        exit
+                     end if
+                  end do
+               end do
+            end do
+         end do
+
+         ! Cholesky decomposition
+         call cholesky(mpl,nam%nv,loc_wgt,nam%loc_wgt_sqrt)
+
+         ! Release memory
+         deallocate(loc_wgt)
+      end if
+*/
+  }
+
   oops::Log::trace() << classname() << "::FastLAM done" << std::endl;
 }
 
@@ -225,6 +280,9 @@ size_t FastLAM::ctlVecSize() const {
         } else {
           ASSERT(data_[jg][jBin]->ctlVecSize() == data_[0][jBin]->ctlVecSize());
         }
+      } else if (params_.strategy.value() == "duplicated and weighted") {
+        // Duplicated and weighted strategy
+        ctlVecSize += data_[jg][jBin]->ctlVecSize()*groups_[jg].variables_.size();
       } else {
         // Wrong multivariate strategy
         throw eckit::UserError("wrong multivariate strategy: " + params_.strategy.value(), Here());
@@ -379,6 +437,51 @@ void FastLAM::multiplySqrt(const atlas::Field & cv,
 
       // Update control vector index
       index += data_[0][jBin]->ctlVecSize();
+    } else if (params_.strategy.value() == "duplicated and weighted") {
+      // Duplicated strategy
+      for (size_t jg = 0; jg < groups_.size(); ++jg) {
+        // Create group field
+        atlas::Field grpField = gdata_.functionSpace().createField<double>(
+          atlas::option::name(groups_[jg].name_) | atlas::option::levels(groups_[jg].nz0_));
+        auto grpView = atlas::array::make_view<double, 2>(grpField);
+
+        // Layer multiplication
+        data_[jg][jBin]->multiplySqrt(cv, grpField, index);
+
+        // Update control vector index
+        index += data_[jg][jBin]->ctlVecSize();
+
+        // Apply weight square-root and normalization
+        const atlas::Field wgtSqrtField = (*weight_[jBin])[groups_[jg].name_];
+        const auto wgtSqrtView = atlas::array::make_view<double, 2>(wgtSqrtField);
+        const atlas::Field normField = (*normalization_[jBin])[groups_[jg].name_];
+        const auto normView = atlas::array::make_view<double, 2>(normField);
+        for (size_t jnode0 = 0; jnode0 < nodes0_; ++jnode0) {
+          if (ghostView(jnode0) == 0) {
+            for (size_t jz0 = 0; jz0 < groups_[jg].nz0_; ++jz0) {
+              grpView(jnode0, jz0) *= wgtSqrtView(jnode0, jz0)*normView(jnode0, jz0);
+            }
+          }
+        }
+
+        // Copy result on all variables of the group
+        for (const auto & var : groups_[jg].variables_) {
+          // Variable properties
+          const size_t varNz0 = activeVars_[var].getLevels();
+          const size_t z0Offset = getZ0Offset(var);
+
+          // Copy group field
+          atlas::Field binField = fsetBin[var];
+          auto binView = atlas::array::make_view<double, 2>(binField);
+          for (size_t jnode0 = 0; jnode0 < nodes0_; ++jnode0) {
+            if (ghostView(jnode0) == 0) {
+              for (size_t jz0 = 0; jz0 < varNz0; ++jz0) {
+                binView(jnode0, jz0) = grpView(jnode0, z0Offset+jz0);
+              }
+            }
+          }
+        }
+      }
     } else {
       // Wrong multivariate strategy
       throw eckit::UserError("wrong multivariate strategy: " + params_.strategy.value(), Here());

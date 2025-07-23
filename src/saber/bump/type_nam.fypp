@@ -193,7 +193,7 @@ type nam_type
    logical :: forced_radii                                    !< Force specific support radii
    real(kind_real),allocatable :: rh(:,:)                     !< Forced horizontal support radius [in meters]
    real(kind_real),allocatable :: rv(:,:)                     !< Forced vertical support radius
-   real(kind_real),allocatable :: loc_wgt_sqrt(:,:)           !< Weights square-root for the 'block_weighted' strategy
+   real(kind_real),allocatable :: loc_wgt_sqrt(:,:)           !< Weights square-root for the 'duplicated and weighted' strategy
    character(len=2),allocatable :: nicas_interp_type(:)       !< NICAS C1B to C0A interpolation type ('c0': C0 mesh-based, 'c1': C1 mesh-based or 'si': smooth interpolation)
    real(kind_real) :: nicas_si_factor                         !< Factor to get interpolation radius from convolution radius if nicas_interp_type = 'si'
    integer :: norm_rand_size                                  !< Normalization randomization size (default is 0, which means exact normalization)
@@ -862,8 +862,12 @@ if (conf%get('nicas',section)) then
                   do jv=1,nam%nv
                      if (trim(str_array_col(jvv))==trim(nam%variables(jv))) then
                         if (iv/=jv) then
-                           loc_wgt(iv,jv) = real_scalar
-                           loc_wgt(jv,iv) = real_scalar
+                           if (nam%group_index(iv)==nam%group_index(jv)) then
+                              loc_wgt(iv,jv) = real_scalar
+                              loc_wgt(jv,iv) = real_scalar
+                           else
+                              call mpl%abort('${subr}$','loc_wgt values should be within the same group')
+                           end if
                         end if
                         exit
                      end if
@@ -1356,8 +1360,8 @@ if (nam%new_nicas.or.nam%load_nicas_local.or.nam%load_nicas_global) then
          end do
       end do
    end if
-   if (nam%strategy=='block_weighted') then
-      if (.not.allocated(nam%loc_wgt_sqrt)) call mpl%abort('${subr}$','loc_wgt should be specified for block_weighted')
+   if (nam%strategy=='duplicated and weighted') then
+      if (.not.allocated(nam%loc_wgt_sqrt)) call mpl%abort('${subr}$','loc_wgt_sqrt should be specified for duplicated and weighted strategy')
    end if
    select case (nam%nicas_draw_type)
    case ('random')
