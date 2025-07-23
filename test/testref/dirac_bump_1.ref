@@ -2,13 +2,23 @@ Input Dirac increment:
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    eastward_wind: 1.0000000000000000e+00
-    northward_wind: 0.0000000000000000e+00
+  - eastward_wind (2 levels):
+    + min    = 0.0000000000000000e+00
+    + max    = 1.0000000000000000e+00
+    + mean   = 5.9523809523809529e-04
+    + stddev = 2.4397501823713856e-02
+  - northward_wind (2 levels):
+    + min    = 0.0000000000000000e+00
+    + max    = 0.0000000000000000e+00
 - Valid time: 2010-01-01T18:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    eastward_wind: 0.0000000000000000e+00
-    northward_wind: 0.0000000000000000e+00
+  - eastward_wind (2 levels):
+    + min    = 0.0000000000000000e+00
+    + max    = 0.0000000000000000e+00
+  - northward_wind (2 levels):
+    + min    = 0.0000000000000000e+00
+    + max    = 0.0000000000000000e+00
        Independent levels:  1[2]
           Subset Sc0 size:              762
           Domain area (% of Earth area): 0.100E+03%
@@ -83,13 +93,29 @@ Covariance(hybrid) * Increment:
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    eastward_wind: 1.3541398063751613e+01
-    northward_wind: 4.0498383512132081e+00
+  - eastward_wind (2 levels):
+    + min    = -3.7708713672704536e-01
+    + max    = 1.0110071215590096e+01
+    + mean   = 2.6728410484471339e-02
+    + stddev = 3.2939135327361319e-01
+  - northward_wind (2 levels):
+    + min    = -1.9835525115516215e+00
+    + max    = 1.3751235687898087e+00
+    + mean   = -3.2629853774185633e-03
+    + stddev = 9.8781448765559152e-02
 - Valid time: 2010-01-01T18:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    eastward_wind: 1.9040437974069926e+00
-    northward_wind: 3.0954077987719022e+00
+  - eastward_wind (2 levels):
+    + min    = -9.1441467718061054e-01
+    + max    = 5.1945706706042083e-01
+    + mean   = -8.1417545304022514e-05
+    + stddev = 4.6467672394298713e-02
+  - northward_wind (2 levels):
+    + min    = -1.2418652285790877e+00
+    + max    = 4.5505914215358800e-01
+    + mean   = -5.7544084148685214e-03
+    + stddev = 7.5323085077593097e-02
        Independent levels:  1[2]
           Subset Sc0 size:              762
           Domain area (% of Earth area): 0.100E+03%
@@ -157,13 +183,29 @@ Covariance(hybrid1_SABER) * Increment:
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    eastward_wind: 3.7259415926535306e-12
-    northward_wind: 1.3202009593235781e-12
+  - eastward_wind (2 levels):
+    + min    = -5.1326625249341019e-13
+    + max    = 1.4970063148013560e-12
+    + mean   = -4.9267941873892320e-17
+    + stddev = 9.0930720193434620e-14
+  - northward_wind (2 levels):
+    + min    = -3.8109953855636386e-13
+    + max    = 3.8187671357533879e-13
+    + mean   = -2.4726839732374019e-17
+    + stddev = 3.2219186292453105e-14
 - Valid time: 2010-01-01T18:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    eastward_wind: 3.7259415926535306e-12
-    northward_wind: 1.3202009593235781e-12
+  - eastward_wind (2 levels):
+    + min    = -5.1326625249341019e-13
+    + max    = 1.4970063148013560e-12
+    + mean   = -4.9267941873892320e-17
+    + stddev = 9.0930720193434620e-14
+  - northward_wind (2 levels):
+    + min    = -3.8109953855636386e-13
+    + max    = 3.8187671357533879e-13
+    + mean   = -2.4726839732374019e-17
+    + stddev = 3.2219186292453105e-14
        Independent levels:  1[2]
           Subset Sc0 size:              762
           Domain area (% of Earth area): 0.100E+03%
@@ -175,13 +217,29 @@ Covariance(hybrid2_ensemble) * Increment:
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    eastward_wind: 2.7082796127500622e+01
-    northward_wind: 8.0996767024264411e+00
+  - eastward_wind (2 levels):
+    + min    = -7.5417427345432642e-01
+    + max    = 2.0220142431178697e+01
+    + mean   = 5.3456820968942706e-02
+    + stddev = 6.5878270654716276e-01
+  - northward_wind (2 levels):
+    + min    = -3.9671050231031524e+00
+    + max    = 2.7502471375795299e+00
+    + mean   = -6.5259707548370981e-03
+    + stddev = 1.9756289753111883e-01
 - Valid time: 2010-01-01T18:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    eastward_wind: 3.8080875948143298e+00
-    northward_wind: 6.1908155975435024e+00
+  - eastward_wind (2 levels):
+    + min    = -1.8288293543616878e+00
+    + max    = 1.0389141341204440e+00
+    + mean   = -1.6283509060799700e-04
+    + stddev = 9.2935344788605823e-02
+  - northward_wind (2 levels):
+    + min    = -2.4837304571582255e+00
+    + max    = 9.1011828430734321e-01
+    + mean   = -1.1508816829737024e-02
+    + stddev = 1.5064617015517878e-01
        Independent levels:  1[2]
           Subset Sc0 size:              762
           Domain area (% of Earth area): 0.100E+03%
@@ -196,10 +254,26 @@ Localization(hybrid2_ensemble) * Increment:
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    eastward_wind: 2.2517366841554374e+00
-    northward_wind: 2.2517366841554374e+00
+  - eastward_wind (2 levels):
+    + min    = 0.0000000000000000e+00
+    + max    = 1.0000000000000000e+00
+    + mean   = 7.5234371929022246e-03
+    + stddev = 5.4435357922839656e-02
+  - northward_wind (2 levels):
+    + min    = 0.0000000000000000e+00
+    + max    = 1.0000000000000000e+00
+    + mean   = 7.5234371929022246e-03
+    + stddev = 5.4435357922839656e-02
 - Valid time: 2010-01-01T18:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    eastward_wind: 2.2517366841554374e+00
-    northward_wind: 2.2517366841554374e+00
+  - eastward_wind (2 levels):
+    + min    = 0.0000000000000000e+00
+    + max    = 1.0000000000000000e+00
+    + mean   = 7.5234371929022246e-03
+    + stddev = 5.4435357922839656e-02
+  - northward_wind (2 levels):
+    + min    = 0.0000000000000000e+00
+    + max    = 1.0000000000000000e+00
+    + mean   = 7.5234371929022246e-03
+    + stddev = 5.4435357922839656e-02

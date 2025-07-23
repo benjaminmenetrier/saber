@@ -2,13 +2,23 @@ Input Dirac increment:
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    eastward_wind: 1.0000000000000000e+00
-    northward_wind: 0.0000000000000000e+00
+  - eastward_wind (2 levels):
+    + min    = 0.0000000000000000e+00
+    + max    = 1.0000000000000000e+00
+    + mean   = 5.9523809523809529e-04
+    + stddev = 2.4397501823713856e-02
+  - northward_wind (2 levels):
+    + min    = 0.0000000000000000e+00
+    + max    = 0.0000000000000000e+00
 - Valid time: 2010-01-01T18:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    eastward_wind: 0.0000000000000000e+00
-    northward_wind: 0.0000000000000000e+00
+  - eastward_wind (2 levels):
+    + min    = 0.0000000000000000e+00
+    + max    = 0.0000000000000000e+00
+  - northward_wind (2 levels):
+    + min    = 0.0000000000000000e+00
+    + max    = 0.0000000000000000e+00
        Independent levels:  1[2]
           Subset Sc0 size:              762
           Domain area (% of Earth area): 0.100E+03%
@@ -88,13 +98,29 @@ Covariance(hybrid) * Increment:
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    eastward_wind: 1.5885846717183985e+00
-    northward_wind: 5.0803567566774199e-01
+  - eastward_wind (2 levels):
+    + min    = -1.1203227877437606e-01
+    + max    = 1.2819003761413368e+00
+    + mean   = 2.4324782971873538e-03
+    + stddev = 3.8692606497335642e-02
+  - northward_wind (2 levels):
+    + min    = -2.5542386379136500e-01
+    + max    = 1.7955729391059472e-01
+    + mean   = -4.2585708664196771e-04
+    + stddev = 1.2391171822262698e-02
 - Valid time: 2010-01-01T18:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    eastward_wind: 3.6332544284472684e-01
-    northward_wind: 2.8798332323318876e-01
+  - eastward_wind (2 levels):
+    + min    = -8.5697969242904001e-02
+    + max    = 1.5688986337389996e-01
+    + mean   = -1.7879247996634953e-05
+    + stddev = 8.8668544606723861e-03
+  - northward_wind (2 levels):
+    + min    = -8.2773063208901265e-02
+    + max    = 1.2241640326095739e-01
+    + mean   = 4.6171717634820149e-05
+    + stddev = 7.0280139259980235e-03
        Independent levels:  1[2]
           Subset Sc0 size:              762
           Domain area (% of Earth area): 0.100E+03%
@@ -162,13 +188,29 @@ Covariance(hybrid1_SABER) * Increment:
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    eastward_wind: 3.7259415926535306e-12
-    northward_wind: 1.3202009593235781e-12
+  - eastward_wind (2 levels):
+    + min    = -5.1326625249341019e-13
+    + max    = 1.4970063148013560e-12
+    + mean   = -4.9267941873892320e-17
+    + stddev = 9.0930720193434620e-14
+  - northward_wind (2 levels):
+    + min    = -3.8109953855636386e-13
+    + max    = 3.8187671357533879e-13
+    + mean   = -2.4726839732374019e-17
+    + stddev = 3.2219186292453105e-14
 - Valid time: 2010-01-01T18:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    eastward_wind: 3.7259415926535306e-12
-    northward_wind: 1.3202009593235781e-12
+  - eastward_wind (2 levels):
+    + min    = -5.1326625249341019e-13
+    + max    = 1.4970063148013560e-12
+    + mean   = -4.9267941873892320e-17
+    + stddev = 9.0930720193434620e-14
+  - northward_wind (2 levels):
+    + min    = -3.8109953855636386e-13
+    + max    = 3.8187671357533879e-13
+    + mean   = -2.4726839732374019e-17
+    + stddev = 3.2219186292453105e-14
 Norm of input parameter inflation: 6.9558608381710329e+01
 Norm of input parameter StdDev: 1.7389652095427326e+02
        Independent levels:  1[2]
@@ -185,10 +227,26 @@ Covariance(hybrid2_SABER) * Increment:
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    eastward_wind: 3.1771693434345925e+00
-    northward_wind: 1.0160713513355568e+00
+  - eastward_wind (2 levels):
+    + min    = -2.2406455754914978e-01
+    + max    = 2.5638007522811765e+00
+    + mean   = 4.8649565943747544e-03
+    + stddev = 7.7385212994617383e-02
+  - northward_wind (2 levels):
+    + min    = -5.1084772758281771e-01
+    + max    = 3.5911458782119798e-01
+    + mean   = -8.5171417328391114e-04
+    + stddev = 2.4782343644527173e-02
 - Valid time: 2010-01-01T18:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    eastward_wind: 7.2665088568883618e-01
-    northward_wind: 5.7596664646668794e-01
+  - eastward_wind (2 levels):
+    + min    = -1.7139593848618787e-01
+    + max    = 3.1377972674704152e-01
+    + mean   = -3.5758495993220784e-05
+    + stddev = 1.7733708921329711e-02
+  - northward_wind (2 levels):
+    + min    = -1.6554612641793293e-01
+    + max    = 2.4483280652191619e-01
+    + mean   = 9.2343435269664963e-05
+    + stddev = 1.4056027852003621e-02

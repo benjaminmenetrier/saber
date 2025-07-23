@@ -2,24 +2,38 @@ Input Dirac increment:
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    air_horizontal_streamfunction: 1.0000000000000000e+00
+  - air_horizontal_streamfunction (2 levels):
+    + min    = 0.0000000000000000e+00
+    + max    = 1.0000000000000000e+00
+    + mean   = 5.9523809523809529e-04
+    + stddev = 2.4397501823713856e-02
 - Valid time: 2010-01-01T18:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    air_horizontal_streamfunction: 0.0000000000000000e+00
+  - air_horizontal_streamfunction (2 levels):
+    + min    = 0.0000000000000000e+00
+    + max    = 0.0000000000000000e+00
 Covariance(ensemble) diagnostics:
 - Variances at Dirac points:
   + Value for variable air_horizontal_streamfunction, subwindow 0, at (longitude, latitude, vertical index) point (0.00000, 0.00000, 1): 1.5601961752452702e+00
 - Covariances at diagnostic points:
   + Value for variable air_horizontal_streamfunction, subwindow 0, at (longitude, latitude, vertical index) point (9.00000, 0.00000, 1): 1.1708883611363763e+00
-  + Value for variable air_horizontal_streamfunction, subwindow 1, at (longitude, latitude, vertical index) point (0.00000, 0.00000, 1): -4.7657919341193386e-02
+  + Value for variable air_horizontal_streamfunction, subwindow 1, at (longitude, latitude, vertical index) point (0.00000, 0.00000, 1): -4.7657919341193414e-02
   + Value for variable air_horizontal_streamfunction, subwindow 1, at (longitude, latitude, vertical index) point (9.00000, 0.00000, 1): -1.6234849286208530e-01
 Covariance(ensemble) * Increment:
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    air_horizontal_streamfunction: 1.0001475768899484e+01
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -7.6320595075189823e-01
+    + max    = 1.5601961752452702e+00
+    + mean   = 1.1317667394481390e-02
+    + stddev = 2.4382099175209593e-01
 - Valid time: 2010-01-01T18:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    air_horizontal_streamfunction: 1.0069435422286018e+01
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -8.5842471829253431e-01
+    + max    = 9.1204380402615071e-01
+    + mean   = 3.6680757446378998e-02
+    + stddev = 2.4298756789853374e-01
