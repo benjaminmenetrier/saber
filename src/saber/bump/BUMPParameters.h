@@ -125,17 +125,15 @@ class GroupsTypeParameters : public oops::Parameters {
 
 // -----------------------------------------------------------------------------
 
-// Local weight elemental parameters
-class LocWgtParameters : public oops::Parameters {
-  OOPS_CONCRETE_PARAMETERS(LocWgtParameters, oops::Parameters)
+// Specific off-diagonal weight elemental parameters
+class SpecWgtParameters : public oops::Parameters {
+  OOPS_CONCRETE_PARAMETERS(SpecWgtParameters, oops::Parameters)
 
  public:
-  // Row variables
-  oops::RequiredParameter<std::vector<std::string>> row_variables{"row variables", this};
-  // Column variables
-  oops::RequiredParameter<std::vector<std::string>> column_variables{"column variables", this};
-  // Value
-  oops::RequiredParameter<double> value{"value", this};
+  // Variables pair
+  oops::RequiredParameter<std::vector<std::string>> variablesPair{"variables pair", this};
+  // Weight
+  oops::RequiredParameter<double> weight{"weight", this};
 };
 
 // -----------------------------------------------------------------------------
@@ -616,8 +614,10 @@ class NICASSection : public oops::Parameters {
   // Forced vertical support radius
   oops::Parameter<std::vector<GroupsValueOrProfileParameters>> rv{"vertical length-scale", {},
     this};
-  // Forced localization weights
-  oops::Parameter<std::vector<LocWgtParameters>> loc_wgt{"common localization weights", {},
+  // Default off-diagonal weight
+  oops::Parameter<double> defaultWeight{"default off-diagonal weight", 0.0, this};
+  // Specific off-diagonal weights
+  oops::Parameter<std::vector<SpecWgtParameters>> specWeights{"specific off-diagonal weights", {},
     this};
   // NICAS C1B to C0A interpolation type ('c0': C0 mesh-based, 'c1': C1 mesh-based
   // or 'si': smooth interpolation)

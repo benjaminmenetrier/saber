@@ -7,7 +7,6 @@
 
 #include "saber/fastlam/FastLAM.h"
 
-#include <Eigen/Dense>
 #include <math.h>
 #include <netcdf.h>
 #include <omp.h>
@@ -124,58 +123,57 @@ FastLAM::FastLAM(const oops::GeometryData & gdata,
     }
   }
 
-  if (params_.strategy.value() == "duplicated and weighted") {    
-/*
-         ! Release memory
-         if (allocated(nam%loc_wgt_sqrt)) deallocate(nam%loc_wgt_sqrt)
+  if (params_.strategy.value() == "duplicated and weighted") {
+    // Allocation
+    const size_t nv = activeVars_.size();
+    Eigen::MatrixXd locWgt = Eigen::MatrixXd::Zero(nv, nv);
+    locWgtSqrt_.resize(nv, nv);
 
-         ! Allocation
-         allocate(loc_wgt(nam%nv,nam%nv))
-         allocate(nam%loc_wgt_sqrt(nam%nv,nam%nv))
+    // Set default weights
+    for (size_t jg = 0; jg < groups_.size(); ++jg) {
+      for (const auto & var1 : groups_[jg].variables_) {
+        // Get variable 1 index
+        const size_t jv1 = activeVars_.find(var1);
 
-         ! Initialize diagonal weights at one, others at zero
-         loc_wgt = zero
-         do iv=1,nam%nv
-            loc_wgt(iv,iv) = one
-         end do
+        for (const auto & var2 : groups_[jg].variables_) {
+          // Get variable 2 index
+          const size_t jv2 = activeVars_.find(var2);
 
-         ! Copy weights
-         do iconf=1,size(confs)
-            ! Get row and column variables, and the value
-            call confs(iconf)%get_or_die('row variables',str_array_row)
-            call confs(iconf)%get_or_die('column variables',str_array_col)
-            call confs(iconf)%get_or_die('value',real_scalar)
+          if (jv1 == jv2) {
+            // Unit diagonal
+            locWgt(jv2, jv1) = 1.0;
+          } else {
+            // Default off-diagonal weight
+            locWgt(jv2, jv1) = params_.defaultWeight.value();
+          }
+        }
+      }
+    }
 
-            ! Loop over row and column values
-            do ivv=1,size(str_array_row)
-               do iv=1,nam%nv
-                  if (trim(str_array_row(ivv))==trim(nam%variables(iv))) exit
-               end do
-               do jvv=1,size(str_array_col)
-                  do jv=1,nam%nv
-                     if (trim(str_array_col(jvv))==trim(nam%variables(jv))) then
-                        if (iv/=jv) then
-                           if (nam%group_index(iv)==nam%group_index(jv)) then
-                              loc_wgt(iv,jv) = real_scalar
-                              loc_wgt(jv,iv) = real_scalar
-                           else
-                              call mpl%abort('${subr}$','loc_wgt values should be within the same group')
-                           end if
-                        end if
-                        exit
-                     end if
-                  end do
-               end do
-            end do
-         end do
+    // Set specific weights
+    for (const auto & specWeight : params_.specWeights.value()) {
+      // Get variables pair and weight
+      const std::vector<std::string> variablesPair = specWeight.variablesPair.value();
+      ASSERT(variablesPair.size() == 2);
+      const double weight = specWeight.weight.value();
 
-         ! Cholesky decomposition
-         call cholesky(mpl,nam%nv,loc_wgt,nam%loc_wgt_sqrt)
+      // Get variables pair indices
+      const size_t jv1 = activeVars_.find(variablesPair[0]);
+      const size_t jv2 = activeVars_.find(variablesPair[1]);
 
-         ! Release memory
-         deallocate(loc_wgt)
-      end if
-*/
+      // Check that variables are different
+      ASSERT(jv1 != jv2);
+
+      // Check that variables are in the same group
+      ASSERT(getGroupIndex(variablesPair[0]) == getGroupIndex(variablesPair[1]));
+
+      // Set weight symmetrically
+      locWgt(jv2, jv1) = weight;
+      locWgt(jv1, jv2) = weight;
+    }
+
+    // Cholesky decomposition
+    locWgtSqrt_ = locWgt.llt().matrixL();
   }
 
   oops::Log::trace() << classname() << "::FastLAM done" << std::endl;
@@ -260,8 +258,6 @@ void FastLAM::multiply(oops::FieldSet3D & fset) const {
 // -----------------------------------------------------------------------------
 
 size_t FastLAM::ctlVecSize() const {
-  oops::Log::trace() << classname() << "::ctlVecSize starting" << std::endl;
-
   // Loop over bins
   size_t ctlVecSize = 0;
   for (size_t jBin = 0; jBin < weight_.size(); ++jBin) {
@@ -290,7 +286,6 @@ size_t FastLAM::ctlVecSize() const {
     }
   }
 
-  oops::Log::trace() << classname() << "::ctlVecSize done" << std::endl;
   return ctlVecSize;
 }
 
@@ -329,9 +324,6 @@ void FastLAM::multiplySqrt(const atlas::Field & cv,
           atlas::Field binField = fsetBin[var];
           data_[jg][jBin]->multiplySqrt(cv, binField, index);
 
-          // Update control vector index
-          index += data_[jg][jBin]->ctlVecSize();
-
           // Apply weight square-root and normalization
           auto binView = atlas::array::make_view<double, 2>(binField);
           const atlas::Field wgtSqrtField = (*weight_[jBin])[groups_[jg].name_];
@@ -346,6 +338,9 @@ void FastLAM::multiplySqrt(const atlas::Field & cv,
               }
             }
           }
+
+          // Update control vector index
+          index += data_[jg][jBin]->ctlVecSize();
         }
       }
     } else if (params_.strategy.value() == "duplicated") {
@@ -358,9 +353,6 @@ void FastLAM::multiplySqrt(const atlas::Field & cv,
 
         // Layer multiplication
         data_[jg][jBin]->multiplySqrt(cv, grpField, index);
-
-        // Update control vector index
-        index += data_[jg][jBin]->ctlVecSize();
 
         // Apply weight square-root and normalization
         const atlas::Field wgtSqrtField = (*weight_[jBin])[groups_[jg].name_];
@@ -392,8 +384,67 @@ void FastLAM::multiplySqrt(const atlas::Field & cv,
             }
           }
         }
+
+        // Update control vector index
+        index += data_[jg][jBin]->ctlVecSize();
+      }
+    } else if (params_.strategy.value() == "duplicated and weighted") {
+      // Duplicated and weighted strategy
+      fsetBin.zero();
+      for (size_t jg = 0; jg < groups_.size(); ++jg) {
+        // Create group field
+        atlas::Field grpField = gdata_.functionSpace().createField<double>(
+          atlas::option::name(groups_[jg].name_) | atlas::option::levels(groups_[jg].nz0_));
+        auto grpView = atlas::array::make_view<double, 2>(grpField);
+
+        for (const auto & var1 : groups_[jg].variables_) {
+          // Get variable 1 index
+          const size_t jv1 = activeVars_.find(var1);
+
+          // Variable properties
+          const size_t varNz0 = activeVars_[var1].getLevels();
+          const size_t z0Offset = getZ0Offset(var1);
+
+          // Layer multiplication
+          data_[jg][jBin]->multiplySqrt(cv, grpField, index);
+
+          // Apply weight square-root and normalization
+          const atlas::Field wgtSqrtField = (*weight_[jBin])[groups_[jg].name_];
+          const auto wgtSqrtView = atlas::array::make_view<double, 2>(wgtSqrtField);
+          const atlas::Field normField = (*normalization_[jBin])[groups_[jg].name_];
+          const auto normView = atlas::array::make_view<double, 2>(normField);
+          for (size_t jnode0 = 0; jnode0 < nodes0_; ++jnode0) {
+            if (ghostView(jnode0) == 0) {
+              for (size_t jz0 = 0; jz0 < groups_[jg].nz0_; ++jz0) {
+                grpView(jnode0, jz0) *= wgtSqrtView(jnode0, jz0)*normView(jnode0, jz0);
+              }
+            }
+          }
+
+          // Apply weighted result on all variables of the group
+          for (const auto & var2 : groups_[jg].variables_) {
+            // Get variable 2 index
+            const size_t jv2 = activeVars_.find(var2);
+            if (jv2 >= jv1) {
+              // Copy group field
+              atlas::Field binField = fsetBin[var2];
+              auto binView = atlas::array::make_view<double, 2>(binField);
+              for (size_t jnode0 = 0; jnode0 < nodes0_; ++jnode0) {
+                if (ghostView(jnode0) == 0) {
+                  for (size_t jz0 = 0; jz0 < varNz0; ++jz0) {
+                    binView(jnode0, jz0) += locWgtSqrt_(jv2, jv1)*grpView(jnode0, z0Offset+jz0);
+                  }
+                }
+              }
+            }
+          }
+
+          // Update control vector index
+          index += data_[jg][jBin]->ctlVecSize();
+        }
       }
     } else if (params_.strategy.value() == "crossed") {
+      // Crossed strategy
       for (size_t jg = 0; jg < groups_.size(); ++jg) {
         // Create group field
         atlas::Field grpField = gdata_.functionSpace().createField<double>(
@@ -437,51 +488,6 @@ void FastLAM::multiplySqrt(const atlas::Field & cv,
 
       // Update control vector index
       index += data_[0][jBin]->ctlVecSize();
-    } else if (params_.strategy.value() == "duplicated and weighted") {
-      // Duplicated strategy
-      for (size_t jg = 0; jg < groups_.size(); ++jg) {
-        // Create group field
-        atlas::Field grpField = gdata_.functionSpace().createField<double>(
-          atlas::option::name(groups_[jg].name_) | atlas::option::levels(groups_[jg].nz0_));
-        auto grpView = atlas::array::make_view<double, 2>(grpField);
-
-        // Layer multiplication
-        data_[jg][jBin]->multiplySqrt(cv, grpField, index);
-
-        // Update control vector index
-        index += data_[jg][jBin]->ctlVecSize();
-
-        // Apply weight square-root and normalization
-        const atlas::Field wgtSqrtField = (*weight_[jBin])[groups_[jg].name_];
-        const auto wgtSqrtView = atlas::array::make_view<double, 2>(wgtSqrtField);
-        const atlas::Field normField = (*normalization_[jBin])[groups_[jg].name_];
-        const auto normView = atlas::array::make_view<double, 2>(normField);
-        for (size_t jnode0 = 0; jnode0 < nodes0_; ++jnode0) {
-          if (ghostView(jnode0) == 0) {
-            for (size_t jz0 = 0; jz0 < groups_[jg].nz0_; ++jz0) {
-              grpView(jnode0, jz0) *= wgtSqrtView(jnode0, jz0)*normView(jnode0, jz0);
-            }
-          }
-        }
-
-        // Copy result on all variables of the group
-        for (const auto & var : groups_[jg].variables_) {
-          // Variable properties
-          const size_t varNz0 = activeVars_[var].getLevels();
-          const size_t z0Offset = getZ0Offset(var);
-
-          // Copy group field
-          atlas::Field binField = fsetBin[var];
-          auto binView = atlas::array::make_view<double, 2>(binField);
-          for (size_t jnode0 = 0; jnode0 < nodes0_; ++jnode0) {
-            if (ghostView(jnode0) == 0) {
-              for (size_t jz0 = 0; jz0 < varNz0; ++jz0) {
-                binView(jnode0, jz0) = grpView(jnode0, z0Offset+jz0);
-              }
-            }
-          }
-        }
-      }
     } else {
       // Wrong multivariate strategy
       throw eckit::UserError("wrong multivariate strategy: " + params_.strategy.value(), Here());
@@ -598,6 +604,61 @@ void FastLAM::multiplySqrtAD(const oops::FieldSet3D & fset,
 
         // Update control vector index
         index += data_[jg][jBin]->ctlVecSize();
+      }
+    } else if (params_.strategy.value() == "duplicated and weighted") {
+      // Duplicated and weighted strategy
+      for (size_t jg = 0; jg < groups_.size(); ++jg) {
+        // Create group field
+        atlas::Field grpField = gdata_.functionSpace().createField<double>(
+          atlas::option::name(groups_[jg].name_) | atlas::option::levels(groups_[jg].nz0_));
+        auto grpView = atlas::array::make_view<double, 2>(grpField);
+
+        for (const auto & var1 : groups_[jg].variables_) {
+          // Get variable 1 index
+          const size_t jv1 = activeVars_.find(var1);
+
+          // Variable properties
+          const size_t varNz0 = activeVars_[var1].getLevels();
+          const size_t z0Offset = getZ0Offset(var1);
+
+          // Apply weighted result on all variables of the group
+          grpView.assign(0.0);
+          for (const auto & var2 : groups_[jg].variables_) {
+            // Get variable 2 index
+            const size_t jv2 = activeVars_.find(var2);
+            if (jv2 >= jv1) {
+              // Copy group field
+              atlas::Field binField = fsetBin[var2];
+              auto binView = atlas::array::make_view<double, 2>(binField);
+              for (size_t jnode0 = 0; jnode0 < nodes0_; ++jnode0) {
+                if (ghostView(jnode0) == 0) {
+                  for (size_t jz0 = 0; jz0 < varNz0; ++jz0) {
+                    grpView(jnode0, z0Offset+jz0) += locWgtSqrt_(jv2, jv1)*binView(jnode0, jz0);
+                  }
+                }
+              }
+            }
+          }
+
+          // Apply weight square-root and normalization
+          const atlas::Field wgtSqrtField = (*weight_[jBin])[groups_[jg].name_];
+          const auto wgtSqrtView = atlas::array::make_view<double, 2>(wgtSqrtField);
+          const atlas::Field normField = (*normalization_[jBin])[groups_[jg].name_];
+          const auto normView = atlas::array::make_view<double, 2>(normField);
+          for (size_t jnode0 = 0; jnode0 < nodes0_; ++jnode0) {
+            if (ghostView(jnode0) == 0) {
+              for (size_t jz0 = 0; jz0 < groups_[jg].nz0_; ++jz0) {
+                grpView(jnode0, jz0) *= wgtSqrtView(jnode0, jz0)*normView(jnode0, jz0);
+              }
+            }
+          }
+
+          // Layer multiplication
+          data_[jg][jBin]->multiplySqrtTrans(grpField, cv, index);
+
+          // Update control vector index
+          index += data_[jg][jBin]->ctlVecSize();
+        }
       }
     } else if (params_.strategy.value() == "crossed") {
       // Crossed strategy

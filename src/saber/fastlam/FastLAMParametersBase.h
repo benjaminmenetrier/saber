@@ -54,6 +54,19 @@ class GroupParameters : public oops::Parameters {
 
 // -----------------------------------------------------------------------------
 
+// Specific off-diagonal weight elemental parameters
+class SpecWgtParameters : public oops::Parameters {
+  OOPS_CONCRETE_PARAMETERS(SpecWgtParameters, oops::Parameters)
+
+ public:
+  // Variables pair
+  oops::RequiredParameter<std::vector<std::string>> variablesPair{"variables pair", this};
+  // Weight
+  oops::RequiredParameter<double> weight{"weight", this};
+};
+
+// -----------------------------------------------------------------------------
+
 class FastLAMParametersBase : public oops::Parameters {
   OOPS_CONCRETE_PARAMETERS(FastLAMParametersBase, oops::Parameters)
 
@@ -106,6 +119,13 @@ class FastLAMParametersBase : public oops::Parameters {
 
   // Level for 2D variables ('first' or 'last')
   oops::Parameter<std::string> lev2d{"level for 2d variables", "first", this};
+
+  // Default off-diagonal weight for the duplicated and weighted strategy
+  oops::Parameter<double> defaultWeight{"default off-diagonal weight", 0.0, this};
+
+  // Specific off-diagonal weights for the duplicated and weighted strategy
+  oops::Parameter<std::vector<SpecWgtParameters>> specWeights{"specific off-diagonal weights", {},
+    this};
 };
 
 // -----------------------------------------------------------------------------

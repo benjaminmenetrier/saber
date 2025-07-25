@@ -1,0 +1,146 @@
+geometry:
+  function space: StructuredColumns
+  grid:
+    type : regional
+    nx : 71
+    ny : 53
+    dx : 2.5e3
+    dy : 2.5e3
+    lonlat(centre) : [9.9, 56.3]
+    projection :  
+      type : lambert_conformal_conic
+      latitude0  : 56.3
+      longitude0 : 0.0
+    y_numbering: 1
+  partitioner: checkerboard
+  groups:
+  - variables:
+    - air_horizontal_streamfunction
+    - air_horizontal_velocity_potential
+    levels: 10
+  - variables:
+    - air_pressure_at_surface
+    levels: 1
+background:
+  date: 2010-01-01T12:00:00Z
+  state variables:
+  - air_horizontal_streamfunction
+  - air_horizontal_velocity_potential
+  - air_pressure_at_surface
+background error:
+  covariance model: SABER
+  adjoint test: true
+  square-root test: true
+  saber central block:
+    saber block name: FastLAM
+    read:
+      multivariate strategy: duplicated and weighted
+      default off-diagonal weight: 0.5
+      specific off-diagonal weights:
+      - variables pair: [air_horizontal_streamfunction, air_horizontal_velocity_potential]
+        weight: 0.5
+      groups:
+      - group name: var3d
+        variable in model file: air_horizontal_streamfunction
+        variables:
+        - air_horizontal_streamfunction
+        - air_horizontal_velocity_potential
+      - group name: var2d
+        variable in model file: air_pressure_at_surface
+        variables:
+        - air_pressure_at_surface
+      input model files:
+      - parameter: weight
+        number of components: 3
+        file:
+          filepath: testdata/dirac_fastlam_3/_MPI_-_OMP__weight_%component%
+      - parameter: normalization
+        number of components: 3
+        file:
+          filepath: testdata/dirac_fastlam_3/_MPI_-_OMP__norm_%component%
+      data file: testdata/dirac_fastlam_3/_MPI_-_OMP__data
+dirac:
+  lon:
+  - 10.04
+  - 8.696
+  - 11.379
+  - 8.5781
+  - 9.9058
+  - 11.2261
+  - 8.4537
+  - 9.7626
+  - 11.0644
+  - 10.04
+  - 8.696
+  - 11.379
+  - 8.5781
+  - 9.9058
+  - 11.2261
+  - 8.4537
+  - 9.7626
+  - 11.0644
+  lat:
+  - 56.86
+  - 56.935
+  - 56.719
+  - 56.4215
+  - 56.3223
+  - 56.2089
+  - 55.8638
+  - 55.7659
+  - 55.6542
+  - 56.86
+  - 56.935
+  - 56.719
+  - 56.4215
+  - 56.3223
+  - 56.2089
+  - 55.8638
+  - 55.7659
+  - 55.6542
+  level:
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  variable:
+  - air_horizontal_streamfunction
+  - air_horizontal_streamfunction
+  - air_horizontal_streamfunction
+  - air_horizontal_streamfunction
+  - air_horizontal_streamfunction
+  - air_horizontal_streamfunction
+  - air_horizontal_streamfunction
+  - air_horizontal_streamfunction
+  - air_horizontal_streamfunction
+  - air_pressure_at_surface
+  - air_pressure_at_surface
+  - air_pressure_at_surface
+  - air_pressure_at_surface
+  - air_pressure_at_surface
+  - air_pressure_at_surface
+  - air_pressure_at_surface
+  - air_pressure_at_surface
+  - air_pressure_at_surface
+output dirac:
+  mpi pattern: '%MPI%'
+  filepath: testdata/dirac_fastlam_11/%MPI%_dirac_%id%
+output variance:
+  mpi pattern: '%MPI%'
+  filepath: testdata/dirac_fastlam_11/%MPI%_variance
+test:
+  reference filename: testref/dirac_fastlam_11.ref

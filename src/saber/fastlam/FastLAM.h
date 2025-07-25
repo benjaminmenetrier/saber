@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <Eigen/Dense>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -119,6 +120,9 @@ class FastLAM : public SaberCentralBlockBase {
   size_t nx0_;
   size_t ny0_;
   size_t nodes0_;
+
+  // Duplicated and weighted strategy weights
+  Eigen::MatrixXd locWgtSqrt_;
 
   // Setup length-scales
   void setupLengthScales();
