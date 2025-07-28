@@ -499,7 +499,7 @@ do ig=1,nam%ng
    write(mpl%info,'(a7,a,a,a)') '','Group ',trim(nam%group_names(ig)),':'
    call mpl%flush
 
-   if (nam%nicas_interp_type(ig)=='si') then
+   if ((nam%nicas_interp_type(ig)=='si').and.nam%nicas_si_scaling) then
       ! Interpolate scaling linearly
       cmat%blk(ig)%scaling = mpl%msv%valr
       do isi=1,nsi-1
@@ -514,9 +514,6 @@ do ig=1,nam%ng
       ! No scaling
       cmat%blk(ig)%scaling = one
    end if
-
-   ! TODO: this scaling gives more accurate results, but it will change the results... not activated so far
-   cmat%blk(ig)%scaling = one
 
    write(mpl%info,'(a10,a,f5.3,a,f5.3)') '','Factor: ',nam%nicas_si_factor,' - scaling: ',cmat%blk(ig)%scaling
    call mpl%flush

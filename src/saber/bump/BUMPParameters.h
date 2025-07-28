@@ -625,6 +625,8 @@ class NICASSection : public oops::Parameters {
     this};
   // Factor to get interpolation radius from convolution radius if nicas_interp_type = 'si'
   oops::Parameter<double> nicas_si_factor = param(def.nicas_si_factor, this);
+  // Scaling on convolution length-scale to account for smooth interpolation effect
+  oops::Parameter<bool> nicas_si_scaling = param(def.nicas_si_scaling, this);
   // Normalization randomization size
   oops::Parameter<int> norm_rand_size = param(def.norm_rand_size, this);
   // Positive-definiteness test

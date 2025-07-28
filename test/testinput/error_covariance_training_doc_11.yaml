@@ -1,0 +1,52 @@
+geometry:
+  function space: StructuredColumns
+  grid:
+    type: regular_lonlat
+    N: 100
+  groups:
+  - variables:
+    - air_horizontal_streamfunction
+    levels: 1
+  halo: 1
+background:
+  date: 2010-01-01T12:00:00Z
+  state variables:
+  - air_horizontal_streamfunction
+background error:
+  covariance model: SABER
+  saber central block:
+    saber block name: BUMP_NICAS
+    calibration:
+      io:
+        data directory: testdata
+        files prefix: error_covariance_training_doc_11/_MPI_-_OMP_
+      drivers:
+        multivariate strategy: univariate
+        compute nicas: true
+        internal dirac test: true
+      nicas:
+        resolution: 8.0
+        explicit length-scales: true
+        horizontal length-scale:
+        - groups:
+          - air_horizontal_streamfunction
+          value: 4000.0e3
+        vertical length-scale:
+        - groups:
+          - air_horizontal_streamfunction
+          value: 3.0
+        interpolation type:
+        - groups:
+          - air_horizontal_streamfunction
+          type: si
+        smooth interpolation factor: 0.9
+        smooth interpolation scaling: true
+      dirac:
+      - longitude: 180.0
+        latitude: 0.0
+        level: 1
+        variable: air_horizontal_streamfunction
+      output model files:
+      - parameter: dirac_nicas
+        file:
+          filepath: testdata/error_covariance_training_doc_11/_MPI_-_OMP__dirac_nicas

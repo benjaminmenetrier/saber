@@ -316,6 +316,8 @@ void bump_config_init_f90(eckit::LocalConfiguration * config) {
   param(nicasDef.forced_radii, nicasConf);
   // Factor to get interpolation radius from convolution radius if nicas_interp_type = 'si'
   param(nicasDef.nicas_si_factor, nicasConf);
+  // Scaling on convolution length-scale to account for smooth interpolation effect
+  param(nicasDef.nicas_si_scaling, nicasConf);
   // Normalization randomization size
   param(nicasDef.norm_rand_size, nicasConf);
   // Positive-definiteness test

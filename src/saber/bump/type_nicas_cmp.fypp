@@ -2798,9 +2798,9 @@ type(linop_type),allocatable :: grad(:)
 if (.not.nam%load_nicas_global) then
    ! Compute averaged horizontal support radius
    do il0=1,nicas_cmp%nl0
-      rhs_min(il0) = zss_minval(nicas_cmp%rhs(:,il0),mask=geom%gmask_c0a(:,il0))
-      rhs_max(il0) = zss_maxval(nicas_cmp%rhs(:,il0),mask=geom%gmask_c0a(:,il0))
-      rhs_avg(il0) = zss_sum(nicas_cmp%rhs(:,il0),mask=geom%gmask_c0a(:,il0))
+      rhs_min(il0) = zss_minval(nicas_cmp%rhs(:,il0)/nicas_cmp%scaling,mask=geom%gmask_c0a(:,il0))
+      rhs_max(il0) = zss_maxval(nicas_cmp%rhs(:,il0)/nicas_cmp%scaling,mask=geom%gmask_c0a(:,il0))
+      rhs_avg(il0) = zss_sum(nicas_cmp%rhs(:,il0)/nicas_cmp%scaling,mask=geom%gmask_c0a(:,il0))
    end do
    call mpl%f_comm%allreduce(rhs_min,fckit_mpi_min())
    call mpl%f_comm%allreduce(rhs_max,fckit_mpi_max())
@@ -3174,7 +3174,7 @@ do il1=1,nicas_cmp%nl1
  & geom%nc0a,geom%lon_c0a,geom%lat_c0a,geom%gmask_c0a(:,il0s),geom%bnda_c0u,ifmt,.true.)
          case ('si')
             allocate(interpolation_radius(geom%nc0a))
-            interpolation_radius = nicas_cmp%rhs(:,il0s)*nicas_cmp%scaling
+            interpolation_radius = nicas_cmp%rhs(:,il0s)/nicas_cmp%scaling
             do ic0a=1,geom%nc0a
                if (mpl%msv%isnot(interpolation_radius(ic0a))) interpolation_radius(ic0a) = interpolation_radius(ic0a) &
  & *nam%nicas_si_factor
@@ -3789,7 +3789,7 @@ if (.not.nam%load_nicas_global) then
 
       ! Halo extension
       call nicas_cmp%hor(il1s)%com_c0_AB%ext(mpl,nicas_cmp%rh(:,il0)/nicas_cmp%scaling,rh_c0b)
-      if (.not.nicas_cmp%smoother) call nicas_cmp%hor(il1s)%com_c0_AB%ext(mpl,nicas_cmp%rv(:,il0)/nicas_cmp%scaling,rv_c0b)
+      if (.not.nicas_cmp%smoother) call nicas_cmp%hor(il1s)%com_c0_AB%ext(mpl,nicas_cmp%rv(:,il0),rv_c0b)
       if (nicas_cmp%anisotropic) then
          call nicas_cmp%hor(il1s)%com_c0_AB%ext(mpl,nicas_cmp%H11(:,il0)*nicas_cmp%scaling**2,H11_c0b)
          call nicas_cmp%hor(il1s)%com_c0_AB%ext(mpl,nicas_cmp%H22(:,il0)*nicas_cmp%scaling**2,H22_c0b)
@@ -3996,7 +3996,7 @@ logical,allocatable :: mnd(:)
 
 ! Find largest possible radius
 do il0=1,nicas_cmp%nl0
-   rv_max(il0) = zss_maxval(nicas_cmp%rv(:,il0)/nicas_cmp%scaling,mask=mpl%msv%isnot(nicas_cmp%rv(:,il0)))
+   rv_max(il0) = zss_maxval(nicas_cmp%rv(:,il0),mask=mpl%msv%isnot(nicas_cmp%rv(:,il0)))
 end do
 call mpl%f_comm%allreduce(rv_max,fckit_mpi_max())
 

@@ -563,6 +563,10 @@ struct NICASDef {
   std::pair<const char *, double> nicas_si_factor =
     std::make_pair("smooth interpolation factor", 0.25);
 
+  // Scaling on convolution length-scale to account for smooth interpolation effect
+  std::pair<const char *, bool> nicas_si_scaling =
+    std::make_pair("smooth interpolation scaling", false);
+
   // Normalization randomization size
   std::pair<const char *, int> norm_rand_size =
     std::make_pair("normalization randomization size", 0);
