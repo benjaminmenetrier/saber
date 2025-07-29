@@ -56,7 +56,7 @@ struct GeneralDef {
 
   // Use deprecated work grid (for backward compatibility)
   std::pair<const char *, bool> deprecated_work_grid =
-    std::make_pair("deprecated work grid", true);
+    std::make_pair("deprecated work grid", false);
 };
 
 // I/O section
