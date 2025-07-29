@@ -69,7 +69,7 @@ type geom_type
    ! Link between model grid and subset Sc0 on halo A
    integer,allocatable :: c0a_to_mga(:)               !< Subset Sc0 to model grid on halo A
 
-   ! Geometry data on model grid, global
+   ! Geometry data on model grid, full domain
    integer :: nmg                                     !< Number of model grid points
 
    ! Universe
@@ -96,7 +96,7 @@ type geom_type
    logical,allocatable :: gmask_hor_c0u(:)            !< Union of horizontal geometry masks
    real(kind_real),allocatable :: mdist_c0u(:,:)      !< Minimum distance to mask
 
-   ! Geometry data on subset Sc0, global
+   ! Geometry data on subset Sc0, full domain
    integer :: nc0                                     !< Number of subset Sc0 points
    integer,allocatable :: proc_to_c0_offset(:)        !< Processor to offset on subset Sc0
    integer,allocatable :: nc0_gmask(:)                !< Horizontal mask size on subset Sc0
@@ -109,11 +109,11 @@ type geom_type
    integer,allocatable :: c0u_to_c0a(:)               !< Universe to halo A on subset Sc0
    type(com_type) :: com_AU                           !< Communication between halo A and universe on subset Sc0
 
-   ! Link between halo A and global on subset Sc0
-   integer,allocatable :: c0a_to_c0(:)                !< Subset Sc0, halo A to global
+   ! Link between halo A and full domain on subset Sc0
+   integer,allocatable :: c0a_to_c0(:)                !< Subset Sc0, halo A to full domain
 
-   ! Link between universe and global on subset Sc0
-   integer,allocatable :: c0u_to_c0(:)                !< Subset Sc0, universe to global
+   ! Link between universe and full domain on subset Sc0
+   integer,allocatable :: c0u_to_c0(:)                !< Subset Sc0, universe to full domain
 
    ! Number of levels
    integer :: nl0                                     !< Number of levels in subset Sl0
@@ -136,11 +136,16 @@ type geom_type
    ! Tree
    type(tree_type) :: tree_c0u                        !< Tree on subset Sc0, universe
 
-   ! Boundaries
-   type(bnda_type) :: bnda_c0u                        !< Boundaries on subset Sc0, universe
+   ! Mesh
+   type(mesh_type) :: mesh_c0u                        !< Mesh on subset Sc0, universe
+
+   ! Mask boundaries
+   type(bnda_type) :: bnda_c0u                        !< Mask boundaries on subset Sc0, universe
 
    ! Hull
    type(hull_type) :: hull_c0u                        !< Domain hull on subset Sc0, universe
+   type(hull_type) :: hull_c0                         !< Domain hull on subset Sc0, full domain
+   logical :: deprecated_hull                         !< Use deprecated hull
 
    ! Dirac fields for variables
    integer :: ndir                                    !< Number of valid Dirac points
@@ -163,8 +168,10 @@ contains
    procedure :: dealloc => geom_dealloc
    procedure :: setup => geom_setup
    procedure :: from_atlas => geom_from_atlas
-   procedure :: setup_universe => geom_setup_universe
    procedure :: setup_c0 => geom_setup_c0
+   procedure :: setup_universe => geom_setup_universe
+   procedure :: setup_hulls => geom_setup_hulls
+   procedure :: setup_grid => geom_setup_grid
    procedure :: geom_index_from_lonlat_r0
    procedure :: geom_index_from_lonlat_r1
    generic :: index_from_lonlat => geom_index_from_lonlat_r0,geom_index_from_lonlat_r1
@@ -257,8 +264,8 @@ if (allocated(geom%vert_coordavg)) deallocate(geom%vert_coordavg)
 if (allocated(geom%disth)) deallocate(geom%disth)
 if (allocated(geom%as)) deallocate(geom%as)
 call geom%tree_c0u%dealloc
+call geom%mesh_c0u%dealloc
 call geom%bnda_c0u%dealloc
-call geom%hull_c0u%dealloc
 if (allocated(geom%londir)) deallocate(geom%londir)
 if (allocated(geom%latdir)) deallocate(geom%latdir)
 if (allocated(geom%iprocdir)) deallocate(geom%iprocdir)
@@ -267,6 +274,7 @@ if (allocated(geom%il0dir)) deallocate(geom%il0dir)
 if (allocated(geom%ivdir)) deallocate(geom%ivdir)
 if (allocated(geom%inbdir)) deallocate(geom%inbdir)
 if (allocated(geom%order_c0)) deallocate(geom%order_c0)
+
 ! Probe out
 @:probe_out()
 
@@ -298,6 +306,8 @@ if (allocated(geom%lon_c0a)) deallocate(geom%lon_c0a)
 if (allocated(geom%lat_c0a)) deallocate(geom%lat_c0a)
 if (allocated(geom%vert_coord_c0a)) deallocate(geom%vert_coord_c0a)
 if (allocated(geom%gmask_c0a)) deallocate(geom%gmask_c0a)
+call geom%hull_c0u%dealloc
+call geom%hull_c0%dealloc
 if (allocated(geom%l0_to_l0i)) deallocate(geom%l0_to_l0i)
 if (allocated(geom%grp2d)) deallocate(geom%grp2d)
 call geom%io%dealloc
@@ -326,15 +336,17 @@ type(fieldset_type),intent(in),optional :: fieldset    !< Fieldset containing ge
 
 ! Local variables
 integer :: il0,jl0off,jl0r,jc3,jc4,iproc,iv,ig
-integer,allocatable :: order_c0a(:)
+integer,allocatable :: order_c0(:),order_c0a(:)
 real(kind_real),allocatable :: lon_c0(:),lat_c0(:)
-type(mesh_type) :: mesh_c0u
 
 ! Set name
 @:set_name(geom_setup)
 
 ! Probe in
 @:probe_in()
+
+! Use deprecated hull
+geom%deprecated_hull = nam%deprecated_hull
 
 ! Number of processors
 geom%nproc = mpl%nproc
@@ -370,37 +382,52 @@ end if
 
 ! Copy function space pointer
 if (present(fieldset)) then
-   call geom%from_atlas(mpl,rng,nam,afunctionspace,fieldset)
+   call geom%from_atlas(mpl,nam,afunctionspace,fieldset)
 else
-   call geom%from_atlas(mpl,rng,nam,afunctionspace)
+   call geom%from_atlas(mpl,nam,afunctionspace)
 end if
 
 ! Setup subset Sc0
 call geom%setup_c0(mpl)
 
 ! Setup universe
-call geom%setup_universe(mpl,rng,nam)
+call geom%setup_universe(mpl,nam)
 
 ! Setup tree
 write(mpl%info,'(a7,a)') '','Setup tree'
 call mpl%flush
 call geom%tree_c0u%init(geom%nc0u,geom%lon_c0u,geom%lat_c0u)
 
-! Setup hull
-write(mpl%info,'(a7,a)') '','Setup hull'
-call mpl%flush
-if (geom%global.and.all(geom%myuniverse)) then
-   geom%hull_c0u%radius = mpl%msv%valr
+if (nam%mask_check.or.(.not.geom%global)) then
+   if (geom%deprecated_hull) then
+      ! Reseed for backward compatibility
+      call rng%reseed
+   end if
+
+   ! Setup mesh
+   write(mpl%info,'(a7,a)') '','Setup mesh'
+   call mpl%flush
+   call geom%mesh_c0u%init(mpl,rng,geom%nc0u,geom%lon_c0u,geom%lat_c0u)
 else
-   call geom%hull_c0u%init(mpl,geom%nc0u,geom%lon_c0u,geom%lat_c0u,nam%universe_radius)
+   ! Set number of boundary nodes to zero
+   geom%mesh_c0u%nb = 0
 end if
 
+! Setup hulls
+write(mpl%info,'(a7,a)') '','Setup hulls'
+call mpl%flush
+call geom%setup_hulls(mpl,rng,nam)
+
+! Setup grid properties
+write(mpl%info,'(a7,a)') '','Setup grid properties'
+call mpl%flush
+call geom%setup_grid(mpl,rng)
+
 if (nam%mask_check) then
-   ! Setup boundaries
-   write(mpl%info,'(a7,a)') '','Setup boundaries'
+   ! Setup mask boundaries
+   write(mpl%info,'(a7,a)') '','Setup mask boundaries'
    call mpl%flush
-   call mesh_c0u%init(mpl,rng,geom%nc0u,geom%lon_c0u,geom%lat_c0u)
-   call geom%bnda_c0u%init(mpl,geom%nc0u,geom%nl0,geom%gmask_hor_c0u,geom%gmask_c0u,mesh_c0u)
+   call geom%bnda_c0u%init(mpl,geom%nc0u,geom%nl0,geom%gmask_hor_c0u,geom%gmask_c0u,geom%mesh_c0u)
 end if
 
 ! Setup horizontal distance
@@ -496,9 +523,6 @@ do iproc=1,mpl%nproc
    call mpl%flush
 end do
 
-! Reset random seed if necessary
-call rng%reseed
-
 ! Probe out
 @:probe_out()
 
@@ -508,39 +532,26 @@ end subroutine geom_setup
 ! Subroutine: geom_from_atlas
 !> Set geometry from fieldset
 !----------------------------------------------------------------------
-subroutine geom_from_atlas(geom,mpl,rng,nam,afunctionspace,fieldset)
+subroutine geom_from_atlas(geom,mpl,nam,afunctionspace,fieldset)
 
 implicit none
 
 ! Passed variables
 class(geom_type),intent(inout) :: geom                 !< Geometry
 type(mpl_type),intent(inout) :: mpl                    !< MPI data
-type(rng_type),intent(inout) :: rng                    !< Random number generator
 type(nam_type),intent(in) :: nam                       !< Namelist
 type(atlas_functionspace),intent(in) :: afunctionspace !< ATLAS function space
 type(fieldset_type),intent(in),optional :: fieldset    !< Fieldset
 
 ! Local variables
-integer :: il0,imga,ib,iprocmax,icorner,ib_1,ib_2,ib_3,nmg_owned,nmg_inside,iter,i,iproc
-real(kind_real) :: infl,dinfl,infl_opt,f_min
-real(kind_real) :: proc_to_maxdist(mpl%nproc)
-real(kind_real) :: lon0,lat0,dist,maxdist,area_124,area_234,splon_opt,splat_opt,rota_opt,dist_maxmin
-real(kind_real) :: lonlat_bnd(2,4),v_bnd(3,4),v1(3),v2(3),cp(3),cd(3),v_bnd_infl(3,4),vtmp(3)
-real(kind_real) :: lonlat_bnd_opt(2,4)
-real(kind_real) :: north,south,east,west
+integer :: il0,imga
+real(kind_real) :: lon0,lat0,dist,maxdist
 real(kind_real),pointer :: real_ptr(:,:)
-real(kind_real),allocatable :: v_mga(:,:)
-logical :: valid
-type(hull_type) :: hull
-type(atlas_config) :: aconfig_domain,aconfig_work_grid,aconfig_work_proj
 type(atlas_field) :: afield,afield_lonlat
 type(atlas_functionspace_nodecolumns) :: afunctionspace_nc
 type(atlas_functionspace_pointcloud) :: afunctionspace_pc
 type(atlas_functionspace_structuredcolumns) :: afunctionspace_sc
-type(atlas_structuredgrid) :: agrid_work
 type(atlas_mesh_nodes) :: anodes
-type(minim_type) :: minim
-character(len=:),allocatable :: domain_type
 
 ! Set name
 @:set_name(geom_from_atlas)
@@ -639,7 +650,7 @@ do imga=1,geom%nmga
    if (geom%owned_mga(imga,1)) call lonlatmod(geom%lon_mga(imga),geom%lat_mga(imga))
 end do
 
-! Get other grid properties
+! Setup global flag
 if (mpl%main) then
    lon0 = geom%lon_mga(1)
    lat0 = geom%lat_mga(1)
@@ -656,279 +667,7 @@ do imga=1,geom%nmga
    end if
 end do
 call mpl%f_comm%allreduce(maxdist,fckit_mpi_max())
-if (supeq(maxdist,half*pi)) then
-   ! Global domain
-   geom%global = .true.
-   geom%area = four*pi
-   geom%v_center = (/zero,zero,one/)
-else
-   ! Allocation
-   allocate(v_mga(3,geom%nmga))
-
-   ! Regional domain
-   geom%global = .false.
-
-   ! Find domain centroid
-   geom%v_center = zero
-   do imga=1,geom%nmga
-      if (geom%owned_mga(imga,1)) then
-         call lonlat2xyz(mpl,geom%lon_mga(imga),geom%lat_mga(imga),v_mga(1,imga),v_mga(2,imga),v_mga(3,imga))
-         geom%v_center = geom%v_center+v_mga(:,imga)
-      end if
-   end do
-   call mpl%f_comm%allreduce(geom%v_center,fckit_mpi_sum())
-   geom%v_center = geom%v_center/sqrt(sum(geom%v_center**2))
-
-   ! Find the point furthest from the centroid (first corner)
-   maxdist = zero
-   do imga=1,geom%nmga
-      if (geom%owned_mga(imga,1)) then
-         dist = sum((v_mga(:,imga)-geom%v_center)**2)
-         if (sup(dist,maxdist)) then
-            maxdist = dist
-            vtmp = v_mga(:,imga)
-         end if
-      end if
-   end do
-   call mpl%f_comm%allgather(maxdist,proc_to_maxdist)
-   iprocmax = 1
-   do iproc=1,mpl%nproc
-      if (sup(proc_to_maxdist(iproc),proc_to_maxdist(iprocmax))) iprocmax = iproc
-   end do
-   call mpl%f_comm%broadcast(vtmp,iprocmax-1)
-   v_bnd(:,1) = vtmp
-
-   ! Find the point furthest from the first corner (opposite corner)
-   maxdist = zero
-   do imga=1,geom%nmga
-      if (geom%owned_mga(imga,1)) then
-         dist = sum((v_mga(:,imga)-v_bnd(:,1))**2)
-         if (sup(dist,maxdist)) then
-            maxdist = dist
-            vtmp = v_mga(:,imga)
-         end if
-      end if
-   end do
-   call mpl%f_comm%allgather(maxdist,proc_to_maxdist)
-   iprocmax = 1
-   do iproc=1,mpl%nproc
-      if (sup(proc_to_maxdist(iproc),proc_to_maxdist(iprocmax))) iprocmax = iproc
-   end do
-   call mpl%f_comm%broadcast(vtmp,iprocmax-1)
-   v_bnd(:,3) = vtmp
-
-   ! Find the two other corners
-   do icorner=1,2
-      ! Index
-      ib_1 = 2*icorner-1
-      ib_2 = 2*icorner
-      ib_3 = 2*icorner+1
-      if (ib_3>4) ib_3 = ib_3-4
- 
-      ! Get positive triangle with maximum area
-      maxdist = zero
-      do imga=1,geom%nmga
-         if (geom%owned_mga(imga,1)) then
-            ! Check points order
-            v1 = v_mga(:,imga)-v_bnd(:,ib_1)
-            v2 = v_bnd(:,ib_3)-v_bnd(:,ib_1)
-            call vector_product(v1,v2,cp)
-            cd = (v_bnd(:,ib_1)+v_mga(:,imga)+v_bnd(:,ib_3))/three
-            if (sup(sum(cp*cd),zero)) then
-               ! Compute area
-               call area(v_bnd(:,ib_1),v_mga(:,imga),v_bnd(:,ib_3),dist)
-               if (sup(dist,maxdist)) then
-                  maxdist = dist
-                  vtmp = v_mga(:,imga)
-               end if
-            end if
-         end if
-      end do
-      call mpl%f_comm%allgather(maxdist,proc_to_maxdist)
-      iprocmax = 1
-      do iproc=1,mpl%nproc
-         if (sup(proc_to_maxdist(iproc),proc_to_maxdist(iprocmax))) iprocmax = iproc
-      end do
-      call mpl%f_comm%broadcast(vtmp,iprocmax-1)
-      v_bnd(:,ib_2) = vtmp
-   end do
-
-   ! Compute area
-
-   ! Compute area as the sum of two spherical triangles
-   call area(v_bnd(:,1),v_bnd(:,2),v_bnd(:,4),area_124)
-   call area(v_bnd(:,2),v_bnd(:,3),v_bnd(:,4),area_234)
-   geom%area = area_124+area_234
-
-   ! Create hull
-   call hull%init(mpl,4,v_bnd)
-
-   ! Count points inside hull
-   nmg_inside = 0
-   do imga=1,geom%nmga
-      if (geom%owned_mga(imga,1)) then
-         call hull%inside(mpl,geom%lon_mga(imga),geom%lat_mga(imga),valid)
-        if (valid) nmg_inside = nmg_inside+1
-      end if
-   end do
-   call mpl%f_comm%allreduce(nmg_inside,fckit_mpi_sum())
-
-   ! Adjust area
-   call mpl%f_comm%allreduce(count(geom%owned_mga),nmg_owned,fckit_mpi_sum())
-   geom%area = geom%area*real(nmg_owned,kind_real)/real(nmg_inside,kind_real)
-
-   ! Release memory
-   call hull%dealloc
-
-   ! Inflate corners from centers to include all points
-
-   ! Optimize inflation with a dichotomy method
-   geom%v_center = sum(v_bnd,dim=2)/four
-   geom%v_center = geom%v_center/sqrt(sum(geom%v_center**2))
-   infl = one
-   dinfl = one
-   do iter=1,niter
-      ! Inflation factor
-      infl = infl+dinfl
-
-      ! Inflated corners
-      do ib=1,4
-         v_bnd_infl(:,ib) = geom%v_center+infl*(v_bnd(:,ib)-geom%v_center)
-         v_bnd_infl(:,ib) = v_bnd_infl(:,ib)/sqrt(sum(v_bnd_infl(:,ib)**2))
-      end do
-
-      ! Create hull
-      call hull%init(mpl,4,v_bnd_infl)
-
-      ! Count points inside hull
-      nmg_inside = 0
-      do imga=1,geom%nmga
-         call hull%inside(mpl,geom%lon_mga(imga),geom%lat_mga(imga),valid)
-         if (valid) nmg_inside = nmg_inside+1
-      end do
-      call mpl%f_comm%allreduce(nmg_inside,fckit_mpi_sum())
-
-      ! Release memory
-      call hull%dealloc
-
-      if (nmg_inside==geom%nmg) then
-         ! Reduce inflation
-         dinfl = -half*abs(dinfl)
-         infl_opt = infl
-      else
-         ! Increase inflation
-         dinfl = half*dinfl
-      end if
-   end do
-
-   ! Apply optimal inflation
-   do ib=1,4
-      v_bnd(:,ib) = geom%v_center+infl_opt*(v_bnd(:,ib)-geom%v_center)
-      v_bnd(:,ib) = v_bnd(:,ib)/sqrt(sum(v_bnd(:,ib)**2))
-   end do
-
-   ! Convert to spherical coordinates
-   do ib=1,4
-      call xyz2lonlat(mpl,v_bnd(1,ib),v_bnd(2,ib),v_bnd(3,ib),lonlat_bnd(1,ib),lonlat_bnd(2,ib))
-   end do
-
-   ! Compute work grid
-
-   ! Minimization parameters initialization
-   minim%hooke_rho = half
-   minim%hooke_tol = 1.0e-6_kind_real
-   minim%hooke_itermax = 25
-
-   ! Allocation
-   minim%nx = 3
-   minim%ny = 8
-   call minim%alloc
-
-   ! Guess and bounds
-   minim%binf(1) = -pi
-   minim%bsup(1) = pi
-   minim%binf(2) = -half*pi
-   minim%bsup(2) = half*pi
-   minim%binf(3) = -pi
-   minim%bsup(3) = pi
-
-   ! Observations
-   minim%obs = reshape(lonlat_bnd,(/8/))
-
-   ! Fit type
-   minim%cost_function = 'work_grid'
-   f_min = huge_real
-   
-   ! Resynchronize random number generator
-   call rng%resync(mpl)
-
-   do iter=1,10
-      ! Random guess
-      do i=1,3
-         call rng%rand(minim%binf(i),minim%bsup(i),minim%guess(i))
-      end do
-
-      ! Compute fit
-      call minim%compute(mpl)
-
-      if (minim%f_min<f_min) then
-         ! Get parameter, apply bounds
-         splon_opt = max(minim%binf(1),min(minim%x(1),minim%bsup(1)))
-         splat_opt = max(minim%binf(2),min(minim%x(2),minim%bsup(2)))
-         rota_opt = max(minim%binf(3),min(minim%x(3),minim%bsup(3)))
-         f_min = minim%f_min
-      end if
-   end do
-
-   ! Desynchronize random number generator
-   call rng%resync(mpl)
-
-   ! Reset random seed if necessary
-   call rng%reseed
-   
-   ! Release memory
-   call minim%dealloc
-
-   ! Get work grid parameters
-   call work_grid(splon_opt,splat_opt,rota_opt,lonlat_bnd,dist_maxmin,lonlat_bnd_opt,geom%aconfig_work_grid)
-   agrid_work = atlas_structuredgrid(geom%aconfig_work_grid)
-   if (.not.geom%aconfig_work_grid%get('projection',aconfig_work_proj)) call mpl%abort('${subr}$','missing projection')
-   geom%aproj_work = atlas_projection(aconfig_work_proj)
-
-   ! Print results
-   write(mpl%info,'(a7,a,e10.3,a)') '','Work regional grid accuracy: ',dist_maxmin*reqkm,' km'
-   call mpl%flush
-   do ib=1,4
-      write(mpl%info,'(a10,a,i1.1,a,e10.3,a,e10.3,a,e10.3,a,e10.3,a)') '','Corner #',ib,': ', lonlat_bnd(1,ib)*rad2deg,' (', &
- & lonlat_bnd_opt(1,ib)*rad2deg,')  / ',lonlat_bnd(2,ib)*rad2deg,' (',lonlat_bnd_opt(2,ib)*rad2deg,')'
-      call mpl%flush
-   end do
-
-   ! Extend work grid to make sure all points are included
-   if (.not.geom%aconfig_work_grid%get('north',north)) call mpl%abort('${subr}$','missing north')
-   if (.not.geom%aconfig_work_grid%get('south',south)) call mpl%abort('${subr}$','missing south')
-   if (.not.geom%aconfig_work_grid%get('east',east)) call mpl%abort('${subr}$','missing east')
-   if (.not.geom%aconfig_work_grid%get('west',west)) call mpl%abort('${subr}$','missing west')
-   call geom%aconfig_work_grid%set('north',north+dist_maxmin*rad2deg)
-   call geom%aconfig_work_grid%set('south',south-dist_maxmin*rad2deg)
-   call geom%aconfig_work_grid%set('east',east+dist_maxmin*rad2deg)
-   call geom%aconfig_work_grid%set('west',west-dist_maxmin*rad2deg)
-
-   ! Get work grid domain
-   agrid_work = atlas_structuredgrid(geom%aconfig_work_grid)
-   aconfig_work_grid = agrid_work%spec()
-   if (.not.aconfig_work_grid%get('domain',aconfig_domain)) call mpl%abort('${subr}$','missing domain')
-   if (.not.aconfig_domain%get('type',domain_type)) call mpl%abort('${subr}$','missing domain type')
-   if (trim(domain_type)/='rectangular') call mpl%abort('${subr}$','only rectangular domains allowed')
-   if (.not.aconfig_domain%get('xmin',geom%xmin)) call mpl%abort('${subr}$','missing domain xmin')
-   if (.not.aconfig_domain%get('xmax',geom%xmax)) call mpl%abort('${subr}$','missing domain xmax')
-   if (.not.aconfig_domain%get('ymin',geom%ymin)) call mpl%abort('${subr}$','missing domain ymin')
-   if (.not.aconfig_domain%get('ymax',geom%ymax)) call mpl%abort('${subr}$','missing domain ymax')
-   geom%xmin = geom%xmin*deg2rad
-   geom%xmax = geom%xmax*deg2rad
-   geom%ymin = geom%ymin*deg2rad
-   geom%ymax = geom%ymax*deg2rad
-end if
+geom%global = supeq(maxdist,half*pi)
 
 ! Probe out
 @:probe_out()
@@ -948,8 +687,7 @@ class(geom_type),intent(inout) :: geom !< Geometry
 type(mpl_type),intent(inout) :: mpl    !< MPI data
 
 ! Local variables
-integer :: iproc,imga,ic0a,ic0,diff_grid,il0
-real(kind_real) :: norm_c0(geom%nl0),vert_coord_hor_c0(geom%nl0)
+integer :: iproc,imga,ic0a,ic0,diff_grid
 
 ! Set name
 @:set_name(geom_setup_c0)
@@ -983,7 +721,7 @@ geom%same_grid = (diff_grid==0)
 ! Communication
 call mpl%f_comm%allgather(geom%nc0a,geom%proc_to_nc0a)
 
-! Subset Sc0 global size
+! Subset Sc0 full domain size
 geom%nc0 = sum(geom%proc_to_nc0a)
 
 ! Allocation
@@ -1038,48 +776,11 @@ else
 end if
 
 ! Release memory
-deallocate(geom%lon_mga)
-deallocate(geom%lat_mga)
-deallocate(geom%vert_coord_mga)
-
-! Related fields
-if (geom%nc0a>0) geom%gmask_hor_c0a = any(geom%gmask_c0a,dim=2)
-geom%nc0_gmask(0) = zss_count(geom%gmask_hor_c0a)
-do il0=1,geom%nl0
-   geom%nc0_gmask(il0) = zss_count(geom%gmask_c0a(:,il0))
-end do
-call mpl%f_comm%allreduce(geom%nc0_gmask,fckit_mpi_sum())
-if (geom%nc0_gmask(0)>0) then
-   geom%area_max_c0 = geom%area*real(count(geom%gmask_hor_c0a),kind_real)/real(geom%nc0,kind_real)
-else
-   geom%area_max_c0 = zero
+if (.not.geom%deprecated_hull) then
+   deallocate(geom%lon_mga)
+   deallocate(geom%lat_mga)
+   deallocate(geom%vert_coord_mga)
 end if
-do il0=1,geom%nl0
-   norm_c0(il0) = zss_count(geom%gmask_c0a(:,il0))
-   if (norm_c0(il0)>0) then
-      geom%area_ver_c0(il0) = geom%area*real(count(geom%gmask_c0a(:,il0)),kind_real)/real(geom%nc0,kind_real)
-      vert_coord_hor_c0(il0) = zss_sum(geom%vert_coord_c0a(:,il0),mask=geom%gmask_c0a(:,il0))
-   else
-      geom%area_ver_c0(il0) = zero
-      vert_coord_hor_c0(il0) = zero
-   end if
-end do
-call mpl%f_comm%allreduce(norm_c0,fckit_mpi_sum())
-call mpl%f_comm%allreduce(geom%area_max_c0,fckit_mpi_sum())
-call mpl%f_comm%allreduce(geom%area_ver_c0,fckit_mpi_sum())
-call mpl%f_comm%allreduce(vert_coord_hor_c0,fckit_mpi_sum())
-do il0=1,geom%nl0
-   if (norm_c0(il0)>0) then
-      geom%vert_coordavg(il0) = vert_coord_hor_c0(il0)/real(norm_c0(il0),kind_real)
-   else
-      geom%vert_coordavg(il0) = mpl%msv%valr
-   end if
-end do
-
-! Compute independent levels
-write(mpl%test,'(a7,a)') '','Independent levels: '
-call mpl%flush(newl=.false.)
-call independent_levels(mpl,geom%nc0a,geom%nl0,geom%gmask_c0a,geom%nl0i,geom%l0_to_l0i,geom%l0i_to_l0)
 
 ! Probe out
 @:probe_out()
@@ -1090,14 +791,13 @@ end subroutine geom_setup_c0
 ! Subroutine: geom_setup_universe
 !> Setup universe
 !----------------------------------------------------------------------
-subroutine geom_setup_universe(geom,mpl,rng,nam)
+subroutine geom_setup_universe(geom,mpl,nam)
 
 implicit none
 
 ! Passed variables
 class(geom_type),intent(inout) :: geom !< Geometry
 type(mpl_type),intent(inout) :: mpl    !< MPI data
-type(rng_type),intent(inout) :: rng    !< Random number generator
 type(nam_type),intent(in) :: nam       !< Namelist
 
 ! Local variables
@@ -1190,9 +890,6 @@ do iproc=1,mpl%nproc
    call mpl%flush
 end do
 
-! Reset random seed if necessary
-call rng%reseed
-
 ! Communicate data from halo A to universe on subset Sc0
 write(mpl%info,'(a10,a)') '','Communicate data from halo A to universe on subset Sc0'
 call mpl%flush
@@ -1270,6 +967,498 @@ deallocate(order)
 @:probe_out()
 
 end subroutine geom_setup_universe
+
+!----------------------------------------------------------------------
+! Subroutine: geom_setup_hulls
+!> Setup universe and full domain hulls
+!----------------------------------------------------------------------
+subroutine geom_setup_hulls(geom,mpl,rng,nam)
+
+implicit none
+
+! Passed variables
+class(geom_type),intent(inout) :: geom !< Geometry
+type(mpl_type),intent(inout) :: mpl    !< MPI data
+type(rng_type),intent(inout) :: rng    !< Random number generator
+type(nam_type),intent(in) :: nam       !< Namelist
+
+! Local variables
+integer :: ib,i,iproc,nba,ic0u,ic0a,nb,iba
+integer :: proc_to_nba(mpl%nproc),displs(mpl%nproc)
+real(kind_real),allocatable :: vbnd(:,:),lon_bnda(:),lat_bnda(:),lon_bnd(:),lat_bnd(:)
+type(mesh_type) :: mesh_bnd
+
+! Set name
+@:set_name(geom_setup_hulls)
+
+! Probe in
+@:probe_in()
+
+! Universe hull
+if (geom%nc0u>0) then
+   ! Allocation
+   allocate(vbnd(3,geom%mesh_c0u%nb))
+
+   ! Copy mesh boundary points
+   do ib=1,geom%mesh_c0u%nb
+      i = geom%mesh_c0u%bnodes(ib)
+      vbnd(:,ib) = (/geom%mesh_c0u%x(i),geom%mesh_c0u%y(i),geom%mesh_c0u%z(i)/)
+   end do
+
+   ! Setup hull
+   if (geom%deprecated_hull) then
+      if (geom%global.and.all(geom%myuniverse)) then
+         geom%hull_c0u%radius = mpl%msv%valr
+      else
+         call geom%hull_c0u%init(mpl,geom%nc0u,geom%lon_c0u,geom%lat_c0u,nam%universe_radius)
+      end if
+   else
+      call geom%hull_c0u%init(mpl,geom%mesh_c0u%nb,vbnd)
+   end if
+
+   ! Release memory
+   deallocate(vbnd)
+end if
+
+! Full domain hull
+if (geom%global) then
+   ! Whole sphere
+   call geom%hull_c0%init
+else
+   ! Count local boundary points
+   nba = 0
+   do ib=1,geom%mesh_c0u%nb
+      ic0u = geom%mesh_c0u%order(geom%mesh_c0u%bnodes(ib))
+      ic0a = geom%c0u_to_c0a(ic0u)
+      if (mpl%msv%isnot(ic0a)) nba = nba+1
+   end do
+
+   ! Gather number of local boundary points
+   call mpl%f_comm%allgather(nba,proc_to_nba)
+
+   ! Total number of boundary points
+   nb = sum(proc_to_nba)
+   if (nb==0) call mpl%abort('${subr}$','no boundary points for a regional domain')
+
+   ! Allocation
+   allocate(lon_bnda(nba))
+   allocate(lat_bnda(nba))
+   allocate(lon_bnd(nb))
+   allocate(lat_bnd(nb))
+
+   ! Copy potential boundary points
+   iba = 0
+   do ib=1,geom%mesh_c0u%nb
+      ic0u = geom%mesh_c0u%order(geom%mesh_c0u%bnodes(ib))
+      ic0a = geom%c0u_to_c0a(ic0u)
+      if (mpl%msv%isnot(ic0a)) then
+         iba = iba+1
+         lon_bnda(iba) = geom%lon_c0a(ic0a)
+         lat_bnda(iba) = geom%lat_c0a(ic0a)
+      end if
+   end do
+
+   ! Gather local boundary points
+   displs(1) = 0
+   do iproc=2,mpl%nproc
+      displs(iproc) = displs(iproc-1)+proc_to_nba(iproc-1)
+   end do
+   call mpl%f_comm%allgather(lon_bnda,lon_bnd,proc_to_nba(mpl%myproc),proc_to_nba,displs)
+   call mpl%f_comm%allgather(lat_bnda,lat_bnd,proc_to_nba(mpl%myproc),proc_to_nba,displs)
+
+   ! Create mesh with boundary points
+   call mesh_bnd%init(mpl,rng,nb,lon_bnd,lat_bnd)
+
+   ! Allocation
+   allocate(vbnd(3,mesh_bnd%nb))
+
+   ! Copy mesh boundary points
+   do ib=1,mesh_bnd%nb
+      i = mesh_bnd%bnodes(ib)
+      vbnd(:,ib) = (/mesh_bnd%x(i),mesh_bnd%y(i),mesh_bnd%z(i)/)
+   end do
+
+   ! Setup hull
+   call geom%hull_c0%init(mpl,mesh_bnd%nb,vbnd)
+
+   ! Release memory
+   deallocate(lon_bnda)
+   deallocate(lat_bnda)
+   deallocate(lon_bnd)
+   deallocate(lat_bnd)
+   deallocate(vbnd)
+end if
+
+! Reset random seed if necessary
+call rng%reseed
+
+! Probe out
+@:probe_out()
+
+end subroutine geom_setup_hulls
+
+!----------------------------------------------------------------------
+! Subroutine: geom_setup_grid
+!> Setup grid properties
+!----------------------------------------------------------------------
+subroutine geom_setup_grid(geom,mpl,rng)
+
+implicit none
+
+! Passed variables
+class(geom_type),intent(inout) :: geom !< Geometry
+type(mpl_type),intent(inout) :: mpl    !< MPI data
+type(rng_type),intent(inout) :: rng    !< Random number generator
+
+! Local variables
+integer :: il0,ic0a,ib,iprocmax,icorner,ib_1,ib_2,ib_3,nc0_inside,iter,i,iproc
+integer :: imga,nmg_inside,nmg_owned
+real(kind_real) :: infl,dinfl,infl_opt,f_min
+real(kind_real) :: north,south,east,west
+real(kind_real) :: proc_to_maxdist(mpl%nproc)
+real(kind_real) :: dist,maxdist,splon_opt,splat_opt,rota_opt,dist_maxmin
+real(kind_real) :: lonlat_bnd(2,4),v_bnd(3,4),v1(3),v2(3),cp(3),cd(3),v_bnd_infl(3,4),vtmp(3)
+real(kind_real) :: lonlat_bnd_opt(2,4)
+real(kind_real) :: norm_c0(geom%nl0),vert_coord_hor_c0(geom%nl0)
+real(kind_real) :: area_124,area_234
+real(kind_real),allocatable :: v_c0a(:,:)
+logical :: valid
+type(atlas_config) :: aconfig_domain,aconfig_work_grid,aconfig_work_proj
+type(atlas_structuredgrid) :: agrid_work
+type(hull_type) :: hull
+type(minim_type) :: minim
+character(len=:),allocatable :: domain_type
+
+! Set name
+@:set_name(geom_setup_grid)
+
+! Probe in
+@:probe_in()
+
+! Get area from hull
+geom%area = geom%hull_c0%area
+
+if (geom%global) then
+   ! Global domain
+
+   ! Arbitrary center (north pole)
+   geom%v_center = (/zero,zero,one/)
+else
+   ! Regional domain
+
+   ! Allocation
+   allocate(v_c0a(3,geom%nc0a))
+
+   ! Convert to cartesian coordinates
+   do ic0a=1,geom%nc0a
+      call lonlat2xyz(mpl,geom%lon_c0a(ic0a),geom%lat_c0a(ic0a),v_c0a(1,ic0a),v_c0a(2,ic0a),v_c0a(3,ic0a))
+   end do
+
+   ! Find domain centroid
+   geom%v_center = sum(v_c0a,dim=2)
+   call mpl%f_comm%allreduce(geom%v_center,fckit_mpi_sum())
+   geom%v_center = geom%v_center/sqrt(sum(geom%v_center**2))
+
+   ! Find the point furthest from the centroid (first corner)
+   maxdist = zero
+   do ic0a=1,geom%nc0a
+      dist = sum((v_c0a(:,ic0a)-geom%v_center)**2)
+      if (sup(dist,maxdist)) then
+         maxdist = dist
+         vtmp = v_c0a(:,ic0a)
+      end if
+   end do
+   call mpl%f_comm%allgather(maxdist,proc_to_maxdist)
+   iprocmax = 1
+   do iproc=1,mpl%nproc
+      if (sup(proc_to_maxdist(iproc),proc_to_maxdist(iprocmax))) iprocmax = iproc
+   end do
+   call mpl%f_comm%broadcast(vtmp,iprocmax-1)
+   v_bnd(:,1) = vtmp
+
+   ! Find the point furthest from the first corner (opposite corner)
+   maxdist = zero
+   do ic0a=1,geom%nc0a
+      dist = sum((v_c0a(:,ic0a)-v_bnd(:,1))**2)
+      if (sup(dist,maxdist)) then
+         maxdist = dist
+         vtmp = v_c0a(:,ic0a)
+      end if
+   end do
+   call mpl%f_comm%allgather(maxdist,proc_to_maxdist)
+   iprocmax = 1
+   do iproc=1,mpl%nproc
+      if (sup(proc_to_maxdist(iproc),proc_to_maxdist(iprocmax))) iprocmax = iproc
+   end do
+   call mpl%f_comm%broadcast(vtmp,iprocmax-1)
+   v_bnd(:,3) = vtmp
+
+   ! Find the two other corners
+   do icorner=1,2
+      ! Index
+      ib_1 = 2*icorner-1
+      ib_2 = 2*icorner
+      ib_3 = 2*icorner+1
+      if (ib_3>4) ib_3 = ib_3-4
+
+      ! Get positive triangle with maximum area
+      maxdist = zero
+      do ic0a=1,geom%nc0a
+         ! Check points order
+         v1 = v_c0a(:,ic0a)-v_bnd(:,ib_1)
+         v2 = v_bnd(:,ib_3)-v_bnd(:,ib_1)
+         call vector_product(v1,v2,cp)
+         cd = (v_bnd(:,ib_1)+v_c0a(:,ic0a)+v_bnd(:,ib_3))/three
+         if (sup(sum(cp*cd),zero)) then
+            ! Compute area
+            call area(v_bnd(:,ib_1),v_c0a(:,ic0a),v_bnd(:,ib_3),dist)
+            if (sup(dist,maxdist)) then
+               maxdist = dist
+               vtmp = v_c0a(:,ic0a)
+            end if
+         end if
+      end do
+      call mpl%f_comm%allgather(maxdist,proc_to_maxdist)
+      iprocmax = 1
+      do iproc=1,mpl%nproc
+         if (sup(proc_to_maxdist(iproc),proc_to_maxdist(iprocmax))) iprocmax = iproc
+      end do
+      call mpl%f_comm%broadcast(vtmp,iprocmax-1)
+      v_bnd(:,ib_2) = vtmp
+   end do
+
+   if (geom%deprecated_hull) then
+      ! Compute area
+
+      ! Compute area as the sum of two spherical triangles
+      call area(v_bnd(:,1),v_bnd(:,2),v_bnd(:,4),area_124)
+      call area(v_bnd(:,2),v_bnd(:,3),v_bnd(:,4),area_234)
+      geom%area = area_124+area_234
+
+      ! Create hull
+      call hull%init(mpl,4,v_bnd)
+
+      ! Count points inside hull
+      nmg_inside = 0
+      do imga=1,geom%nmga
+         if (geom%owned_mga(imga,1)) then
+            call hull%inside(mpl,geom%lon_mga(imga),geom%lat_mga(imga),valid)
+           if (valid) nmg_inside = nmg_inside+1
+         end if
+      end do
+      call mpl%f_comm%allreduce(nmg_inside,fckit_mpi_sum())
+
+      ! Adjust area
+      call mpl%f_comm%allreduce(count(geom%owned_mga),nmg_owned,fckit_mpi_sum())
+      geom%area = geom%area*real(nmg_owned,kind_real)/real(nmg_inside,kind_real)
+
+      ! Release memory
+      call hull%dealloc
+   end if
+
+   ! Inflate corners from centers to include all points
+
+   ! Optimize inflation with a dichotomy method
+   geom%v_center = sum(v_bnd,dim=2)/four
+   geom%v_center = geom%v_center/sqrt(sum(geom%v_center**2))
+   infl = one
+   dinfl = one
+   do iter=1,niter
+      ! Inflation factor
+      infl = infl+dinfl
+
+      ! Inflated corners
+      do ib=1,4
+         v_bnd_infl(:,ib) = geom%v_center+infl*(v_bnd(:,ib)-geom%v_center)
+         v_bnd_infl(:,ib) = v_bnd_infl(:,ib)/sqrt(sum(v_bnd_infl(:,ib)**2))
+      end do
+
+      ! Create hull
+      call hull%init(mpl,4,v_bnd_infl)
+
+      ! Count points inside hull
+      nc0_inside = 0
+      do ic0a=1,geom%nc0a
+         call hull%inside(mpl,geom%lon_c0a(ic0a),geom%lat_c0a(ic0a),valid)
+         if (valid) nc0_inside = nc0_inside+1
+      end do
+      call mpl%f_comm%allreduce(nc0_inside,fckit_mpi_sum())
+
+      ! Release memory
+      call hull%dealloc
+
+      if (nc0_inside==geom%nc0) then
+         ! Reduce inflation
+         dinfl = -half*abs(dinfl)
+         infl_opt = infl
+      else
+         ! Increase inflation
+         dinfl = half*dinfl
+      end if
+   end do
+
+   ! Apply optimal inflation
+   do ib=1,4
+      v_bnd(:,ib) = geom%v_center+infl_opt*(v_bnd(:,ib)-geom%v_center)
+      v_bnd(:,ib) = v_bnd(:,ib)/sqrt(sum(v_bnd(:,ib)**2))
+   end do
+
+   ! Convert to spherical coordinates
+   do ib=1,4
+      call xyz2lonlat(mpl,v_bnd(1,ib),v_bnd(2,ib),v_bnd(3,ib),lonlat_bnd(1,ib),lonlat_bnd(2,ib))
+   end do
+
+   ! Compute work grid
+
+   ! Minimization parameters initialization
+   minim%hooke_rho = half
+   minim%hooke_tol = 1.0e-6_kind_real
+   if (geom%deprecated_hull) then
+      minim%hooke_itermax = 25
+   else
+      minim%hooke_itermax = 15
+   end if
+
+   ! Allocation
+   minim%nx = 3
+   minim%ny = 8
+   call minim%alloc
+
+   ! Guess and bounds
+   minim%binf(1) = -pi
+   minim%bsup(1) = pi
+   minim%binf(2) = -half*pi
+   minim%bsup(2) = half*pi
+   minim%binf(3) = -pi
+   minim%bsup(3) = pi
+
+   ! Observations
+   minim%obs = reshape(lonlat_bnd,(/8/))
+
+   ! Fit type
+   minim%cost_function = 'work_grid'
+   f_min = huge_real
+
+   if (geom%deprecated_hull) then
+      ! Reseed for backward compatibility
+      call rng%reseed
+      rng%seed = rng%seed+1
+   end if
+
+   ! Resynchronize random number generator
+   call rng%resync(mpl)
+
+   do iter=1,10
+      ! Random guess
+      do i=1,3
+         call rng%rand(minim%binf(i),minim%bsup(i),minim%guess(i))
+      end do
+
+      ! Compute fit
+      call minim%compute(mpl)
+
+      if (minim%f_min<f_min) then
+         ! Get parameter, apply bounds
+         splon_opt = max(minim%binf(1),min(minim%x(1),minim%bsup(1)))
+         splat_opt = max(minim%binf(2),min(minim%x(2),minim%bsup(2)))
+         rota_opt = max(minim%binf(3),min(minim%x(3),minim%bsup(3)))
+         f_min = minim%f_min
+      end if
+   end do
+
+   ! Desynchronize random number generator
+   call rng%resync(mpl)
+
+   ! Release memory
+   call minim%dealloc
+
+   ! Get work grid parameters
+   call work_grid(splon_opt,splat_opt,rota_opt,lonlat_bnd,dist_maxmin,lonlat_bnd_opt,geom%aconfig_work_grid)
+   agrid_work = atlas_structuredgrid(geom%aconfig_work_grid)
+   if (.not.geom%aconfig_work_grid%get('projection',aconfig_work_proj)) call mpl%abort('${subr}$','missing projection')
+   geom%aproj_work = atlas_projection(aconfig_work_proj)
+
+   ! Print results
+   write(mpl%info,'(a7,a,e10.3,a)') '','Work regional grid accuracy: ',dist_maxmin*reqkm,' km'
+   call mpl%flush
+   do ib=1,4
+      write(mpl%info,'(a10,a,i1.1,a,e10.3,a,e10.3,a,e10.3,a,e10.3,a)') '','Corner #',ib,': ', lonlat_bnd(1,ib)*rad2deg,' (', &
+ & lonlat_bnd_opt(1,ib)*rad2deg,')  / ',lonlat_bnd(2,ib)*rad2deg,' (',lonlat_bnd_opt(2,ib)*rad2deg,')'
+      call mpl%flush
+   end do
+
+   ! Extend work grid to make sure all points are included
+   if (.not.geom%aconfig_work_grid%get('north',north)) call mpl%abort('${subr}$','missing north')
+   if (.not.geom%aconfig_work_grid%get('south',south)) call mpl%abort('${subr}$','missing south')
+   if (.not.geom%aconfig_work_grid%get('east',east)) call mpl%abort('${subr}$','missing east')
+   if (.not.geom%aconfig_work_grid%get('west',west)) call mpl%abort('${subr}$','missing west')
+   call geom%aconfig_work_grid%set('north',north+dist_maxmin*rad2deg)
+   call geom%aconfig_work_grid%set('south',south-dist_maxmin*rad2deg)
+   call geom%aconfig_work_grid%set('east',east+dist_maxmin*rad2deg)
+   call geom%aconfig_work_grid%set('west',west-dist_maxmin*rad2deg)
+
+   ! Get work grid domain
+   agrid_work = atlas_structuredgrid(geom%aconfig_work_grid)
+   aconfig_work_grid = agrid_work%spec()
+   if (.not.aconfig_work_grid%get('domain',aconfig_domain)) call mpl%abort('${subr}$','missing domain')
+   if (.not.aconfig_domain%get('type',domain_type)) call mpl%abort('${subr}$','missing domain type')
+   if (trim(domain_type)/='rectangular') call mpl%abort('${subr}$','only rectangular domains allowed')
+   if (.not.aconfig_domain%get('xmin',geom%xmin)) call mpl%abort('${subr}$','missing domain xmin')
+   if (.not.aconfig_domain%get('xmax',geom%xmax)) call mpl%abort('${subr}$','missing domain xmax')
+   if (.not.aconfig_domain%get('ymin',geom%ymin)) call mpl%abort('${subr}$','missing domain ymin')
+   if (.not.aconfig_domain%get('ymax',geom%ymax)) call mpl%abort('${subr}$','missing domain ymax')
+   geom%xmin = geom%xmin*deg2rad
+   geom%xmax = geom%xmax*deg2rad
+   geom%ymin = geom%ymin*deg2rad
+   geom%ymax = geom%ymax*deg2rad
+end if
+
+! Miscellanous fields
+if (geom%nc0a>0) geom%gmask_hor_c0a = any(geom%gmask_c0a,dim=2)
+geom%nc0_gmask(0) = zss_count(geom%gmask_hor_c0a)
+do il0=1,geom%nl0
+   geom%nc0_gmask(il0) = zss_count(geom%gmask_c0a(:,il0))
+end do
+call mpl%f_comm%allreduce(geom%nc0_gmask,fckit_mpi_sum())
+if (geom%nc0_gmask(0)>0) then
+   geom%area_max_c0 = geom%area*real(count(geom%gmask_hor_c0a),kind_real)/real(geom%nc0,kind_real)
+else
+   geom%area_max_c0 = zero
+end if
+do il0=1,geom%nl0
+   norm_c0(il0) = zss_count(geom%gmask_c0a(:,il0))
+   if (norm_c0(il0)>0) then
+      geom%area_ver_c0(il0) = geom%area*real(count(geom%gmask_c0a(:,il0)),kind_real)/real(geom%nc0,kind_real)
+      vert_coord_hor_c0(il0) = zss_sum(geom%vert_coord_c0a(:,il0),mask=geom%gmask_c0a(:,il0))
+   else
+      geom%area_ver_c0(il0) = zero
+      vert_coord_hor_c0(il0) = zero
+   end if
+end do
+call mpl%f_comm%allreduce(norm_c0,fckit_mpi_sum())
+call mpl%f_comm%allreduce(geom%area_max_c0,fckit_mpi_sum())
+call mpl%f_comm%allreduce(geom%area_ver_c0,fckit_mpi_sum())
+call mpl%f_comm%allreduce(vert_coord_hor_c0,fckit_mpi_sum())
+do il0=1,geom%nl0
+   if (norm_c0(il0)>0) then
+      geom%vert_coordavg(il0) = vert_coord_hor_c0(il0)/real(norm_c0(il0),kind_real)
+   else
+      geom%vert_coordavg(il0) = mpl%msv%valr
+   end if
+end do
+
+! Compute independent levels
+write(mpl%test,'(a7,a)') '','Independent levels: '
+call mpl%flush(newl=.false.)
+call independent_levels(mpl,geom%nc0a,geom%nl0,geom%gmask_c0a,geom%nl0i,geom%l0_to_l0i,geom%l0i_to_l0)
+
+! Reset random seed if necessary
+call rng%reseed
+
+! Probe out
+@:probe_out()
+
+end subroutine geom_setup_grid
 
 !----------------------------------------------------------------------
 ! Subroutine: geom_index_from_lonlat_r0
@@ -1963,14 +2152,14 @@ real(kind_real),intent(in) :: lon_cxa(ncxa) !< Longitudes (local)
 real(kind_real),intent(in) :: lat_cxa(ncxa) !< Latitudes (local)
 logical,intent(in) :: mask_cxa(ncxa)        !< Mask (local)
 real(kind_real),intent(in) :: rh_cxa(ncxa)  !< Horizontal support radius (local)
-integer,intent(in) :: cxa_to_cx(ncxa)       !< Local to global index
+integer,intent(in) :: cxa_to_cx(ncxa)       !< Local to full domain index
 integer,intent(in) :: ncxu                  !< Number of points (universe)
 integer,intent(in) :: cxu_to_cxa(ncxu)      !< Universe to local index
 type(tree_type),intent(in) :: tree_cxu      !< Universe KD-tree
 type(hull_type),intent(in) :: hull_cxu      !< Universe hull
 integer,intent(in) :: ifmt                  !< Format indentation
-integer,intent(in) :: ns                    !< Number of samplings points (global)
-integer,intent(out) :: s_to_cx(ns)          !< Horizontal sampling index (global)
+integer,intent(in) :: ns                    !< Number of samplings points (full domain)
+integer,intent(out) :: s_to_cx(ns)          !< Horizontal sampling index (full domain)
 
 ! Local variables
 integer :: ncxa_eff,ncx_eff,isa,icxa,is,icx,nfac,nssa,nss,issa,ix,iy,issamin,icxmin,iprocmin,nsa,nodemin,inode,hash,iss,iproc
@@ -2059,7 +2248,7 @@ else
          nfac = 2*nfac
 
          if (geom%global) then
-            ! Global grid or regional grid with NodeColumns function space (sub-optimal)
+            ! Global grid
             call get_grid(mpl,floor(real(nfac*ns,kind_real)*four*pi/geom%area_max_c0*(one+repro_th)),agrid,nss)
          else
             ! Regional grid
@@ -2070,7 +2259,7 @@ else
          inode = 0
          do iy=1,int(agrid%ny(),kind_int)
             do ix=1,int(agrid%nx(iy),kind_int)
-               ! Global index
+               ! Full domain index
                inode = inode+1
 
                ! Get longitude/latitude
@@ -2104,7 +2293,7 @@ else
          nssa = 0
       end if
 
-      ! Global number of valid points
+      ! Full domain number of valid points
       call mpl%f_comm%allreduce(nssa,nss,fckit_mpi_sum())
 
       ! Print result
@@ -2192,7 +2381,7 @@ else
          end do
       end do
 
-      ! Second step and a half: get data on effective global grid
+      ! Second step and a half: get data on effective full domain grid
       call mpl%loc_to_glb(nssa,nss,ssa_to_ss,ssa_to_cx,ss_to_cx)
       call mpl%loc_to_glb(nssa,nss,ssa_to_ss,ssa_to_node,ss_to_node)
       if (method=='potential') then
@@ -2298,13 +2487,11 @@ else
 
          ! Compute distance to the starting point
          is = 1
-
-         ! Compute distance to point of coordinate (0,0)
          do issa=1,nssa
             call cart_dist(x_ssa(issa),y_ssa(issa),z_ssa(issa),geom%v_center(1),geom%v_center(2),geom%v_center(3),potential(issa))
          end do
 
-         ! Find minimum distance globally
+         ! Find full domain minimum distance
          valmin = zss_minval(potential)
          if (parallel) call mpl%f_comm%allreduce(valmin,fckit_mpi_min())
 
@@ -2356,7 +2543,7 @@ else
          ! Reset potential
          potential = zero
 
-         ! Update global sampling, local mask and local potential
+         ! Update full domain sampling, local mask and local potential
          s_to_cx(is) = proc_to_icxmin(iprocmin)
          if (iprocmin==mpl%myproc) lmask_ssa(issamin) = .false.
          !$omp parallel do schedule(static) private(issa,dist)
@@ -2377,7 +2564,7 @@ else
 
          ! Set other points where the potential is minimum
          do is=2,ns
-            ! Find minimum distance globally
+            ! Find full domain minimum distance
             valmin = huge_real
             if (nssa>0) then
                if (any(lmask_ssa)) valmin = zss_minval(potential,mask=lmask_ssa)
@@ -2429,7 +2616,7 @@ else
                proc_to_icxmin(iprocmin) = icxmin
             end if
 
-            ! Update global sampling, local mask and local potential
+            ! Update full domain sampling, local mask and local potential
             s_to_cx(is) = proc_to_icxmin(iprocmin)
             if (iprocmin==mpl%myproc) lmask_ssa(issamin) = .false.
             !$omp parallel do schedule(static) private(issa,dist)
@@ -2641,7 +2828,7 @@ else
             ! Check rmask size
             if (count(rmask)/=ns) call mpl%abort('${subr}$','wrong number of valid points in rmask')
 
-            ! Get global sampling
+            ! Get full domain sampling
             js = 0
             do is=1,ns+nrep
                if (rmask(is)) then
@@ -2657,7 +2844,7 @@ else
             deallocate(rh_rep)
             deallocate(dist_rep)
          else
-            ! Get global sampling
+            ! Get full domain sampling
             s_to_cx = ssa_to_cx(s_to_ssa)
          end if
 
@@ -2798,7 +2985,7 @@ end subroutine geom_define_test_vectors
 
 !----------------------------------------------------------------------
 ! Function: geom_c0_to_c0a
-!> Conversion from global to halo A on subset Sc0
+!> Conversion from full domain to halo A on subset Sc0
 !----------------------------------------------------------------------
 function geom_c0_to_c0a(geom,ic0) result(ic0a)
 
@@ -2806,7 +2993,7 @@ implicit none
 
 ! Passed variables
 class(geom_type),intent(in) :: geom !< Geometry
-integer,intent(in) :: ic0           !< Global index
+integer,intent(in) :: ic0           !< Full domain index
 
 ! Returned variable
 integer :: ic0a
@@ -2827,7 +3014,7 @@ end function geom_c0_to_c0a
 
 !----------------------------------------------------------------------
 ! Function: geom_c0_to_proc
-!> Conversion from global to processor on subset Sc0
+!> Conversion from full domain to processor on subset Sc0
 !----------------------------------------------------------------------
 function geom_c0_to_proc(geom,ic0) result(iproc)
 
@@ -2835,7 +3022,7 @@ implicit none
 
 ! Passed variables
 class(geom_type),intent(in) :: geom !< Geometry
-integer,intent(in) :: ic0           !< Global index
+integer,intent(in) :: ic0           !< Full domain index
 
 ! Returned variable
 integer :: iproc
@@ -2856,7 +3043,7 @@ end function geom_c0_to_proc
 
 !----------------------------------------------------------------------
 ! Function: geom_c0_to_c0u
-!> Conversion from global to universe on subset Sc0
+!> Conversion from full domain to universe on subset Sc0
 !----------------------------------------------------------------------
 function geom_c0_to_c0u(geom,ic0) result(ic0u)
 
@@ -2864,7 +3051,7 @@ implicit none
 
 ! Passed variables
 class(geom_type),intent(in) :: geom !< Geometry
-integer,intent(in) :: ic0           !< Global index
+integer,intent(in) :: ic0           !< Full domain index
 
 ! Returned variable
 integer :: ic0u

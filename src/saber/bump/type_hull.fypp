@@ -8,10 +8,10 @@
 !----------------------------------------------------------------------
 module type_hull
 
-use tools_const, only: zero,two,three,pi
-use tools_func, only: lonlat2xyz,xyz2lonlat,sphere_dist,vector_product
-use tools_kinds, only: kind_real
-use tools_repro, only: inf,infeq,sup,repro_th
+use tools_const, only: zero,two,three,four,pi
+use tools_func, only: lonlat2xyz,xyz2lonlat,sphere_dist,vector_product,area
+use tools_kinds, only: kind_real,huge_real
+use tools_repro, only: infeq,sup,repro_th
 use type_mpl, only: mpl_type
 @:use_probe()
 
@@ -19,26 +19,122 @@ implicit none
 
 ! Hull derived type
 type hull_type
-   ! Boundar points-based hull
-   integer :: nb                            !< Number of nodes
+   integer :: nb                            !< Number of hull vertices
    real(kind_real),allocatable :: vbnd(:,:) !< Hull vertices
+   real(kind_real) :: area                  !< Hull area
 
-   ! Centroid/radius-based hull
+   ! Deprecated: centroid/radius-based hull
    real(kind_real) :: lon                   !< Centroid longitude
    real(kind_real) :: lat                   !< Centroid latitude
    real(kind_real) :: radius                !< Radius
 contains
+   procedure :: hull_init_empty
+   procedure :: hull_init_from_vertices
    procedure :: hull_init_centroid_radius
-   procedure :: hull_init_boundary_nodes
-   generic :: init => hull_init_centroid_radius,hull_init_boundary_nodes
+   generic :: init => hull_init_empty,hull_init_from_vertices,hull_init_centroid_radius
    procedure :: dealloc => hull_dealloc
    procedure :: inside => hull_inside
+   procedure :: distance => hull_distance
 end type hull_type
 
 private
 public :: hull_type
 
 contains
+
+!----------------------------------------------------------------------
+! Subroutine: hull_init_empty
+!> Allocation and initialization of empty hull
+!----------------------------------------------------------------------
+subroutine hull_init_empty(hull)
+
+implicit none
+
+! Passed variables
+class(hull_type),intent(inout) :: hull  !< Hull
+
+! Set name
+@:set_name(hull_init_empty)
+
+! Probe in
+@:probe_in()
+
+! No hull vertices
+hull%nb = 0
+
+! Allocation
+allocate(hull%vbnd(3,hull%nb))
+
+! Whole sphere
+hull%area = four*pi
+
+! Probe out
+@:probe_out()
+
+end subroutine hull_init_empty
+
+!----------------------------------------------------------------------
+! Subroutine: hull_init_from_vertices
+!> Allocation and initialization of hull from vertices
+!----------------------------------------------------------------------
+subroutine hull_init_from_vertices(hull,mpl,n,vbnd)
+
+implicit none
+
+! Passed variables
+class(hull_type),intent(inout) :: hull  !< Hull
+type(mpl_type),intent(inout) :: mpl     !< MPI data
+integer,intent(in) :: n                 !< Size
+real(kind_real),intent(in) :: vbnd(3,n) !< Hull vertices
+
+! Local variables
+integer :: ib,ibnext
+real(kind_real) :: triangle_area
+real(kind_real) :: cd(3)
+
+! Set name
+@:set_name(hull_init_from_vertices)
+
+! Probe in
+@:probe_in()
+
+! Copy number of hull vertices
+hull%nb = n
+
+! Allocation
+allocate(hull%vbnd(3,hull%nb))
+
+if (hull%nb>0) then
+   ! Copy
+   hull%vbnd = vbnd
+
+   ! Centroid
+   cd = sum(vbnd,dim=2)
+   cd = cd/sqrt(sum(cd**2))
+
+   ! Compute area
+   hull%area = zero
+   do ib=1,hull%nb
+      ! Index
+      if (ib<hull%nb) then
+         ibnext = ib+1
+      else
+         ibnext = 1
+      end if
+
+      ! Add triangle area
+      call area(cd,hull%vbnd(:,ib),hull%vbnd(:,ibnext),triangle_area)
+      hull%area = hull%area+triangle_area
+   end do
+else
+   ! Whole sphere
+   hull%area = four*pi
+end if
+
+! Probe out
+@:probe_out()
+
+end subroutine hull_init_from_vertices
 
 !----------------------------------------------------------------------
 ! Subroutine: hull_init_centroid_radius
@@ -110,42 +206,6 @@ end if
 end subroutine hull_init_centroid_radius
 
 !----------------------------------------------------------------------
-! Subroutine: hull_init_boundary_nodes
-!> Allocation and initialization with boundary nodes
-!----------------------------------------------------------------------
-subroutine hull_init_boundary_nodes(hull,mpl,n,vbnd)
-
-implicit none
-
-! Passed variables
-class(hull_type),intent(inout) :: hull  !< Hull
-type(mpl_type),intent(inout) :: mpl     !< MPI data
-integer,intent(in) :: n                 !< Size
-real(kind_real),intent(in) :: vbnd(3,n) !< Boundary nodes
-
-! Set name
-@:set_name(hull_init_boundary_nodes)
-
-! Probe in
-@:probe_in()
-
-! Copy number of boundary nodes
-hull%nb = n
-
-if (hull%nb>0) then
-   ! Allocation
-   allocate(hull%vbnd(3,hull%nb))
-
-   ! Copy
-   hull%vbnd = vbnd
-end if
-
-! Probe out
-@:probe_out()
-
-end subroutine hull_init_boundary_nodes
-
-!----------------------------------------------------------------------
 ! Subroutine: hull_dealloc
 !> Release memory
 !----------------------------------------------------------------------
@@ -172,7 +232,7 @@ end subroutine hull_dealloc
 
 !----------------------------------------------------------------------
 ! Subroutine: hull_inside
-!> Find whether a point is inside the hull boundaries or not
+!> Find whether a point is inside the hull or not
 !----------------------------------------------------------------------
 subroutine hull_inside(hull,mpl,lon,lat,inside_hull)
 
@@ -226,7 +286,8 @@ if (allocated(hull%vbnd)) then
          call vector_product(v1,v2,cp)
 
          ! Centroid
-         cd = (vp+hull%vbnd(:,ib)+hull%vbnd(:,ibnext))/three
+         cd = vp+hull%vbnd(:,ib)+hull%vbnd(:,ibnext)
+         cd = cd/sqrt(sum(cd**2))
 
          ! Compare the directions
          if (sum(cp*cd)<zero) then
@@ -254,6 +315,73 @@ end if
 @:probe_out()
 
 end subroutine hull_inside
+
+!----------------------------------------------------------------------
+! Subroutine: hull_distance
+!> Find minimum distance to the hull
+!----------------------------------------------------------------------
+subroutine hull_distance(hull,mpl,lon,lat,dist)
+
+implicit none
+
+! Passed variables
+class(hull_type),intent(in) :: hull !< Hull
+type(mpl_type),intent(inout) :: mpl !< MPI data
+real(kind_real),intent(in) :: lon   !< Longitude
+real(kind_real),intent(in) :: lat   !< Latitude
+real(kind_real),intent(out) :: dist !< Distance to the hull
+
+! Local variables
+integer :: ib,ibnext
+real(kind_real) :: dist_test
+real(kind_real) :: vp(3),cp(3)
+
+! Set name
+@:set_name(hull_distance)
+
+! Probe in
+@:probe_in()
+
+if (allocated(hull%vbnd)) then
+   ! Transform to cartesian coordinates
+   call lonlat2xyz(mpl,lon,lat,vp(1),vp(2),vp(3))
+
+   ! Initialization
+   dist = huge_real
+
+   do ib=1,hull%nb
+      ! Index
+      if (ib<hull%nb) then
+         ibnext = ib+1
+      else
+         ibnext = 1
+      end if
+
+      if ((sum(abs(hull%vbnd(:,ib)-vp))<repro_th).or.(sum(abs(hull%vbnd(:,ibnext)-vp))<repro_th)) then
+         ! Point from the hull
+         dist = zero
+         exit
+      else
+         ! Distance to the arc
+         call vector_product(hull%vbnd(:,ib),hull%vbnd(:,ibnext),cp)
+         cp = cp/sqrt(sum(cp**2))
+         dist_test = asin(sum(vp*cp))
+         if (dist_test<zero) then
+            call mpl%abort('${subr}$','point shoud be inside hull to compute distance')
+         else
+            dist = min(dist,dist_test)
+         end if
+      end if
+   end do
+else
+   ! Missing value
+   dist = mpl%msv%valr
+end if
+
+! Probe out
+@:probe_out()
+
+end subroutine hull_distance
 
 end module type_hull
 

@@ -512,13 +512,13 @@ call mpl%update_tag(4)
 if (samp%sc1) then
    ! Communication
    call mpl%f_comm%allgather(samp%nc1a,samp%proc_to_nc1a)
-   
+
    ! Subset Sc1 offset for halo A
    samp%proc_to_c1_offset(1) = 0
    do iproc=2,mpl%nproc
       samp%proc_to_c1_offset(iproc) = samp%proc_to_c1_offset(iproc-1)+samp%proc_to_nc1a(iproc-1)
    end do
-   
+
    ! Conversion
    samp%nc1 = sum(samp%proc_to_nc1a)
    do ic1=1,samp%nc1
@@ -1411,7 +1411,7 @@ end if
 
 ! nc2a
 nbufi = nbufi+1
-      
+
 if (samp%sc2) then
    ! lat_bands
    nbufl = nbufl+1
@@ -1493,7 +1493,7 @@ end if
 ! nc2a
 bufi(ibufi+1) = samp%nc2a
 ibufi = ibufi+1
-      
+
 if (samp%sc2) then
    ! lat_bands
    bufl(ibufl+1) = samp%lat_bands
@@ -1652,7 +1652,7 @@ end if
 ! nc2a
 samp%nc2a = bufi(ibufi+1)
 ibufi = ibufi+1
-      
+
 if (samp%sc2) then
    ! lat_bands
    samp%lat_bands = bufl(ibufl+1)

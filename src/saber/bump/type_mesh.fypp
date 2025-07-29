@@ -10,12 +10,12 @@ module type_mesh
 
 !$ use omp_lib
 use tools_const, only: zero,one,two,three,five,pi,req,rad2deg,reqkm
-use tools_func, only: fletcher32,lonlatmod,rad2short,lonlat2xyz
+use tools_func, only: fletcher32,lonlatmod,rad2short,lonlat2xyz,area
 use tools_kinds, only: kind_short,kind_long,kind_real,huge_real
 use tools_qsort, only: qsort
 use tools_repro, only: repro_th,inf
 use tools_ssrfpack, only: aplyr,constr,fval,fval_op,gradl
-use tools_stripack, only: trfind,trmesh
+use tools_stripack, only: bnodes,trfind,trmesh
 use type_mpl, only: mpl_type
 @:use_probe()
 use type_rng, only: rng_type
@@ -35,23 +35,27 @@ end type row_type
 ! Mesh derived type
 type mesh_type
    ! Mesh structure
-   integer :: n                            !< Number of points
-   type(row_type),allocatable :: rows(:)   !< Connectivity table rows
-   integer,allocatable :: order(:)         !< Order of shuffled points
-   integer,allocatable :: order_inv(:)     !< Inverse order of shuffled points
+   integer :: n                           !< Number of points
+   type(row_type),allocatable :: rows(:)  !< Connectivity table rows
+   integer,allocatable :: order(:)        !< Order of shuffled points
+   integer,allocatable :: order_inv(:)    !< Inverse order of shuffled points
 
    ! Mesh coordinates
-   real(kind_real),allocatable :: lon(:)   !< Points longitudes
-   real(kind_real),allocatable :: lat(:)   !< Points latitudes
-   real(kind_real),allocatable :: x(:)     !< x-coordinate
-   real(kind_real),allocatable :: y(:)     !< y-coordinate
-   real(kind_real),allocatable :: z(:)     !< z-coordinate
+   real(kind_real),allocatable :: lon(:)  !< Points longitudes
+   real(kind_real),allocatable :: lat(:)  !< Points latitudes
+   real(kind_real),allocatable :: x(:)    !< x-coordinate
+   real(kind_real),allocatable :: y(:)    !< y-coordinate
+   real(kind_real),allocatable :: z(:)    !< z-coordinate
+
+   ! Mesh boundary nodes
+   integer :: nb                          !< Number of boundary nodes
+   integer,allocatable :: bnodes(:)       !< Boundary nodes
 
    ! STRIPACK
-   integer,allocatable :: list(:)          !< STRIPACK list
-   integer,allocatable :: lptr(:)          !< STRIPACK list pointer
-   integer,allocatable :: lend(:)          !< STRIPACK list end
-   integer :: lnew                         !< STRIPACK pointer to the first empty location in list
+   integer,allocatable :: list(:)         !< STRIPACK list
+   integer,allocatable :: lptr(:)         !< STRIPACK list pointer
+   integer,allocatable :: lend(:)         !< STRIPACK list end
+   integer :: lnew                        !< STRIPACK pointer to the first empty location in list
 contains
    procedure :: init => mesh_init
    procedure :: dealloc => mesh_dealloc
@@ -75,16 +79,16 @@ subroutine mesh_init(mesh,mpl,rng,n,lon,lat)
 implicit none
 
 ! Passed variables
-class(mesh_type),intent(inout) :: mesh !< Mesh
-type(mpl_type),intent(inout) :: mpl    !< MPI data
-type(rng_type),intent(inout) :: rng    !< Random number generator
-integer,intent(in) :: n                !< Mesh size
-real(kind_real),intent(in) :: lon(n)   !< Longitudes
-real(kind_real),intent(in) :: lat(n)   !< Latitudes
+class(mesh_type),intent(inout) :: mesh    !< Mesh
+type(mpl_type),intent(inout) :: mpl       !< MPI data
+type(rng_type),intent(inout) :: rng       !< Random number generator
+integer,intent(in) :: n                   !< Mesh size
+real(kind_real),intent(in) :: lon(n)      !< Longitudes
+real(kind_real),intent(in) :: lat(n)      !< Latitudes
 
 ! Local variables
 integer :: i,j,k,hash
-integer,allocatable :: jtab(:),near(:),next(:)
+integer,allocatable :: jtab(:),near(:),next(:),nodes(:)
 integer(kind_short) :: lon_short,lat_short
 integer(kind_long) :: hash_long
 real(kind_real),allocatable :: lon_pert(:),lat_pert(:),dist(:)
@@ -145,6 +149,7 @@ mesh%lon = mesh%lon(mesh%order)
 mesh%lat = mesh%lat(mesh%order)
 
 ! Transform to cartesian coordinates
+! TODO(Benjamin): this is wrong!
 do i=1,mesh%n
    call lonlat2xyz(mpl,mesh%lon(i),mesh%lat(i),mesh%x(i),mesh%y(i),mesh%z(i))
 end do
@@ -170,6 +175,12 @@ do i=1,mesh%n
    ! Apply bounds
    call lonlatmod(mesh%lon(i),mesh%lat(i))
 end do
+
+! Transform to cartesian coordinates
+! TODO(Benjamin): this should be uncommented
+!do i=1,mesh%n
+!   call lonlat2xyz(mpl,mesh%lon(i),mesh%lat(i),mesh%x(i),mesh%y(i),mesh%z(i))
+!end do
 
 ! Create mesh
 mesh%list = 0
@@ -214,6 +225,23 @@ do i=1,mesh%n
    ! Transform to cartesian coordinates
    call lonlat2xyz(mpl,mesh%lon(i),mesh%lat(i),mesh%x(i),mesh%y(i),mesh%z(i))
 end do
+
+! Allocation
+allocate(nodes(mesh%n))
+
+! Compute boundaries
+call bnodes(mesh%n,mesh%list,mesh%lptr,mesh%lend,nodes,mesh%nb)
+
+if (mesh%nb>0) then
+   ! Allocation
+   allocate(mesh%bnodes(mesh%nb))
+
+   ! Copy boundaries
+   mesh%bnodes = nodes(1:mesh%nb)
+end if
+
+! Release memory
+deallocate(nodes)
 
 ! Release memory
 deallocate(jtab)
