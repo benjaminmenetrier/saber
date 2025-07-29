@@ -50,6 +50,8 @@ void bump_config_init_f90(eckit::LocalConfiguration * config) {
   param(generalDef.sampling_method, generalConf);
   // Use deprecated hull (for backward compatibility)
   param(generalDef.deprecated_hull, generalConf);
+  // Use deprecated work grid (for backward compatibility)
+  param(generalDef.deprecated_work_grid, generalConf);
 
   // I/O section
   IODef ioDef;

@@ -11,7 +11,7 @@ module type_geom
 
 use atlas_module, only: atlas_config,atlas_connectivity,atlas_field,atlas_functionspace, &
  & atlas_functionspace_nodecolumns,atlas_functionspace_pointcloud,atlas_functionspace_structuredcolumns,atlas_json,atlas_mesh, &
- & atlas_mesh_nodes,atlas_projection,atlas_structuredgrid
+ & atlas_mesh_nodes,atlas_projection,atlas_structuredgrid,atlas_lonlatrectangulardomain
 use fckit_mpi_module, only: fckit_mpi_sum,fckit_mpi_min,fckit_mpi_max,fckit_mpi_status
 !$ use omp_lib
 use tools_atlas, only: get_grid,field_to_array,get_atlas_functionspace_size
@@ -40,6 +40,10 @@ implicit none
 
 ! Geometry derived type
 type geom_type
+   ! Deprecation flags
+   logical :: deprecated_hull                         !< Use deprecated hull
+   logical :: deprecated_work_grid                    !< Use deprecated work grid
+
    ! Number of processors
    integer :: nproc                                   !< Number of processors
 
@@ -145,7 +149,6 @@ type geom_type
    ! Hull
    type(hull_type) :: hull_c0u                        !< Domain hull on subset Sc0, universe
    type(hull_type) :: hull_c0                         !< Domain hull on subset Sc0, full domain
-   logical :: deprecated_hull                         !< Use deprecated hull
 
    ! Dirac fields for variables
    integer :: ndir                                    !< Number of valid Dirac points
@@ -345,8 +348,9 @@ real(kind_real),allocatable :: lon_c0(:),lat_c0(:)
 ! Probe in
 @:probe_in()
 
-! Use deprecated hull
+! Deprecation flags
 geom%deprecated_hull = nam%deprecated_hull
+geom%deprecated_work_grid = nam%deprecated_work_grid
 
 ! Number of processors
 geom%nproc = mpl%nproc
@@ -1123,8 +1127,10 @@ real(kind_real) :: norm_c0(geom%nl0),vert_coord_hor_c0(geom%nl0)
 real(kind_real) :: area_124,area_234
 real(kind_real),allocatable :: v_c0a(:,:)
 logical :: valid
-type(atlas_config) :: aconfig_domain,aconfig_work_grid,aconfig_work_proj
+type(atlas_functionspace_structuredcolumns) :: afunctionspace_sc
+type(atlas_config) :: aconfig_grid,aconfig_domain,aconfig_work_grid,aconfig_work_proj
 type(atlas_structuredgrid) :: agrid_work
+type(atlas_lonlatrectangulardomain) :: alonlat_bounding_box
 type(hull_type) :: hull
 type(minim_type) :: minim
 character(len=:),allocatable :: domain_type
@@ -1146,76 +1152,45 @@ if (geom%global) then
 else
    ! Regional domain
 
-   ! Allocation
-   allocate(v_c0a(3,geom%nc0a))
+   if ((geom%afunctionspace_mg%name()=='StructuredColumns').and.(.not.geom%deprecated_work_grid)) then
+      ! Get StructuredColumns function space
+      afunctionspace_sc = geom%afunctionspace_mg
 
-   ! Convert to cartesian coordinates
-   do ic0a=1,geom%nc0a
-      call lonlat2xyz(mpl,geom%lon_c0a(ic0a),geom%lat_c0a(ic0a),v_c0a(1,ic0a),v_c0a(2,ic0a),v_c0a(3,ic0a))
-   end do
+      ! Get work grid
+      agrid_work = afunctionspace_sc%grid()
 
-   ! Find domain centroid
-   geom%v_center = sum(v_c0a,dim=2)
-   call mpl%f_comm%allreduce(geom%v_center,fckit_mpi_sum())
-   geom%v_center = geom%v_center/sqrt(sum(geom%v_center**2))
+      ! Get work grid configuration
+      geom%aconfig_work_grid = agrid_work%spec()
 
-   ! Find the point furthest from the centroid (first corner)
-   maxdist = zero
-   do ic0a=1,geom%nc0a
-      dist = sum((v_c0a(:,ic0a)-geom%v_center)**2)
-      if (sup(dist,maxdist)) then
-         maxdist = dist
-         vtmp = v_c0a(:,ic0a)
-      end if
-   end do
-   call mpl%f_comm%allgather(maxdist,proc_to_maxdist)
-   iprocmax = 1
-   do iproc=1,mpl%nproc
-      if (sup(proc_to_maxdist(iproc),proc_to_maxdist(iprocmax))) iprocmax = iproc
-   end do
-   call mpl%f_comm%broadcast(vtmp,iprocmax-1)
-   v_bnd(:,1) = vtmp
-
-   ! Find the point furthest from the first corner (opposite corner)
-   maxdist = zero
-   do ic0a=1,geom%nc0a
-      dist = sum((v_c0a(:,ic0a)-v_bnd(:,1))**2)
-      if (sup(dist,maxdist)) then
-         maxdist = dist
-         vtmp = v_c0a(:,ic0a)
-      end if
-   end do
-   call mpl%f_comm%allgather(maxdist,proc_to_maxdist)
-   iprocmax = 1
-   do iproc=1,mpl%nproc
-      if (sup(proc_to_maxdist(iproc),proc_to_maxdist(iprocmax))) iprocmax = iproc
-   end do
-   call mpl%f_comm%broadcast(vtmp,iprocmax-1)
-   v_bnd(:,3) = vtmp
-
-   ! Find the two other corners
-   do icorner=1,2
-      ! Index
-      ib_1 = 2*icorner-1
-      ib_2 = 2*icorner
-      ib_3 = 2*icorner+1
-      if (ib_3>4) ib_3 = ib_3-4
-
-      ! Get positive triangle with maximum area
+      ! Get work grid domain
+      if (.not.geom%aconfig_work_grid%get('domain',aconfig_domain)) call mpl%abort('${subr}$','missing domain')
+      if (.not.aconfig_domain%get('type',domain_type)) call mpl%abort('${subr}$','missing domain type')
+      if (trim(domain_type)/='rectangular') call mpl%abort('${subr}$','only rectangular domains allowed')
+      if (.not.aconfig_domain%get('xmin',geom%xmin)) call mpl%abort('${subr}$','missing domain xmin')
+      if (.not.aconfig_domain%get('xmax',geom%xmax)) call mpl%abort('${subr}$','missing domain xmax')
+      if (.not.aconfig_domain%get('ymin',geom%ymin)) call mpl%abort('${subr}$','missing domain ymin')
+      if (.not.aconfig_domain%get('ymax',geom%ymax)) call mpl%abort('${subr}$','missing domain ymax')
+   else
+      ! Allocation
+      allocate(v_c0a(3,geom%nc0a))
+   
+      ! Convert to cartesian coordinates
+      do ic0a=1,geom%nc0a
+         call lonlat2xyz(mpl,geom%lon_c0a(ic0a),geom%lat_c0a(ic0a),v_c0a(1,ic0a),v_c0a(2,ic0a),v_c0a(3,ic0a))
+      end do
+   
+      ! Find domain centroid
+      geom%v_center = sum(v_c0a,dim=2)
+      call mpl%f_comm%allreduce(geom%v_center,fckit_mpi_sum())
+      geom%v_center = geom%v_center/sqrt(sum(geom%v_center**2))
+   
+      ! Find the point furthest from the centroid (first corner)
       maxdist = zero
       do ic0a=1,geom%nc0a
-         ! Check points order
-         v1 = v_c0a(:,ic0a)-v_bnd(:,ib_1)
-         v2 = v_bnd(:,ib_3)-v_bnd(:,ib_1)
-         call vector_product(v1,v2,cp)
-         cd = (v_bnd(:,ib_1)+v_c0a(:,ic0a)+v_bnd(:,ib_3))/three
-         if (sup(sum(cp*cd),zero)) then
-            ! Compute area
-            call area(v_bnd(:,ib_1),v_c0a(:,ic0a),v_bnd(:,ib_3),dist)
-            if (sup(dist,maxdist)) then
-               maxdist = dist
-               vtmp = v_c0a(:,ic0a)
-            end if
+         dist = sum((v_c0a(:,ic0a)-geom%v_center)**2)
+         if (sup(dist,maxdist)) then
+            maxdist = dist
+            vtmp = v_c0a(:,ic0a)
          end if
       end do
       call mpl%f_comm%allgather(maxdist,proc_to_maxdist)
@@ -1224,193 +1199,247 @@ else
          if (sup(proc_to_maxdist(iproc),proc_to_maxdist(iprocmax))) iprocmax = iproc
       end do
       call mpl%f_comm%broadcast(vtmp,iprocmax-1)
-      v_bnd(:,ib_2) = vtmp
-   end do
-
-   if (geom%deprecated_hull) then
-      ! Compute area
-
-      ! Compute area as the sum of two spherical triangles
-      call area(v_bnd(:,1),v_bnd(:,2),v_bnd(:,4),area_124)
-      call area(v_bnd(:,2),v_bnd(:,3),v_bnd(:,4),area_234)
-      geom%area = area_124+area_234
-
-      ! Create hull
-      call hull%init(mpl,4,v_bnd)
-
-      ! Count points inside hull
-      nmg_inside = 0
-      do imga=1,geom%nmga
-         if (geom%owned_mga(imga,1)) then
-            call hull%inside(mpl,geom%lon_mga(imga),geom%lat_mga(imga),valid)
-           if (valid) nmg_inside = nmg_inside+1
+      v_bnd(:,1) = vtmp
+   
+      ! Find the point furthest from the first corner (opposite corner)
+      maxdist = zero
+      do ic0a=1,geom%nc0a
+         dist = sum((v_c0a(:,ic0a)-v_bnd(:,1))**2)
+         if (sup(dist,maxdist)) then
+            maxdist = dist
+            vtmp = v_c0a(:,ic0a)
          end if
       end do
-      call mpl%f_comm%allreduce(nmg_inside,fckit_mpi_sum())
-
-      ! Adjust area
-      call mpl%f_comm%allreduce(count(geom%owned_mga),nmg_owned,fckit_mpi_sum())
-      geom%area = geom%area*real(nmg_owned,kind_real)/real(nmg_inside,kind_real)
-
-      ! Release memory
-      call hull%dealloc
-   end if
-
-   ! Inflate corners from centers to include all points
-
-   ! Optimize inflation with a dichotomy method
-   geom%v_center = sum(v_bnd,dim=2)/four
-   geom%v_center = geom%v_center/sqrt(sum(geom%v_center**2))
-   infl = one
-   dinfl = one
-   do iter=1,niter
-      ! Inflation factor
-      infl = infl+dinfl
-
-      ! Inflated corners
+      call mpl%f_comm%allgather(maxdist,proc_to_maxdist)
+      iprocmax = 1
+      do iproc=1,mpl%nproc
+         if (sup(proc_to_maxdist(iproc),proc_to_maxdist(iprocmax))) iprocmax = iproc
+      end do
+      call mpl%f_comm%broadcast(vtmp,iprocmax-1)
+      v_bnd(:,3) = vtmp
+   
+      ! Find the two other corners
+      do icorner=1,2
+         ! Index
+         ib_1 = 2*icorner-1
+         ib_2 = 2*icorner
+         ib_3 = 2*icorner+1
+         if (ib_3>4) ib_3 = ib_3-4
+   
+         ! Get positive triangle with maximum area
+         maxdist = zero
+         do ic0a=1,geom%nc0a
+            ! Check points order
+            v1 = v_c0a(:,ic0a)-v_bnd(:,ib_1)
+            v2 = v_bnd(:,ib_3)-v_bnd(:,ib_1)
+            call vector_product(v1,v2,cp)
+            cd = (v_bnd(:,ib_1)+v_c0a(:,ic0a)+v_bnd(:,ib_3))/three
+            if (sup(sum(cp*cd),zero)) then
+               ! Compute area
+               call area(v_bnd(:,ib_1),v_c0a(:,ic0a),v_bnd(:,ib_3),dist)
+               if (sup(dist,maxdist)) then
+                  maxdist = dist
+                  vtmp = v_c0a(:,ic0a)
+               end if
+            end if
+         end do
+         call mpl%f_comm%allgather(maxdist,proc_to_maxdist)
+         iprocmax = 1
+         do iproc=1,mpl%nproc
+            if (sup(proc_to_maxdist(iproc),proc_to_maxdist(iprocmax))) iprocmax = iproc
+         end do
+         call mpl%f_comm%broadcast(vtmp,iprocmax-1)
+         v_bnd(:,ib_2) = vtmp
+      end do
+   
+      if (geom%deprecated_hull) then
+         ! Compute area
+   
+         ! Compute area as the sum of two spherical triangles
+         call area(v_bnd(:,1),v_bnd(:,2),v_bnd(:,4),area_124)
+         call area(v_bnd(:,2),v_bnd(:,3),v_bnd(:,4),area_234)
+         geom%area = area_124+area_234
+   
+         ! Create hull
+         call hull%init(mpl,4,v_bnd)
+   
+         ! Count points inside hull
+         nmg_inside = 0
+         do imga=1,geom%nmga
+            if (geom%owned_mga(imga,1)) then
+               call hull%inside(mpl,geom%lon_mga(imga),geom%lat_mga(imga),valid)
+              if (valid) nmg_inside = nmg_inside+1
+            end if
+         end do
+         call mpl%f_comm%allreduce(nmg_inside,fckit_mpi_sum())
+   
+         ! Adjust area
+         call mpl%f_comm%allreduce(count(geom%owned_mga),nmg_owned,fckit_mpi_sum())
+         geom%area = geom%area*real(nmg_owned,kind_real)/real(nmg_inside,kind_real)
+   
+         ! Release memory
+         call hull%dealloc
+      end if
+   
+      ! Inflate corners from centers to include all points
+   
+      ! Optimize inflation with a dichotomy method
+      geom%v_center = sum(v_bnd,dim=2)/four
+      geom%v_center = geom%v_center/sqrt(sum(geom%v_center**2))
+      infl = one
+      dinfl = one
+      do iter=1,niter
+         ! Inflation factor
+         infl = infl+dinfl
+   
+         ! Inflated corners
+         do ib=1,4
+            v_bnd_infl(:,ib) = geom%v_center+infl*(v_bnd(:,ib)-geom%v_center)
+            v_bnd_infl(:,ib) = v_bnd_infl(:,ib)/sqrt(sum(v_bnd_infl(:,ib)**2))
+         end do
+   
+         ! Create hull
+         call hull%init(mpl,4,v_bnd_infl)
+   
+         ! Count points inside hull
+         nc0_inside = 0
+         do ic0a=1,geom%nc0a
+            call hull%inside(mpl,geom%lon_c0a(ic0a),geom%lat_c0a(ic0a),valid)
+            if (valid) nc0_inside = nc0_inside+1
+         end do
+         call mpl%f_comm%allreduce(nc0_inside,fckit_mpi_sum())
+   
+         ! Release memory
+         call hull%dealloc
+   
+         if (nc0_inside==geom%nc0) then
+            ! Reduce inflation
+            dinfl = -half*abs(dinfl)
+            infl_opt = infl
+         else
+            ! Increase inflation
+            dinfl = half*dinfl
+         end if
+      end do
+   
+      ! Apply optimal inflation
       do ib=1,4
-         v_bnd_infl(:,ib) = geom%v_center+infl*(v_bnd(:,ib)-geom%v_center)
-         v_bnd_infl(:,ib) = v_bnd_infl(:,ib)/sqrt(sum(v_bnd_infl(:,ib)**2))
+         v_bnd(:,ib) = geom%v_center+infl_opt*(v_bnd(:,ib)-geom%v_center)
+         v_bnd(:,ib) = v_bnd(:,ib)/sqrt(sum(v_bnd(:,ib)**2))
       end do
-
-      ! Create hull
-      call hull%init(mpl,4,v_bnd_infl)
-
-      ! Count points inside hull
-      nc0_inside = 0
-      do ic0a=1,geom%nc0a
-         call hull%inside(mpl,geom%lon_c0a(ic0a),geom%lat_c0a(ic0a),valid)
-         if (valid) nc0_inside = nc0_inside+1
+   
+      ! Convert to spherical coordinates
+      do ib=1,4
+         call xyz2lonlat(mpl,v_bnd(1,ib),v_bnd(2,ib),v_bnd(3,ib),lonlat_bnd(1,ib),lonlat_bnd(2,ib))
       end do
-      call mpl%f_comm%allreduce(nc0_inside,fckit_mpi_sum())
-
-      ! Release memory
-      call hull%dealloc
-
-      if (nc0_inside==geom%nc0) then
-         ! Reduce inflation
-         dinfl = -half*abs(dinfl)
-         infl_opt = infl
+   
+      ! Compute work grid
+   
+      ! Minimization parameters initialization
+      minim%hooke_rho = half
+      minim%hooke_tol = 1.0e-6_kind_real
+      if (geom%deprecated_hull) then
+         minim%hooke_itermax = 25
       else
-         ! Increase inflation
-         dinfl = half*dinfl
+         minim%hooke_itermax = 15
       end if
-   end do
-
-   ! Apply optimal inflation
-   do ib=1,4
-      v_bnd(:,ib) = geom%v_center+infl_opt*(v_bnd(:,ib)-geom%v_center)
-      v_bnd(:,ib) = v_bnd(:,ib)/sqrt(sum(v_bnd(:,ib)**2))
-   end do
-
-   ! Convert to spherical coordinates
-   do ib=1,4
-      call xyz2lonlat(mpl,v_bnd(1,ib),v_bnd(2,ib),v_bnd(3,ib),lonlat_bnd(1,ib),lonlat_bnd(2,ib))
-   end do
-
-   ! Compute work grid
-
-   ! Minimization parameters initialization
-   minim%hooke_rho = half
-   minim%hooke_tol = 1.0e-6_kind_real
-   if (geom%deprecated_hull) then
-      minim%hooke_itermax = 25
-   else
-      minim%hooke_itermax = 15
-   end if
-
-   ! Allocation
-   minim%nx = 3
-   minim%ny = 8
-   call minim%alloc
-
-   ! Guess and bounds
-   minim%binf(1) = -pi
-   minim%bsup(1) = pi
-   minim%binf(2) = -half*pi
-   minim%bsup(2) = half*pi
-   minim%binf(3) = -pi
-   minim%bsup(3) = pi
-
-   ! Observations
-   minim%obs = reshape(lonlat_bnd,(/8/))
-
-   ! Fit type
-   minim%cost_function = 'work_grid'
-   f_min = huge_real
-
-   if (geom%deprecated_hull) then
-      ! Reseed for backward compatibility
-      call rng%reseed
-      rng%seed = rng%seed+1
-   end if
-
-   ! Resynchronize random number generator
-   call rng%resync(mpl)
-
-   do iter=1,10
-      ! Random guess
-      do i=1,3
-         call rng%rand(minim%binf(i),minim%bsup(i),minim%guess(i))
+   
+      ! Allocation
+      minim%nx = 3
+      minim%ny = 8
+      call minim%alloc
+   
+      ! Guess and bounds
+      minim%binf(1) = -pi
+      minim%bsup(1) = pi
+      minim%binf(2) = -half*pi
+      minim%bsup(2) = half*pi
+      minim%binf(3) = -pi
+      minim%bsup(3) = pi
+   
+      ! Observations
+      minim%obs = reshape(lonlat_bnd,(/8/))
+   
+      ! Fit type
+      minim%cost_function = 'work_grid'
+      f_min = huge_real
+   
+      if (geom%deprecated_hull) then
+         ! Reseed for backward compatibility
+         call rng%reseed
+         rng%seed = rng%seed+1
+      end if
+   
+      ! Resynchronize random number generator
+      call rng%resync(mpl)
+   
+      do iter=1,10
+         ! Random guess
+         do i=1,3
+            call rng%rand(minim%binf(i),minim%bsup(i),minim%guess(i))
+         end do
+   
+         ! Compute fit
+         call minim%compute(mpl)
+   
+         if (minim%f_min<f_min) then
+            ! Get parameter, apply bounds
+            splon_opt = max(minim%binf(1),min(minim%x(1),minim%bsup(1)))
+            splat_opt = max(minim%binf(2),min(minim%x(2),minim%bsup(2)))
+            rota_opt = max(minim%binf(3),min(minim%x(3),minim%bsup(3)))
+            f_min = minim%f_min
+         end if
+      end do
+   
+      ! Desynchronize random number generator
+      call rng%resync(mpl)
+   
+      ! Release memory
+      call minim%dealloc
+   
+      ! Get work grid parameters
+      call work_grid(splon_opt,splat_opt,rota_opt,lonlat_bnd,dist_maxmin,lonlat_bnd_opt,geom%aconfig_work_grid)
+   
+      ! Print results
+      write(mpl%info,'(a7,a,e10.3,a)') '','Work regional grid accuracy: ',dist_maxmin*reqkm,' km'
+      call mpl%flush
+      do ib=1,4
+         write(mpl%info,'(a10,a,i1.1,a,e10.3,a,e10.3,a,e10.3,a,e10.3,a)') '','Corner #',ib,': ', lonlat_bnd(1,ib)*rad2deg,' (', &
+ & lonlat_bnd_opt(1,ib)*rad2deg,')  / ',lonlat_bnd(2,ib)*rad2deg,' (',lonlat_bnd_opt(2,ib)*rad2deg,')'
+         call mpl%flush
       end do
 
-      ! Compute fit
-      call minim%compute(mpl)
+      ! Extend work grid to make sure all points are included
+      if (.not.geom%aconfig_work_grid%get('north',north)) call mpl%abort('${subr}$','missing north')
+      if (.not.geom%aconfig_work_grid%get('south',south)) call mpl%abort('${subr}$','missing south')
+      if (.not.geom%aconfig_work_grid%get('east',east)) call mpl%abort('${subr}$','missing east')
+      if (.not.geom%aconfig_work_grid%get('west',west)) call mpl%abort('${subr}$','missing west')
+      call geom%aconfig_work_grid%set('north',north+dist_maxmin*rad2deg)
+      call geom%aconfig_work_grid%set('south',south-dist_maxmin*rad2deg)
+      call geom%aconfig_work_grid%set('east',east+dist_maxmin*rad2deg)
+      call geom%aconfig_work_grid%set('west',west-dist_maxmin*rad2deg)
+   
+      ! Get work grid domain
+      agrid_work = atlas_structuredgrid(geom%aconfig_work_grid)
+      aconfig_work_grid = agrid_work%spec()
+      if (.not.aconfig_work_grid%get('domain',aconfig_domain)) call mpl%abort('${subr}$','missing domain')
+      if (.not.aconfig_domain%get('type',domain_type)) call mpl%abort('${subr}$','missing domain type')
+      if (trim(domain_type)/='rectangular') call mpl%abort('${subr}$','only rectangular domains allowed')
+      if (.not.aconfig_domain%get('xmin',geom%xmin)) call mpl%abort('${subr}$','missing domain xmin')
+      if (.not.aconfig_domain%get('xmax',geom%xmax)) call mpl%abort('${subr}$','missing domain xmax')
+      if (.not.aconfig_domain%get('ymin',geom%ymin)) call mpl%abort('${subr}$','missing domain ymin')
+      if (.not.aconfig_domain%get('ymax',geom%ymax)) call mpl%abort('${subr}$','missing domain ymax')
+   end if
 
-      if (minim%f_min<f_min) then
-         ! Get parameter, apply bounds
-         splon_opt = max(minim%binf(1),min(minim%x(1),minim%bsup(1)))
-         splat_opt = max(minim%binf(2),min(minim%x(2),minim%bsup(2)))
-         rota_opt = max(minim%binf(3),min(minim%x(3),minim%bsup(3)))
-         f_min = minim%f_min
-      end if
-   end do
-
-   ! Desynchronize random number generator
-   call rng%resync(mpl)
-
-   ! Release memory
-   call minim%dealloc
-
-   ! Get work grid parameters
-   call work_grid(splon_opt,splat_opt,rota_opt,lonlat_bnd,dist_maxmin,lonlat_bnd_opt,geom%aconfig_work_grid)
-   agrid_work = atlas_structuredgrid(geom%aconfig_work_grid)
-   if (.not.geom%aconfig_work_grid%get('projection',aconfig_work_proj)) call mpl%abort('${subr}$','missing projection')
-   geom%aproj_work = atlas_projection(aconfig_work_proj)
-
-   ! Print results
-   write(mpl%info,'(a7,a,e10.3,a)') '','Work regional grid accuracy: ',dist_maxmin*reqkm,' km'
-   call mpl%flush
-   do ib=1,4
-      write(mpl%info,'(a10,a,i1.1,a,e10.3,a,e10.3,a,e10.3,a,e10.3,a)') '','Corner #',ib,': ', lonlat_bnd(1,ib)*rad2deg,' (', &
- & lonlat_bnd_opt(1,ib)*rad2deg,')  / ',lonlat_bnd(2,ib)*rad2deg,' (',lonlat_bnd_opt(2,ib)*rad2deg,')'
-      call mpl%flush
-   end do
-
-   ! Extend work grid to make sure all points are included
-   if (.not.geom%aconfig_work_grid%get('north',north)) call mpl%abort('${subr}$','missing north')
-   if (.not.geom%aconfig_work_grid%get('south',south)) call mpl%abort('${subr}$','missing south')
-   if (.not.geom%aconfig_work_grid%get('east',east)) call mpl%abort('${subr}$','missing east')
-   if (.not.geom%aconfig_work_grid%get('west',west)) call mpl%abort('${subr}$','missing west')
-   call geom%aconfig_work_grid%set('north',north+dist_maxmin*rad2deg)
-   call geom%aconfig_work_grid%set('south',south-dist_maxmin*rad2deg)
-   call geom%aconfig_work_grid%set('east',east+dist_maxmin*rad2deg)
-   call geom%aconfig_work_grid%set('west',west-dist_maxmin*rad2deg)
-
-   ! Get work grid domain
-   agrid_work = atlas_structuredgrid(geom%aconfig_work_grid)
-   aconfig_work_grid = agrid_work%spec()
-   if (.not.aconfig_work_grid%get('domain',aconfig_domain)) call mpl%abort('${subr}$','missing domain')
-   if (.not.aconfig_domain%get('type',domain_type)) call mpl%abort('${subr}$','missing domain type')
-   if (trim(domain_type)/='rectangular') call mpl%abort('${subr}$','only rectangular domains allowed')
-   if (.not.aconfig_domain%get('xmin',geom%xmin)) call mpl%abort('${subr}$','missing domain xmin')
-   if (.not.aconfig_domain%get('xmax',geom%xmax)) call mpl%abort('${subr}$','missing domain xmax')
-   if (.not.aconfig_domain%get('ymin',geom%ymin)) call mpl%abort('${subr}$','missing domain ymin')
-   if (.not.aconfig_domain%get('ymax',geom%ymax)) call mpl%abort('${subr}$','missing domain ymax')
+   ! Convert to radian
    geom%xmin = geom%xmin*deg2rad
    geom%xmax = geom%xmax*deg2rad
    geom%ymin = geom%ymin*deg2rad
    geom%ymax = geom%ymax*deg2rad
+
+   ! Get grid projection
+   if (.not.geom%aconfig_work_grid%get('projection',aconfig_work_proj)) call mpl%abort('${subr}$','missing projection')
+   geom%aproj_work = atlas_projection(aconfig_work_proj)
 end if
 
 ! Miscellanous fields

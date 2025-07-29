@@ -135,8 +135,15 @@ if (nx<2) call mpl%abort('${subr}$','nx is too small')
 if (ny<2) call mpl%abort('${subr}$','ny is too small')
 
 ! Set new grid size
-call aconfig_grid_out%set('nx',nx)
-call aconfig_grid_out%set('ny',ny)
+if (aconfig_grid_out%has('nx').and.aconfig_grid_out%has('ny')) then
+   call aconfig_grid_out%set('nx',nx)
+   call aconfig_grid_out%set('ny',ny)
+else if (aconfig_grid_out%has('xspace.N').and.aconfig_grid_out%has('yspace.N')) then
+   call aconfig_grid_out%set('xspace.N',nx)
+   call aconfig_grid_out%set('yspace.N',ny)
+else
+   call mpl%abort('${subr}$','unknown grid configuration structure')
+end if
 
 ! Define output grid
 agrid = atlas_structuredgrid(aconfig_grid_out)

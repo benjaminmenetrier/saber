@@ -27,6 +27,7 @@ type nam_type
    real(kind_real) :: universe_radius                         !< Universe radius [in meters]
    character(len=1024) :: sampling_method                     !< Sampling method
    logical :: deprecated_hull                                 !< Use deprecated hull (for backward compatibility)
+   logical :: deprecated_work_grid                            !< Use deprecated work grid (for backward compatibility)
 
    ! I/O section
    character(len=1024) :: datadir                             !< Data directory
@@ -375,6 +376,7 @@ if (conf%get('general',section)) then
    call nam%get(section,'universe length-scale',nam%universe_radius)
    call nam%get(section,'sampling method',nam%sampling_method)
    call nam%get(section,'deprecated hull',nam%deprecated_hull)
+   call nam%get(section,'deprecated work grid',nam%deprecated_work_grid)
 end if
 
 ! I/O param
