@@ -636,8 +636,9 @@ template <typename MODEL> class ErrorCovarianceToolbox : public oops::Applicatio
     // Background error pointer
     std::unique_ptr<CovarianceBase_> Bmat;
 
-    // Initialize application timing
-    double ctrTiming = 0.0;
+    // Initialize constructor timing stats
+    double ctrTimingMean = 0.0;
+    double ctrTimingStdDev = 0.0;
 
     for (size_t jm = 0; jm < ctrTimingSize; ++jm) {
       // MPI barrier
@@ -650,22 +651,36 @@ template <typename MODEL> class ErrorCovarianceToolbox : public oops::Applicatio
       const eckit::LocalConfiguration covarConf = params.backgroundError.value();
       Bmat.reset(CovarianceFactory_::create(geom, vars, covarConf, xx, xx));
 
+      // MPI barrier
+      geom.getComm().barrier();
+
       // Stop timer
       std::chrono::duration<double, std::milli> dt = std::chrono::steady_clock::now()-start;
 
-      // Save constructor timinig
-      ctrTiming += static_cast<double>(dt.count());
+      // Compute timing perturbation
+      const double ctrTiming = static_cast<double>(dt.count())-ctrTimingMean;
+
+      if (jm > 0) {
+        // Update variance
+        ctrTimingStdDev += static_cast<double>(jm)/static_cast<double>(jm+1)*ctrTiming*ctrTiming;
+      }
+
+      // Update mean
+      ctrTimingMean += 1.0/static_cast<double>(jm+1)*ctrTiming;
     }
 
-    // Normalize application timing
-    ctrTiming /= static_cast<double>(ctrTimingSize);
+    // Compute standard-deviation
+    if (ctrTimingSize > 1) {
+      ctrTimingStdDev = std::sqrt(ctrTimingStdDev/static_cast<double>(ctrTimingSize-1));
+    }
 
     // Create increment
     Increment4D_ dxi(geom, vars, xx.times(), xx.commTime());
     Increment4D_ dxo(geom, vars, xx.times(), xx.commTime());
 
-    // Initialize application timing
-    double appTiming = 0.0;
+    // Initialize application timing stats
+    double appTimingMean = 0.0;
+    double appTimingStdDev = 0.0;
 
     for (size_t jm = 0; jm < appTimingSize; ++jm) {
       // MPI barrier
@@ -680,35 +695,34 @@ template <typename MODEL> class ErrorCovarianceToolbox : public oops::Applicatio
       // Stop timer
       std::chrono::duration<double, std::milli> dt = std::chrono::steady_clock::now()-start;
 
-      // Accumulate application timing
-      appTiming += static_cast<double>(dt.count());
+      // MPI barrier
+      geom.getComm().barrier();
+
+      // Compute timing perturbation
+      const double appTiming = static_cast<double>(dt.count())-appTimingMean;
+
+      if (jm > 0) {
+        // Update variance
+        appTimingStdDev += static_cast<double>(jm)/static_cast<double>(jm+1)*appTiming*appTiming;
+      }
+
+      // Update mean
+      appTimingMean += 1.0/static_cast<double>(jm+1)*appTiming;
     }
 
-    // Normalize application timing
-    appTiming /= static_cast<double>(appTimingSize);
-
-    // Compute min and max timings, compute imbalance
-    double ctrMinTiming = ctrTiming;
-    double ctrMaxTiming = ctrTiming;
-    double appMinTiming = appTiming;
-    double appMaxTiming = appTiming;
-    geom.getComm().allReduceInPlace(ctrMinTiming, eckit::mpi::min());
-    geom.getComm().allReduceInPlace(ctrMaxTiming, eckit::mpi::max());
-    geom.getComm().allReduceInPlace(appMinTiming, eckit::mpi::min());
-    geom.getComm().allReduceInPlace(appMaxTiming, eckit::mpi::max());
-    const double ctrImbalance = ctrMaxTiming/ctrMinTiming;
-    const double appImbalance = appMaxTiming/appMinTiming;
+    // Compute standard-deviation
+    if (appTimingSize > 1) {
+      appTimingStdDev = std::sqrt(appTimingStdDev/static_cast<double>(appTimingSize-1));
+    }
 
     // Print timing results
     oops::Log::info() << "Info     : " << std::endl;
     oops::Log::info() << "Info     : Timing results:" << std::endl;
     oops::Log::info() << "Info     : ---------------" << std::endl;
-    oops::Log::info() << "Info     : - Constructor min. timing (ms): " << ctrMinTiming << std::endl;
-    oops::Log::info() << "Info     :   Constructor max. timing (ms): " << ctrMaxTiming << std::endl;
-    oops::Log::info() << "Info     :   Constructor imbalance       : " << ctrImbalance << std::endl;
-    oops::Log::info() << "Info     : - Application min. timing (ms): " << appMinTiming << std::endl;
-    oops::Log::info() << "Info     :   Application max. timing (ms): " << appMaxTiming << std::endl;
-    oops::Log::info() << "Info     :   Application imbalance       : " << appImbalance << std::endl;
+    oops::Log::info() << "Info     : - Constructor (ms): " << ctrTimingMean
+      << " +/- " << ctrTimingStdDev << std::endl;
+    oops::Log::info() << "Info     : - Application (ms): " << appTimingMean
+      << " +/- " << appTimingStdDev << std::endl;
 
     oops::Log::info() << "Info     : " << std::endl;
   }
