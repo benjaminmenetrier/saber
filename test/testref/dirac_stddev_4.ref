@@ -4,7 +4,7 @@ Input Dirac increment:
   Fields:
     air_horizontal_streamfunction: 1.0000000000000000e+00
     air_horizontal_velocity_potential: 0.0000000000000000e+00
-Norm of input parameter StdDev: 1.1524162158698202e+02
+Norm of input parameter StdDev: 1.1516265789943554e+02
 Adjoint test for block StdDev passed
 Adjoint test for block ID passed
 Covariance(SABER) diagnostics:

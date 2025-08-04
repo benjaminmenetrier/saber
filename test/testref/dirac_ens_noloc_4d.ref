@@ -18,8 +18,8 @@ Covariance(SABER) * Increment:
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    air_horizontal_streamfunction: 8.4573686494237190e+00
+    air_horizontal_streamfunction: 8.4872072025558492e+00
 - Valid time: 2010-01-01T18:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    air_horizontal_streamfunction: 9.1361274495653806e+00
+    air_horizontal_streamfunction: 9.1380968215897180e+00
