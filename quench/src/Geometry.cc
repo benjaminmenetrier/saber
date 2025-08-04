@@ -594,7 +594,7 @@ void Geometry::setupMask(groupData & group) {
             } else {
               maskView(jnode, jlevel) = 0;
             }
-          }  
+          }
         }
       }
     } else {

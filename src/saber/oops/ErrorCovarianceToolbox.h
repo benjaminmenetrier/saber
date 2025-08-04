@@ -14,11 +14,13 @@
 #include <omp.h>
 
 #include <algorithm>
+#include <chrono>
 #include <limits>
 #include <memory>
 #include <sstream>
 #include <string>
 #include <vector>
+
 #include "atlas/functionspace.h"
 #include "atlas/util/Earth.h"
 
@@ -96,6 +98,9 @@ template <typename MODEL> class ErrorCovarianceToolboxParameters :
   /// Where to write the output of randomized variance.
   oops::OptionalParameter<eckit::LocalConfiguration> outputVariance{"output variance", this};
 
+  /// Timing test parameters.
+  oops::OptionalParameter<eckit::LocalConfiguration> timing{"timing", this};
+
   /// Whether and how to compute unidimensional covariance profiles for isotropic cases
   oops::OptionalParameter<eckit::LocalConfiguration> covarianceProfile{
                                     "covariance profile", this};
@@ -146,11 +151,11 @@ template <typename MODEL> class ErrorCovarianceToolbox : public oops::Applicatio
       const size_t ntasks = this->getComm().size();
       size_t mysubwin = 0;
       size_t nsublocal = nsubwin;
-      if (params.parallel && (ntasks % nsubwin == 0)) {
+      if (params.parallel.value() && (ntasks % nsubwin == 0)) {
         nsublocal = 1;
         mysubwin = this->getComm().rank() / (ntasks / nsubwin);
         ASSERT(mysubwin < nsubwin);
-      } else if (params.parallel) {
+      } else if (params.parallel.value()) {
         oops::Log::warning() << "Parallel time subwindows specified in yaml "
                              << "but number of tasks is not divisible by "
                              << "the number of subwindows, ignoring." << std::endl;
@@ -186,7 +191,7 @@ template <typename MODEL> class ErrorCovarianceToolbox : public oops::Applicatio
     params.deserialize(fullConfigUpdated);
 
     // Setup geometry
-    const Geometry_ geom(params.geometry, *commSpace, *commTime);
+    const Geometry_ geom(params.geometry.value(), *commSpace, *commTime);
 
     // Setup background
     const State4D_ xx(geom, params.background.value(), *commTime);
@@ -201,8 +206,6 @@ template <typename MODEL> class ErrorCovarianceToolbox : public oops::Applicatio
     // Setup time
     util::DateTime time = xx[0].validTime();
 
-    const eckit::LocalConfiguration covarConf(fullConfigUpdated, "background error");
-
     // Dirac test
     const auto & diracParams = params.dirac.value();
     if (diracParams != boost::none) {
@@ -210,6 +213,9 @@ template <typename MODEL> class ErrorCovarianceToolbox : public oops::Applicatio
       Increment4D_ dxi(geom, vars, xx.times(), *commTime);
       dxi.dirac(*diracParams);
       oops::Log::test() << "Input Dirac increment:" << dxi << std::endl;
+
+      // Full covariance configuration
+      const eckit::LocalConfiguration covarConf = params.backgroundError.value();
 
       // Test configuration
       eckit::LocalConfiguration testConf;
@@ -239,17 +245,23 @@ template <typename MODEL> class ErrorCovarianceToolbox : public oops::Applicatio
       dirac(covarConf, testConf, id, geom, vars, xx, dxi);
     }
 
-    // Background error covariance parameters
-    CovarianceParametersBase_ covarParams;
-    covarParams.deserialize(covarConf);
-    const auto & randomizationSize = covarParams.randomizationSize.value();
-    if ((diracParams == boost::none) || (randomizationSize != boost::none)) {
-      // Background error covariance training
+    // Randomization
+    const auto & randomizationSize = params.backgroundError.value().getInt("randomization size", 0);
+    if (randomizationSize > 0) {
+      randomization(params, geom, vars, xx, ntasks);
+    }
+
+    // Timing
+    const auto & timingParams = params.timing.value();
+    if (timingParams != boost::none) {
+      timing(params, geom, vars, xx);
+    }
+
+    // If background error covariance has not been setup yet, do it now
+    if ((diracParams == boost::none) && (randomizationSize == 0) && (timingParams == boost::none)) {
+      const eckit::LocalConfiguration covarConf = params.backgroundError.value();
       std::unique_ptr<CovarianceBase_> Bmat(CovarianceFactory_::create(
                                             geom, vars, covarConf, xx, xx));
-
-      // Randomization
-      randomization(params, geom, vars, xx, Bmat, ntasks);
     }
 
     return 0;
@@ -511,102 +523,194 @@ template <typename MODEL> class ErrorCovarianceToolbox : public oops::Applicatio
                      const Geometry_ & geom,
                      const oops::Variables & vars,
                      const State4D_ & xx,
-                     const std::unique_ptr<CovarianceBase_> & Bmat,
                      const size_t & ntasks) const {
-    if (Bmat->randomizationSize() > 0) {
-      oops::Log::info() << "Info     : " << std::endl;
-      oops::Log::info() << "Info     : Generate perturbations:" << std::endl;
-      oops::Log::info() << "Info     : -----------------------" << std::endl;
+    oops::Log::info() << "Info     : " << std::endl;
+    oops::Log::info() << "Info     : Generate perturbations:" << std::endl;
+    oops::Log::info() << "Info     : -----------------------" << std::endl;
 
-      // Create increments
-      Increment4D_ dx(geom, vars, xx.times(), xx.commTime());
-      Increment4D_ dxsq(geom, vars, xx.times(), xx.commTime());
-      Increment4D_ variance(geom, vars, xx.times(), xx.commTime());
+    // Build covariance
+    oops::Log::info() << "Info     : Build covariance" << std::endl;
+    const eckit::LocalConfiguration covarConf = params.backgroundError.value();
+    std::unique_ptr<CovarianceBase_> Bmat(CovarianceFactory_::create(
+                                          geom, vars, covarConf, xx, xx));
 
-      // Initialize variance
-      variance.zero();
+    // Create increments
+    Increment4D_ dx(geom, vars, xx.times(), xx.commTime());
+    Increment4D_ dxsq(geom, vars, xx.times(), xx.commTime());
+    Increment4D_ variance(geom, vars, xx.times(), xx.commTime());
 
-      // Create empty ensemble
-      std::vector<Increment_> ens;
+    // Initialize variance
+    variance.zero();
 
-      // Output options
-      const auto & outputPerturbations = params.outputPerturbations.value();
-      const auto & outputStates = params.outputStates.value();
-      const auto & outputVariance = params.outputVariance.value();
+    // Create empty ensemble
+    std::vector<Increment_> ens;
 
-      for (size_t jm = 0; jm < Bmat->randomizationSize(); ++jm) {
-        // Generate member
-        oops::Log::info() << "Info     : Member " << jm << std::endl;
-        Bmat->randomize(dx);
+    // Output options
+    const auto & outputPerturbations = params.outputPerturbations.value();
+    const auto & outputStates = params.outputStates.value();
+    const auto & outputVariance = params.outputVariance.value();
 
-        if ((outputPerturbations != boost::none) || (outputStates != boost::none)) {
-          // Save member
-          ens.push_back(dx[0]);
-        }
-
-        // Square perturbation
-        dxsq = dx;
-        dxsq.schur_product_with(dx);
-
-        // Update variance
-        variance += dxsq;
-      }
-      oops::Log::info() << "Info     : " << std::endl;
+    for (size_t jm = 0; jm < Bmat->randomizationSize(); ++jm) {
+      // Generate member
+      oops::Log::info() << "Info     : Member " << jm << std::endl;
+      Bmat->randomize(dx);
 
       if ((outputPerturbations != boost::none) || (outputStates != boost::none)) {
-        oops::Log::info() << "Info     : Write states and/or perturbations:" << std::endl;
-        oops::Log::info() << "Info     : ----------------------------------" << std::endl;
-        oops::Log::info() << "Info     : " << std::endl;
-        for (size_t jm = 0; jm < Bmat->randomizationSize(); ++jm) {
-          oops::Log::test() << "Member " << jm << ": " << ens[jm] << std::endl;
-
-          if (outputPerturbations != boost::none) {
-            // Update config
-            auto outputPerturbationsUpdated = *outputPerturbations;
-            util::setMember(outputPerturbationsUpdated, jm+1);
-            setMPI(outputPerturbationsUpdated, ntasks);
-
-            // Write perturbation
-            ens[jm].write(outputPerturbationsUpdated);
-          }
-
-          if (outputStates != boost::none) {
-            // Update config
-            auto outputStatesUpdated = *outputStates;
-            util::setMember(outputStatesUpdated, jm+1);
-            setMPI(outputStatesUpdated, ntasks);
-
-            // Add background state to perturbation
-            State_ xp(xx[0]);
-            xp += ens[jm];
-
-            // Write state
-            xp.write(outputStatesUpdated);
-          }
-
-          oops::Log::info() << "Info     : " << std::endl;
-        }
+        // Save member
+        ens.push_back(dx[0]);
       }
 
-      if (outputVariance != boost::none) {
-        oops::Log::info() << "Info     : Write randomized variance:" << std::endl;
-        oops::Log::info() << "Info     : --------------------------" << std::endl;
-        oops::Log::info() << "Info     : " << std::endl;
-        if (Bmat->randomizationSize() > 1) {
-          // Normalize variance
-          double rk_norm = 1.0/static_cast<double>(Bmat->randomizationSize());
-          variance *= rk_norm;
+      // Square perturbation
+      dxsq = dx;
+      dxsq.schur_product_with(dx);
+
+      // Update variance
+      variance += dxsq;
+    }
+    oops::Log::info() << "Info     : " << std::endl;
+
+    if ((outputPerturbations != boost::none) || (outputStates != boost::none)) {
+      oops::Log::info() << "Info     : Write states and/or perturbations:" << std::endl;
+      oops::Log::info() << "Info     : ----------------------------------" << std::endl;
+      oops::Log::info() << "Info     : " << std::endl;
+      for (size_t jm = 0; jm < Bmat->randomizationSize(); ++jm) {
+        oops::Log::test() << "Member " << jm << ": " << ens[jm] << std::endl;
+
+        if (outputPerturbations != boost::none) {
+          // Update config
+          auto outputPerturbationsUpdated = *outputPerturbations;
+          util::setMember(outputPerturbationsUpdated, jm+1);
+          setMPI(outputPerturbationsUpdated, ntasks);
+
+          // Write perturbation
+          ens[jm].write(outputPerturbationsUpdated);
         }
 
-        // Update config
-        auto outputVarianceUpdated = *outputVariance;
-        setMPI(outputVarianceUpdated, ntasks);
+        if (outputStates != boost::none) {
+          // Update config
+          auto outputStatesUpdated = *outputStates;
+          util::setMember(outputStatesUpdated, jm+1);
+          setMPI(outputStatesUpdated, ntasks);
 
-        // Write variance
-        variance[0].write(outputVarianceUpdated);
-        oops::Log::test() << "Randomized variance: " << variance << std::endl;
+          // Add background state to perturbation
+          State_ xp(xx[0]);
+          xp += ens[jm];
+
+          // Write state
+          xp.write(outputStatesUpdated);
+        }
+
+        oops::Log::info() << "Info     : " << std::endl;
       }
     }
+
+    if (outputVariance != boost::none) {
+      oops::Log::info() << "Info     : Write randomized variance:" << std::endl;
+      oops::Log::info() << "Info     : --------------------------" << std::endl;
+      oops::Log::info() << "Info     : " << std::endl;
+      if (Bmat->randomizationSize() > 1) {
+        // Normalize variance
+        double rk_norm = 1.0/static_cast<double>(Bmat->randomizationSize());
+        variance *= rk_norm;
+      }
+
+      // Update config
+      auto outputVarianceUpdated = *outputVariance;
+      setMPI(outputVarianceUpdated, ntasks);
+
+      // Write variance
+      variance[0].write(outputVarianceUpdated);
+      oops::Log::test() << "Randomized variance: " << variance << std::endl;
+    }
+  }
+// -----------------------------------------------------------------------------
+  void timing(const ErrorCovarianceToolboxParameters_ & params,
+              const Geometry_ & geom,
+              const oops::Variables & vars,
+              const State4D_ & xx) const {
+    // Timing options
+    const auto & timingParams = params.timing.value();
+    const size_t ctrTimingSize = timingParams->getInt("constructor tests");
+    const size_t appTimingSize = timingParams->getInt("application tests");
+
+    // Background error pointer
+    std::unique_ptr<CovarianceBase_> Bmat;
+
+    // Initialize application timing
+    double ctrTiming = 0.0;
+
+    for (size_t jm = 0; jm < ctrTimingSize; ++jm) {
+      // MPI barrier
+      geom.getComm().barrier();
+
+      // Start timer
+      const auto start = std::chrono::steady_clock::now();
+
+      // Build covariance
+      const eckit::LocalConfiguration covarConf = params.backgroundError.value();
+      Bmat.reset(CovarianceFactory_::create(geom, vars, covarConf, xx, xx));
+
+      // Stop timer
+      std::chrono::duration<double, std::milli> dt = std::chrono::steady_clock::now()-start;
+
+      // Save constructor timinig
+      ctrTiming += static_cast<double>(dt.count());
+    }
+
+    // Normalize application timing
+    ctrTiming /= static_cast<double>(ctrTimingSize);
+
+    // Create increment
+    Increment4D_ dxi(geom, vars, xx.times(), xx.commTime());
+    Increment4D_ dxo(geom, vars, xx.times(), xx.commTime());
+
+    // Initialize application timing
+    double appTiming = 0.0;
+
+    for (size_t jm = 0; jm < appTimingSize; ++jm) {
+      // MPI barrier
+      geom.getComm().barrier();
+
+      // Start timer
+      const auto start = std::chrono::steady_clock::now();
+
+      // Apply Bmat
+      Bmat->multiply(dxi, dxo);
+
+      // Stop timer
+      std::chrono::duration<double, std::milli> dt = std::chrono::steady_clock::now()-start;
+
+      // Accumulate application timing
+      appTiming += static_cast<double>(dt.count());
+    }
+
+    // Normalize application timing
+    appTiming /= static_cast<double>(appTimingSize);
+
+    // Compute min and max timings, compute imbalance
+    double ctrMinTiming = ctrTiming;
+    double ctrMaxTiming = ctrTiming;
+    double appMinTiming = appTiming;
+    double appMaxTiming = appTiming;
+    geom.getComm().allReduceInPlace(ctrMinTiming, eckit::mpi::min());
+    geom.getComm().allReduceInPlace(ctrMaxTiming, eckit::mpi::max());
+    geom.getComm().allReduceInPlace(appMinTiming, eckit::mpi::min());
+    geom.getComm().allReduceInPlace(appMaxTiming, eckit::mpi::max());
+    const double ctrImbalance = ctrMaxTiming/ctrMinTiming;
+    const double appImbalance = appMaxTiming/appMinTiming;
+
+    // Print timing results
+    oops::Log::info() << "Info     : " << std::endl;
+    oops::Log::info() << "Info     : Timing results:" << std::endl;
+    oops::Log::info() << "Info     : ---------------" << std::endl;
+    oops::Log::info() << "Info     : - Constructor min. timing (ms): " << ctrMinTiming << std::endl;
+    oops::Log::info() << "Info     :   Constructor max. timing (ms): " << ctrMaxTiming << std::endl;
+    oops::Log::info() << "Info     :   Constructor imbalance       : " << ctrImbalance << std::endl;
+    oops::Log::info() << "Info     : - Application min. timing (ms): " << appMinTiming << std::endl;
+    oops::Log::info() << "Info     :   Application max. timing (ms): " << appMaxTiming << std::endl;
+    oops::Log::info() << "Info     :   Application imbalance       : " << appImbalance << std::endl;
+
+    oops::Log::info() << "Info     : " << std::endl;
   }
 // -----------------------------------------------------------------------------
 };
