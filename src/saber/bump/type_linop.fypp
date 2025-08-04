@@ -1418,7 +1418,7 @@ do i_dst=1,n_dst
          end if
       else
          ! Fallback to nearest non-masked neighbor
-         n = n+1
+         n = 1
          do while (.not.found)
             if (n>n_src) call mpl%abort('${subr}$','cannot find valid nearest neighbor')
 
