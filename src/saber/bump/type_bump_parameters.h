@@ -49,6 +49,14 @@ struct GeneralDef {
   // Sampling method
   std::pair<const char *, std::string> sampling_method =
     std::make_pair("sampling method", "potential");
+
+  // Use deprecated hull (for backward compatibility)
+  std::pair<const char *, bool> deprecated_hull =
+    std::make_pair("deprecated hull", true);
+
+  // Use deprecated work grid (for backward compatibility)
+  std::pair<const char *, bool> deprecated_work_grid =
+    std::make_pair("deprecated work grid", false);
 };
 
 // I/O section

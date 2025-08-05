@@ -3,13 +3,13 @@ Member 0:
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: structured [3763]
   Fields:
-    air_horizontal_streamfunction: 2.3853658602071701e+02
-    air_horizontal_velocity_potential: 2.5528311197939723e+02
+    air_horizontal_streamfunction: 1.7611558785642669e+02
+    air_horizontal_velocity_potential: 2.7185223243018822e+02
     air_pressure_at_surface: 0.0000000000000000e+00
 Member 1: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: structured [3763]
   Fields:
-    air_horizontal_streamfunction: 2.0415167680481744e+02
-    air_horizontal_velocity_potential: 1.7390166978994861e+02
+    air_horizontal_streamfunction: 3.0068359917609598e+02
+    air_horizontal_velocity_potential: 1.5425794740109578e+02
     air_pressure_at_surface: 0.0000000000000000e+00

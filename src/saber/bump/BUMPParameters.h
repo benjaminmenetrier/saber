@@ -192,6 +192,10 @@ class GeneralSection : public oops::Parameters {
   oops::Parameter<double> universe_radius = param(def.universe_radius, this);
   // Sampling method
   oops::Parameter<std::string> sampling_method = param(def.sampling_method, this);
+  // Use deprecated hull (for backward compatibility)
+  oops::Parameter<bool> deprecated_hull = param(def.deprecated_hull, this);
+  // Use deprecated work grid (for backward compatibility)
+  oops::Parameter<bool> deprecated_work_grid = param(def.deprecated_work_grid, this);
 };
 
 // -----------------------------------------------------------------------------
