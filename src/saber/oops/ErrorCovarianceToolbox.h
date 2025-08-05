@@ -692,11 +692,11 @@ template <typename MODEL> class ErrorCovarianceToolbox : public oops::Applicatio
       // Apply Bmat
       Bmat->multiply(dxi, dxo);
 
-      // Stop timer
-      const std::chrono::duration<double, std::milli> dt = std::chrono::steady_clock::now()-start;
-
       // MPI barrier
       geom.getComm().barrier();
+
+      // Stop timer
+      const std::chrono::duration<double, std::milli> dt = std::chrono::steady_clock::now()-start;
 
       // Compute timing perturbation
       const double appTiming = static_cast<double>(dt.count())-appTimingMean;
