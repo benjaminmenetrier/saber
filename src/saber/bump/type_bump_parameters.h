@@ -42,6 +42,10 @@ struct GeneralDef {
   std::pair<const char *, double> repro_th =
     std::make_pair("reproducibility threshold", 1.0e-12);
 
+  // Timers
+  std::pair<const char *, bool> timers =
+    std::make_pair("timers", false);
+
   // Universe radius [in meters]
   std::pair<const char *, double> universe_radius =
     std::make_pair("universe length-scale", 6371229*M_PI);
@@ -594,6 +598,14 @@ struct NICASDef {
   // Read/write interpolation in global file
   std::pair<const char *, bool> interp_in_global_file =
     std::make_pair("interpolation in global file", false);
+
+  // Number of runs for setup timing
+  std::pair<const char *, int> nicas_setup_timings =
+    std::make_pair("setup timings", 1);
+
+  // Number of runs for application timing
+  std::pair<const char *, int> nicas_application_timings =
+    std::make_pair("application timings", 1);
 };
 
 // Psichitouv section
