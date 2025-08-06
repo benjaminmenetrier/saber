@@ -14,7 +14,6 @@
 #include <omp.h>
 
 #include <algorithm>
-#include <chrono>
 #include <limits>
 #include <memory>
 #include <sstream>
@@ -97,9 +96,6 @@ template <typename MODEL> class ErrorCovarianceToolboxParameters :
 
   /// Where to write the output of randomized variance.
   oops::OptionalParameter<eckit::LocalConfiguration> outputVariance{"output variance", this};
-
-  /// Timing test parameters.
-  oops::OptionalParameter<eckit::LocalConfiguration> timing{"timing", this};
 
   /// Whether and how to compute unidimensional covariance profiles for isotropic cases
   oops::OptionalParameter<eckit::LocalConfiguration> covarianceProfile{
@@ -251,14 +247,8 @@ template <typename MODEL> class ErrorCovarianceToolbox : public oops::Applicatio
       randomization(params, geom, vars, xx, ntasks);
     }
 
-    // Timing
-    const auto & timingParams = params.timing.value();
-    if (timingParams != boost::none) {
-      timing(params, geom, vars, xx);
-    }
-
     // If background error covariance has not been setup yet, do it now
-    if ((diracParams == boost::none) && (randomizationSize == 0) && (timingParams == boost::none)) {
+    if ((diracParams == boost::none) && (randomizationSize == 0)) {
       const eckit::LocalConfiguration covarConf = params.backgroundError.value();
       std::unique_ptr<CovarianceBase_> Bmat(CovarianceFactory_::create(
                                             geom, vars, covarConf, xx, xx));
@@ -622,109 +612,6 @@ template <typename MODEL> class ErrorCovarianceToolbox : public oops::Applicatio
       variance[0].write(outputVarianceUpdated);
       oops::Log::test() << "Randomized variance: " << variance << std::endl;
     }
-  }
-// -----------------------------------------------------------------------------
-  void timing(const ErrorCovarianceToolboxParameters_ & params,
-              const Geometry_ & geom,
-              const oops::Variables & vars,
-              const State4D_ & xx) const {
-    // Timing options
-    const auto & timingParams = params.timing.value();
-    const size_t ctrTimingSize = timingParams->getInt("constructor tests");
-    const size_t appTimingSize = timingParams->getInt("application tests");
-
-    // Background error pointer
-    std::unique_ptr<CovarianceBase_> Bmat;
-
-    // Initialize constructor timing stats
-    double ctrTimingMean = 0.0;
-    double ctrTimingStdDev = 0.0;
-
-    for (size_t jm = 0; jm < ctrTimingSize; ++jm) {
-      // MPI barrier
-      geom.getComm().barrier();
-
-      // Start timer
-      const auto start = std::chrono::steady_clock::now();
-
-      // Build covariance
-      const eckit::LocalConfiguration covarConf = params.backgroundError.value();
-      Bmat.reset(CovarianceFactory_::create(geom, vars, covarConf, xx, xx));
-
-      // MPI barrier
-      geom.getComm().barrier();
-
-      // Stop timer
-      const std::chrono::duration<double, std::milli> dt = std::chrono::steady_clock::now()-start;
-
-      // Compute timing perturbation
-      const double ctrTiming = static_cast<double>(dt.count())-ctrTimingMean;
-
-      if (jm > 0) {
-        // Update variance
-        ctrTimingStdDev += static_cast<double>(jm)/static_cast<double>(jm+1)*ctrTiming*ctrTiming;
-      }
-
-      // Update mean
-      ctrTimingMean += 1.0/static_cast<double>(jm+1)*ctrTiming;
-    }
-
-    // Compute standard-deviation
-    if (ctrTimingSize > 1) {
-      ctrTimingStdDev = std::sqrt(ctrTimingStdDev/static_cast<double>(ctrTimingSize-1));
-    }
-
-    // Create increment
-    Increment4D_ dxi(geom, vars, xx.times(), xx.commTime());
-    Increment4D_ dxo(geom, vars, xx.times(), xx.commTime());
-
-    // Initialize application timing stats
-    double appTimingMean = 0.0;
-    double appTimingStdDev = 0.0;
-
-    for (size_t jm = 0; jm < appTimingSize; ++jm) {
-      // MPI barrier
-      geom.getComm().barrier();
-
-      // Start timer
-      const auto start = std::chrono::steady_clock::now();
-
-      // Apply Bmat
-      Bmat->multiply(dxi, dxo);
-
-      // MPI barrier
-      geom.getComm().barrier();
-
-      // Stop timer
-      const std::chrono::duration<double, std::milli> dt = std::chrono::steady_clock::now()-start;
-
-      // Compute timing perturbation
-      const double appTiming = static_cast<double>(dt.count())-appTimingMean;
-
-      if (jm > 0) {
-        // Update variance
-        appTimingStdDev += static_cast<double>(jm)/static_cast<double>(jm+1)*appTiming*appTiming;
-      }
-
-      // Update mean
-      appTimingMean += 1.0/static_cast<double>(jm+1)*appTiming;
-    }
-
-    // Compute standard-deviation
-    if (appTimingSize > 1) {
-      appTimingStdDev = std::sqrt(appTimingStdDev/static_cast<double>(appTimingSize-1));
-    }
-
-    // Print timing results
-    oops::Log::info() << "Info     : " << std::endl;
-    oops::Log::info() << "Info     : Timing results:" << std::endl;
-    oops::Log::info() << "Info     : ---------------" << std::endl;
-    oops::Log::info() << "Info     : - Constructor (ms): " << ctrTimingMean
-      << " +/- " << ctrTimingStdDev << std::endl;
-    oops::Log::info() << "Info     : - Application (ms): " << appTimingMean
-      << " +/- " << appTimingStdDev << std::endl;
-
-    oops::Log::info() << "Info     : " << std::endl;
   }
 // -----------------------------------------------------------------------------
 };

@@ -32,6 +32,13 @@ integer,parameter :: ddis = 5                !< Progression display step
    integer :: max_calls = 10                 !< Number of timing to print with maximum calls
 #:endif
 
+type timer_type
+   character(len=1024) :: name !< Timer name
+   integer :: clock_start      !< Timer start
+   real(kind_real) :: elapsed  !< Elapsed time
+   integer :: ncall            !< Number of calls
+end type timer_type
+
 type mpl_type
    ! MPI communicator
    type(fckit_mpi_comm) :: f_comm         !< MPI communicator (fckit wrapper)
@@ -79,6 +86,15 @@ type mpl_type
    integer :: nprog                       !< Progression array size
    integer :: progint                     !< Progression integer
    logical,allocatable :: done(:)         !< Progression array
+
+   ! Timers
+   logical :: run_timers                  !< Timers flag
+   integer :: nt                          !< Number of timers
+   type(timer_type),allocatable :: t(:)   !< Timers
+
+   ! Timing common info
+   integer :: count_rate                  !< Clock count rate
+   integer :: count_max                   !< Clock count maximum
 contains
    procedure :: init => mpl_init
    procedure :: final => mpl_final
@@ -130,6 +146,10 @@ contains
       procedure :: print_instance => mpl_print_instance
       procedure :: timings => mpl_timings
    #:endif
+   procedure :: init_timers => mpl_init_timers
+   procedure :: start_timer => mpl_start_timer
+   procedure :: stop_timer => mpl_stop_timer
+   procedure :: print_timers => mpl_print_timers
 end type mpl_type
 
 interface
@@ -253,6 +273,7 @@ class(mpl_type),intent(inout) :: mpl !< MPI data
 ! Release memory
 if (allocated(mpl%pioproc)) deallocate(mpl%pioproc)
 if (allocated(mpl%done)) deallocate(mpl%done)
+if (allocated(mpl%t)) deallocate(mpl%t)
 
 ! Probe out
 @:probe_out()
@@ -1169,5 +1190,197 @@ end if
 
 end subroutine mpl_timings
 #:endif
+
+!----------------------------------------------------------------------
+! Subroutine: mpl_init_timers
+!> Initialize timers
+!----------------------------------------------------------------------
+subroutine mpl_init_timers(mpl)
+
+implicit none
+
+! Passed variables
+class(mpl_type),intent(inout) :: mpl !< MPI data
+
+! Local variables
+integer :: it
+
+! Set name
+@:set_name(mpl_init_timers)
+
+! Number of timers
+mpl%nt = 11
+
+! Allocation
+allocate(mpl%t(mpl%nt))
+
+! Initialization
+mpl%t(1)%name = 'nicas_setup_sampling'
+mpl%t(2)%name = 'nicas_setup_interp'
+mpl%t(3)%name = 'nicas_setup_convol'
+mpl%t(4)%name = 'nicas_setup_norm_int'
+mpl%t(5)%name = 'nicas_setup_norm_ext'
+mpl%t(6)%name = 'nicas_apply_norm_ext_ad'
+mpl%t(7)%name = 'nicas_apply_interp_ad'
+mpl%t(8)%name = 'nicas_apply_convol_sqrt_ad'
+mpl%t(9)%name = 'nicas_apply_convol_sqrt'
+mpl%t(10)%name = 'nicas_apply_interp'
+mpl%t(11)%name = 'nicas_apply_norm_ext'
+do it=1,mpl%nt
+   mpl%t(it)%clock_start = -1
+   mpl%t(it)%elapsed = zero
+   mpl%t(it)%ncall = 0
+end do
+
+! System clock info
+call system_clock(count_rate=mpl%count_rate,count_max=mpl%count_max)
+
+end subroutine mpl_init_timers
+
+!----------------------------------------------------------------------
+! Subroutine: mpl_start_timer
+!> Start timer
+!----------------------------------------------------------------------
+subroutine mpl_start_timer(mpl,name)
+
+implicit none
+
+! Passed variable
+class(mpl_type),intent(inout) :: mpl !< MPI data
+character(len=*),intent(in) :: name  !< Timer name
+
+! Local variables
+integer :: it
+logical :: found
+
+! Set name
+@:set_name(mpl_start_timer)
+
+if (allocated(mpl%t)) then
+   ! MPI barrier
+   call mpl%f_comm%barrier()
+
+   ! Find timer
+   found = .false.
+   it = 1
+   do while (.not.found)
+      ! Check name
+      found = (mpl%t(it)%name==name)
+
+      ! Set clock start
+      if (found) call system_clock(count=mpl%t(it)%clock_start)
+
+      ! Update index
+      it = it+1
+
+      if (it>mpl%nt) then
+         ! Check if timer has been found
+         if (.not.found) call mpl%abort('${subr}$','timer not found')
+      end if
+   end do
+end if
+
+end subroutine mpl_start_timer
+
+!----------------------------------------------------------------------
+! Subroutine: mpl_stop_timer
+!> Stop timer
+!----------------------------------------------------------------------
+subroutine mpl_stop_timer(mpl,name)
+
+implicit none
+
+! Passed variable
+class(mpl_type),intent(inout) :: mpl !< MPI data
+character(len=*),intent(in) :: name  !< Timer name
+
+! Local variables
+integer :: it,clock_stop
+real(kind_real) :: elapsed
+logical :: found
+
+! Set name
+@:set_name(mpl_stop_timer)
+
+if (allocated(mpl%t)) then
+   ! MPI barrier
+   call mpl%f_comm%barrier()
+
+   ! Set clock stop
+   call system_clock(count=clock_stop)
+
+   ! Find timer
+   found = .false.
+   it = 1
+   do while (.not.found)
+      ! Check name
+      found = (mpl%t(it)%name==name)
+
+      if (found) then
+         ! Check clock_start
+         if (mpl%t(it)%clock_start==-1) call mpl%abort('${subr}$','timer not started')
+
+         ! Compute elapsed time
+         if (clock_stop<mpl%t(it)%clock_start) then
+            elapsed = real(clock_stop-mpl%t(it)%clock_start+mpl%count_max,kind_real)/real(mpl%count_rate,kind_real)
+         else
+            elapsed = real(clock_stop-mpl%t(it)%clock_start,kind_real)/real(mpl%count_rate,kind_real)
+         end if
+
+         ! Accumulate elapsed time
+         mpl%t(it)%elapsed = mpl%t(it)%elapsed+elapsed
+
+         ! Add a call
+         mpl%t(it)%ncall = mpl%t(it)%ncall+1
+
+         ! Reset clock start
+         mpl%t(it)%clock_start = -1
+      end if
+
+      ! Update index
+      it = it+1
+
+      if (it>mpl%nt) then
+         ! Check if timer has been found
+         if (.not.found) call mpl%abort('${subr}$','timer not found')
+      end if
+   end do
+end if
+
+end subroutine mpl_stop_timer
+
+!----------------------------------------------------------------------
+! Subroutine: mpl_print_timers
+!> Print timers
+!----------------------------------------------------------------------
+subroutine mpl_print_timers(mpl)
+
+implicit none
+
+! Passed variable
+class(mpl_type),intent(inout) :: mpl !< MPI data
+
+! Local variables
+integer :: it
+
+! Set name
+@:set_name(mpl_print_timers)
+
+if (allocated(mpl%t)) then
+   ! Print results
+   write(mpl%info,'(a)') '-------------------------------------------------------------------'
+   call mpl%flush
+   write(mpl%info,'(a)') '--- Internal timers'
+   call mpl%flush
+   do it=1,mpl%nt
+      if (mpl%t(it)%ncall > 0) then
+         write(mpl%info,'(a7,a30,a,i5,a,f12.3,a)') '',mpl%t(it)%name,': ',mpl%t(it)%ncall,' call(s) / ', &
+ & 1.0e3*mpl%t(it)%elapsed/real(mpl%t(it)%ncall,kind_real),' ms per call'
+         call mpl%flush
+      end if
+   end do  
+end if
+
+end subroutine mpl_print_timers
 
 end module type_mpl

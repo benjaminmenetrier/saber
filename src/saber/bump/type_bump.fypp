@@ -168,6 +168,11 @@ character(len=1024) :: cname
 ! Header
 @:print_bump_instance()
 
+if (bump%nam%timers) then
+   ! Initialize timers
+   call bump%mpl%init_timers
+end if
+
 if (bump%nam%load_universe_radius) then
    ! Read universe radius   
    call bump%nam%read_universe_radius(bump%mpl)
@@ -878,10 +883,6 @@ if (bump%nam%check_optimality) then
    call bump%check_optimality
 end if
 
-! Release memory (partial)
-call bump%cmat(1)%partial_dealloc
-call bump%cmat(2)%partial_dealloc
-
 if (bump%nam%new_nicas.or.bump%nam%load_nicas_local.or.bump%nam%load_nicas_global) then
    ! Run NICAS tests driver
    write(bump%mpl%info,'(a)') '-------------------------------------------------------------------'
@@ -892,15 +893,19 @@ if (bump%nam%new_nicas.or.bump%nam%load_nicas_local.or.bump%nam%load_nicas_globa
    ! Ensemble 1
    write(bump%mpl%info,'(a7,a)') '','Ensemble 1'
    call bump%mpl%flush
-   call bump%nicas(1)%run_nicas_tests(bump%mpl,bump%rng,bump%nam,bump%geom(1))
+   call bump%nicas(1)%run_nicas_tests(bump%mpl,bump%rng,bump%nam,bump%geom(1),bump%cmat(1))
 
    if (bump%nam%compute_cor2.or.bump%nam%compute_loc2) then
       ! Ensemble 2
       write(bump%mpl%info,'(a7,a)') '','Ensemble 2'
       call bump%mpl%flush
-      call bump%nicas(2)%run_nicas_tests(bump%mpl,bump%rng,bump%nam,bump%geom(2))
+      call bump%nicas(2)%run_nicas_tests(bump%mpl,bump%rng,bump%nam,bump%geom(2),bump%cmat(2))
    end if
 end if
+
+! Release memory (partial)
+call bump%cmat(1)%partial_dealloc
+call bump%cmat(2)%partial_dealloc
 
 if (bump%nam%new_wind.or.bump%nam%load_wind_local.or.bump%nam%load_wind_global) then
    ! Run psi/chi to u/v driver
@@ -2290,11 +2295,10 @@ class(bump_type),intent(inout) :: bump !< BUMP
 @:execution_stats()
 
 ! Number of open NetCDF files
-write(bump%mpl%info,'(a)') '-------------------------------------------------------------------'
-call bump%mpl%flush
-write(bump%mpl%info,'(a)') '--- NetCDF I/O report'
-call bump%mpl%flush
 call registry%report(bump%mpl)
+
+! Timers
+call bump%mpl%print_timers
 
 ! Release memory
 if (allocated(bump%cmat)) then

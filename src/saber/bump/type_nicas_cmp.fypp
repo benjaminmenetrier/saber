@@ -2401,7 +2401,7 @@ type(nam_type),intent(in) :: nam                 !< Namelist
 type(geom_type),intent(in) :: geom               !< Geometry
 
 ! Local variables
-integer :: il1,il1s,c_n_s
+integer :: il1,il1s,c_n_s,max_ops,max_com
 
 ! Set name
 @:set_name(nicas_cmp_compute_parameters)
@@ -2459,8 +2459,8 @@ if (any(nicas_cmp%vlev)) then
       end if
    end if
 
-   ! Print results
    if (nicas_cmp%verbosity) then
+      ! Print results
       write(mpl%info,'(a10,a,i6)') '','Parameters for processor #',mpl%myproc
       call mpl%flush
       write(mpl%info,'(a13,a,i8)') '','nc0 =                        ',geom%nc0
@@ -2496,6 +2496,29 @@ if (any(nicas_cmp%vlev)) then
       call mpl%flush
       call mpl%f_comm%allreduce(nicas_cmp%c%n_s,c_n_s,fckit_mpi_sum())
       write(mpl%test,'(a13,a,i9)') '','c%n_s[global] =             ',c_n_s
+      call mpl%flush
+
+      ! Print aggregated results
+      write(mpl%info,'(a10,a)') '','Aggregated parameters'
+      call mpl%flush
+      max_ops = 0
+      do il1=1,nicas_cmp%nl1
+         il1s = nicas_cmp%hor(il1)%il1s
+         max_ops = max_ops + nicas_cmp%hor(il1s)%interp_c1b_to_c0a%n_s
+      end do
+      call mpl%f_comm%allreduce(max_ops,fckit_mpi_max())
+      write(mpl%info,'(a13,a,i9)') '','interp. operations =        ',max_ops
+      call mpl%flush
+      max_com = maxval(nicas_cmp%com_s_AB%jhalocounts)
+      call mpl%f_comm%allreduce(max_com,fckit_mpi_max())
+      write(mpl%info,'(a13,a,i9)') '','interp. communications =    ',max_com
+      call mpl%flush
+      call mpl%f_comm%allreduce(nicas_cmp%c%n_s,max_ops,fckit_mpi_max())
+      write(mpl%info,'(a13,a,i9)') '','convol. operations =        ',max_ops
+      call mpl%flush
+      max_com = maxval(nicas_cmp%com_s_AC%jhalocounts)
+      call mpl%f_comm%allreduce(max_com,fckit_mpi_max())
+      write(mpl%info,'(a13,a,i9)') '','convol. communications =    ',max_com
       call mpl%flush
    end if
 else
@@ -2857,6 +2880,9 @@ do il1=1,nicas_cmp%nl1
       ifmt = 0
       if (nicas_cmp%verbosity) ifmt = 16
 
+      ! Start sampling timer
+      call mpl%start_timer('nicas_setup_sampling')
+
       if (.not.nam%load_nicas_global) then
          ! Compute nc1
          write(mpl%test,'(a16,a,f10.2,a,f10.2,a,f10.2,a)') '','Horizontal support radius: ',rhs_avg(il0s)*reqkm,' km (', &
@@ -3076,6 +3102,12 @@ do il1=1,nicas_cmp%nl1
             end if
          end if
       end do
+
+      ! Stop sampling timer
+      call mpl%stop_timer('nicas_setup_sampling')
+
+      ! Start interpolation timer
+      call mpl%start_timer('nicas_setup_interp')
 
       if (.not.nam%load_nicas_global) then
          ! Allocation
@@ -3363,6 +3395,9 @@ do il1=1,nicas_cmp%nl1
          deallocate(c0b_to_c0)
          deallocate(c0own_to_c0)
       end if
+
+      ! Stop interpolation timer
+      call mpl%stop_timer('nicas_setup_interp')
    else
       write(mpl%info,'(a13,a,i3,a,i3,a,i3)') '','Sublevel ',il1,'/',nicas_cmp%nl1,': similar to sublevel',il1s
       call mpl%flush(flush=nicas_cmp%verbosity)
@@ -3506,6 +3541,9 @@ if (nam%interp_test.and.(nicas_cmp%interp_type=='c1').and.compute_interp) then
       end if
    end do
 end if
+
+! Start convolution timer
+call mpl%start_timer('nicas_setup_convol')
 
 ! Define subgrid and conversions
 write(mpl%info,'(a13,a)') '','Define subgrid, conversions and communication'
@@ -3957,6 +3995,9 @@ call nicas_cmp%com_s_AC%setup(mpl,'com_s_AC',nicas_cmp%nsa,nicas_cmp%nsc,nicas_c
 deallocate(lcheck_sc)
 deallocate(su_to_sc)
 
+! Stop convolution timer
+call mpl%stop_timer('nicas_setup_convol')
+
 ! End associate
 end associate
 
@@ -4259,6 +4300,9 @@ real(kind_real),allocatable :: c_S(:,:)
 ! Probe in
 @:probe_in()
 
+! Start internal normalization timer
+call mpl%start_timer('nicas_setup_norm_int')
+
 if (.not.nam%load_nicas_global) then
    ! Compute convolution inverse mapping
    allocate(inec(nicas_cmp%nsa))
@@ -4304,6 +4348,9 @@ allocate(nicas_cmp%inorm_sb(nicas_cmp%nsb))
 ! Halo extension from zone A to universe
 call nicas_cmp%com_s_AB%ext(mpl,nicas_cmp%inorm,nicas_cmp%inorm_sb)
 
+! Stop internal normalization timer
+call mpl%stop_timer('nicas_setup_norm_int')
+
 ! Probe out
 @:probe_out()
 
@@ -4336,6 +4383,9 @@ type(linop_type),allocatable :: v(:),h(:,:),c(:)
 
 ! Probe in
 @:probe_in()
+
+! Start normalization timer
+call mpl%start_timer('nicas_setup_norm_ext')
 
 ! Allocation
 allocate(v(nicas_cmp%nl0))
@@ -4605,6 +4655,9 @@ do isb=1,nicas_cmp%nsb
 end do
 deallocate(c)
 
+! Stop normalization timer
+call mpl%stop_timer('nicas_setup_norm_ext')
+
 ! Probe out
 @:probe_out()
 
@@ -4856,9 +4909,18 @@ if (any(nicas_cmp%vlev)) then
       ! Initialization
       alpha_a = cv_cmp%alpha(nicas_cmp%ias:nicas_cmp%iae)
 
+      ! Start convolution square-root timer
+      call mpl%start_timer('nicas_apply_convol_sqrt')
+
       ! Convolution square-root
       call nicas_cmp%apply_convol_sqrt(mpl,alpha_a)
       if (lsteps) call nicas_cmp%steps(5)%add(mpl,nicas_cmp%nsa,nicas_cmp%lon_sa,nicas_cmp%lat_sa,nicas_cmp%lev_sa,alpha_a)
+
+      ! Stop convolution square-root timer
+      call mpl%stop_timer('nicas_apply_convol_sqrt')
+
+      ! Start interpolation timer
+      call mpl%start_timer('nicas_apply_interp')
 
       ! Halo extension from zone A to zone B
       call nicas_cmp%com_s_AB%ext(mpl,alpha_a,alpha_b)
@@ -4866,6 +4928,12 @@ if (any(nicas_cmp%vlev)) then
       ! Interpolation
       call nicas_cmp%apply_interp(mpl,alpha_b,fld)
       if (lsteps) call nicas_cmp%steps(6)%add(mpl,geom,fld)
+
+      ! Stop interpolation timer
+      call mpl%stop_timer('nicas_apply_interp')
+
+      ! Start normalization timer
+      call mpl%start_timer('nicas_apply_norm_ext')
 
       !$omp parallel do schedule(static) private(il0,ic0a)
       do il0=1,nicas_cmp%nl0
@@ -4883,6 +4951,9 @@ if (any(nicas_cmp%vlev)) then
       end do
       !$omp end parallel do
       if (lsteps) call nicas_cmp%steps(7)%add(mpl,geom,fld)
+
+      ! Stop normalization timer
+      call mpl%stop_timer('nicas_apply_norm_ext')
    else
       ! Same horizontal convolution for all levels, no vertical convolution
 
@@ -4893,14 +4964,29 @@ if (any(nicas_cmp%vlev)) then
          ! Initialization
          alpha_a = cv_cmp%alpha((il0-1)*nicas_cmp%nsa+1:il0*nicas_cmp%nsa)
 
+         ! Start convolution square-root timer
+         call mpl%start_timer('nicas_apply_convol_sqrt')
+
          ! Convolution square-root
          call nicas_cmp%apply_convol_sqrt(mpl,alpha_a)
+
+         ! Stop convolution square-root timer
+         call mpl%stop_timer('nicas_apply_convol_sqrt')
+
+         ! Start interpolation timer
+         call mpl%start_timer('nicas_apply_interp')
 
          ! Halo extension from zone A to zone B
          call nicas_cmp%com_s_AB%ext(mpl,alpha_a,alpha_b)
 
          ! Interpolation
          call nicas_cmp%apply_interp(mpl,alpha_b,fld(:,il0:il0))
+
+         ! Stop interpolation timer
+         call mpl%stop_timer('nicas_apply_interp')
+
+         ! Start normalization timer
+         call mpl%start_timer('nicas_apply_norm_ext')
 
          !$omp parallel do schedule(static) private(ic0a)
          do ic0a=1,geom%nc0a
@@ -4913,6 +4999,9 @@ if (any(nicas_cmp%vlev)) then
             end if
          end do
          !$omp end parallel do
+
+         ! Stop normalization timer
+         call mpl%stop_timer('nicas_apply_norm_ext')
       end do
    end if
 end if
@@ -4961,6 +5050,9 @@ if (any(nicas_cmp%vlev)) then
       fld_tmp = fld
       if (lsteps) call nicas_cmp%steps(1)%add(mpl,geom,fld_tmp)
 
+      ! Start normalization timer
+      call mpl%start_timer('nicas_apply_norm_ext')
+
       !$omp parallel do schedule(static) private(il0,ic0a)
       do il0=1,nicas_cmp%nl0
          if (nicas_cmp%vlev(il0)) then
@@ -4978,6 +5070,12 @@ if (any(nicas_cmp%vlev)) then
       !$omp end parallel do
       if (lsteps) call nicas_cmp%steps(2)%add(mpl,geom,fld_tmp)
 
+      ! Stop normalization timer
+      call mpl%stop_timer('nicas_apply_norm_ext')
+
+      ! Start interpolation adjoint timer
+      call mpl%start_timer('nicas_apply_interp_ad')
+
       ! Adjoint interpolation
       call nicas_cmp%apply_interp_ad(mpl,fld_tmp,alpha_b)
 
@@ -4987,15 +5085,27 @@ if (any(nicas_cmp%vlev)) then
       if (lsteps) call nicas_cmp%steps(3)%add(mpl,nicas_cmp%nsa,nicas_cmp%lon_sa,nicas_cmp%lat_sa,nicas_cmp%lev_sa, &
  & cv_cmp%alpha(nicas_cmp%ias:nicas_cmp%iae))
 
+      ! Stop interpolation adjoint timer
+      call mpl%stop_timer('nicas_apply_interp_ad')
+
+      ! Start convolution square-root adjoint timer
+      call mpl%start_timer('nicas_apply_convol_sqrt_ad')
+
       ! Convolution square-root adjoint
       call nicas_cmp%apply_convol_sqrt_ad(mpl,cv_cmp%alpha(nicas_cmp%ias:nicas_cmp%iae))
       if (lsteps) call nicas_cmp%steps(4)%add(mpl,nicas_cmp%nsa,nicas_cmp%lon_sa,nicas_cmp%lat_sa,nicas_cmp%lev_sa, &
  & cv_cmp%alpha(nicas_cmp%ias:nicas_cmp%iae))
+
+      ! Stop convolution square-root adjoint timer
+      call mpl%stop_timer('nicas_apply_convol_sqrt_ad')
    else
       ! Same horizontal convolution for all levels, no vertical convolution
       do il0=1,geom%nl0
          ! Initialization
          fld_tmp(:,1) = fld(:,il0)
+
+         ! Start normalization timer
+         call mpl%start_timer('nicas_apply_norm_ext')
 
          !$omp parallel do schedule(static) private(ic0a)
          do ic0a=1,geom%nc0a
@@ -5009,14 +5119,29 @@ if (any(nicas_cmp%vlev)) then
          end do
          !$omp end parallel do
 
+         ! Stop normalization timer
+         call mpl%stop_timer('nicas_apply_norm_ext')
+
+         ! Start interpolation adjoint timer
+         call mpl%start_timer('nicas_apply_interp_ad')
+
          ! Adjoint interpolation
          call nicas_cmp%apply_interp_ad(mpl,fld_tmp,alpha_b)
 
          ! Halo reduction from zone B to zone A
          call nicas_cmp%com_s_AB%red(mpl,alpha_b,cv_cmp%alpha((il0-1)*nicas_cmp%nsa+1:il0*nicas_cmp%nsa))
 
+         ! Stop interpolation adjoint timer
+         call mpl%stop_timer('nicas_apply_interp_ad')
+
+         ! Start convolution square-root adjoint timer
+         call mpl%start_timer('nicas_apply_convol_sqrt_ad')
+
          ! Convolution square-root adjoint
          call nicas_cmp%apply_convol_sqrt_ad(mpl,cv_cmp%alpha((il0-1)*nicas_cmp%nsa+1:il0*nicas_cmp%nsa))
+
+         ! Stop convolution square-root adjoint timer
+         call mpl%stop_timer('nicas_apply_convol_sqrt_ad')
       end do
    end if
 end if
