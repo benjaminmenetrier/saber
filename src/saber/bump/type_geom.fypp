@@ -2191,7 +2191,7 @@ integer :: nn_index(2),proc_to_ncxa(mpl%nproc),proc_to_cx_offset(mpl%nproc)
 integer,allocatable :: proc_to_icxmin(:),ssa_to_cx(:),ssa_to_node(:),s_to_ssa(:),to_valid(:),order(:)
 integer,allocatable :: proc_to_nodemin(:),sa_to_s(:),order_s(:),cxa_to_node(:)
 integer,allocatable :: proc_to_nssa(:),ssa_to_ss(:),ss_to_cxa(:),ss_to_cx(:),ss_to_node(:)
-real(kind_real) :: lonlat(2),valmin,xmin,ymin,zmin,chmin,dist,dist_max,d,nn_dist(2),dist_min,x,y,distx,disty
+real(kind_real) :: lonlat(2),valmin,xmin,ymin,zmin,chmin,dist,dist_max,d,nn_dist(2),dist_min,x,y,distx,disty,xstart,ystart,zstart
 real(kind_real),allocatable :: rhc_cxa(:),proc_to_xmin(:),proc_to_ymin(:),proc_to_zmin(:),proc_to_chmin(:)
 real(kind_real),allocatable :: x_ssa(:),y_ssa(:),z_ssa(:),ch_ssa(:),potential(:),lon_sa(:),lat_sa(:),lon_s(:),lat_s(:)
 real(kind_real),allocatable :: lon_ssa(:),lat_ssa(:),rh_ssa(:),lon_rep(:),lat_rep(:),rh_rep(:),dist_rep(:)
@@ -2510,8 +2510,21 @@ else
 
          ! Compute distance to the starting point
          is = 1
+
+         ! Compute distance to an arbitrary starting point
+         if (rng%reset_seed) then
+            ! Deterministic run, use the domain center
+            xstart = geom%v_center(1)
+            ystart = geom%v_center(2)
+            zstart = geom%v_center(3)
+         else
+            ! Random run, use a random point
+            call rng%rand(-one,one,xstart)
+            call rng%rand(-one,one,ystart)
+            call rng%rand(-one,one,zstart)
+         end if
          do issa=1,nssa
-            call cart_dist(x_ssa(issa),y_ssa(issa),z_ssa(issa),geom%v_center(1),geom%v_center(2),geom%v_center(3),potential(issa))
+            call cart_dist(x_ssa(issa),y_ssa(issa),z_ssa(issa),xstart,ystart,zstart,potential(issa))
          end do
 
          ! Find full domain minimum distance
