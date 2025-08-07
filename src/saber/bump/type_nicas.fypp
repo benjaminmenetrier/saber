@@ -1101,15 +1101,15 @@ if (nam%timers) then
       ! Setup timing
       call nicas%dealloc
       call nicas%run_nicas(mpl,rng,nam,geom,cmat)
-
-      ! Application timing
-      allocate(fld(geom%nc0a,geom%nl0,nam%nv))
-      do iat=1,nam%nicas_application_timings
-         call rng%rand(zero,one,fld)
-      call nicas%apply(mpl,nam,geom,fld)
-      end do
-      deallocate(fld)
    end do
+
+   ! Application timing
+   allocate(fld(geom%nc0a,geom%nl0,nam%nv))
+   do iat=1,nam%nicas_application_timings
+      call rng%rand(zero,one,fld)
+   call nicas%apply(mpl,nam,geom,fld)
+   end do
+   deallocate(fld)
 end if
 
 ! Probe out
