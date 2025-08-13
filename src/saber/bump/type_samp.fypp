@@ -20,7 +20,7 @@ use tools_kinds, only: kind_int,kind_real
 use tools_netcdf, only: create_file,open_file,put_att,get_att,define_dim,inquire_dim,inquire_dim_size,define_var,inquire_var, &
  & put_var,get_var,close_file
 use tools_qsort, only: qsort
-use tools_repro, only: eq,inf
+use tools_repro, only: eq,inf,repro_th
 use type_com, only: com_type
 use type_ens, only: ens_type
 use type_geom, only: geom_type
@@ -2381,14 +2381,24 @@ else
       ! Release memory
       deallocate(rh_c0a)
       deallocate(cx_to_c0)
-   case ('octahedral')
-      ! Use an octahedral grid
-      write(mpl%info,'(a7,a,i1)') '','Use an octahedral grid for subset Sc',subset
+   case ('octahedral','regular')
+      ! Deprecation message
+      call mpl%warning('${subr}$','"octahedral" draw type should be replaced with "regular"')
+
+      ! Use a regular grid
+      write(mpl%info,'(a7,a,i1)') '','Use a regular grid for subset Sc',subset
       call mpl%flush
 
-      ! Global grid
-      n = int(real(ncx,kind_real)*four*pi/geom%area_max_c0)+1
-      call get_grid(mpl,n,agrid)
+      ! Grid size
+      n = floor(real(ncx,kind_real)*geom%area/geom%area_max_c0*(one+repro_th))
+
+      if (geom%global) then
+         ! Global grid
+         call get_grid(mpl,n,agrid)
+      else
+         ! Regional grid
+         call get_grid(mpl,n,geom%aconfig_work_grid,geom%xmin,geom%xmax,geom%ymin,geom%ymax,agrid)
+      end if
 
       ! Count valid and local points
       ncxa = 0

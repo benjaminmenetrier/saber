@@ -2953,14 +2953,24 @@ do il1=1,nicas_cmp%nl1
 
             ! Release memory
             deallocate(c1_to_c0)
-         case ('octahedral')
-            ! Use an octahedral grid
-            write(mpl%info,'(a16,a)') '','Use an octahedral grid for subset Sc1 '
+         case ('octahedral','regular')
+            ! Deprecation message
+            call mpl%warning('${subr}$','"octahedral" draw type should be replaced with "regular"')
+
+            ! Use a regular grid
+            write(mpl%info,'(a16,a)') '','Use a regular grid for subset Sc1 '
             call mpl%flush(flush=nicas_cmp%verbosity)
 
-            ! Global grid
-            n = int(real(nicas_cmp%hor(il1s)%nc1,kind_real)*four*pi/geom%area_max_c0)+1
-            call get_grid(mpl,n,agrid)
+            ! Grid size
+            n = floor(real(nicas_cmp%hor(il1s)%nc1,kind_real)*geom%area/geom%area_max_c0*(one+repro_th))
+
+            if (geom%global) then
+               ! Global grid
+               call get_grid(mpl,n,agrid)
+            else
+               ! Regional grid
+               call get_grid(mpl,n,geom%aconfig_work_grid,geom%xmin,geom%xmax,geom%ymin,geom%ymax,agrid)
+            end if
 
             ! Count valid and local points
             nicas_cmp%hor(il1s)%nc1a = 0

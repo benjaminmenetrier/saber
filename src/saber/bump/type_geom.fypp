@@ -2186,7 +2186,7 @@ integer,intent(out) :: s_to_cx(ns)          !< Horizontal sampling index (full d
 
 ! Local variables
 integer :: ncxa_eff,ncx_eff,isa,icxa,is,icx,nfac,nssa,nss,issa,ix,iy,issamin,icxmin,iprocmin,nsa,nodemin,inode,hash,iss,iproc
-integer :: nssa_val,irmax,irvalmax,itry,irval,ir,irep,is_min,js,nrep
+integer :: nssa_val,irmax,irvalmax,itry,irval,ir,irep,is_min,js,nrep,n
 integer :: nn_index(2),proc_to_ncxa(mpl%nproc),proc_to_cx_offset(mpl%nproc)
 integer,allocatable :: proc_to_icxmin(:),ssa_to_cx(:),ssa_to_node(:),s_to_ssa(:),to_valid(:),order(:)
 integer,allocatable :: proc_to_nodemin(:),sa_to_s(:),order_s(:),cxa_to_node(:)
@@ -2270,12 +2270,15 @@ else
          ! Update nfac
          nfac = 2*nfac
 
+         ! Grid size
+         n = floor(real(nfac*ns,kind_real)*geom%area/geom%area_max_c0*(one+repro_th))
+
          if (geom%global) then
             ! Global grid
-            call get_grid(mpl,floor(real(nfac*ns,kind_real)*four*pi/geom%area_max_c0*(one+repro_th)),agrid,nss)
+            call get_grid(mpl,n,agrid,nss)
          else
             ! Regional grid
-            call get_grid(mpl,nfac*ns,geom%aconfig_work_grid,geom%xmin,geom%xmax,geom%ymin,geom%ymax,agrid,nss)
+            call get_grid(mpl,n,geom%aconfig_work_grid,geom%xmin,geom%xmax,geom%ymin,geom%ymax,agrid,nss)
          end if
 
          ! Loop over grid points
