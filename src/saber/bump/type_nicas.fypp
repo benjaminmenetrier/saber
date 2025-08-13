@@ -1097,18 +1097,22 @@ if (nam%check_randomization) then
 end if
 
 if (nam%timers) then
+   ! Allocation
+   allocate(fld(geom%nc0a,geom%nl0,nam%nv))
+
    do ist=1,nam%nicas_setup_timings
       ! Setup timing
       call nicas%dealloc
       call nicas%run_nicas(mpl,rng,nam,geom,cmat)
+
+      ! Application timing
+      do iat=1,nam%nicas_application_timings
+         call rng%rand(zero,one,fld)
+         call nicas%apply(mpl,nam,geom,fld)
+      end do
    end do
 
-   ! Application timing
-   allocate(fld(geom%nc0a,geom%nl0,nam%nv))
-   do iat=1,nam%nicas_application_timings
-      call rng%rand(zero,one,fld)
-   call nicas%apply(mpl,nam,geom,fld)
-   end do
+   ! Release memory
    deallocate(fld)
 end if
 

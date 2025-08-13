@@ -1209,7 +1209,7 @@ integer :: it
 @:set_name(mpl_init_timers)
 
 ! Number of timers
-mpl%nt = 11
+mpl%nt = 8
 
 ! Allocation
 allocate(mpl%t(mpl%nt))
