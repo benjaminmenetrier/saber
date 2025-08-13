@@ -11,7 +11,7 @@ module type_geom
 
 use atlas_module, only: atlas_config,atlas_connectivity,atlas_field,atlas_functionspace, &
  & atlas_functionspace_nodecolumns,atlas_functionspace_pointcloud,atlas_functionspace_structuredcolumns,atlas_json,atlas_mesh, &
- & atlas_mesh_nodes,atlas_projection,atlas_structuredgrid,atlas_lonlatrectangulardomain
+ & atlas_mesh_nodes,atlas_projection,atlas_structuredgrid
 use fckit_mpi_module, only: fckit_mpi_sum,fckit_mpi_min,fckit_mpi_max,fckit_mpi_status
 !$ use omp_lib
 use tools_atlas, only: get_grid,field_to_array,get_atlas_functionspace_size
@@ -1131,7 +1131,6 @@ logical :: valid
 type(atlas_functionspace_structuredcolumns) :: afunctionspace_sc
 type(atlas_config) :: aconfig_grid,aconfig_domain,aconfig_work_grid,aconfig_work_proj
 type(atlas_structuredgrid) :: agrid_work
-type(atlas_lonlatrectangulardomain) :: alonlat_bounding_box
 type(hull_type) :: hull
 type(minim_type) :: minim
 character(len=:),allocatable :: domain_type
