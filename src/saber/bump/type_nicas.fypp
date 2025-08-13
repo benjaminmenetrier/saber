@@ -998,19 +998,21 @@ end subroutine nicas_run_nicas
 ! Subroutine: nicas_run_nicas_tests
 !> NICAS tests driver
 !----------------------------------------------------------------------
-subroutine nicas_run_nicas_tests(nicas,mpl,rng,nam,geom)
+subroutine nicas_run_nicas_tests(nicas,mpl,rng,nam,geom,cmat)
 
 implicit none
 
 ! Passed variables
-class(nicas_type),intent(inout) :: nicas  !< NICAS data
-type(mpl_type),intent(inout) :: mpl       !< MPI data
-type(rng_type),intent(inout) :: rng       !< Random number generator
-type(nam_type),intent(inout) :: nam       !< Namelist
-type(geom_type),intent(inout) :: geom     !< Geometry
+class(nicas_type),intent(inout) :: nicas !< NICAS data
+type(mpl_type),intent(inout) :: mpl      !< MPI data
+type(rng_type),intent(inout) :: rng      !< Random number generator
+type(nam_type),intent(inout) :: nam      !< Namelist
+type(geom_type),intent(inout) :: geom    !< Geometry
+type(cmat_type),intent(in) :: cmat       !< C matrix data
 
 ! Local variables
-integer :: ig,icmp
+integer :: ig,icmp,ist,iat
+real(kind_real),allocatable :: fld(:,:,:)
 
 ! Set name
 @:set_name(nicas_run_nicas_tests)
@@ -1092,6 +1094,26 @@ if (nam%check_randomization) then
    write(mpl%info,'(a)') '--- Test NICAS randomization'
    call mpl%flush
    call nicas%test_randomization(mpl,rng,nam,geom)
+end if
+
+if (nam%timers) then
+   ! Allocation
+   allocate(fld(geom%nc0a,geom%nl0,nam%nv))
+
+   do ist=1,nam%nicas_setup_timings
+      ! Setup timing
+      call nicas%dealloc
+      call nicas%run_nicas(mpl,rng,nam,geom,cmat)
+
+      ! Application timing
+      do iat=1,nam%nicas_application_timings
+         call rng%rand(zero,one,fld)
+         call nicas%apply(mpl,nam,geom,fld)
+      end do
+   end do
+
+   ! Release memory
+   deallocate(fld)
 end if
 
 ! Probe out

@@ -17,8 +17,6 @@ geometry:
   - variables:
     - air_horizontal_streamfunction
     levels: 1
-    mask type: sea
-    mask path: ../quench/data/landsea.nc
   halo: 1
   latitude south to north: false
 background:
@@ -29,13 +27,10 @@ background error:
   covariance model: SABER
   saber central block:
     saber block name: BUMP_NICAS
-    fields metadata:
-      air_horizontal_streamfunction:
-        gmask: gmask_0
     calibration:
       io:
         data directory: testdata
-        files prefix: error_covariance_training_doc_7/_MPI_-_OMP_
+        files prefix: error_covariance_training_doc_5/_MPI_-_OMP_
       drivers:
         multivariate strategy: univariate
         compute nicas: true
@@ -43,8 +38,6 @@ background error:
         write nicas grids: true
         write nicas steps: true
         internal dirac test: true
-      model:
-        do not cross mask boundaries: true
       nicas:
         resolution: 10.0
       dirac:
@@ -68,4 +61,4 @@ background error:
       output model files:
       - parameter: dirac_nicas
         file:
-          filepath: testdata/error_covariance_training_doc_7/_MPI_-_OMP__dirac_nicas
+          filepath: testdata/error_covariance_training_doc_5/_MPI_-_OMP__dirac_nicas

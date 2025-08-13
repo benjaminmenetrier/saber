@@ -188,6 +188,8 @@ class GeneralSection : public oops::Parameters {
   oops::Parameter<bool> repro_ops = param(def.repro_ops, this);
   // Reproducibility threshold
   oops::Parameter<double> repro_th = param(def.repro_th, this);
+  // Timers
+  oops::Parameter<bool> timers = param(def.timers, this);
   // Universe radius [in meters]
   oops::Parameter<double> universe_radius = param(def.universe_radius, this);
   // Sampling method
@@ -629,6 +631,8 @@ class NICASSection : public oops::Parameters {
     this};
   // Factor to get interpolation radius from convolution radius if nicas_interp_type = 'si'
   oops::Parameter<double> nicas_si_factor = param(def.nicas_si_factor, this);
+  // Scaling on convolution length-scale to account for smooth interpolation effect
+  oops::Parameter<bool> nicas_si_scaling = param(def.nicas_si_scaling, this);
   // Normalization randomization size
   oops::Parameter<int> norm_rand_size = param(def.norm_rand_size, this);
   // Positive-definiteness test
@@ -643,6 +647,10 @@ class NICASSection : public oops::Parameters {
   oops::Parameter<double> sim_levs_th = param(def.sim_levs_th, this);
   // Read/write interpolation in global file
   oops::Parameter<bool> interp_in_global_file = param(def.interp_in_global_file, this);
+  // Number of runs for setup timing
+  oops::Parameter<int> nicas_setup_timings = param(def.nicas_setup_timings, this);
+  // Number of runs for application timing
+  oops::Parameter<int> nicas_application_timings = param(def.nicas_application_timings, this);
 };
 
 // -----------------------------------------------------------------------------

@@ -24,6 +24,7 @@ type nam_type
    integer :: default_seed                                    !< Default seed for random numbers (0 for time-dependent seed)
    logical :: repro_ops                                       !< Reproducibility operators
    real(kind_real) :: repro_th                                !< Reproducibility threshold
+   logical :: timers                                          !< Use timers
    real(kind_real) :: universe_radius                         !< Universe radius [in meters]
    character(len=1024) :: sampling_method                     !< Sampling method
    logical :: deprecated_hull                                 !< Use deprecated hull (for backward compatibility)
@@ -198,6 +199,7 @@ type nam_type
    real(kind_real),allocatable :: loc_wgt_sqrt(:,:)           !< Weights square-root for the 'block_weighted' strategy
    character(len=2),allocatable :: nicas_interp_type(:)       !< NICAS C1B to C0A interpolation type ('c0': C0 mesh-based, 'c1': C1 mesh-based or 'si': smooth interpolation)
    real(kind_real) :: nicas_si_factor                         !< Factor to get interpolation radius from convolution radius if nicas_interp_type = 'si'
+   logical :: nicas_si_scaling                                !< Scaling on convolution length-scale to account for smooth interpolation effect
    integer :: norm_rand_size                                  !< Normalization randomization size (default is 0, which means exact normalization)
    logical :: pos_def_test                                    !< Positive-definiteness test
    logical :: interp_test                                     !< Horizontal NICAS interpolation test
@@ -205,6 +207,8 @@ type nam_type
    logical :: same_horizontal                                 !< Same horizontal convolution for all levels, no vertical convolution
    real(kind_real) :: sim_levs_th                             !< Similar levels threshold (relative tolerance on horizontal length-scale)
    logical :: interp_in_global_file                           !< Read/write interpolation in global file
+   integer :: nicas_setup_timings                             !< Number of runs for setup timing
+   integer :: nicas_application_timings                       !< Number of runs for application timing
 
    ! Psichitouv section
    logical :: wind_dipole_test                                !< Dipole test (bypass the adjoint)
@@ -373,6 +377,7 @@ if (conf%get('general',section)) then
    call nam%get(section,'default seed',nam%default_seed)
    call nam%get(section,'reproducibility operators',nam%repro_ops)
    call nam%get(section,'reproducibility threshold',nam%repro_th)
+   call nam%get(section,'timers',nam%timers)
    call nam%get(section,'universe length-scale',nam%universe_radius)
    call nam%get(section,'sampling method',nam%sampling_method)
    call nam%get(section,'deprecated hull',nam%deprecated_hull)
@@ -905,6 +910,7 @@ if (conf%get('nicas',section)) then
       end if
    end if
    call nam%get(section,'smooth interpolation factor',nam%nicas_si_factor)
+   call nam%get(section,'smooth interpolation scaling',nam%nicas_si_scaling)
    call nam%get(section,'normalization randomization size',nam%norm_rand_size)
    call nam%get(section,'positive-definiteness test',nam%pos_def_test)
    call nam%get(section,'horizontal interpolation test',nam%interp_test)
@@ -912,6 +918,8 @@ if (conf%get('nicas',section)) then
    call nam%get(section,'same horizontal convolution',nam%same_horizontal)
    call nam%get(section,'similar levels threshold',nam%sim_levs_th)
    call nam%get(section,'interpolation in global file',nam%interp_in_global_file)
+   call nam%get(section,'setup timings',nam%nicas_setup_timings)
+   call nam%get(section,'application timings',nam%nicas_application_timings)
 end if
 
 ! Psichitouv section

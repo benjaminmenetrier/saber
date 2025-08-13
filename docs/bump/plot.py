@@ -7,7 +7,9 @@ from sys import exit
 from netCDF4 import Dataset
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
+import matplotlib.colors as colors
 import matplotlib.cm as cm
+import matplotlib as mpl
 import numpy as np
 import numpy.ma as ma
 import cartopy.crs as ccrs
@@ -17,16 +19,18 @@ import math
 
 # Parser
 parser = argparse.ArgumentParser()
-parser.add_argument('build_dir', help='Build directory')
-parser.add_argument('mode', help='Plot mode: hdiag_sc1 / hdiag_sc2 / hdiag_sc3 / hdiag_sc3-sc4 / fit_iso / fit_ani / fit_multi / rh_sampling / rh_map / nicas_iso / nicas_ani / nicas_mask')
+parser.add_argument('data_dir', help='Data directory')
+parser.add_argument('mode', help='Plot mode: hdiag_sc1 / hdiag_sc2 / hdiag_sc3 / hdiag_sc3-sc4 / fit_iso / fit_ani / fit_multi / rh_sampling / rh_map / nicas_iso / nicas_iso_lr / nicas_ani / nicas_mask')
+parser.add_argument('output', help='Output format: jpg or pdf')
 args = parser.parse_args()
+os.makedirs("../fig", exist_ok=True)
 
 ####################################################################################################
 # READ NETCDF FILES ################################################################################
 ####################################################################################################
 
 # Load HDIAG sampling (isotropic)
-f_sampling = Dataset(args.build_dir + '/saber/test/testdata/doc_6/1-1_sampling_grids_local_000001-000001.nc', 'r', format='NETCDF4')
+f_sampling = Dataset(args.data_dir + '/error_covariance_training_doc_1/1-1_sampling_grids_local_000001-000001.nc', 'r', format='NETCDF4')
 lon_iso = f_sampling['lon'][0,:,:,:]
 lat_iso = f_sampling['lat'][0,:,:,:]
 lon_local = f_sampling['lon_local'][0,:,:]
@@ -37,24 +41,24 @@ nc1 = lon_iso.shape[2]
 nc2a = lon_local.shape[0]
 
 # Load HDIAG sampling (anisotropic)
-f_sampling = Dataset(args.build_dir + '/saber/test/testdata/doc_7/1-1_sampling_grids_local_000001-000001.nc', 'r', format='NETCDF4')
+f_sampling = Dataset(args.data_dir + '/error_covariance_training_doc_2/1-1_sampling_grids_local_000001-000001.nc', 'r', format='NETCDF4')
 lon_ani = f_sampling['lon'][0,:,:,:]
 lat_ani = f_sampling['lat'][0,:,:,:]
 nc3_ani = lon_ani.shape[1]
 nc4_ani = lon_ani.shape[0]
 
 # Load HDIAG profile (isotropic)
-f_profile = Dataset(args.build_dir + '/saber/test/testdata/doc_6/1-1_diag_plot.nc', 'r', format='NETCDF4')
-disth_iso = f_profile['stream_function']['disth'][:]*6371.229
-raw_hor_iso = f_profile['stream_function']['cor1']['raw_hor'][0,:,:]
-fit_hor_iso = f_profile['stream_function']['cor1']['fit_hor'][0,:,:]
+f_profile = Dataset(args.data_dir + '/error_covariance_training_doc_1/1-1_diag_plot.nc', 'r', format='NETCDF4')
+disth_iso = f_profile['air_horizontal_streamfunction']['disth'][:]*6371.229
+raw_hor_iso = f_profile['air_horizontal_streamfunction']['cor1']['raw_hor'][0,:,:]
+fit_hor_iso = f_profile['air_horizontal_streamfunction']['cor1']['fit_hor'][0,:,:]
 
 # Load HDIAG profile (anisotropic)
-f_profile = Dataset(args.build_dir + '/saber/test/testdata/doc_7/1-1_diag_plot.nc', 'r', format='NETCDF4')
-disth_ani = f_profile['stream_function']['disth'][:]*6371.229
-angular_sector = f_profile['stream_function']['as'][:]
-raw_hor_ani = f_profile['stream_function']['cor1']['raw_hor'][0,:,:]
-fit_hor_ani = f_profile['stream_function']['cor1']['fit_hor'][0,:,:]
+f_profile = Dataset(args.data_dir + '/error_covariance_training_doc_2/1-1_diag_plot.nc', 'r', format='NETCDF4')
+disth_ani = f_profile['air_horizontal_streamfunction']['disth'][:]*6371.229
+angular_sector = f_profile['air_horizontal_streamfunction']['as'][:]
+raw_hor_ani = f_profile['air_horizontal_streamfunction']['cor1']['raw_hor'][0,:,:]
+fit_hor_ani = f_profile['air_horizontal_streamfunction']['cor1']['fit_hor'][0,:,:]
 angular_sector_cyclic = []
 raw_hor_ani_cyclic = np.empty([0,nc3_ani])
 fit_hor_ani_cyclic = np.empty([0,nc3_ani])
@@ -87,54 +91,45 @@ for i in range(0, nc4_ani):
         fit_hor_ani_cyclic = np.append(fit_hor_ani_cyclic, [fit_hor_ani[i,:]], axis=0)
 
 # Load HDIAG profile (isotropic)
-f_profile = Dataset(args.build_dir + '/saber/test/testdata/doc_9/1-1_diag_plot.nc', 'r', format='NETCDF4')
-fit_hor_multi = f_profile['stream_function']['cor1']['fit_hor'][0,:,:]
-fit_hor_multi_detail = f_profile['stream_function']['cor1']['fit_detail_hor'][:,0,:,:]
+f_profile = Dataset(args.data_dir + '/error_covariance_training_doc_3/1-1_diag_plot.nc', 'r', format='NETCDF4')
+fit_hor_multi = f_profile['air_horizontal_streamfunction']['cor1']['fit_hor'][0,:,:]
+fit_hor_multi_detail = f_profile['air_horizontal_streamfunction']['cor1']['fit_detail_hor'][:,0,:,:]
 
 # Load HDIAG map (isotropic)
-f_map = Dataset(args.build_dir + '/saber/test/testdata/doc_6/cor_rh.nc', 'r', format='NETCDF4')
+f_map = Dataset(args.data_dir + '/error_covariance_training_doc_1/1-1_cor_rh.nc', 'r', format='NETCDF4')
 lon_hdiag = f_map['lon'][0,:]
 lat_hdiag = f_map['lat'][:,0]
-rh_hdiag = f_map['stream_function'][0,:,:]/1000.0
+rh_hdiag = f_map['air_horizontal_streamfunction'][0,:,:]/1000.0
 rh_hdiag_cyclic, lon_hdiag_cyclic = add_cyclic_point(rh_hdiag, coord=lon_hdiag)
 
 # Load HDIAG map (anisotropic)
-f_map = Dataset(args.build_dir + '/saber/test/testdata/doc_7/cor_rh1.nc', 'r', format='NETCDF4')
-rh1_hdiag = f_map['stream_function'][0,:,:]/1000.0
-f_map = Dataset(args.build_dir + '/saber/test/testdata/doc_7/cor_rh2.nc', 'r', format='NETCDF4')
-rh2_hdiag = f_map['stream_function'][0,:,:]/1000.0
-f_map = Dataset(args.build_dir + '/saber/test/testdata/doc_7/cor_rhc.nc', 'r', format='NETCDF4')
-rhc_hdiag = f_map['stream_function'][0,:,:]
-
-# Load NICAS diracs (isotropic)
-f_diracs = Dataset(args.build_dir + '/saber/test/testdata/doc_6/dirac_nicas.nc', 'r', format='NETCDF4')
-lon_diracs = f_diracs['lon'][0,:]
-lat_diracs = f_diracs['lat'][:,0]
-diracs_iso = f_diracs['stream_function'][0,:,:]
-diracs_iso_cyclic, lon_diracs_cyclic = add_cyclic_point(diracs_iso, coord=lon_diracs)
+f_map = Dataset(args.data_dir + '/error_covariance_training_doc_2/1-1_cor_rh1.nc', 'r', format='NETCDF4')
+rh1_hdiag = f_map['air_horizontal_streamfunction'][0,:,:]/1000.0
+f_map = Dataset(args.data_dir + '/error_covariance_training_doc_2/1-1_cor_rh2.nc', 'r', format='NETCDF4')
+rh2_hdiag = f_map['air_horizontal_streamfunction'][0,:,:]/1000.0
+f_map = Dataset(args.data_dir + '/error_covariance_training_doc_2/1-1_cor_rhc.nc', 'r', format='NETCDF4')
+rhc_hdiag = f_map['air_horizontal_streamfunction'][0,:,:]
 
 # Load NICAS steps (isotropic)
-f_steps = Dataset(args.build_dir + '/saber/test/testdata/doc_6/1-1_nicas_steps_local_000001-000001.nc', 'r', format='NETCDF4')
-steps_iso = f_steps['stream_function']
-
-# Load NICAS diracs (anisotropic)
-f_diracs = Dataset(args.build_dir + '/saber/test/testdata/doc_7/dirac_nicas.nc', 'r', format='NETCDF4')
-diracs_ani = f_diracs['stream_function'][0,:,:]
-diracs_ani_cyclic, lon_diracs_cyclic = add_cyclic_point(diracs_ani, coord=lon_diracs)
+f_steps = Dataset(args.data_dir + '/error_covariance_training_doc_4/1-1_nicas_steps_local_000001-000001.nc', 'r', format='NETCDF4')
+steps_iso = f_steps['air_horizontal_streamfunction']['cmp_1']
 
 # Load NICAS steps (anisotropic)
-f_steps = Dataset(args.build_dir + '/saber/test/testdata/doc_7/1-1_nicas_steps_local_000001-000001.nc', 'r', format='NETCDF4')
-steps_ani = f_steps['stream_function']
+f_steps = Dataset(args.data_dir + '/error_covariance_training_doc_5/1-1_nicas_steps_local_000001-000001.nc', 'r', format='NETCDF4')
+steps_ani = f_steps['air_horizontal_streamfunction']['cmp_1']
 
-# Load NICAS diracs (isotropic - low resolution)
-f_nicas_sampling = Dataset(args.build_dir + '/saber/test/testdata/doc_8/1-1_nicas_grids_local_000001-000001.nc', 'r', format='NETCDF4')
-lon_sa_lr = f_nicas_sampling['stream_function']['lon_sa'][:]*180.0/math.pi
-lat_sa_lr = f_nicas_sampling['stream_function']['lat_sa'][:]*180.0/math.pi
+# Load NICAS steps (isotropic - low resolution)
+f_steps = Dataset(args.data_dir + '/error_covariance_training_doc_6/1-1_nicas_steps_local_000001-000001.nc', 'r', format='NETCDF4')
+steps_iso_lr = f_steps['air_horizontal_streamfunction']['cmp_1']
 
-# Load NICAS diracs (mask)
-f_diracs = Dataset(args.build_dir + '/saber/test/testdata/doc_10/dirac_nicas.nc', 'r', format='NETCDF4')
-diracs_mask_mask = f_diracs['stream_function'][0,:,:]
-diracs_mask_cyclic, lon_diracs_cyclic = add_cyclic_point(diracs_mask_mask, coord=lon_diracs)
+# Load NICAS steps (mask)
+f_steps = Dataset(args.data_dir + '/error_covariance_training_doc_7/1-1_nicas_steps_local_000001-000001.nc', 'r', format='NETCDF4')
+steps_mask = f_steps['air_horizontal_streamfunction']['cmp_1']
+
+# Load NICAS sampling
+f_samp = Dataset(args.data_dir + '/error_covariance_training_doc_8/1-1_nicas_grids_local_000001-000001.nc', 'r', format='NETCDF4')
+lon_sa = f_samp['air_horizontal_streamfunction']['cmp_1']['lon_sa'][:]
+lat_sa = f_samp['air_horizontal_streamfunction']['cmp_1']['lat_sa'][:]
 
 ####################################################################################################
 # PREPROCESSING ####################################################################################
@@ -143,16 +138,12 @@ diracs_mask_cyclic, lon_diracs_cyclic = add_cyclic_point(diracs_mask_mask, coord
 # Bounds
 lon_plot = -45.0
 lat_plot = -0.9
-rh_min = 2000.0
-rh_max = 4300.0
+rh_min = 1500.0
+rh_max = 4500.0
 steps_min = 0.0
 steps_max = 1.1
 lon_steps = steps_iso['steps_5']['lon'][:]
 lat_steps = steps_iso['steps_5']['lat'][:]
-lon_min = np.min(lon_steps)
-lon_max = np.max(lon_steps)
-lat_min = np.min(lat_steps)
-lat_max = np.max(lat_steps)
 
 # Sizes
 nx = lon_hdiag.shape[0]
@@ -199,7 +190,7 @@ for ic2a in range(0, nc2a):
         break
 if ic2a_plot[2]==-1:
     print('Cannot find ic2a_plot[2]')
-    exit()
+#    exit()
 
 # Eigen decomposition
 D11 = rh1_c2a[ic2a_plot[2]]**2
@@ -221,6 +212,31 @@ v12 = v12/n2
 v22 = v22/n2
 
 ####################################################################################################
+# FUNCTIONS ########################################################################################
+####################################################################################################
+
+cmap_red = 1.0
+
+def truncate_colormap(cmap, minval=0.0, maxval=1.0, n=100):
+    new_cmap = colors.LinearSegmentedColormap.from_list(
+        'trunc({n},{a:.2f},{b:.2f})'.format(n=cmap.name, a=minval, b=maxval),
+        cmap(np.linspace(minval, maxval, n)))
+    return new_cmap
+
+def write_output(filename):
+    if args.output == 'jpg':
+        plt.savefig('../fig/' + filename + '.jpg', format='jpg', dpi=300)
+        plt.close()
+        subprocess.run(['mogrify', '-trim', '../fig/' + filename + '.jpg'])
+    elif args.output == 'pdf':
+        plt.savefig('../fig/' + filename + '.pdf', format='pdf', dpi=300)
+        plt.close()
+        subprocess.run(['pdfcrop', '../fig/' + filename + '.pdf', '../fig/' + filename + '.pdf'])
+    else:
+        print('wrong output format')
+        exit()
+
+####################################################################################################
 # PLOTS ############################################################################################
 ####################################################################################################
 
@@ -236,9 +252,7 @@ if args.mode == 'hdiag_sc1' or args.mode == 'all':
     ax.coastlines()
     ax.set_extent([-180.0,180.0,-90.0,90.0], ccrs.PlateCarree())
     plt.plot(lon_iso[0,0,:], lat_iso[0,0,:], color='lightblue', linewidth=0, markersize=4, marker='.', transform=ccrs.PlateCarree())
-    plt.savefig(filename + '.jpg', format='jpg', dpi=300)
-    plt.close()
-    subprocess.run(['mogrify', '-trim', filename + '.jpg'])
+    write_output(filename)
 
 if args.mode == 'hdiag_sc2' or args.mode == 'all':
     # Sc2 sampling, general
@@ -249,9 +263,7 @@ if args.mode == 'hdiag_sc2' or args.mode == 'all':
     ax.set_extent([-180.0,180.0,-90.0,90.0], ccrs.PlateCarree())
     plt.plot(lon_iso[0,0,:], lat_iso[0,0,:], color='lightblue', linewidth=0, markersize=4, marker='.', transform=ccrs.PlateCarree())
     plt.plot(lon_local[:,0], lat_local[:,0], color='red', linewidth=0, markersize=8, marker='.', transform=ccrs.PlateCarree())
-    plt.savefig(filename + '.jpg', format='jpg', dpi=300)
-    plt.close()
-    subprocess.run(['mogrify', '-trim', filename + '.jpg'])
+    write_output(filename)
 
     # Sc2 sampling, point A
     filename = 'hdiag_sc2_a'
@@ -262,9 +274,7 @@ if args.mode == 'hdiag_sc2' or args.mode == 'all':
     plt.plot(lon_iso[0,0,:], lat_iso[0,0,:], color='lightblue', linewidth=0, markersize=4, marker='.', transform=ccrs.PlateCarree())
     plt.plot(lon_local[ic2a,1:], lat_local[ic2a,1:], color='blue', linewidth=0, markersize=4, marker='.', transform=ccrs.PlateCarree())
     plt.plot(lon_local[ic2a,0], lat_local[ic2a,0], color='red', linewidth=0, markersize=8, marker='.', transform=ccrs.PlateCarree())
-    plt.savefig(filename + '.jpg', format='jpg', dpi=300)
-    plt.close()
-    subprocess.run(['mogrify', '-trim', filename + '.jpg'])
+    write_output(filename)
 
     # Sc2 sampling, point B
     filename = 'hdiag_sc2_b'
@@ -275,9 +285,7 @@ if args.mode == 'hdiag_sc2' or args.mode == 'all':
     ic2a = ic2a_plot[1]
     plt.plot(lon_local[ic2a,1:], lat_local[ic2a,1:], color='blue', linewidth=0, markersize=4, marker='.', transform=ccrs.PlateCarree())
     plt.plot(lon_local[ic2a,0], lat_local[ic2a,0], color='red', linewidth=0, markersize=8, marker='.', transform=ccrs.PlateCarree())
-    plt.savefig(filename + '.jpg', format='jpg', dpi=300)
-    plt.close()
-    subprocess.run(['mogrify', '-trim', filename + '.jpg'])
+    write_output(filename)
 
     # Sc2 sampling, point C
     filename = 'hdiag_sc2_c'
@@ -288,9 +296,7 @@ if args.mode == 'hdiag_sc2' or args.mode == 'all':
     ic2a = ic2a_plot[2]
     plt.plot(lon_local[ic2a,1:], lat_local[ic2a,1:], color='blue', linewidth=0, markersize=4, marker='.', transform=ccrs.PlateCarree())
     plt.plot(lon_local[ic2a,0], lat_local[ic2a,0], color='red', linewidth=0, markersize=8, marker='.', transform=ccrs.PlateCarree())
-    plt.savefig(filename + '.jpg', format='jpg', dpi=300)
-    plt.close()
-    subprocess.run(['mogrify', '-trim', filename + '.jpg'])
+    write_output(filename)
 
 if args.mode == 'hdiag_sc3' or args.mode == 'all':
     # Sc3 sampling (isotropic)
@@ -322,9 +328,7 @@ if args.mode == 'hdiag_sc3' or args.mode == 'all':
         plt.plot(lon_local[ic2a_plot[2],1:], lat_local[ic2a_plot[2],1:], color='blue', linewidth=0, markersize=8, marker='.', transform=ccrs.PlateCarree())
         plt.plot(lon_local[ic2a_plot[2],0], lat_local[ic2a_plot[2],0], color='red', linewidth=0, markersize=16, marker='.', transform=ccrs.PlateCarree())
         ax.set_extent([lon_min,lon_max,lat_min,lat_max], ccrs.PlateCarree())
-        plt.savefig(filename + '.jpg', format='jpg', dpi=300)
-        plt.close()
-        subprocess.run(['mogrify', '-trim', filename + '.jpg'])
+        write_output(filename)
 
 if args.mode == 'hdiag_sc3-sc4' or args.mode == 'all':
     # Sc3 sampling (anisotropic)
@@ -358,9 +362,7 @@ if args.mode == 'hdiag_sc3-sc4' or args.mode == 'all':
                 plt.plot(lon_local[ic2a_plot[2],1:], lat_local[ic2a_plot[2],1:], color='blue', linewidth=0, markersize=8, marker='.', transform=ccrs.PlateCarree())
                 plt.plot(lon_local[ic2a_plot[2],0], lat_local[ic2a_plot[2],0], color='red', linewidth=0, markersize=16, marker='.', transform=ccrs.PlateCarree())
                 ax.set_extent([lon_min,lon_max,lat_min,lat_max], ccrs.PlateCarree())
-                plt.savefig(filename + '.jpg', format='jpg', dpi=300)
-                plt.close()
-                subprocess.run(['mogrify', '-trim', filename + '.jpg'])
+                write_output(filename)
 
 if args.mode == 'fit_iso' or args.mode == 'all':
     # Raw diagnostic (isotropic)
@@ -374,9 +376,7 @@ if args.mode == 'fit_iso' or args.mode == 'all':
     ax.set_xlabel('Horizontal distance (km)')
     ax.set_ylabel('Correlation')
     ax.plot(disth_iso, raw_hor_iso[0,:], 'k', linewidth=2)
-    plt.savefig(filename + '.jpg', format='jpg', dpi=300)
-    plt.close()
-    subprocess.run(['mogrify', '-trim', filename + '.jpg'])
+    write_output(filename)
 
     # Fit (isotropic)
     filename = 'fit_iso_fit'
@@ -392,9 +392,7 @@ if args.mode == 'fit_iso' or args.mode == 'all':
     ax.plot(disth_iso, fit_hor_iso[0,:], 'r', linewidth=2)
     ax.annotate('', xy=(rh_c2a[ic2a_plot[2]], 0.0), xycoords='data', xytext=(-10, 0.0), textcoords='data', arrowprops=dict(arrowstyle='-|>', color='blue', linewidth=4))
     ax.annotate('Length-scale: ' + str(int(rh_c2a[ic2a_plot[2]])) + ' km', xy=(2200.0, -0.07), textcoords='data', color='blue')
-    plt.savefig(filename + '.jpg', format='jpg', dpi=300)
-    plt.close()
-    subprocess.run(['mogrify', '-trim', filename + '.jpg'])
+    write_output(filename)
 
 if args.mode == 'fit_ani' or args.mode == 'all':
     # Raw diagnostic (anisotropic)
@@ -407,10 +405,8 @@ if args.mode == 'fit_ani' or args.mode == 'all':
     ax.contour(theta, r, raw_hor_ani_cyclic, levels=levels, linewidths=[0.5], colors=['k'])
     sm = cm.ScalarMappable(cmap='coolwarm', norm=plt.Normalize(vmin=-1.0, vmax=1.0))
     sm.set_array([])
-    plt.colorbar(sm, orientation='vertical', pad=0.04)
-    plt.savefig(filename + '.jpg', format='jpg', dpi=300)
-    plt.close()
-    subprocess.run(['mogrify', '-trim', filename + '.jpg'])
+    plt.colorbar(sm, orientation='vertical', pad=0.04, ax=plt.gca())
+    write_output(filename)
 
     # Fit (anisotropic)
     hfac = 0.8
@@ -431,10 +427,8 @@ if args.mode == 'fit_ani' or args.mode == 'all':
     ax.annotate('Tensor', xy=(np.radians(110.0), 1900), textcoords='data', color='green')
     sm = cm.ScalarMappable(cmap='coolwarm', norm=plt.Normalize(vmin=-1.0, vmax=1.0))
     sm.set_array([])
-    plt.colorbar(sm, orientation='vertical', pad=0.04)
-    plt.savefig(filename + '.jpg', format='jpg', dpi=300)
-    plt.close()
-    subprocess.run(['mogrify', '-trim', filename + '.jpg'])
+    plt.colorbar(sm, orientation='vertical', pad=0.04, ax=plt.gca())
+    write_output(filename)
 
 if args.mode == 'fit_multi' or args.mode == 'all':
     # Fit (multi-component)
@@ -449,9 +443,7 @@ if args.mode == 'fit_multi' or args.mode == 'all':
     ax.set_ylabel('Correlation')
     ax.plot(disth_iso, raw_hor_iso[0,:], 'k', linewidth=2)
     ax.plot(disth_iso, fit_hor_multi_detail[0,0,:], 'g', linestyle='-.', linewidth=2)
-    plt.savefig(filename + '.jpg', format='jpg', dpi=300)
-    plt.close()
-    subprocess.run(['mogrify', '-trim', filename + '.jpg'])
+    write_output(filename)
 
     # Fit (multi-component)
     filename = 'fit_multi_fit_2'
@@ -467,9 +459,7 @@ if args.mode == 'fit_multi' or args.mode == 'all':
     ax.plot(disth_iso, fit_hor_multi_detail[0,0,:], 'g', linestyle='-.', linewidth=2)
     ax.plot(disth_iso, fit_hor_multi_detail[1,0,:]-fit_hor_multi_detail[0,0,:], 'g', linestyle='--', linewidth=2)
     ax.plot(disth_iso, fit_hor_multi[0,:], 'r', linewidth=2)
-    plt.savefig(filename + '.jpg', format='jpg', dpi=300)
-    plt.close()
-    subprocess.run(['mogrify', '-trim', filename + '.jpg'])
+    write_output(filename)
 
 
 if args.mode == 'rh_sampling' or args.mode == 'all':
@@ -485,10 +475,8 @@ if args.mode == 'rh_sampling' or args.mode == 'all':
         plt.plot(lon_local[ic2a,0], lat_local[ic2a,0], color=cmap(rh_norm), linewidth=0, markersize=8, marker='.', transform=ccrs.PlateCarree())
     sm = cm.ScalarMappable(cmap='jet', norm=plt.Normalize(vmin=rh_min, vmax=rh_max))
     sm.set_array([])
-    plt.colorbar(sm, orientation='horizontal', pad=0.06)
-    plt.savefig(filename + '.jpg', format='jpg', dpi=300)
-    plt.close()
-    subprocess.run(['mogrify', '-trim', filename + '.jpg'])
+    plt.colorbar(sm, orientation='horizontal', pad=0.06, ax=plt.gca())
+    write_output(filename)
 
 if args.mode == 'rh_map' or args.mode == 'all':
     # Horizontal radius map
@@ -501,28 +489,16 @@ if args.mode == 'rh_map' or args.mode == 'all':
     ax.contourf(lon_hdiag_cyclic, lat_hdiag, rh_hdiag_cyclic, levels=levels, cmap='jet', transform=ccrs.PlateCarree())
     sm = cm.ScalarMappable(cmap='jet', norm=plt.Normalize(vmin=rh_min, vmax=rh_max))
     sm.set_array([])
-    plt.colorbar(sm, orientation='horizontal', pad=0.06)
-    plt.savefig(filename + '.jpg', format='jpg', dpi=300)
-    plt.close()
-    subprocess.run(['mogrify', '-trim', filename + '.jpg'])
+    plt.colorbar(sm, orientation='horizontal', pad=0.06, ax=plt.gca())
+    write_output(filename)
 
 if args.mode == 'nicas_iso' or args.mode == 'all':
-    # NICAS diracs (isotropic)
-    filename = 'nicas_iso_diracs'
-    print('Working on ' + filename)
-    ax = plt.axes(projection=ccrs.PlateCarree())
-    ax.coastlines()
-    ax.set_extent([-180.0,180.0,-90.0,90.0], ccrs.PlateCarree())
-    levels = np.linspace(-1.0, 1.0, 100)
-    ax.contourf(lon_diracs_cyclic, lat_diracs, diracs_iso_cyclic, levels=levels, cmap='jet', transform=ccrs.PlateCarree())
-    sm = cm.ScalarMappable(cmap='jet', norm=plt.Normalize(vmin=-1.0, vmax=1.0))
-    sm.set_array([])
-    plt.colorbar(sm, orientation='horizontal', pad=0.06)
-    plt.savefig(filename + '.jpg', format='jpg', dpi=300)
-    plt.close()
-    subprocess.run(['mogrify', '-trim', filename + '.jpg'])
-
     # NICAS steps (isotropic)
+    delta = 15.0
+    lon_min = -78.0-delta
+    lon_max = -78.0+delta
+    lat_min = 11.6-delta
+    lat_max = 11.6+delta
     for i in range(1, 8):
         steps = steps_iso['steps_' + str(i)]
         lon_steps = steps['lon'][:]
@@ -532,58 +508,29 @@ if args.mode == 'nicas_iso' or args.mode == 'all':
 
         filename = 'nicas_iso_steps_' + str(i)
         print('Working on ' + filename)
-        ax = plt.axes(projection=ccrs.PlateCarree())
-        ax.coastlines()
+        ax = plt.axes(projection=ccrs.LambertConformal(central_longitude=-78.0, central_latitude=11.6, standard_parallels=(11.6,11.6)))
         ax.set_extent([lon_min,lon_max,lat_min,lat_max], ccrs.PlateCarree())
-        if i<6:
-            cmap = cm.get_cmap('rainbow')
-            for j in range(0, n):
-                value = (values_steps[j]-steps_min)/(steps_max-steps_min)
-                plt.plot(lon_steps[j], lat_steps[j], color=cmap(value), linewidth=0, markersize=4, marker='.', transform=ccrs.PlateCarree())
-        else:
-            levels = np.linspace(steps_min, steps_max, 11)
-            ax.tricontourf(lon_steps, lat_steps, values_steps, levels=levels, cmap='rainbow')
-        sm = cm.ScalarMappable(cmap='rainbow', norm=plt.Normalize(vmin=steps_min, vmax=steps_max))
+        cmap = mpl.colormaps['viridis_r']
+        for j in range(0, n):
+            if i==1 or i==2 or i==6 or i==7:
+                value = cmap_red*(values_steps[j]-steps_min)/(steps_max-steps_min)
+                plt.plot(lon_steps[j], lat_steps[j], color=cmap(value), linewidth=0, markersize=1, marker='o', transform=ccrs.PlateCarree())
+            else:
+                value = cmap_red*(values_steps[j]-steps_min)/(steps_max-steps_min)
+                plt.plot(lon_steps[j], lat_steps[j], color=cmap(value), linewidth=0, markersize=2, marker='o', transform=ccrs.PlateCarree())
+        sm = cm.ScalarMappable(cmap=truncate_colormap(cmap, 0.0, cmap_red), norm=plt.Normalize(vmin=steps_min, vmax=steps_max))
         sm.set_array([])
-        plt.colorbar(sm, orientation='vertical', pad=0.04)
-        plt.savefig(filename + '.jpg', format='jpg', dpi=300)
-        plt.close()
-        subprocess.run(['mogrify', '-trim', filename + '.jpg'])
-
-    # NICAS diracs + rh (isotropic)
-    filename = 'nicas_iso_diracs_rh'
-    print('Working on ' + filename)
-    ax = plt.axes(projection=ccrs.PlateCarree())
-    ax.coastlines()
-    ax.set_extent([-180.0,180.0,-90.0,90.0], ccrs.PlateCarree())
-    levels = np.linspace(rh_min, rh_max, 100)
-    ax.contourf(lon_hdiag_cyclic, lat_hdiag, rh_hdiag_cyclic, levels=levels, cmap='jet', transform=ccrs.PlateCarree())
-    sm = cm.ScalarMappable(cmap='jet', norm=plt.Normalize(vmin=rh_min, vmax=rh_max))
-    sm.set_array([])
-    plt.colorbar(sm, orientation='horizontal', pad=0.06)
-    levels = np.linspace(0.2, 1.0, 5)
-    ax.contour(lon_diracs_cyclic, lat_diracs, diracs_iso_cyclic, levels=levels, linewidths=1.0, colors='k', transform=ccrs.PlateCarree())
-    plt.savefig(filename + '.jpg', format='jpg', dpi=300)
-    plt.close()
-    subprocess.run(['mogrify', '-trim', filename + '.jpg'])
+        plt.colorbar(sm, orientation='vertical', pad=0.04, ax=plt.gca())
+        ax.text(-75.1, -2.7, r'Maximum value: ' + str(float(f'{np.max(values_steps):.2f}')), fontsize=10, transform=ccrs.PlateCarree())
+        write_output(filename)
 
 if args.mode == 'nicas_ani' or args.mode == 'all':
-    # NICAS diracs (anisotropic)
-    filename = 'nicas_ani_diracs'
-    print('Working on ' + filename)
-    ax = plt.axes(projection=ccrs.PlateCarree())
-    ax.coastlines()
-    ax.set_extent([-180.0,180.0,-90.0,90.0], ccrs.PlateCarree())
-    levels = np.linspace(-1.0, 1.0, 100)
-    ax.contourf(lon_diracs_cyclic, lat_diracs, diracs_ani_cyclic, levels=levels, cmap='jet', transform=ccrs.PlateCarree())
-    sm = cm.ScalarMappable(cmap='jet', norm=plt.Normalize(vmin=-1.0, vmax=1.0))
-    sm.set_array([])
-    plt.colorbar(sm, orientation='horizontal', pad=0.06)
-    plt.savefig(filename + '.jpg', format='jpg', dpi=300)
-    plt.close()
-    subprocess.run(['mogrify', '-trim', filename + '.jpg'])
-
     # NICAS steps (anisotropic)
+    delta = 15.0
+    lon_min = -78.0-delta
+    lon_max = -78.0+delta
+    lat_min = 11.6-delta
+    lat_max = 11.6+delta
     for i in range(1, 8):
         steps = steps_ani['steps_' + str(i)]
         lon_steps = steps['lon'][:]
@@ -593,56 +540,100 @@ if args.mode == 'nicas_ani' or args.mode == 'all':
 
         filename = 'nicas_ani_steps_' + str(i)
         print('Working on ' + filename)
-        ax = plt.axes(projection=ccrs.PlateCarree())
-        ax.coastlines()
+        ax = plt.axes(projection=ccrs.LambertConformal(central_longitude=-78.0, central_latitude=11.6, standard_parallels=(11.6,11.6)))
         ax.set_extent([lon_min,lon_max,lat_min,lat_max], ccrs.PlateCarree())
-        if i<6:
-            cmap = cm.get_cmap('rainbow')
-            for j in range(0, n):
-                value = (values_steps[j]-steps_min)/(steps_max-steps_min)
-                plt.plot(lon_steps[j], lat_steps[j], color=cmap(value), linewidth=0, markersize=4, marker='.', transform=ccrs.PlateCarree())
-        else:
-            levels = np.linspace(steps_min, steps_max, 11)
-            ax.tricontourf(lon_steps, lat_steps, values_steps, levels=levels, cmap='rainbow')
-        sm = cm.ScalarMappable(cmap='rainbow', norm=plt.Normalize(vmin=steps_min, vmax=steps_max))
+        cmap = mpl.colormaps['viridis_r']
+        for j in range(0, n):
+            if i==1 or i==2 or i==6 or i==7:
+                value = cmap_red*(values_steps[j]-steps_min)/(steps_max-steps_min)
+                plt.plot(lon_steps[j], lat_steps[j], color=cmap(value), linewidth=0, markersize=1, marker='o', transform=ccrs.PlateCarree())
+            else:
+                value = cmap_red*(values_steps[j]-steps_min)/(steps_max-steps_min)
+                plt.plot(lon_steps[j], lat_steps[j], color=cmap(value), linewidth=0, markersize=2, marker='o', transform=ccrs.PlateCarree())
+        sm = cm.ScalarMappable(cmap=truncate_colormap(cmap, 0.0, cmap_red), norm=plt.Normalize(vmin=steps_min, vmax=steps_max))
         sm.set_array([])
-        plt.colorbar(sm, orientation='vertical', pad=0.04)
-        plt.savefig(filename + '.jpg', format='jpg', dpi=300)
-        plt.close()
-        subprocess.run(['mogrify', '-trim', filename + '.jpg'])
+        plt.colorbar(sm, orientation='vertical', pad=0.04, ax=plt.gca())
+        ax.text(-75.1, -2.7, r'Maximum value: ' + str(float(f'{np.max(values_steps):.2f}')), fontsize=10, transform=ccrs.PlateCarree())
+        write_output(filename)
 
-if args.mode == 'nicas_iso-lr' or args.mode == 'all':
-    # NICAS sampling + rh (isotropic- low resolution)
-    filename = 'nicas_iso-lr_sampling_rh'
-    print('Working on ' + filename)
-    ax = plt.axes(projection=ccrs.PlateCarree())
-    ax.coastlines()
-    ax.set_extent([-180.0,180.0,-90.0,90.0], ccrs.PlateCarree())
-    levels = np.linspace(rh_min, rh_max, 100)
-    ax.contourf(lon_hdiag_cyclic, lat_hdiag, rh_hdiag_cyclic, levels=levels, cmap='jet', transform=ccrs.PlateCarree())
-    sm = cm.ScalarMappable(cmap='jet', norm=plt.Normalize(vmin=rh_min, vmax=rh_max))
-    sm.set_array([])
-    plt.colorbar(sm, orientation='horizontal', pad=0.06)
-    plt.plot(lon_sa_lr, lat_sa_lr, color='k', linewidth=0, markersize=3, marker='.', transform=ccrs.PlateCarree())
-    plt.savefig(filename + '.jpg', format='jpg', dpi=300)
-    plt.close()
-    subprocess.run(['mogrify', '-trim', filename + '.jpg'])
+if args.mode == 'nicas_iso_lr' or args.mode == 'all':
+    # NICAS steps (isotropic- low resolution)
+    delta = 15.0
+    lon_min = -78.0-delta
+    lon_max = -78.0+delta
+    lat_min = 11.6-delta
+    lat_max = 11.6+delta
+    for i in range(1, 8):
+        steps = steps_iso_lr['steps_' + str(i)]
+        lon_steps = steps['lon'][:]
+        lat_steps = steps['lat'][:]
+        values_steps = steps['values'][:]
+        n = len(lon_steps)
+
+        filename = 'nicas_iso_lr_steps_' + str(i)
+        print('Working on ' + filename)
+        ax = plt.axes(projection=ccrs.LambertConformal(central_longitude=-78.0, central_latitude=11.6, standard_parallels=(11.6,11.6)))
+        ax.set_extent([lon_min,lon_max,lat_min,lat_max], ccrs.PlateCarree())
+        cmap = mpl.colormaps['viridis_r']
+        for j in range(0, n):
+            if i==1 or i==2 or i==6 or i==7:
+                value = cmap_red*(values_steps[j]-steps_min)/(steps_max-steps_min)
+                plt.plot(lon_steps[j], lat_steps[j], color=cmap(value), linewidth=0, markersize=1, marker='o', transform=ccrs.PlateCarree())
+            else:
+                value = cmap_red*(values_steps[j]-steps_min)/(steps_max-steps_min)
+                plt.plot(lon_steps[j], lat_steps[j], color=cmap(value), linewidth=0, markersize=2, marker='o', transform=ccrs.PlateCarree())
+        sm = cm.ScalarMappable(cmap=truncate_colormap(cmap, 0.0, cmap_red), norm=plt.Normalize(vmin=steps_min, vmax=steps_max))
+        sm.set_array([])
+        plt.colorbar(sm, orientation='vertical', pad=0.04, ax=plt.gca())
+        ax.text(-75.1, -2.7, r'Maximum value: ' + str(float(f'{np.max(values_steps):.2f}')), fontsize=10, transform=ccrs.PlateCarree())
+        write_output(filename)
 
 if args.mode == 'nicas_mask' or args.mode == 'all':
-    # NICAS diracs (mask)
-    filename = 'nicas_mask_diracs'
+    # NICAS steps (mask)
+    delta = 15.0
+    lon_min = -78.0-delta
+    lon_max = -78.0+delta
+    lat_min = 11.6-delta
+    lat_max = 11.6+delta
+    for i in range(1, 8):
+        steps = steps_mask['steps_' + str(i)]
+        lon_steps = steps['lon'][:]
+        lat_steps = steps['lat'][:]
+        values_steps = steps['values'][:]
+        n = len(lon_steps)
+
+        filename = 'nicas_mask_steps_' + str(i)
+        print('Working on ' + filename)
+        ax = plt.axes(projection=ccrs.LambertConformal(central_longitude=-78.0, central_latitude=11.6, standard_parallels=(11.6,11.6)))
+        ax.set_extent([lon_min,lon_max,lat_min,lat_max], ccrs.PlateCarree())
+        cmap = mpl.colormaps['viridis_r']
+        for j in range(0, n):
+            if i==1 or i==2 or i==6 or i==7:
+                 if not values_steps.mask[j]:
+                    value = cmap_red*(values_steps[j]-steps_min)/(steps_max-steps_min)
+                    plt.plot(lon_steps[j], lat_steps[j], color=cmap(value), linewidth=0, markersize=1, marker='o', transform=ccrs.PlateCarree())
+            else:
+                value = cmap_red*(values_steps[j]-steps_min)/(steps_max-steps_min)
+                plt.plot(lon_steps[j], lat_steps[j], color=cmap(value), linewidth=0, markersize=2, marker='o', transform=ccrs.PlateCarree())
+        sm = cm.ScalarMappable(cmap=truncate_colormap(cmap, 0.0, cmap_red), norm=plt.Normalize(vmin=steps_min, vmax=steps_max))
+        sm.set_array([])
+        plt.colorbar(sm, orientation='vertical', pad=0.04, ax=plt.gca())
+        ax.text(-75.1, -2.7, r'Maximum value: ' + str(float(f'{np.max(values_steps):.2f}')), fontsize=10, transform=ccrs.PlateCarree())
+        write_output(filename)
+
+if args.mode == 'nicas_sampling' or args.mode == 'all':
+    # NICAS sampling
+    filename = 'nicas_sampling'
     print('Working on ' + filename)
-    ax = plt.axes(projection=ccrs.PlateCarree())
-    ax.coastlines()
-    ax.set_extent([-180.0,180.0,-90.0,90.0], ccrs.PlateCarree())
-    levels = np.linspace(-1.0, 1.0, 100)
-    ax.contourf(lon_diracs_cyclic, lat_diracs, diracs_mask_cyclic, levels=levels, cmap='jet', transform=ccrs.PlateCarree())
-    sm = cm.ScalarMappable(cmap='jet', norm=plt.Normalize(vmin=-1.0, vmax=1.0))
+    ax = plt.axes(projection=ccrs.Mollweide())
+    ax.coastlines(linewidth=0.5)
+    levels = np.linspace(rh_min, rh_max, 100)
+    ax.contourf(lon_hdiag_cyclic, lat_hdiag, rh_hdiag_cyclic, levels=levels, cmap='rainbow', transform=ccrs.PlateCarree())
+    sm = cm.ScalarMappable(cmap='rainbow', norm=plt.Normalize(vmin=rh_min, vmax=rh_max))
     sm.set_array([])
-    plt.colorbar(sm, orientation='horizontal', pad=0.06)
-    plt.savefig(filename + '.jpg', format='jpg', dpi=300)
-    plt.close()
-    subprocess.run(['mogrify', '-trim', filename + '.jpg'])
+    plt.colorbar(sm, orientation='vertical', fraction=0.022, pad=0.04, ax=plt.gca())
+    plt.plot(lon_sa, lat_sa, color='k', linewidth=0, markersize=1, marker='.', transform=ccrs.PlateCarree())
+    write_output(filename)
 
 if args.mode == 'resolution' or args.mode == 'all':
     # Resolution definition
@@ -666,11 +657,9 @@ if args.mode == 'resolution' or args.mode == 'all':
         ax[ir].axhline(y=1, color='gray', linestyle='--')
         ax[ir].set_xlim(0.0, 1.1)
         ax[ir].set_ylim(0.0, 1.1)
-        ax[ir].set_xlabel('Normalized horizontal distance')
+        ax[ir].set_xlabel('Normalized distance')
         ax[ir].set_ylabel('GC99 at resolution ' + str(resols[ir]))
         ax[ir].plot(x, y, 'r', linewidth=2, marker='o')
-    plt.savefig(filename + '.jpg', format='jpg', dpi=300)
-    plt.close()
-    subprocess.run(['mogrify', '-trim', filename + '.jpg'])
+    write_output(filename)
 
 print('####################################################################################################')

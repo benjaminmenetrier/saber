@@ -19,6 +19,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+
 #include "atlas/functionspace.h"
 #include "atlas/util/Earth.h"
 
@@ -146,11 +147,11 @@ template <typename MODEL> class ErrorCovarianceToolbox : public oops::Applicatio
       const size_t ntasks = this->getComm().size();
       size_t mysubwin = 0;
       size_t nsublocal = nsubwin;
-      if (params.parallel && (ntasks % nsubwin == 0)) {
+      if (params.parallel.value() && (ntasks % nsubwin == 0)) {
         nsublocal = 1;
         mysubwin = this->getComm().rank() / (ntasks / nsubwin);
         ASSERT(mysubwin < nsubwin);
-      } else if (params.parallel) {
+      } else if (params.parallel.value()) {
         oops::Log::warning() << "Parallel time subwindows specified in yaml "
                              << "but number of tasks is not divisible by "
                              << "the number of subwindows, ignoring." << std::endl;
@@ -186,7 +187,7 @@ template <typename MODEL> class ErrorCovarianceToolbox : public oops::Applicatio
     params.deserialize(fullConfigUpdated);
 
     // Setup geometry
-    const Geometry_ geom(params.geometry, *commSpace, *commTime);
+    const Geometry_ geom(params.geometry.value(), *commSpace, *commTime);
 
     // Setup background
     const State4D_ xx(geom, params.background.value(), *commTime);
@@ -201,8 +202,6 @@ template <typename MODEL> class ErrorCovarianceToolbox : public oops::Applicatio
     // Setup time
     util::DateTime time = xx[0].validTime();
 
-    const eckit::LocalConfiguration covarConf(fullConfigUpdated, "background error");
-
     // Dirac test
     const auto & diracParams = params.dirac.value();
     if (diracParams != boost::none) {
@@ -210,6 +209,9 @@ template <typename MODEL> class ErrorCovarianceToolbox : public oops::Applicatio
       Increment4D_ dxi(geom, vars, xx.times(), *commTime);
       dxi.dirac(*diracParams);
       oops::Log::test() << "Input Dirac increment:" << dxi << std::endl;
+
+      // Full covariance configuration
+      const eckit::LocalConfiguration covarConf = params.backgroundError.value();
 
       // Test configuration
       eckit::LocalConfiguration testConf;
@@ -239,17 +241,17 @@ template <typename MODEL> class ErrorCovarianceToolbox : public oops::Applicatio
       dirac(covarConf, testConf, id, geom, vars, xx, dxi);
     }
 
-    // Background error covariance parameters
-    CovarianceParametersBase_ covarParams;
-    covarParams.deserialize(covarConf);
-    const auto & randomizationSize = covarParams.randomizationSize.value();
-    if ((diracParams == boost::none) || (randomizationSize != boost::none)) {
-      // Background error covariance training
+    // Randomization
+    const auto & randomizationSize = params.backgroundError.value().getInt("randomization size", 0);
+    if (randomizationSize > 0) {
+      randomization(params, geom, vars, xx, ntasks);
+    }
+
+    // If background error covariance has not been setup yet, do it now
+    if ((diracParams == boost::none) && (randomizationSize == 0)) {
+      const eckit::LocalConfiguration covarConf = params.backgroundError.value();
       std::unique_ptr<CovarianceBase_> Bmat(CovarianceFactory_::create(
                                             geom, vars, covarConf, xx, xx));
-
-      // Randomization
-      randomization(params, geom, vars, xx, Bmat, ntasks);
     }
 
     return 0;
@@ -511,101 +513,104 @@ template <typename MODEL> class ErrorCovarianceToolbox : public oops::Applicatio
                      const Geometry_ & geom,
                      const oops::Variables & vars,
                      const State4D_ & xx,
-                     const std::unique_ptr<CovarianceBase_> & Bmat,
                      const size_t & ntasks) const {
-    if (Bmat->randomizationSize() > 0) {
-      oops::Log::info() << "Info     : " << std::endl;
-      oops::Log::info() << "Info     : Generate perturbations:" << std::endl;
-      oops::Log::info() << "Info     : -----------------------" << std::endl;
+    oops::Log::info() << "Info     : " << std::endl;
+    oops::Log::info() << "Info     : Generate perturbations:" << std::endl;
+    oops::Log::info() << "Info     : -----------------------" << std::endl;
 
-      // Create increments
-      Increment4D_ dx(geom, vars, xx.times(), xx.commTime());
-      Increment4D_ dxsq(geom, vars, xx.times(), xx.commTime());
-      Increment4D_ variance(geom, vars, xx.times(), xx.commTime());
+    // Build covariance
+    oops::Log::info() << "Info     : Build covariance" << std::endl;
+    const eckit::LocalConfiguration covarConf = params.backgroundError.value();
+    std::unique_ptr<CovarianceBase_> Bmat(CovarianceFactory_::create(
+                                          geom, vars, covarConf, xx, xx));
 
-      // Initialize variance
-      variance.zero();
+    // Create increments
+    Increment4D_ dx(geom, vars, xx.times(), xx.commTime());
+    Increment4D_ dxsq(geom, vars, xx.times(), xx.commTime());
+    Increment4D_ variance(geom, vars, xx.times(), xx.commTime());
 
-      // Create empty ensemble
-      std::vector<Increment_> ens;
+    // Initialize variance
+    variance.zero();
 
-      // Output options
-      const auto & outputPerturbations = params.outputPerturbations.value();
-      const auto & outputStates = params.outputStates.value();
-      const auto & outputVariance = params.outputVariance.value();
+    // Create empty ensemble
+    std::vector<Increment_> ens;
 
-      for (size_t jm = 0; jm < Bmat->randomizationSize(); ++jm) {
-        // Generate member
-        oops::Log::info() << "Info     : Member " << jm << std::endl;
-        Bmat->randomize(dx);
+    // Output options
+    const auto & outputPerturbations = params.outputPerturbations.value();
+    const auto & outputStates = params.outputStates.value();
+    const auto & outputVariance = params.outputVariance.value();
 
-        if ((outputPerturbations != boost::none) || (outputStates != boost::none)) {
-          // Save member
-          ens.push_back(dx[0]);
-        }
-
-        // Square perturbation
-        dxsq = dx;
-        dxsq.schur_product_with(dx);
-
-        // Update variance
-        variance += dxsq;
-      }
-      oops::Log::info() << "Info     : " << std::endl;
+    for (size_t jm = 0; jm < Bmat->randomizationSize(); ++jm) {
+      // Generate member
+      oops::Log::info() << "Info     : Member " << jm << std::endl;
+      Bmat->randomize(dx);
 
       if ((outputPerturbations != boost::none) || (outputStates != boost::none)) {
-        oops::Log::info() << "Info     : Write states and/or perturbations:" << std::endl;
-        oops::Log::info() << "Info     : ----------------------------------" << std::endl;
-        oops::Log::info() << "Info     : " << std::endl;
-        for (size_t jm = 0; jm < Bmat->randomizationSize(); ++jm) {
-          oops::Log::test() << "Member " << jm << ": " << ens[jm] << std::endl;
-
-          if (outputPerturbations != boost::none) {
-            // Update config
-            auto outputPerturbationsUpdated = *outputPerturbations;
-            util::setMember(outputPerturbationsUpdated, jm+1);
-            setMPI(outputPerturbationsUpdated, ntasks);
-
-            // Write perturbation
-            ens[jm].write(outputPerturbationsUpdated);
-          }
-
-          if (outputStates != boost::none) {
-            // Update config
-            auto outputStatesUpdated = *outputStates;
-            util::setMember(outputStatesUpdated, jm+1);
-            setMPI(outputStatesUpdated, ntasks);
-
-            // Add background state to perturbation
-            State_ xp(xx[0]);
-            xp += ens[jm];
-
-            // Write state
-            xp.write(outputStatesUpdated);
-          }
-
-          oops::Log::info() << "Info     : " << std::endl;
-        }
+        // Save member
+        ens.push_back(dx[0]);
       }
 
-      if (outputVariance != boost::none) {
-        oops::Log::info() << "Info     : Write randomized variance:" << std::endl;
-        oops::Log::info() << "Info     : --------------------------" << std::endl;
-        oops::Log::info() << "Info     : " << std::endl;
-        if (Bmat->randomizationSize() > 1) {
-          // Normalize variance
-          double rk_norm = 1.0/static_cast<double>(Bmat->randomizationSize());
-          variance *= rk_norm;
+      // Square perturbation
+      dxsq = dx;
+      dxsq.schur_product_with(dx);
+
+      // Update variance
+      variance += dxsq;
+    }
+    oops::Log::info() << "Info     : " << std::endl;
+
+    if ((outputPerturbations != boost::none) || (outputStates != boost::none)) {
+      oops::Log::info() << "Info     : Write states and/or perturbations:" << std::endl;
+      oops::Log::info() << "Info     : ----------------------------------" << std::endl;
+      oops::Log::info() << "Info     : " << std::endl;
+      for (size_t jm = 0; jm < Bmat->randomizationSize(); ++jm) {
+        oops::Log::test() << "Member " << jm << ": " << ens[jm] << std::endl;
+
+        if (outputPerturbations != boost::none) {
+          // Update config
+          auto outputPerturbationsUpdated = *outputPerturbations;
+          util::setMember(outputPerturbationsUpdated, jm+1);
+          setMPI(outputPerturbationsUpdated, ntasks);
+
+          // Write perturbation
+          ens[jm].write(outputPerturbationsUpdated);
         }
 
-        // Update config
-        auto outputVarianceUpdated = *outputVariance;
-        setMPI(outputVarianceUpdated, ntasks);
+        if (outputStates != boost::none) {
+          // Update config
+          auto outputStatesUpdated = *outputStates;
+          util::setMember(outputStatesUpdated, jm+1);
+          setMPI(outputStatesUpdated, ntasks);
 
-        // Write variance
-        variance[0].write(outputVarianceUpdated);
-        oops::Log::test() << "Randomized variance: " << variance << std::endl;
+          // Add background state to perturbation
+          State_ xp(xx[0]);
+          xp += ens[jm];
+
+          // Write state
+          xp.write(outputStatesUpdated);
+        }
+
+        oops::Log::info() << "Info     : " << std::endl;
       }
+    }
+
+    if (outputVariance != boost::none) {
+      oops::Log::info() << "Info     : Write randomized variance:" << std::endl;
+      oops::Log::info() << "Info     : --------------------------" << std::endl;
+      oops::Log::info() << "Info     : " << std::endl;
+      if (Bmat->randomizationSize() > 1) {
+        // Normalize variance
+        double rk_norm = 1.0/static_cast<double>(Bmat->randomizationSize());
+        variance *= rk_norm;
+      }
+
+      // Update config
+      auto outputVarianceUpdated = *outputVariance;
+      setMPI(outputVarianceUpdated, ntasks);
+
+      // Write variance
+      variance[0].write(outputVarianceUpdated);
+      oops::Log::test() << "Randomized variance: " << variance << std::endl;
     }
   }
 // -----------------------------------------------------------------------------

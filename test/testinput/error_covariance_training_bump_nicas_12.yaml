@@ -1,12 +1,13 @@
 geometry:
   function space: StructuredColumns
   grid:
-    type: regular_gaussian
-    N: 50
+    type: regular_lonlat
+    N: 10
   groups:
   - variables:
     - air_horizontal_streamfunction
-    levels: 1
+    levels: 10
+  halo: 1
 background:
   date: 2010-01-01T12:00:00Z
   state variables:
@@ -16,28 +17,27 @@ background error:
   saber central block:
     saber block name: BUMP_NICAS
     calibration:
+      general:
+        testing: true
+        timers: true
       io:
         data directory: testdata
-        files prefix: randomization_doc_3/_MPI_-_OMP_
+        files prefix: error_covariance_training_bump_nicas_12/_MPI_-_OMP_
       drivers:
         multivariate strategy: univariate
         compute nicas: true
       nicas:
-        resolution: 12.0
+        resolution: 4.0
         explicit length-scales: true
         horizontal length-scale:
         - groups:
           - air_horizontal_streamfunction
-          value: 10000.0e3
+          value: 4.0e6
         vertical length-scale:
         - groups:
           - air_horizontal_streamfunction
-          value: 0.0
-  saber outer blocks:
-  - saber block name: StdDev
-    read:
-      model file:
-        filepath: testdata/convertstate_doc_1/rhc_pert
-  randomization size: 3
-output states:
-  filepath: testdata/randomization_doc_3/_MPI_-_OMP__rhc
+          value: 5.0
+        setup timings: 10
+        application timings: 100
+test:
+  reference filename: testref/error_covariance_training_bump_nicas_12.ref

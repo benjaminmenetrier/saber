@@ -112,7 +112,7 @@ rng%initial_seed = rng%seed
 rng%seed = rng%seed+1
 
 ! Print result
-if (nam%default_seed > 0) then
+if (nam%default_seed>0) then
    write(mpl%info,'(a7,a)') '','Linear congruential generator initialized with a default seed'
    call mpl%flush
 else

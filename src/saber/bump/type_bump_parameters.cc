@@ -44,6 +44,8 @@ void bump_config_init_f90(eckit::LocalConfiguration * config) {
   param(generalDef.repro_ops, generalConf);
   // Reproducibility threshold
   param(generalDef.repro_th, generalConf);
+  // Timers
+  param(generalDef.timers, generalConf);
   // Universe radius [in meters]
   param(generalDef.universe_radius, generalConf);
   // Sampling method
@@ -320,6 +322,8 @@ void bump_config_init_f90(eckit::LocalConfiguration * config) {
   param(nicasDef.forced_radii, nicasConf);
   // Factor to get interpolation radius from convolution radius if nicas_interp_type = 'si'
   param(nicasDef.nicas_si_factor, nicasConf);
+  // Scaling on convolution length-scale to account for smooth interpolation effect
+  param(nicasDef.nicas_si_scaling, nicasConf);
   // Normalization randomization size
   param(nicasDef.norm_rand_size, nicasConf);
   // Positive-definiteness test
@@ -334,6 +338,10 @@ void bump_config_init_f90(eckit::LocalConfiguration * config) {
   param(nicasDef.sim_levs_th, nicasConf);
   // Read/write interpolation in global file
   param(nicasDef.interp_in_global_file, nicasConf);
+  // Number of runs for setup timing
+  param(nicasDef.nicas_setup_timings, nicasConf);
+  // Number of runs for application timing
+  param(nicasDef.nicas_application_timings, nicasConf);
 
   // Psichitouv section
   PsichitouvDef psichitouvDef;

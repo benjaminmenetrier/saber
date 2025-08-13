@@ -11,6 +11,7 @@ background:
   date: 2010-01-01T12:00:00Z
   state variables:
   - air_horizontal_streamfunction
+  filepath: testdata/convertstate_doc_1/rh1_avg
 background error:
   covariance model: SABER
   saber central block:
@@ -18,7 +19,7 @@ background error:
     calibration:
       io:
         data directory: testdata
-        files prefix: randomization_doc_3/_MPI_-_OMP_
+        files prefix: randomization_doc_1/_MPI_-_OMP_
       drivers:
         multivariate strategy: univariate
         compute nicas: true
@@ -28,7 +29,7 @@ background error:
         horizontal length-scale:
         - groups:
           - air_horizontal_streamfunction
-          value: 10000.0e3
+          value: 2500.0e3
         vertical length-scale:
         - groups:
           - air_horizontal_streamfunction
@@ -37,7 +38,7 @@ background error:
   - saber block name: StdDev
     read:
       model file:
-        filepath: testdata/convertstate_doc_1/rhc_pert
-  randomization size: 3
+        filepath: testdata/convertstate_doc_1/rh1_pert
+  randomization size: 1
 output states:
-  filepath: testdata/randomization_doc_3/_MPI_-_OMP__rhc
+  filepath: testdata/randomization_doc_1/_MPI_-_OMP__rh1
