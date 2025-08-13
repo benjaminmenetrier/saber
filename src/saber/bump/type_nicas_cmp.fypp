@@ -2923,6 +2923,49 @@ do il1=1,nicas_cmp%nl1
 
             ! Release memory
             deallocate(c1_to_c0)
+         case ('bridson')
+            ! Compute sampling
+            write(mpl%info,'(a16,a)') '','Compute horizontal subset Sc1:'
+            call mpl%flush(flush=nicas_cmp%verbosity)
+            call geom%initialize_sampling(mpl,rng,geom%nc0a,geom%lon_c0a,geom%lat_c0a,mask_hor_c0a, &
+ & nicas_cmp%rhs(:,il0s),geom%nc0,geom%c0a_to_c0,ifmt,nicas_cmp%hor(il1s)%nc1,c1_to_c0)
+
+            ! Count Sc1 point in halo A
+            nicas_cmp%hor(il1s)%nc1a = 0
+            do ic1=1,nicas_cmp%hor(il1s)%nc1
+               ic0 = c1_to_c0(ic1)
+               iproc = geom%c0_to_proc(ic0)
+               if (iproc==mpl%myproc) nicas_cmp%hor(il1s)%nc1a = nicas_cmp%hor(il1s)%nc1a+1
+            end do
+
+            ! Allocation
+            allocate(nicas_cmp%hor(il1s)%lon_c1a(nicas_cmp%hor(il1s)%nc1a))
+            allocate(nicas_cmp%hor(il1s)%lat_c1a(nicas_cmp%hor(il1s)%nc1a))
+            do jl1=1,nicas_cmp%nl1
+               if (il1s==nicas_cmp%hor(jl1)%il1s) allocate(nicas_cmp%hor(jl1)%vert_coord_c1a(nicas_cmp%hor(il1s)%nc1a))
+            end do
+
+            ! Get lon/lat/vert_coord
+            ic1a = 0
+            do ic1=1,nicas_cmp%hor(il1s)%nc1
+               ic0 = c1_to_c0(ic1)
+               iproc = geom%c0_to_proc(ic0)
+               if (iproc==mpl%myproc) then
+                  ic1a = ic1a+1
+                  ic0a = geom%c0_to_c0a(ic0)
+                  nicas_cmp%hor(il1s)%lon_c1a(ic1a) = geom%lon_c0a(ic0a)
+                  nicas_cmp%hor(il1s)%lat_c1a(ic1a) = geom%lat_c0a(ic0a)
+                  do jl1=1,nicas_cmp%nl1
+                     if (il1s==nicas_cmp%hor(jl1)%il1s) then
+                        jl0 = nicas_cmp%l1_to_l0(jl1)
+                        nicas_cmp%hor(jl1)%vert_coord_c1a(ic1a) = geom%vert_coord_c0a(ic0a,jl0)
+                     end if
+                  end do
+               end if
+            end do
+
+            ! Release memory
+            deallocate(c1_to_c0)
          case ('octahedral','regular')
             ! Deprecation message
             call mpl%warning('${subr}$','"octahedral" draw type should be replaced with "regular"')
