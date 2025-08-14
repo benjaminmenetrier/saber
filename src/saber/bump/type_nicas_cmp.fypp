@@ -2401,7 +2401,7 @@ type(nam_type),intent(in) :: nam                 !< Namelist
 type(geom_type),intent(in) :: geom               !< Geometry
 
 ! Local variables
-integer :: il1,il1s,c_n_s,max_ops,max_com
+integer :: il1,il1s,c_n_s
 
 ! Set name
 @:set_name(nicas_cmp_compute_parameters)
@@ -2496,29 +2496,6 @@ if (any(nicas_cmp%vlev)) then
       call mpl%flush
       call mpl%f_comm%allreduce(nicas_cmp%c%n_s,c_n_s,fckit_mpi_sum())
       write(mpl%test,'(a13,a,i9)') '','c%n_s[global] =             ',c_n_s
-      call mpl%flush
-
-      ! Print aggregated results
-      write(mpl%info,'(a10,a)') '','Aggregated parameters'
-      call mpl%flush
-      max_ops = 0
-      do il1=1,nicas_cmp%nl1
-         il1s = nicas_cmp%hor(il1)%il1s
-         max_ops = max_ops + nicas_cmp%hor(il1s)%interp_c1b_to_c0a%n_s
-      end do
-      call mpl%f_comm%allreduce(max_ops,fckit_mpi_max())
-      write(mpl%info,'(a13,a,i9)') '','interp. operations =        ',max_ops
-      call mpl%flush
-      max_com = maxval(nicas_cmp%com_s_AB%jhalocounts)
-      call mpl%f_comm%allreduce(max_com,fckit_mpi_max())
-      write(mpl%info,'(a13,a,i9)') '','interp. communications =    ',max_com
-      call mpl%flush
-      call mpl%f_comm%allreduce(nicas_cmp%c%n_s,max_ops,fckit_mpi_max())
-      write(mpl%info,'(a13,a,i9)') '','convol. operations =        ',max_ops
-      call mpl%flush
-      max_com = maxval(nicas_cmp%com_s_AC%jhalocounts)
-      call mpl%f_comm%allreduce(max_com,fckit_mpi_max())
-      write(mpl%info,'(a13,a,i9)') '','convol. communications =    ',max_com
       call mpl%flush
    end if
 else

@@ -12,7 +12,7 @@ module tools_atlas
 use atlas_module, only: atlas_structuredgrid,atlas_regionalgrid,atlas_field,atlas_integer,atlas_real,atlas_functionspace, &
  & atlas_functionspace_nodecolumns,atlas_functionspace_pointcloud,atlas_functionspace_structuredcolumns, &
  & atlas_projection,atlas_config,atlas_json
-use tools_const, only: zero,quarter,half,rad2deg
+use tools_const, only: zero,quarter,half,four,eight,rad2deg,pi
 use tools_kinds, only: kind_int,kind_real
 use tools_func, only: sphere_dist,convert_i2l,convert_l2i
 use type_mpl, only: mpl_type
@@ -21,8 +21,10 @@ use type_mpl, only: mpl_type
 implicit none
 
 interface get_grid
-   module procedure atlas_get_global_grid
-   module procedure atlas_get_regional_grid
+   module procedure atlas_get_global_grid_from_size
+   module procedure atlas_get_global_grid_from_cell
+   module procedure atlas_get_regional_grid_from_size
+   module procedure atlas_get_regional_grid_from_cell
 end interface
 interface field_to_array
    #:for dtype in dtypes_irl
@@ -48,10 +50,10 @@ public :: field_to_array,field_from_array,get_atlas_functionspace_size,get_atlas
 contains
 
 !----------------------------------------------------------------------
-! Subroutine: atlas_get_global_grid
+! Subroutine: atlas_get_global_grid_from_size
 !> Define global ATLAS grid (reduced Gaussian) from minimum number of points
 !----------------------------------------------------------------------
-subroutine atlas_get_global_grid(mpl,nmin,agrid,n)
+subroutine atlas_get_global_grid_from_size(mpl,nmin,agrid,n)
 
 implicit none
 
@@ -66,7 +68,7 @@ integer :: trunc
 character(len=6) :: gridid
 
 ! Set name
-@:set_name(atlas_get_global_grid)
+@:set_name(atlas_get_global_grid_from_size)
 
 ! Probe in
 @:probe_in()
@@ -75,7 +77,7 @@ character(len=6) :: gridid
 if (nmin<3) call mpl%abort('${subr}$','minimum number of points is too small')
 
 ! Get truncation
-trunc = int(-4.5_kind_real+sqrt(20.25_kind_real+quarter*real(nmin,kind_real)))+1
+trunc = floor(-4.5_kind_real+sqrt(20.25_kind_real+quarter*real(nmin,kind_real)))+1
 
 ! Define ID
 write(gridid,'(a,i5.5)') 'O',trunc
@@ -89,13 +91,57 @@ if (present(n)) n = 4*trunc**2+36*trunc
 ! Probe out
 @:probe_out()
 
-end subroutine atlas_get_global_grid
+end subroutine atlas_get_global_grid_from_size
 
 !----------------------------------------------------------------------
-! Subroutine: atlas_get_regional_grid
+! Subroutine: atlas_get_global_grid_from_cell
+!> Define global ATLAS grid (reduced Gaussian) from maximum cell size
+!----------------------------------------------------------------------
+subroutine atlas_get_global_grid_from_cell(mpl,dxmax,agrid,n)
+
+implicit none
+
+! Passed variables
+type(mpl_type),intent(inout) :: mpl               !< MPI data
+real(kind_real),intent(in) :: dxmax               !< Maximum cell size
+type(atlas_structuredgrid),intent(inout) :: agrid !< ATLAS grid
+integer,intent(out),optional :: n                 !< Grid size
+
+! Local variables
+integer :: trunc
+character(len=6) :: gridid
+
+! Set name
+@:set_name(atlas_get_global_grid_from_cell)
+
+! Probe in
+@:probe_in()
+
+! Check cell size
+if (.not.(dxmax>zero)) call mpl%abort('${subr}$','maximum cell size should be positive')
+
+! Get truncation
+trunc = (floor(eight*pi/dxmax)-4)+1
+
+! Define ID
+write(gridid,'(a,i5.5)') 'O',trunc
+
+! Define grid
+agrid = atlas_structuredgrid(gridid)
+
+! Define number of points
+if (present(n)) n = 4*trunc**2+36*trunc
+
+! Probe out
+@:probe_out()
+
+end subroutine atlas_get_global_grid_from_cell
+
+!----------------------------------------------------------------------
+! Subroutine: atlas_get_regional_grid_from_size
 !> Define regional ATLAS grid from minimum number of points
 !----------------------------------------------------------------------
-subroutine atlas_get_regional_grid(mpl,nmin,aconfig_grid,xmin,xmax,ymin,ymax,agrid,n)
+subroutine atlas_get_regional_grid_from_size(mpl,nmin,aconfig_grid,xmin,xmax,ymin,ymax,agrid,n)
 
 implicit none
 
@@ -117,7 +163,7 @@ type(atlas_config) :: aconfig_proj
 type(atlas_projection) :: aproj
 
 ! Set name
-@:set_name(atlas_get_regional_grid)
+@:set_name(atlas_get_regional_grid_from_size)
 
 ! Probe in
 @:probe_in()
@@ -163,7 +209,45 @@ if (present(n)) n = nx*ny
 ! Probe out
 @:probe_out()
 
-end subroutine atlas_get_regional_grid
+end subroutine atlas_get_regional_grid_from_size
+
+!----------------------------------------------------------------------
+! Subroutine: atlas_get_regional_grid_from_cell
+!> Define regional ATLAS grid from maximum cell size
+!----------------------------------------------------------------------
+subroutine atlas_get_regional_grid_from_cell(mpl,dxmax,aconfig_grid,xmin,xmax,ymin,ymax,agrid,n)
+
+implicit none
+
+! Passed variables
+type(mpl_type),intent(inout) :: mpl               !< MPI data
+real(kind_real),intent(in) :: dxmax               !< Maximum cell size
+type(atlas_config),intent(in) :: aconfig_grid     !< ATLAS grid configuration
+real(kind_real),intent(in) :: xmin                !< Computational grid minimum x value
+real(kind_real),intent(in) :: xmax                !< Computational grid maximum x value
+real(kind_real),intent(in) :: ymin                !< Computational grid minimum y value
+real(kind_real),intent(in) :: ymax                !< Computational grid maximum y value
+type(atlas_structuredgrid),intent(inout) :: agrid !< ATLAS grid
+integer,intent(out),optional :: n                 !< Grid size
+
+! Local variables
+integer :: nx_work,ny_work,n_work,nx,ny
+real(kind_real) :: xstart,xend,ystart,yend,alpha,xy_min(2),xy_max(2)
+type(atlas_config) :: aconfig_proj
+type(atlas_projection) :: aproj
+
+! Set name
+@:set_name(atlas_get_regional_grid_from_cell)
+
+! Probe in
+@:probe_in()
+
+call mpl%abort('nope','not implemented yet')
+
+! Probe out
+@:probe_out()
+
+end subroutine atlas_get_regional_grid_from_cell
 
  #:for dtype in dtypes_ir
 !----------------------------------------------------------------------

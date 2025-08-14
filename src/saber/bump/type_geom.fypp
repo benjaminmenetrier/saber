@@ -2971,24 +2971,29 @@ integer,intent(out) :: ns                       !< Number of samplings points (f
 integer,allocatable,intent(inout) :: s_to_cx(:) !< Horizontal sampling index (full domain)
 
 ! Local variables
-integer :: ncxeff,active_list_size,ir_base,icxeff_base,nn_base,nn_int,itry,ir_test,icx_test,icxeff_test,nn_test,i,icxeff
+integer :: ncr,icr,inode,ix,iy,icr1,icr2
+integer :: active_list_size,ir_base,icr_base,nn_base,nn_int,itry,ir_test,icr_test,nn_test,i,icxeff
 integer :: is,iproc,icx,hash
-integer :: nn_index_start(1),nn_index_check(2)
-integer,allocatable :: active_list(:),sample_index(:),grid_flag(:),nn_index_base(:),nn_index_test(:)
-integer,allocatable :: order_s(:)
-real(kind_real) :: x_start,y_start,z_start,lon_start,lat_start
-real(kind_real) :: nn_dist_check(2)
-real(kind_real),allocatable :: rh_cx(:),radeff(:),lon_s(:),lat_s(:),acc_s(:)
+integer :: nn_index(1),nn_index_check(2)
+integer,allocatable :: cr_to_cx(:),active_list(:),s_to_cr(:),grid_flag(:),nn_index_base(:),nn_index_test(:),order_s(:)
+real(kind_real) :: rh_min,rh_max,rad_min,x_start,y_start,z_start,lon_start,lat_start
+real(kind_real) :: lonlat(2),nn_dist_check(2)
+real(kind_real),allocatable :: rh_cx(:),lon_cr(:),lat_cr(:),rad_cr(:),lon_s(:),lat_s(:),acc_s(:)
 logical :: found,valid
-logical,allocatable :: gmask_s(:)
+logical,allocatable :: lmask_cx(:),gmask_s(:)
 character(len=1024) :: cfmt
-type(tree_type) :: tree_s
+type(atlas_structuredgrid) :: agrid
+type(tree_type) :: tree_cr,tree_s
 
 ! Set name
 @:set_name(geom_initialize_sampling_floating)
 
 ! Probe in
 @:probe_in()
+
+! Get min/max support radius
+call mpl%f_comm%allreduce(zss_minval(rh_cxa),rh_min,fckit_mpi_min())
+call mpl%f_comm%allreduce(zss_maxval(rh_cxa),rh_max,fckit_mpi_max())
 
 ! Allocation
 if (mpl%main) then
@@ -3004,108 +3009,202 @@ if (mpl%main) then
    ! Check consistency
    if (tree_cx%n/=ncx) call mpl%abort('${subr}$','inconsistent tree size')
 
-   ! Allocation
-   ncxeff = tree_cx%neff
-   allocate(active_list(ncxeff))
-   allocate(sample_index(ncxeff))
-   allocate(grid_flag(ncxeff))
-   allocate(radeff(ncxeff))
-   
-   ! Apply resolution
-   radeff = rh_cx(tree_cx%from_eff)/(two*resol)
+   ! First step: reduce grid
 
-   ! Initialization
-   ns = 0
-   active_list_size = 0
-   active_list = 0
-   sample_index = 0
-   grid_flag = 0
+   ! Minimum length-scale
+   rad_min = half*rh_min/resol
 
-   ! Arbitrary starting point
-   if (rng%reset_seed) then
-      ! Deterministic run, use the domain center
-      x_start = geom%v_center(1)
-      y_start = geom%v_center(2)
-      z_start = geom%v_center(3)
+   ! Get grid based on minimum radius
+   if (geom%global) then
+      ! Global grid
+      call get_grid(mpl,rad_min,agrid,ncr)
    else
-      ! Random run, use a random point
-      call rng%rand(-one,one,x_start)
-      call rng%rand(-one,one,y_start)
-      call rng%rand(-one,one,z_start)
+      ! Regional grid
+      call get_grid(mpl,rad_min,geom%aconfig_work_grid,geom%xmin,geom%xmax,geom%ymin,geom%ymax,agrid,ncr)
    end if
-   call xyz2lonlat(mpl,x_start,y_start,z_start,lon_start,lat_start)
-   call tree_cx%find_nearest_neighbors(mpl,lon_start,lat_start,1,nn_index_start)
-   icxeff_test = tree_cx%to_eff(nn_index_start(1))
 
-   ! Update lists
-   ns = ns+1
-   active_list_size = active_list_size+1
-   active_list(active_list_size) = icxeff_test
-   sample_index(ns) = icxeff_test
-   grid_flag(icxeff_test) = ns
-
-   ! Loop while active list is not empty
-   do while (active_list_size>0)
-      ! Base sample
-      call rng%rand(1,active_list_size,ir_base)
-      icxeff_base = active_list(ir_base)
-      found = .false.
-
-      ! List points in the annulus
-      call tree_cx%find_nearest_neighbors(mpl,tree_cx%lon(icxeff_base),tree_cx%lat(icxeff_base),two*radeff(icxeff_base), &
- & nn_base,nn_index_base)
-      call tree_cx%count_nearest_neighbors(mpl,tree_cx%lon(icxeff_base),tree_cx%lat(icxeff_base),radeff(icxeff_base),nn_int)
-
-      do itry=1,nn_base-nn_int
-         icx_test = nn_index_base(nn_int+itry)
-         icxeff_test = tree_cx%to_eff(icx_test)
-         call tree_cx%find_nearest_neighbors(mpl,tree_cx%lon(icxeff_test),tree_cx%lat(icxeff_test),radeff(icxeff_test), &
- & nn_test,nn_index_test)
-
-         valid = .true.
-         do i=1,nn_test
-            icx = nn_index_test(i)
-            icxeff = tree_cx%to_eff(icx) 
-            if (grid_flag(icxeff)>0) then
-              valid = .false.
-              exit
-            end if
-         end do
-         deallocate(nn_index_test)
-
-         if (valid) then
-            ns = ns+1
-            active_list_size = active_list_size+1
-            active_list(active_list_size) = icxeff_test
-            sample_index(ns) = icxeff_test
-            grid_flag(icxeff_test) = ns
-            found = .true.
-            exit
-         end if
-      end do
-
-      if (.not.found) then
-         ! Remove base sample from active list
-         active_list(ir_base:active_list_size-1) = active_list(ir_base+1:active_list_size)
-         active_list_size = active_list_size-1
+   if (ncr>ncx) then
+      ! Get grid based on size
+      if (geom%global) then
+         ! Global grid
+         call get_grid(mpl,ncx,agrid,ncr)
+      else
+         ! Regional grid
+         call get_grid(mpl,ncx,geom%aconfig_work_grid,geom%xmin,geom%xmax,geom%ymin,geom%ymax,agrid,ncr)
       end if
+   end if
 
-      ! Release memory
-      deallocate(nn_index_base)
-   end do
+   ! Allocation
+   allocate(lmask_cx(ncx))
 
-   ! Copy sample
-   allocate(s_to_cx(ns))
-   do is=1,ns
-     icxeff = sample_index(is)
-     icx = tree_cx%from_eff(icxeff)
-     s_to_cx(is) = icx
+   ! Loop over grid points
+   inode = 0
+   lmask_cx = .false.
+   do iy=1,int(agrid%ny(),kind_int)
+      do ix=1,int(agrid%nx(iy),kind_int)
+         ! Full domain index
+         inode = inode+1
+
+         ! Get longitude/latitude
+         lonlat = agrid%lonlat(ix,iy)*deg2rad
+         call lonlatmod(lonlat(1),lonlat(2))
+
+         ! Find nearest neighbor
+         call tree_cx%find_nearest_neighbors(mpl,lonlat(1),lonlat(2),1,nn_index)
+         icx = nn_index(1)
+         
+         ! Keep valid points on each processor
+         lmask_cx(icx) = .true.
+      end do
    end do
 
    ! Release memory
-   deallocate(active_list)
-   deallocate(sample_index)
-   deallocate(grid_flag)
+   call agrid%final()
+
+   ! Allocation
+   ncr = count(lmask_cx)
+   allocate(cr_to_cx(ncr))
+   allocate(s_to_cr(ncr))
+   allocate(rad_cr(ncr))
+
+   ! Mapping from reduced to initial grid
+   icr = 0
+   do icx=1,ncx
+      if (lmask_cx(icx)) then
+         icr = icr+1
+         cr_to_cx(icr) = icx
+         rad_cr(icr) = half*rh_cx(icx)/resol
+      end if
+   end do
+
+   if (indist(rh_min,rh_max)) then
+      ! Uniform support radius
+      ns = ncr
+      allocate(s_to_cx(ns))
+      s_to_cx = cr_to_cx
+      do is=1,ns
+         s_to_cr(is) = is
+      end do
+   else
+      ! Print result
+      write(cfmt,'(a,i2.2,a)') '(a',ifmt+3,',a,i8,a,i8,a)'
+      write(mpl%test,trim(cfmt)) '','Grid reduction from ',tree_cx%neff,' to ',ncr,' points'
+      if (ifmt>0) call mpl%flush
+
+      ! Allocation
+      allocate(lon_cr(ncr))
+      allocate(lat_cr(ncr))
+
+      ! Longitude / latitude / radius on reduced grid
+      do icr=1,ncr
+         icx = cr_to_cx(icr)
+         icxeff = tree_cx%to_eff(icx)
+         lon_cr(icr) = tree_cx%lon(icxeff)
+         lat_cr(icr) = tree_cx%lat(icxeff)
+      end do
+
+      ! Initialize tree
+      call tree_cr%init(mpl,ncr,lon_cr,lat_cr)
+   
+      ! Allocation
+      allocate(active_list(ncr))
+      allocate(grid_flag(ncr))
+   
+      ! Initialization
+      ns = 0
+      active_list_size = 0
+      active_list = 0
+      s_to_cr = 0
+      grid_flag = 0
+   
+      ! Arbitrary starting point
+      if (rng%reset_seed) then
+         ! Deterministic run, use the domain center
+         x_start = geom%v_center(1)
+         y_start = geom%v_center(2)
+         z_start = geom%v_center(3)
+      else
+         ! Random run, use a random point
+         call rng%rand(-one,one,x_start)
+         call rng%rand(-one,one,y_start)
+         call rng%rand(-one,one,z_start)
+      end if
+      call xyz2lonlat(mpl,x_start,y_start,z_start,lon_start,lat_start)
+      call tree_cr%find_nearest_neighbors(mpl,lon_start,lat_start,1,nn_index)
+      icr_test = nn_index(1)
+   
+      ! Update lists
+      ns = ns+1
+      active_list_size = active_list_size+1
+      active_list(active_list_size) = icr_test
+      s_to_cr(ns) = icr_test
+      grid_flag(icr_test) = ns
+   
+      ! Loop while active list is not empty
+      do while (active_list_size>0)
+         ! Base sample
+         call rng%rand(1,active_list_size,ir_base)
+         icr_base = active_list(ir_base)
+         found = .false.
+   
+         ! List points in the annulus
+         call tree_cr%find_nearest_neighbors(mpl,tree_cr%lon(icr_base),tree_cr%lat(icr_base),two*rad_cr(icr_base), &
+ & nn_base,nn_index_base)
+         call tree_cr%count_nearest_neighbors(mpl,tree_cr%lon(icr_base),tree_cr%lat(icr_base),rad_cr(icr_base),nn_int)
+   
+         do itry=1,nn_base-nn_int
+            icr_test = nn_index_base(nn_int+itry)
+            call tree_cr%find_nearest_neighbors(mpl,tree_cr%lon(icr_test),tree_cr%lat(icr_test),rad_cr(icr_test), &
+ & nn_test,nn_index_test)
+   
+            valid = .true.
+            do i=1,nn_test
+               icr = nn_index_test(i)
+               if (grid_flag(icr)>0) then
+                 valid = .false.
+                 exit
+               end if
+            end do
+            deallocate(nn_index_test)
+   
+            if (valid) then
+               ns = ns+1
+               active_list_size = active_list_size+1
+               active_list(active_list_size) = icr_test
+               s_to_cr(ns) = icr_test
+               grid_flag(icr_test) = ns
+               found = .true.
+               exit
+            end if
+         end do
+   
+         if (.not.found) then
+            ! Remove base sample from active list
+            active_list(ir_base:active_list_size-1) = active_list(ir_base+1:active_list_size)
+            active_list_size = active_list_size-1
+         end if
+   
+         ! Release memory
+         deallocate(nn_index_base)
+      end do
+   
+      ! Copy sample
+      allocate(s_to_cx(ns))
+      do is=1,ns
+         icr = s_to_cr(is)
+         icx = cr_to_cx(icr)
+         s_to_cx(is) = icx
+      end do
+
+      ! Release memory
+      deallocate(lon_cr)
+      deallocate(lat_cr)
+      deallocate(active_list)
+      deallocate(grid_flag)
+   end if
+
+   ! Release memory
+   deallocate(cr_to_cx)
 end if
 
 ! Reorder points
@@ -3143,19 +3242,20 @@ if (mpl%main) then
       if (nn_dist_check(1)>zero) call mpl%abort('{subr}','error in sampling')
 
       ! Get theoretical distance to the nearest neighbor
-      icx = s_to_cx(is)
-      icxeff = tree_cx%to_eff(icx)
-      acc_s(is) = nn_dist_check(2)/radeff(icxeff)
+      icr1 = s_to_cr(is)
+      icr2 = s_to_cr(nn_index_check(2))
+      acc_s(is) = nn_dist_check(2)/sqrt(rad_cr(icr1)*rad_cr(icr2))
    end do
 
    ! Print results
-   write(cfmt,'(a,i2.2,a)') '(a',ifmt+3,',a,f4.2,a,f4.2,a,f4.2)'
-   write(mpl%info,trim(cfmt)) '','Bridson method accuracy (min/max/avg): ',minval(acc_s),' / ',maxval(acc_s),' / ', &
- & sum(acc_s)/real(ns,kind_real)
+   write(cfmt,'(a,i2.2,a)') '(a',ifmt+3,',a,f5.2,a,f5.2,a,f5.2)'
+   write(mpl%test,trim(cfmt)) '','Effective resolution (min/max/avg): ',resol/maxval(acc_s),' / ',resol/minval(acc_s),' / ', &
+ & resol/(sum(acc_s)/real(ns,kind_real))
    if (ifmt>0) call mpl%flush
 
    ! Release memory
-   deallocate(radeff)
+   deallocate(s_to_cr)
+   deallocate(rad_cr)
 end if
 
 ! Broadcast sampling coordinates
