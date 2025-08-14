@@ -1117,7 +1117,7 @@ if (nam%new_wind) then
    call geom%com_AU%ext(mpl,valid_c0a,valid_c0u)
 
    ! Tree of non-missing points
-   call tree%init(geom%nc0u,geom%lon_c0u,geom%lat_c0u,valid_c0u)
+   call tree%init(mpl,geom%nc0u,geom%lon_c0u,geom%lat_c0u,valid_c0u)
 
    ! Find non-missing nearest neighbor
    do ic0a=1,geom%nc0a

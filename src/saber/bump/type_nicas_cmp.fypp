@@ -2805,7 +2805,7 @@ real(kind_real),allocatable :: lon_c1(:),lat_c1(:),lon_s(:),lat_s(:),interpolati
 real(kind_real),allocatable :: fld_src_c1a(:),fld_src_c1b(:),fld_src_c1(:)
 real(kind_real),allocatable :: grad_ref_c1a(:,:),grad_ssrf_c1a(:,:),grad_op_c1a(:,:),grad_op_c1(:,:)
 logical :: valid,compute_interp
-logical :: mask_hor_c0a(geom%nc0a),lcheck_c0b(geom%nc0u)
+logical :: lcheck_c0b(geom%nc0u)
 logical,allocatable :: gmask_c1(:),gmask_c1a(:),lcheck_c1a(:)
 character(len=1024) :: msg
 type(atlas_structuredgrid) :: agrid
@@ -2829,9 +2829,6 @@ if (.not.nam%load_nicas_global) then
    call mpl%f_comm%allreduce(rhs_max,fckit_mpi_max())
    call mpl%f_comm%allreduce(rhs_avg,fckit_mpi_sum())
    rhs_avg = rhs_avg/real(geom%nc0_gmask(1:nicas_cmp%nl0),kind_real)
-
-   ! Mask initialization
-   mask_hor_c0a = geom%gmask_hor_c0a
 
    ! Allocation
    allocate(nicas_cmp%hor(nicas_cmp%nl1))
@@ -2914,7 +2911,7 @@ do il1=1,nicas_cmp%nl1
             ! Compute sampling
             write(mpl%info,'(a16,a)') '','Compute horizontal subset Sc1:'
             call mpl%flush(flush=nicas_cmp%verbosity)
-            call geom%initialize_sampling(mpl,rng,nam%sampling_method,geom%nc0a,geom%lon_c0a,geom%lat_c0a,mask_hor_c0a, &
+            call geom%initialize_sampling(mpl,rng,nam%sampling_method,geom%nc0a,geom%lon_c0a,geom%lat_c0a,geom%gmask_hor_c0a, &
  & nicas_cmp%rhs(:,il0s),geom%c0a_to_c0,geom%nc0u,geom%c0u_to_c0a,geom%tree_c0u,geom%hull_c0u,ifmt,nicas_cmp%hor(il1s)%nc1,c1_to_c0)
 
             ! Count Sc1 point in halo A
@@ -2957,8 +2954,8 @@ do il1=1,nicas_cmp%nl1
             ! Compute sampling
             write(mpl%info,'(a16,a)') '','Compute horizontal subset Sc1:'
             call mpl%flush(flush=nicas_cmp%verbosity)
-            call geom%initialize_sampling(mpl,rng,geom%nc0a,geom%lon_c0a,geom%lat_c0a,mask_hor_c0a, &
- & nicas_cmp%rhs(:,il0s),geom%nc0,geom%c0a_to_c0,ifmt,nicas_cmp%hor(il1s)%nc1,c1_to_c0)
+            call geom%initialize_sampling(mpl,rng,geom%nc0a,nicas_cmp%rhs(:,il0s),nicas_cmp%resol, &
+ & geom%nc0,geom%tree_c0,geom%c0a_to_c0,ifmt,nicas_cmp%hor(il1s)%nc1,c1_to_c0)
 
             ! Count Sc1 point in halo A
             nicas_cmp%hor(il1s)%nc1a = 0
@@ -3102,7 +3099,7 @@ do il1=1,nicas_cmp%nl1
          resol_eff = sqrt(real(nicas_cmp%hor(il1s)%nc1,kind_real)*sqrt(three)*rhs_avg(il0s)**2/(two*geom%area_ver_c0(il0s)))
          write(mpl%test,'(a16,a,f5.2)') '','Effective horizontal resolution: ',resol_eff
          call mpl%flush(flush=nicas_cmp%verbosity)
-         if (resol_eff < nicas_cmp%resol_eff_min) then
+         if (resol_eff < nicas_cmp%resol_eff_min.and..false.) then ! TODO
             if (.not.nicas_cmp%verbosity) then
             write(mpl%info,'(a16,a,i8)') '','Final nc1: ',nicas_cmp%hor(il1s)%nc1
             call mpl%flush
@@ -3212,7 +3209,7 @@ do il1=1,nicas_cmp%nl1
             call nicas_cmp%hor(il1s)%mesh_c1%init(mpl,rng,nicas_cmp%hor(il1s)%nc1,lon_c1,lat_c1)
 
             ! Setup tree
-            call nicas_cmp%hor(il1s)%tree_c1%init(nicas_cmp%hor(il1s)%nc1,lon_c1,lat_c1)
+            call nicas_cmp%hor(il1s)%tree_c1%init(mpl,nicas_cmp%hor(il1s)%nc1,lon_c1,lat_c1)
 
             ! Initialization
             gmask_c1 = .true.
@@ -4136,19 +4133,11 @@ do isb=1,nicas_cmp%nsb
       end if
 
       if (infeq(distv_min,rv_max(il0)).or.(all(.not.(rv_max>zero)))) then
-         ! Count nearest neighbors
-         call nicas_cmp%hor(jl1s)%tree_c1%count_nearest_neighbors(nicas_cmp%hor(il1s)%lon_c1u(ic1u), &
- & nicas_cmp%hor(il1s)%lat_c1u(ic1u),nicas_cmp%hor(il1)%rh_c1b(ic1b),nn)
+         ! Find nearest neighbors
+         call nicas_cmp%hor(jl1s)%tree_c1%find_nearest_neighbors(mpl,nicas_cmp%hor(il1s)%lon_c1u(ic1u), &
+ & nicas_cmp%hor(il1s)%lat_c1u(ic1u),nicas_cmp%hor(il1)%rh_c1b(ic1b),nn,nn_index,nn_dist)
 
          if (nn>0) then
-            ! Allocation
-            allocate(nn_index(nn))
-            allocate(nn_dist(nn))
-
-            ! Find nearest neighbors
-            call nicas_cmp%hor(jl1s)%tree_c1%find_nearest_neighbors(mpl,nicas_cmp%hor(il1s)%lon_c1u(ic1u), &
- & nicas_cmp%hor(il1s)%lat_c1u(ic1u),nn,nn_index,nn_dist)
-
             ! Loop on nearest neighbors
             do j=1,nn
                jc1 = nn_index(j)
@@ -4207,11 +4196,11 @@ do isb=1,nicas_cmp%nsb
                   end if
                end if
             end do
-
-            ! Release memory
-            deallocate(nn_index)
-            deallocate(nn_dist)
          end if
+
+         ! Release memory
+         deallocate(nn_index)
+         deallocate(nn_dist)
       end if
 
       ! Pack data
