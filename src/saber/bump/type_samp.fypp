@@ -2797,7 +2797,7 @@ call samp%com_c1_AU%ext(mpl,samp%lat_c1a,samp%lat_c1u)
 call samp%com_c1_AU%ext(mpl,samp%smask_c1a,samp%smask_c1u)
 
 ! Setup tree
-if (samp%sc2) call samp%tree_c1u%init(samp%nc1u,samp%lon_c1u,samp%lat_c1u)
+if (samp%sc2) call samp%tree_c1u%init(mpl,samp%nc1u,samp%lon_c1u,samp%lat_c1u)
 
 ! Print results
 write(mpl%test,'(a10,a,i8)') '','nc1 = ',samp%nc1
@@ -2891,7 +2891,7 @@ allocate(samp%nn_c2a_dist(samp%nc2u,samp%nc2a))
 allocate(samp%ldwv_to_c2a(nam%nldwv))
 
 ! Setup tree
-call tree%init(samp%nc2u,samp%lon_c2u,samp%lat_c2u)
+call tree%init(mpl,samp%nc2u,samp%lon_c2u,samp%lat_c2u)
 
 ! Find nearest neighbors
 do ic2a=1,samp%nc2a
@@ -2983,7 +2983,7 @@ do ic2=1,samp%nc2
 end do
 if (.not.samp%lat_bands) then
    call mesh_c2%init(mpl,rng,samp%nc2,lon_c2,lat_c2)
-   call tree_c2%init(samp%nc2,lon_c2,lat_c2)
+   call tree_c2%init(mpl,samp%nc2,lon_c2,lat_c2)
 end if
 if (samp%compute_c2b_to_c1a) smask_hor_c1a = .true.
 
@@ -3430,7 +3430,7 @@ type(tree_type) :: tree
 allocate(samp%local_mask(samp%nc1u,samp%nc2a))
 
 ! Setup tree
-call tree%init(samp%nc1u,samp%lon_c1u,samp%lat_c1u)
+call tree%init(mpl,samp%nc1u,samp%lon_c1u,samp%lat_c1u)
 
 ! Initialization
 samp%local_mask = .false.
@@ -3443,15 +3443,14 @@ end do
 ! Define masks
 do ic2a=1,samp%nc2a
    if (nam%local_rad>zero) then
-      ! Count nearest neighbors
-      call tree%count_nearest_neighbors(samp%lon_c2a(ic2a),samp%lat_c2a(ic2a),nam%local_rad,nn)
-      nn = max(nn,1)
-
-      ! Allocation
-      allocate(nn_index(nn))
-
       ! Find nearest neighbors
-      call tree%find_nearest_neighbors(mpl,samp%lon_c2a(ic2a),samp%lat_c2a(ic2a),nn,nn_index)
+      call tree%find_nearest_neighbors(mpl,samp%lon_c2a(ic2a),samp%lat_c2a(ic2a),nam%local_rad,nn,nn_index)
+      if (nn==0) then
+         ! Find at least one neighbor
+         nn = 1
+         allocate(nn_index(nn))
+         call tree%find_nearest_neighbors(mpl,samp%lon_c2a(ic2a),samp%lat_c2a(ic2a),nn,nn_index)
+      end if
 
       ! Update masks
       do i=1,nn
@@ -3572,7 +3571,7 @@ type(tree_type) :: tree
 allocate(samp%vbal_mask(samp%nc1u,samp%nc2b))
 
 ! Setup tree
-call tree%init(samp%nc1u,samp%lon_c1u,samp%lat_c1u)
+call tree%init(mpl,samp%nc1u,samp%lon_c1u,samp%lat_c1u)
 
 ! Initialization
 samp%vbal_mask = .false.
@@ -3588,14 +3587,14 @@ do ic2b=1,samp%nc2b
    ic2u = samp%c2b_to_c2u(ic2b)
 
    if (nam%local_rad>zero) then
-      ! Count nearest neighbors
-      call tree%count_nearest_neighbors(samp%lon_c2u(ic2u),samp%lat_c2u(ic2u),nam%local_rad,nn)
-
-      ! Allocation
-      allocate(nn_index(nn))
-
       ! Find nearest neighbors
-      call tree%find_nearest_neighbors(mpl,samp%lon_c2u(ic2u),samp%lat_c2u(ic2u),nn,nn_index)
+      call tree%find_nearest_neighbors(mpl,samp%lon_c2u(ic2u),samp%lat_c2u(ic2u),nam%local_rad,nn,nn_index)
+      if (nn==0) then
+         ! Find at least one neighbor
+         nn = 1
+         allocate(nn_index(nn))
+         call tree%find_nearest_neighbors(mpl,samp%lon_c2u(ic2u),samp%lat_c2u(ic2u),nn,nn_index)
+      end if
 
       ! Update masks
       do i=1,nn

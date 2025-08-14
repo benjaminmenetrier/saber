@@ -27,14 +27,17 @@ type tree_type
     integer :: n                              !< Data size
     integer :: neff                           !< Effective tree size
     logical,allocatable :: mask(:)            !< Mask
-    integer,allocatable :: from_eff(:)        !< Effective index conversion
+    integer,allocatable :: from_eff(:)        !< Effective index to index conversion
+    integer,allocatable :: to_eff(:)          !< Index to effective index conversion
     real(kind_real),allocatable :: lon(:)     !< Longitudes
     real(kind_real),allocatable :: lat(:)     !< Latitudes
     type(atlas_indexkdtree) :: kd             !< KDTree from ATLAS
 contains
     procedure :: init => tree_init
     procedure :: dealloc => tree_dealloc
-    procedure :: find_nearest_neighbors => tree_find_nearest_neighbors
+    procedure :: tree_find_nearest_neighbors_from_nn
+    procedure :: tree_find_nearest_neighbors_from_rad
+    generic :: find_nearest_neighbors => tree_find_nearest_neighbors_from_nn,tree_find_nearest_neighbors_from_rad
     procedure :: count_nearest_neighbors => tree_count_nearest_neighbors
 end type tree_type
 
@@ -47,12 +50,13 @@ contains
 ! Subroutine: tree_init
 !> Initialization
 !----------------------------------------------------------------------
-subroutine tree_init(tree,n,lon,lat,mask)
+subroutine tree_init(tree,mpl,n,lon,lat,mask)
 
 implicit none
 
 ! Passed variables
 class(tree_type),intent(inout) :: tree !< Tree
+type(mpl_type),intent(inout) :: mpl    !< MPI data
 integer,intent(in) :: n                !< Number of points
 real(kind_real),intent(in) :: lon(n)   !< Points longitudes [in radians]
 real(kind_real),intent(in) :: lat(n)   !< Points latitudes [in radians]
@@ -87,8 +91,12 @@ tree%neff = count(tree%mask)
 allocate(tree%lon(tree%neff))
 allocate(tree%lat(tree%neff))
 allocate(tree%from_eff(tree%neff))
+allocate(tree%to_eff(tree%n))
 allocate(lon_deg(tree%neff))
 allocate(lat_deg(tree%neff))
+
+! Initialization
+tree%to_eff = mpl%msv%vali
 
 ! Loop over points
 ieff = 0
@@ -99,6 +107,7 @@ do i=1,tree%n
 
       ! Conversion
       tree%from_eff(ieff) = i
+      tree%to_eff(i) = ieff
 
       ! Copy lon/lat
       tree%lon(ieff) = lon(i)
@@ -146,6 +155,7 @@ if (allocated(tree%from_eff)) then
    ! Release memory
    deallocate(tree%mask)
    deallocate(tree%from_eff)
+   deallocate(tree%to_eff)
    deallocate(tree%lon)
    deallocate(tree%lat)
 
@@ -159,10 +169,10 @@ end if
 end subroutine tree_dealloc
 
 !----------------------------------------------------------------------
-! Subroutine: tree_find_nearest_neighbors
+! Subroutine: tree_find_nearest_neighbors_from_nn
 !> Find nearest neighbors using a KDTree
 !----------------------------------------------------------------------
-subroutine tree_find_nearest_neighbors(tree,mpl,lon,lat,nn,nn_index,nn_dist)
+subroutine tree_find_nearest_neighbors_from_nn(tree,mpl,lon,lat,nn,nn_index,nn_dist)
 
 implicit none
 
@@ -183,7 +193,7 @@ real(kind_real),allocatable :: lontmp(:),lattmp(:),nn_dist_tmp(:)
 logical :: separate
 
 ! Set name
-@:set_name(tree_find_nearest_neighbors)
+@:set_name(tree_find_nearest_neighbors_from_nn)
 
 ! Probe in
 @:probe_in()
@@ -282,18 +292,85 @@ end if
 ! Probe out
 @:probe_out()
 
-end subroutine tree_find_nearest_neighbors
+end subroutine tree_find_nearest_neighbors_from_nn
+
+!----------------------------------------------------------------------
+! Subroutine: tree_find_nearest_neighbors_from_rad
+!> Find nearest neighbors using a KDTree
+!----------------------------------------------------------------------
+subroutine tree_find_nearest_neighbors_from_rad(tree,mpl,lon,lat,sr,nn,nn_index,nn_dist)
+
+implicit none
+
+! Passed variables
+class(tree_type),intent(in) :: tree                              !< Tree
+type(mpl_type),intent(inout) :: mpl                              !< MPI data
+real(kind_real),intent(in) :: lon                                !< Point longitude [in radians]
+real(kind_real),intent(in) :: lat                                !< Point latitude [in radians]
+real(kind_real),intent(in) :: sr                                 !< Spherical radius [in radians]
+integer,intent(out) :: nn                                        !< Number of nearest neighbors found
+integer,allocatable,intent(inout) :: nn_index(:)                 !< Nearest neighbors index
+real(kind_real),allocatable,intent(inout),optional :: nn_dist(:) !< Nearest neighbors distance
+
+! Local variables
+integer :: i
+real(kind_real) :: ch
+
+! Set name
+@:set_name(tree_find_nearest_neighbors_from_rad)
+
+! Probe in
+@:probe_in()
+
+! Check sr
+if (sr<zero) call mpl%abort('${subr}$','search radius should not be negative')
+
+! Spherical radius to chord
+ch = two*sin(half*min(sr,pi))
+
+if (tree%neff>0) then
+   ! Release memory
+   if (allocated(nn_index)) deallocate(nn_index)
+
+   ! Find neighbors
+   call tree%kd%closestPointsWithinRadius(lon*rad2deg,lat*rad2deg,ch,nn,indices=nn_index)
+
+   if (nn>0) then
+      if (present(nn_dist)) then
+         ! Allocation
+         if (allocated(nn_dist)) deallocate(nn_dist)
+         allocate(nn_dist(nn))
+
+         ! Compute distance
+         do i=1,nn
+            call sphere_dist(lon,lat,tree%lon(nn_index(i)),tree%lat(nn_index(i)),nn_dist(i))
+         end do
+      end if
+
+      ! Transform indices
+      nn_index = tree%from_eff(nn_index)
+   else
+      ! Release memory
+      deallocate(nn_index)
+   end if
+end if
+
+! Probe out
+@:probe_out()
+
+end subroutine tree_find_nearest_neighbors_from_rad
 
 !----------------------------------------------------------------------
 ! Subroutine: tree_count_nearest_neighbors
 !> Count nearest neighbors using a tree
 !----------------------------------------------------------------------
-subroutine tree_count_nearest_neighbors(tree,lon,lat,sr,nn)
+subroutine tree_count_nearest_neighbors(tree,mpl,lon,lat,sr,nn)
 
 implicit none
 
 ! Passed variables
 class(tree_type),intent(in) :: tree !< Tree
+type(mpl_type),intent(inout) :: mpl !< MPI data
 real(kind_real),intent(in) :: lon   !< Point longitude [in radians]
 real(kind_real),intent(in) :: lat   !< Point latitude [in radians]
 real(kind_real),intent(in) :: sr    !< Spherical radius [in radians]
@@ -307,6 +384,9 @@ real(kind_real) :: ch
 
 ! Probe in
 @:probe_in()
+
+! Check sr
+if (sr<zero) call mpl%abort('${subr}$','search radius should not be negative')
 
 ! Spherical radius to chord
 ch = two*sin(half*min(sr,pi))
