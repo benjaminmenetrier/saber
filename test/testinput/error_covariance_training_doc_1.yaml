@@ -56,10 +56,6 @@ background error:
         name: plot
       nicas:
         resolution: 10.0
-        interpolation type:
-        - groups:
-          - air_horizontal_streamfunction
-          type: si
       dirac:
       - longitude: -45.0
         latitude: 0.0

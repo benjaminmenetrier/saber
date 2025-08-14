@@ -1372,9 +1372,7 @@ if (nam%new_nicas.or.nam%load_nicas_local.or.nam%load_nicas_global) then
       if (.not.allocated(nam%loc_wgt_sqrt)) call mpl%abort('${subr}$','loc_wgt should be specified for block_weighted')
    end if
    select case (nam%nicas_draw_type)
-   case ('random','bridson')
-   case ('octahedral')
-      if (nam%nldwv>0) call mpl%abort('${subr}$','no local diagnostics with an octahedral draw')
+   case ('regular','random')
    case default
       call mpl%abort('${subr}$','wrong nicas_draw_type')
    end select

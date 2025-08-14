@@ -46,7 +46,11 @@ background error:
       model:
         do not cross mask boundaries: true
       nicas:
-        resolution: 10.0
+        resolution: 7.0
+        interpolation type:
+        - groups:
+          - air_horizontal_streamfunction
+          type: c0
       dirac:
       - longitude: -78.0
         latitude: 11.6

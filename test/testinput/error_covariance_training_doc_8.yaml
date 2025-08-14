@@ -28,11 +28,11 @@ background error:
         multivariate strategy: univariate
         write nicas grids: true
       nicas:
-        resolution: 5.0
+        resolution: 4.0
       input model files:
       - parameter: rh
         file:
-          filepath: testdata/error_covariance_training_doc_1/_MPI_-_OMP__cor_rh
+          filepath:  testdata/randomization_doc_2/_MPI_-_OMP__rh2_000001
       - parameter: rv
         file:
-          filepath: testdata/error_covariance_training_doc_1/_MPI_-_OMP__cor_rv
+          filepath: testdata/convertstate_doc_1/rv

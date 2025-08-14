@@ -201,9 +201,9 @@ contains
    procedure :: fieldset_to_c0 => geom_fieldset_to_c0
    procedure :: c0_to_fieldset => geom_c0_to_fieldset
    procedure :: rand_point => geom_rand_point
-   procedure :: geom_initialize_sampling_fixed
-   procedure :: geom_initialize_sampling_floating
-   generic :: initialize_sampling => geom_initialize_sampling_fixed,geom_initialize_sampling_floating
+   procedure :: geom_initialize_sampling_from_size
+   procedure :: geom_initialize_sampling_from_rad
+   generic :: initialize_sampling => geom_initialize_sampling_from_size,geom_initialize_sampling_from_rad
    procedure :: define_test_vectors => geom_define_test_vectors
    procedure :: c0_to_c0a => geom_c0_to_c0a
    procedure :: c0_to_proc => geom_c0_to_proc
@@ -344,7 +344,6 @@ type(fieldset_type),intent(in),optional :: fieldset    !< Fieldset containing ge
 integer :: il0,jl0off,jl0r,jc3,jc4,iproc,iv,ig
 integer,allocatable :: order_c0(:),order_c0a(:)
 real(kind_real),allocatable :: lon_c0(:),lat_c0(:)
-logical,allocatable :: gmask_hor_c0(:)
 
 ! Set name
 @:set_name(geom_setup)
@@ -402,17 +401,14 @@ call geom%setup_c0(mpl)
 if (mpl%main) then
    allocate(lon_c0(geom%nc0))
    allocate(lat_c0(geom%nc0))
-   allocate(gmask_hor_c0(geom%nc0))
 else
    allocate(lon_c0(0))
    allocate(lat_c0(0))
-   allocate(gmask_hor_c0(0))
 end if
 
 ! Communication
 call mpl%loc_to_glb(geom%nc0a,geom%nc0,geom%c0a_to_c0,geom%lon_c0a,lon_c0)
 call mpl%loc_to_glb(geom%nc0a,geom%nc0,geom%c0a_to_c0,geom%lat_c0a,lat_c0)
-call mpl%loc_to_glb(geom%nc0a,geom%nc0,geom%c0a_to_c0,geom%gmask_hor_c0a,gmask_hor_c0)
 
 ! Setup universe
 call geom%setup_universe(mpl,nam)
@@ -421,7 +417,7 @@ call geom%setup_universe(mpl,nam)
 write(mpl%info,'(a7,a)') '','Setup tree'
 call mpl%flush
 call geom%tree_c0u%init(mpl,geom%nc0u,geom%lon_c0u,geom%lat_c0u)
-if (mpl%main) call geom%tree_c0%init(mpl,geom%nc0,lon_c0,lat_c0,gmask_hor_c0)
+if (mpl%main) call geom%tree_c0%init(mpl,geom%nc0,lon_c0,lat_c0)
 
 if (nam%mask_check.or.(.not.geom%global)) then
    if (geom%deprecated_hull) then
@@ -505,7 +501,6 @@ end if
 ! Release memory
 deallocate(lon_c0)
 deallocate(lat_c0)
-deallocate(gmask_hor_c0)
 
 ! Print summary
 write(mpl%info,'(a7,a)') '','Geometry summary:'
@@ -2168,756 +2163,126 @@ if (present(nr)) nr = lnr
 end subroutine geom_rand_point
 
 !----------------------------------------------------------------------
-! Subroutine: geom_initialize_sampling_fixed
-!> Intialize sampling
+! Subroutine: geom_initialize_sampling_from_size
+!> Intialize sampling from minimal size
 !----------------------------------------------------------------------
-subroutine geom_initialize_sampling_fixed(geom,mpl,rng,method,ncxa,lon_cxa,lat_cxa,mask_cxa,rh_cxa,cxa_to_cx,ncxu,cxu_to_cxa, &
- & tree_cxu,hull_cxu,ifmt,ns,s_to_cx)
+subroutine geom_initialize_sampling_from_size(geom,mpl,ncx,tree_cx,mask_cx,fmask_cx,ifmt,ns,s_to_cx)
 
 implicit none
 
 ! Passed variables
-class(geom_type),intent(in) :: geom         !< Geometry
-type(mpl_type),intent(inout) :: mpl         !< MPI data
-type(rng_type),intent(inout) :: rng         !< Random number generator
-character(len=*),intent(in) :: method       !< Sampling method (potential or maxrandom)
-integer,intent(in) :: ncxa                  !< Number of points (local)
-real(kind_real),intent(in) :: lon_cxa(ncxa) !< Longitudes (local)
-real(kind_real),intent(in) :: lat_cxa(ncxa) !< Latitudes (local)
-logical,intent(in) :: mask_cxa(ncxa)        !< Mask (local)
-real(kind_real),intent(in) :: rh_cxa(ncxa)  !< Horizontal support radius (local)
-integer,intent(in) :: cxa_to_cx(ncxa)       !< Local to full domain index
-integer,intent(in) :: ncxu                  !< Number of points (universe)
-integer,intent(in) :: cxu_to_cxa(ncxu)      !< Universe to local index
-type(tree_type),intent(in) :: tree_cxu      !< Universe KD-tree
-type(hull_type),intent(in) :: hull_cxu      !< Universe hull
-integer,intent(in) :: ifmt                  !< Format indentation
-integer,intent(in) :: ns                    !< Number of samplings points (full domain)
-integer,intent(out) :: s_to_cx(ns)          !< Horizontal sampling index (full domain)
+class(geom_type),intent(in) :: geom             !< Geometry
+type(mpl_type),intent(inout) :: mpl             !< MPI data
+integer,intent(in) :: ncx                       !< Number of points (full domain)
+type(tree_type),intent(in) :: tree_cx           !< KD-tree (full domain)
+logical,intent(in) :: mask_cx(ncx)              !< Sampling mask (full domain)
+logical,intent(in) :: fmask_cx(ncx)             !< Forced points mask (full domain)
+integer,intent(in) :: ifmt                      !< Format indentation
+integer,intent(inout) :: ns                     !< Number of samplings points, target as input (full domain)
+integer,allocatable,intent(inout) :: s_to_cx(:) !< Horizontal sampling index (full domain)
 
 ! Local variables
-integer :: ncxa_eff,ncx_eff,isa,icxa,is,icx,nfac,nssa,nss,issa,ix,iy,issamin,icxmin,iprocmin,nsa,nodemin,inode,hash,iss,iproc
-integer :: nssa_val,irmax,irvalmax,itry,irval,ir,irep,is_min,js,nrep,n
-integer :: nn_index(2),proc_to_ncxa(mpl%nproc),proc_to_cx_offset(mpl%nproc)
-integer,allocatable :: proc_to_icxmin(:),ssa_to_cx(:),ssa_to_node(:),s_to_ssa(:),to_valid(:),order(:)
-integer,allocatable :: proc_to_nodemin(:),sa_to_s(:),order_s(:),cxa_to_node(:)
-integer,allocatable :: proc_to_nssa(:),ssa_to_ss(:),ss_to_cxa(:),ss_to_cx(:),ss_to_node(:)
-real(kind_real) :: lonlat(2),valmin,xmin,ymin,zmin,chmin,dist,dist_max,d,nn_dist(2),dist_min,x,y,distx,disty,x_start,y_start,z_start
-real(kind_real),allocatable :: rhc_cxa(:),proc_to_xmin(:),proc_to_ymin(:),proc_to_zmin(:),proc_to_chmin(:)
-real(kind_real),allocatable :: x_ssa(:),y_ssa(:),z_ssa(:),ch_ssa(:),potential(:),lon_sa(:),lat_sa(:),lon_s(:),lat_s(:)
-real(kind_real),allocatable :: lon_ssa(:),lat_ssa(:),rh_ssa(:),lon_rep(:),lat_rep(:),rh_rep(:),dist_rep(:)
-real(kind_real),allocatable :: x_ss(:),y_ss(:),z_ss(:),ch_ss(:),lon_ss(:),lat_ss(:),rh_ss(:)
-logical :: retry,valid
-logical,allocatable :: lmask_cxa(:),lmask_ssa(:),indist_ssa(:),gmask_s(:),rmask(:)
+integer :: nmin,inode,ix,iy,icxeff,is,icx,hash
+integer :: nn_index(1)
+integer,allocatable :: order_s(:)
+real(kind_real) :: lonlat(2)
+real(kind_real),allocatable :: lon_s(:),lat_s(:)
+logical,allocatable :: lmask_cx(:),gmask_s(:)
 character(len=1024) :: cfmt
 type(atlas_structuredgrid) :: agrid
-type(tree_type) :: tree
 
 ! Set name
-@:set_name(geom_initialize_sampling_fixed)
+@:set_name(geom_initialize_sampling_from_size)
 
 ! Probe in
 @:probe_in()
 
-! Check method
-select case (method)
-case ('potential','maxrandom')
-case default
-   call mpl%abort('${subr}$','wrong sampling method: '//trim(method))
-end select
-
-! Number of effective points
-ncxa_eff = zss_count(mask_cxa)
-call mpl%f_comm%allreduce(ncxa_eff,ncx_eff,fckit_mpi_sum())
-
-! Check mask size
-if (ncx_eff==0) then
-   ! Empty mask
-   call mpl%abort('${subr}$','empty mask in initialize sampling')
-elseif (ns>nsmax) then
-   ! Sampling is too large
-   call mpl%abort('${subr}$','sampling size is too large')
-else
-   ! Sampling
-
-   ! Allocation
-   allocate(lmask_cxa(ncxa))
-   allocate(cxa_to_node(ncxa))
-   allocate(rhc_cxa(ncxa))
-
-   ! First step: decimate the grid
-
-   ! Initialization
-   nfac = nfacmin
-   retry = .true.
-   write(cfmt,'(a,i2.2,a)') '(a',ifmt+3,',a,i8,a)'
-   write(mpl%test,trim(cfmt)) '','Decimate full grid, at least ',ns,' points required, '
-   if (ifmt>0) call mpl%flush(newl=.false.)
-
-   ! Compute corrected length-scale
+if (mpl%main) then
+   ! Get grid based on size
+   nmin = ns
    if (geom%global) then
-      rhc_cxa = rh_cxa
+      ! Global grid
+      call get_grid(mpl,nmin,agrid,ns)
    else
-      do icxa=1,ncxa
-         ! Compute distances to the boundaries
-         call geom%aproj_work%lonlat2xy(lon_cxa(icxa)*rad2deg,lat_cxa(icxa)*rad2deg,x,y)
-         x = x*deg2rad
-         y = y*deg2rad
-         call lonlatmod(x,y)
-         distx = two*min(abs(x-geom%xmin),abs(x-geom%xmax))/(geom%xmax-geom%xmin)
-         disty = two*min(abs(y-geom%ymin),abs(y-geom%ymax))/(geom%ymax-geom%ymin)
-
-         ! Apply empirical factor
-         rhc_cxa(icxa) = rh_cxa(icxa)*(one-half*distx*disty)*(one+exp(-hundred*distx*disty))
-      end do
+      ! Regional grid
+      call get_grid(mpl,nmin,geom%aconfig_work_grid,geom%xmin,geom%xmax,geom%ymin,geom%ymax,agrid,ns)
    end if
-
-   do while (retry)
-      if (ncxa > 0) then
-         ! Initialization
-         lmask_cxa = .false.
-         cxa_to_node = mpl%msv%vali
-
-         ! Update nfac
-         nfac = 2*nfac
-
-         ! Grid size
-         n = floor(real(nfac*ns,kind_real)*geom%area/geom%area_max_c0*(one+repro_th))
-
-         if (geom%global) then
-            ! Global grid
-            call get_grid(mpl,n,agrid,nss)
-         else
-            ! Regional grid
-            call get_grid(mpl,n,geom%aconfig_work_grid,geom%xmin,geom%xmax,geom%ymin,geom%ymax,agrid,nss)
-         end if
-
-         ! Loop over grid points
-         inode = 0
-         do iy=1,int(agrid%ny(),kind_int)
-            do ix=1,int(agrid%nx(iy),kind_int)
-               ! Full domain index
-               inode = inode+1
-
-               ! Get longitude/latitude
-               lonlat = agrid%lonlat(ix,iy)*deg2rad
-               call lonlatmod(lonlat(1),lonlat(2))
-
-               ! Check if point is inside the universe hull
-               call hull_cxu%inside(mpl,lonlat(1),lonlat(2),valid)
-
-               if (valid) then
-                  ! Find nearest neighbor in universe
-                  call tree_cxu%find_nearest_neighbors(mpl,lonlat(1),lonlat(2),1,nn_index(1:1))
-                  icxa = cxu_to_cxa(nn_index(1))
-
-                  ! Keep valid points on each processor
-                  if (mpl%msv%isnot(icxa)) then
-                     lmask_cxa(icxa) = mask_cxa(icxa)
-                     cxa_to_node(icxa) = inode
-                  end if
-               end if
-            end do
-         end do
-
-         ! Release memory
-         call agrid%final()
-
-         ! Local number of valid points
-         nssa = zss_count(lmask_cxa)
-      else
-         ! Local number of valid points
-         nssa = 0
-      end if
-
-      ! Full domain number of valid points
-      call mpl%f_comm%allreduce(nssa,nss,fckit_mpi_sum())
-
-      ! Print result
-      write(mpl%test,'(i8,a)') nss,' valid points found'
-      if (ifmt>0) call mpl%flush
-      retry = (nss<ns)
-   end do
-
-   ! Second step: get data on effective local grid
 
    ! Allocation
-   allocate(ssa_to_cx(nssa))
-   allocate(ssa_to_node(nssa))
-   if (method=='potential') then
-      allocate(x_ssa(nssa))
-      allocate(y_ssa(nssa))
-      allocate(z_ssa(nssa))
-      allocate(ch_ssa(nssa))
-   elseif (method=='maxrandom') then
-      allocate(lon_ssa(nssa))
-      allocate(lat_ssa(nssa))
-      allocate(rh_ssa(nssa))
-   end if
+   allocate(lmask_cx(ncx))
 
-   ! Initialization
-   issa = 0
-   do icxa=1,ncxa
-      if (lmask_cxa(icxa)) then
-         issa = issa+1
-         icx = cxa_to_cx(icxa)
-         ssa_to_cx(issa) = icx
-         ssa_to_node(issa) = cxa_to_node(icxa)
-         if (method=='potential') then
-            call lonlat2xyz(mpl,lon_cxa(icxa),lat_cxa(icxa),x_ssa(issa),y_ssa(issa),z_ssa(issa))
-            ch_ssa(issa) = two*sin(half*min(rhc_cxa(icxa),pi))
-         elseif (method=='maxrandom') then
-            lon_ssa(issa) = lon_cxa(icxa)
-            lat_ssa(issa) = lat_cxa(icxa)
-            rh_ssa(issa) = rhc_cxa(icxa)
-         end if
-      end if
-   end do
+   ! Loop over grid points
+   inode = 0
+   lmask_cx = fmask_cx
+   do iy=1,int(agrid%ny(),kind_int)
+      do ix=1,int(agrid%nx(iy),kind_int)
+         ! Full domain index
+         inode = inode+1
 
-   ! Allocation
-   allocate(proc_to_nssa(mpl%nproc))
-   allocate(ssa_to_ss(nssa))
-   if (mpl%main) then
-      allocate(ss_to_cxa(nss))
-      allocate(ss_to_cx(nss))
-      allocate(ss_to_node(nss))
-      if (method=='potential') then
-         allocate(x_ss(nss))
-         allocate(y_ss(nss))
-         allocate(z_ss(nss))
-         allocate(ch_ss(nss))
-      elseif (method=='maxrandom') then
-         allocate(lon_ss(nss))
-         allocate(lat_ss(nss))
-         allocate(rh_ss(nss))
-      end if
-   else
-      allocate(ss_to_cxa(0))
-      allocate(ss_to_cx(0))
-      allocate(ss_to_node(0))
-      if (method=='potential') then
-         allocate(x_ss(0))
-         allocate(y_ss(0))
-         allocate(z_ss(0))
-         allocate(ch_ss(0))
-      elseif (method=='maxrandom') then
-         allocate(lon_ss(0))
-         allocate(lat_ss(0))
-         allocate(rh_ss(0))
-      end if
-   end if
+         ! Get longitude/latitude
+         lonlat = agrid%lonlat(ix,iy)*deg2rad
+         call lonlatmod(lonlat(1),lonlat(2))
 
-   ! Initialization
-   call mpl%f_comm%allgather(nssa,proc_to_nssa)
-   iss = 0
-   do iproc=1,mpl%nproc
-      do issa=1,proc_to_nssa(iproc)
-         iss = iss+1
-         if (iproc==mpl%myproc) ssa_to_ss(issa) = iss
+         ! Find nearest neighbor
+         call tree_cx%find_nearest_neighbors(mpl,lonlat(1),lonlat(2),1,nn_index)
+         icx = nn_index(1)
+
+         ! Keep valid points on each processor
+         lmask_cx(icx) = .true.
       end do
    end do
-
-   ! Second step and a half: get data on effective full domain grid
-   call mpl%loc_to_glb(nssa,nss,ssa_to_ss,ssa_to_cx,ss_to_cx)
-   call mpl%loc_to_glb(nssa,nss,ssa_to_ss,ssa_to_node,ss_to_node)
-   if (method=='potential') then
-      call mpl%loc_to_glb(nssa,nss,ssa_to_ss,x_ssa,x_ss)
-      call mpl%loc_to_glb(nssa,nss,ssa_to_ss,y_ssa,y_ss)
-      call mpl%loc_to_glb(nssa,nss,ssa_to_ss,z_ssa,z_ss)
-      call mpl%loc_to_glb(nssa,nss,ssa_to_ss,ch_ssa,ch_ss)
-   elseif (method=='maxrandom') then
-      call mpl%loc_to_glb(nssa,nss,ssa_to_ss,lon_ssa,lon_ss)
-      call mpl%loc_to_glb(nssa,nss,ssa_to_ss,lat_ssa,lat_ss)
-      call mpl%loc_to_glb(nssa,nss,ssa_to_ss,rh_ssa,rh_ss)
-   end if
-
-   if (mpl%main) then
-      ! Mimick local variables
-      nssa = nss
-
-      ! Release memory
-      deallocate(ssa_to_cx)
-      deallocate(ssa_to_node)
-      if (method=='potential') then
-         deallocate(x_ssa)
-         deallocate(y_ssa)
-         deallocate(z_ssa)
-         deallocate(ch_ssa)
-      elseif (method=='maxrandom') then
-         deallocate(lon_ssa)
-         deallocate(lat_ssa)
-         deallocate(rh_ssa)
-      end if
-
-      ! Allocation
-      allocate(ssa_to_cx(nssa))
-      allocate(ssa_to_node(nssa))
-      if (method=='potential') then
-         allocate(x_ssa(nssa))
-         allocate(y_ssa(nssa))
-         allocate(z_ssa(nssa))
-         allocate(ch_ssa(nssa))
-      elseif (method=='maxrandom') then
-         allocate(lon_ssa(nssa))
-         allocate(lat_ssa(nssa))
-         allocate(rh_ssa(nssa))
-      end if
-
-      ! Copy
-      ssa_to_cx = ss_to_cx
-      ssa_to_node = ss_to_node
-      if (method=='potential') then
-         x_ssa = x_ss
-         y_ssa = y_ss
-         z_ssa = z_ss
-         ch_ssa = ch_ss
-      elseif (method=='maxrandom') then
-         lon_ssa = lon_ss
-         lat_ssa = lat_ss
-         rh_ssa = rh_ss
-      end if
-
-      ! Release memory
-      deallocate(ss_to_cxa)
-      deallocate(ss_to_cx)
-      deallocate(ss_to_node)
-      if (method=='potential') then
-         deallocate(x_ss)
-         deallocate(y_ss)
-         deallocate(z_ss)
-         deallocate(ch_ss)
-      elseif (method=='maxrandom') then
-         deallocate(lon_ss)
-         deallocate(lat_ss)
-         deallocate(rh_ss)
-      end if
-   end if
-
-   ! Initialization
-   s_to_cx = mpl%msv%vali
-
-   if (method=='potential') then
-      ! Third step: electric potential method
-      if (mpl%main) then
-         write(cfmt,'(a,i2.2,a)') '(a',ifmt+3,',a)'
-         write(mpl%info,trim(cfmt)) '','Potential method: '
-
-         ! Allocation
-         allocate(potential(nssa))
-         allocate(lmask_ssa(nssa))
-         allocate(indist_ssa(nssa))
-         allocate(proc_to_nodemin(mpl%nproc))
-         allocate(proc_to_xmin(mpl%nproc))
-         allocate(proc_to_ymin(mpl%nproc))
-         allocate(proc_to_zmin(mpl%nproc))
-         allocate(proc_to_chmin(mpl%nproc))
-         allocate(proc_to_icxmin(mpl%nproc))
-
-         ! Initialization
-         lmask_ssa = .true.
-         if (ifmt>0) then
-            call mpl%flush(newl=.false.)
-            call mpl%prog_init(ns)
-         end if
-
-         ! Initialize counter
-         is = 1
-
-         ! Compute distance to an arbitrary starting point
-         if (rng%reset_seed) then
-            ! Deterministic run, use the domain center
-            x_start = geom%v_center(1)
-            y_start = geom%v_center(2)
-            z_start = geom%v_center(3)
-         else
-            ! Random run, use a random point
-            call rng%rand(-one,one,x_start)
-            call rng%rand(-one,one,y_start)
-            call rng%rand(-one,one,z_start)
-         end if
-         do issa=1,nssa
-            call cart_dist(x_ssa(issa),y_ssa(issa),z_ssa(issa),x_start,y_start,z_start,potential(issa))
-         end do
-
-         ! Find full domain minimum distance
-         valmin = zss_minval(potential)
-
-         ! Check if minimum is indistinguishable
-         do issa=1,nssa
-            indist_ssa(issa) = indist(potential(issa),valmin)
-         end do
-         if (count(indist_ssa)<1) call mpl%abort('${subr}$','cannot find minimum')
-         nodemin = mpl%msv%vali
-         xmin = mpl%msv%valr
-         ymin = mpl%msv%valr
-         zmin = mpl%msv%valr
-         chmin = mpl%msv%valr
-         icxmin = mpl%msv%vali
-         if (nssa>0) then
-            if (any(indist_ssa)) then
-               issamin = minloc(ssa_to_node,mask=indist_ssa,dim=1)
-               nodemin = ssa_to_node(issamin)
-               xmin = x_ssa(issamin)
-               ymin = y_ssa(issamin)
-               zmin = z_ssa(issamin)
-               chmin = ch_ssa(issamin)
-               icxmin = ssa_to_cx(issamin)
-            end if
-         end if
-         iprocmin = mpl%rootproc
-         proc_to_nodemin(iprocmin) = nodemin
-         proc_to_xmin(iprocmin) = xmin
-         proc_to_ymin(iprocmin) = ymin
-         proc_to_zmin(iprocmin) = zmin
-         proc_to_chmin(iprocmin) = chmin
-         proc_to_icxmin(iprocmin) = icxmin
-
-         ! Reset potential
-         potential = zero
-
-         ! Update full domain sampling, local mask and local potential
-         s_to_cx(is) = proc_to_icxmin(iprocmin)
-         if (iprocmin==mpl%myproc) lmask_ssa(issamin) = .false.
-         !$omp parallel do schedule(static) private(issa,dist)
-         do issa=1,nssa
-            if (lmask_ssa(issa)) then
-               ! Cartesian distance
-               call cart_dist(x_ssa(issa),y_ssa(issa),z_ssa(issa), &
- & proc_to_xmin(iprocmin),proc_to_ymin(iprocmin),proc_to_zmin(iprocmin),dist)
-
-               ! Update potential
-               potential(issa) = potential(issa)+proc_to_chmin(iprocmin)/dist
-            end if
-         end do
-         !$omp end parallel do
-
-         ! Update
-         if (ifmt>0) call mpl%prog_print(is)
-
-         ! Set other points where the potential is minimum
-         do is=2,ns
-            ! Find full domain minimum distance
-            valmin = huge_real
-            if (nssa>0) then
-               if (any(lmask_ssa)) valmin = zss_minval(potential,mask=lmask_ssa)
-            end if
-
-            ! Check if minimum is indistinguishable
-            indist_ssa = .false.
-            do issa=1,nssa
-               if (lmask_ssa(issa)) indist_ssa(issa) = indist(potential(issa),valmin)
-            end do
-            nodemin = mpl%msv%vali
-            xmin = mpl%msv%valr
-            ymin = mpl%msv%valr
-            zmin = mpl%msv%valr
-            chmin = mpl%msv%valr
-            icxmin = mpl%msv%vali
-            if (nssa>0) then
-               if (any(indist_ssa)) then
-                  issamin = minloc(ssa_to_node,mask=indist_ssa,dim=1)
-                  nodemin = ssa_to_node(issamin)
-                  xmin = x_ssa(issamin)
-                  ymin = y_ssa(issamin)
-                  zmin = z_ssa(issamin)
-                  chmin = ch_ssa(issamin)
-                  icxmin = ssa_to_cx(issamin)
-               end if
-            end if
-            iprocmin = mpl%rootproc
-            proc_to_nodemin(iprocmin) = nodemin
-            proc_to_xmin(iprocmin) = xmin
-            proc_to_ymin(iprocmin) = ymin
-            proc_to_zmin(iprocmin) = zmin
-            proc_to_chmin(iprocmin) = chmin
-            proc_to_icxmin(iprocmin) = icxmin
-
-            ! Update full domain sampling, local mask and local potential
-            s_to_cx(is) = proc_to_icxmin(iprocmin)
-            if (iprocmin==mpl%myproc) lmask_ssa(issamin) = .false.
-            !$omp parallel do schedule(static) private(issa,dist)
-            do issa=1,nssa
-               if (lmask_ssa(issa)) then
-                  ! Cartesian distance
-                  call cart_dist(x_ssa(issa),y_ssa(issa),z_ssa(issa), &
-    & proc_to_xmin(iprocmin),proc_to_ymin(iprocmin),proc_to_zmin(iprocmin),dist)
-
-                  ! Update potential
-                  potential(issa) = potential(issa)+proc_to_chmin(iprocmin)/dist
-               end if
-            end do
-            !$omp end parallel do
-
-            ! Update
-            if (ifmt>0) call mpl%prog_print(is)
-         end do
-         if (ifmt>0) call mpl%prog_final
-
-         ! Release memory
-         deallocate(potential)
-         deallocate(lmask_ssa)
-         deallocate(indist_ssa)
-         deallocate(proc_to_xmin)
-         deallocate(proc_to_ymin)
-         deallocate(proc_to_zmin)
-         deallocate(proc_to_chmin)
-         deallocate(proc_to_nodemin)
-         deallocate(proc_to_icxmin)
-      end if
-
-      ! Release memory
-      deallocate(x_ssa)
-      deallocate(y_ssa)
-      deallocate(z_ssa)
-      deallocate(ch_ssa)
-   elseif (method=='maxrandom') then
-      if (mpl%main) then
-         write(cfmt,'(a,i2.2,a)') '(a',ifmt+3,',a)'
-         write(mpl%info,trim(cfmt)) '','Random selection method: '
-
-         ! Number of removed points
-         nrep = int(frep*real(ns,kind_real))
-
-         ! Allocation
-         allocate(s_to_ssa(ns+nrep))
-         allocate(lmask_ssa(nssa))
-         allocate(to_valid(nssa))
-         allocate(order(nssa))
-
-         ! Initialization
-         s_to_ssa = mpl%msv%vali
-         if (ifmt>0) then
-            call mpl%flush(newl=.false.)
-            call mpl%prog_init(ns+nrep)
-         end if
-         lmask_ssa = .false.
-         to_valid = mpl%msv%vali
-         do issa=1,nssa
-            to_valid(issa) = issa
-         end do
-         nssa_val = nssa
-
-         ! Define points order
-         call qsort(nssa,ssa_to_node,order)
-
-         ! Reorder data
-         ssa_to_cx = ssa_to_cx(order)
-         lon_ssa = lon_ssa(order)
-         lat_ssa = lat_ssa(order)
-         rh_ssa = rh_ssa(order)
-
-         ! Define sampling with a KD-tree
-         do is=1,ns+nrep
-            ! Setup tree
-            if (is>2) call tree%init(mpl,nssa,lon_ssa,lat_ssa,lmask_ssa)
-
-            ! Initialization
-            dist_max = zero
-            irmax = 0
-            irvalmax = 0
-            itry = 1
-
-            ! Find a new point
-            do itry=1,ntry
-               ! Generate a random index among valid points
-               call rng%rand(1,nssa_val,irval)
-               ir = to_valid(irval)
-
-               ! Check point validity
-               if (is==1) then
-                  ! Accept point
-                  irvalmax = irval
-                  irmax = ir
-               else
-                  if (is==2) then
-                     ! Compute distance
-                     nn_index(1) = s_to_ssa(1)
-                     call sphere_dist(lon_ssa(ir),lat_ssa(ir),lon_ssa(nn_index(1)),lat_ssa(nn_index(1)),nn_dist(1))
-                  else
-                     ! Find nearest neighbor distance
-                     call tree%find_nearest_neighbors(mpl,lon_ssa(ir),lat_ssa(ir),1,nn_index(1:1),nn_dist(1:1))
-                  end if
-                  d = nn_dist(1)**2/(rh_ssa(ir)**2+rh_ssa(nn_index(1))**2)
-
-                  ! Check distance
-                  if (sup(d,dist_max)) then
-                     dist_max = d
-                     irvalmax = irval
-                     irmax = ir
-                  end if
-               end if
-            end do
-
-            ! Delete tree
-            if (is>2) call tree%dealloc
-
-            ! Add point to sampling
-            if (irmax>0) then
-               ! New sampling point
-               s_to_ssa(is) = irmax
-               lmask_ssa(irmax) = .true.
-
-               ! Shift valid points array
-               if (irvalmax<nssa_val) to_valid(irvalmax:nssa_val-1) = to_valid(irvalmax+1:nssa_val)
-               nssa_val = nssa_val-1
-            end if
-
-            ! Update
-            if (ifmt>0) call mpl%prog_print(is)
-         end do
-         if (ifmt>0) call mpl%prog_final
-
-         ! Release memory
-         deallocate(lmask_ssa)
-         deallocate(to_valid)
-         deallocate(order)
-
-         if (nrep>0) then
-            write(cfmt,'(a,i2.2,a)') '(a',ifmt+3,',a,i6,a)'
-            write(mpl%info,trim(cfmt)) '','Remove ',nrep,' closest points:'
-
-            ! Allocation
-            allocate(rmask(ns+nrep))
-            allocate(lon_rep(ns+nrep))
-            allocate(lat_rep(ns+nrep))
-            allocate(rh_rep(ns+nrep))
-            allocate(dist_rep(ns+nrep))
-
-            ! Initialization
-            rmask = .true.
-            do is=1,ns+nrep
-               lon_rep(is) = lon_ssa(s_to_ssa(is))
-               lat_rep(is) = lat_ssa(s_to_ssa(is))
-               rh_rep(is) = rh_ssa(s_to_ssa(is))
-            end do
-            dist_rep = mpl%msv%valr
-            if (ifmt>0) then
-               call mpl%flush(newl=.false.)
-               call mpl%prog_init(ns+nrep)
-            end if
-
-            ! Remove closest points
-            do irep=1,nrep
-               ! Setup tree
-               call tree%init(mpl,ns+nrep,lon_rep,lat_rep,rmask)
-
-               ! Get minimum distance
-               do is=1,ns+nrep
-                  if (rmask(is)) then
-                     ! Find nearest neighbor distance
-                     call tree%find_nearest_neighbors(mpl,lon_rep(is),lat_rep(is),2,nn_index,nn_dist)
-                     if (nn_index(1)==is) then
-                        dist_rep(is) = nn_dist(2)
-                     elseif (nn_index(2)==is) then
-                        dist_rep(is) = nn_dist(1)
-                     else
-                        call mpl%abort('${subr}$','wrong index in replacement')
-                     end if
-                     dist_rep(is) = dist_rep(is)**2/(rh_rep(nn_index(1))**2+rh_rep(nn_index(2))**2)
-                  end if
-               end do
-
-               ! Delete tree
-               call tree%dealloc
-
-               ! Remove worst point
-               dist_min = huge_real
-               is_min = mpl%msv%vali
-               do is=1,ns+nrep
-                  if (rmask(is)) then
-                     if (inf(dist_rep(is),dist_min)) then
-                        is_min = is
-                        dist_min = dist_rep(is)
-                     end if
-                  end if
-               end do
-               rmask(is_min) = .false.
-
-                ! Update
-               if (ifmt>0) call mpl%prog_print(irep)
-            end do
-            if (ifmt>0) call mpl%prog_final
-
-            ! Check rmask size
-            if (count(rmask)/=ns) call mpl%abort('${subr}$','wrong number of valid points in rmask')
-
-            ! Get full domain sampling
-            js = 0
-            do is=1,ns+nrep
-               if (rmask(is)) then
-                  js = js+1
-                  s_to_cx(js) = ssa_to_cx(s_to_ssa(is))
-               end if
-            end do
-
-            ! Release memory
-            deallocate(rmask)
-            deallocate(lon_rep)
-            deallocate(lat_rep)
-            deallocate(rh_rep)
-            deallocate(dist_rep)
-         else
-            ! Get full domain sampling
-            s_to_cx = ssa_to_cx(s_to_ssa)
-         end if
-
-         ! Release memory
-         deallocate(s_to_ssa)
-      end if
-   end if
 
    ! Release memory
-   deallocate(rhc_cxa)
-   deallocate(lmask_cxa)
-   deallocate(cxa_to_node)
-   deallocate(ssa_to_cx)
-   deallocate(ssa_to_node)
+   call agrid%final()
+
+   ! Apply mask
+   lmask_cx = lmask_cx.and.mask_cx
+
+   ! Allocation
+   ns = count(lmask_cx)
+   allocate(s_to_cx(ns))
+
+   ! Mapping from reduced to initial grid
+   is = 0
+   do icx=1,ncx
+      if (lmask_cx(icx)) then
+         is = is+1
+         s_to_cx(is) = icx
+      end if
+   end do
+
+   ! Release memory
+   deallocate(lmask_cx)
 end if
 
 ! Reorder points
 
 ! Broadcast
-call mpl%f_comm%broadcast(s_to_cx,mpl%rootproc-1)
-
-! Offset
-call mpl%f_comm%allgather(ncxa,proc_to_ncxa)
-proc_to_cx_offset(1) = 0
-do iproc=2,mpl%nproc
-   proc_to_cx_offset(iproc) = proc_to_cx_offset(iproc-1)+proc_to_ncxa(iproc-1)
-end do
+call mpl%f_comm%broadcast(ns,mpl%rootproc-1)
 
 ! Allocation
-nsa = 0
-do is=1,ns
-   icx = s_to_cx(is)
-   iproc = cx_to_proc(geom%nproc,proc_to_cx_offset,icx)
-   if (iproc==mpl%myproc) nsa = nsa+1
-end do
-allocate(sa_to_s(nsa))
-allocate(lon_sa(nsa))
-allocate(lat_sa(nsa))
+if (.not.mpl%main) allocate(s_to_cx(ns))
 allocate(lon_s(ns))
 allocate(lat_s(ns))
 allocate(order_s(ns))
 allocate(gmask_s(ns))
 
-! Initialization
-isa = 0
-do is=1,ns
-   icx = s_to_cx(is)
-   iproc = cx_to_proc(geom%nproc,proc_to_cx_offset,icx)
-   if (iproc==mpl%myproc) then
-      isa = isa+1
-      icxa = cx_to_cxa(geom%nproc,proc_to_cx_offset,icx)
-      sa_to_s(isa) = is
-      lon_sa(isa) = lon_cxa(icxa)
-      lat_sa(isa) = lat_cxa(icxa)
-   end if
-end do
+! Broadcast
+call mpl%f_comm%broadcast(s_to_cx,mpl%rootproc-1)
 
-! Communication
-call mpl%loc_to_glb(nsa,ns,sa_to_s,lon_sa,lon_s,.true.)
-call mpl%loc_to_glb(nsa,ns,sa_to_s,lat_sa,lat_s,.true.)
+if (mpl%main) then
+   ! Define sampling coordinates
+   do is=1,ns
+      icx = s_to_cx(is)
+      icxeff = tree_cx%to_eff(icx)
+      lon_s(is) = tree_cx%lon(icxeff)
+      lat_s(is) = tree_cx%lat(icxeff)
+   end do
+end if
+
+! Broadcast sampling coordinates
+call mpl%f_comm%broadcast(lon_s,mpl%rootproc-1)
+call mpl%f_comm%broadcast(lat_s,mpl%rootproc-1)
 
 ! Define points order
 call qsort(ns,lon_s,lat_s,order_s)
@@ -2935,9 +2300,6 @@ write(mpl%test,trim(cfmt)) '','Subgrid hash: ',hash
 if (ifmt>0) call mpl%flush
 
 ! Release memory
-deallocate(sa_to_s)
-deallocate(lon_sa)
-deallocate(lat_sa)
 deallocate(lon_s)
 deallocate(lat_s)
 deallocate(order_s)
@@ -2946,13 +2308,14 @@ deallocate(gmask_s)
 ! Probe out
 @:probe_out()
 
-end subroutine geom_initialize_sampling_fixed
+end subroutine geom_initialize_sampling_from_size
 
 !----------------------------------------------------------------------
-! Subroutine: geom_initialize_sampling_floating
-!> Intialize sampling
+! Subroutine: geom_initialize_sampling_from_rad
+!> Intialize sampling from radius
 !----------------------------------------------------------------------
-subroutine geom_initialize_sampling_floating(geom,mpl,rng,ncxa,rh_cxa,resol,ncx,tree_cx,cxa_to_cx,ifmt,ns,s_to_cx)
+subroutine geom_initialize_sampling_from_rad(geom,mpl,rng,draw_type,ncxa,mask_cxa,rh_cxa,resol,ncx,tree_cx,cxa_to_cx,ifmt,ns, &
+ & s_to_cx)
 
 implicit none
 
@@ -2960,11 +2323,13 @@ implicit none
 class(geom_type),intent(in) :: geom             !< Geometry
 type(mpl_type),intent(inout) :: mpl             !< MPI data
 type(rng_type),intent(inout) :: rng             !< Random number generator
+character(len=*),intent(in) :: draw_type        !< Draw type (regular or random)
 integer,intent(in) :: ncxa                      !< Number of points (local)
+logical,intent(in) :: mask_cxa(ncxa)            !< Sampling mask (local)
 real(kind_real),intent(in) :: rh_cxa(ncxa)      !< Horizontal support radius (local)
 real(kind_real),intent(in) :: resol             !< Sampling resolution
 integer,intent(in) :: ncx                       !< Number of points (full domain)
-type(tree_type),intent(in) :: tree_cx           !< KD-tree (global
+type(tree_type),intent(in) :: tree_cx           !< KD-tree (full domain)
 integer,intent(in) :: cxa_to_cx(ncxa)           !< Local to full domain index
 integer,intent(in) :: ifmt                      !< Format indentation
 integer,intent(out) :: ns                       !< Number of samplings points (full domain)
@@ -2972,38 +2337,47 @@ integer,allocatable,intent(inout) :: s_to_cx(:) !< Horizontal sampling index (fu
 
 ! Local variables
 integer :: ncr,icr,inode,ix,iy,icr1,icr2
-integer :: active_list_size,ir_base,icr_base,nn_base,nn_int,itry,ir_test,icr_test,nn_test,i,icxeff
-integer :: is,iproc,icx,hash
+integer :: active_list_size,ir_base,icr_base,nn_base,nn_int,itry,ir_test,icr_test,nn_test,i,icx,is,js,iproc,hash
 integer :: nn_index(1),nn_index_check(2)
 integer,allocatable :: cr_to_cx(:),active_list(:),s_to_cr(:),grid_flag(:),nn_index_base(:),nn_index_test(:),order_s(:)
-real(kind_real) :: rh_min,rh_max,rad_min,x_start,y_start,z_start,lon_start,lat_start
+real(kind_real) :: rh_min,rad_min,x_start,y_start,z_start,lon_start,lat_start
 real(kind_real) :: lonlat(2),nn_dist_check(2)
 real(kind_real),allocatable :: rh_cx(:),lon_cr(:),lat_cr(:),rad_cr(:),lon_s(:),lat_s(:),acc_s(:)
 logical :: found,valid
-logical,allocatable :: lmask_cx(:),gmask_s(:)
+logical,allocatable :: mask_cx(:),lmask_cx(:),gmask_s(:)
 character(len=1024) :: cfmt
 type(atlas_structuredgrid) :: agrid
 type(tree_type) :: tree_cr,tree_s
+real(kind_real) :: grid_fac = 3.0
 
 ! Set name
-@:set_name(geom_initialize_sampling_floating)
+@:set_name(geom_initialize_sampling_from_rad)
 
 ! Probe in
 @:probe_in()
 
-! Get min/max support radius
-call mpl%f_comm%allreduce(zss_minval(rh_cxa),rh_min,fckit_mpi_min())
-call mpl%f_comm%allreduce(zss_maxval(rh_cxa),rh_max,fckit_mpi_max())
+! Check that the input tree has no mask
+if (tree_cx%neff/=tree_cx%n) call mpl%abort('${subr}$','input tree should not have a mask')
+
+! Get minimum support radius
+call mpl%f_comm%allreduce(zss_minval(rh_cxa,mask=mpl%msv%isnot(rh_cxa)),rh_min,fckit_mpi_min())
 
 ! Allocation
 if (mpl%main) then
+   allocate(mask_cx(ncx))
    allocate(rh_cx(ncx))
 else
+   allocate(mask_cx(0))
    allocate(rh_cx(0))
 end if
 
 ! Communication
 call mpl%loc_to_glb(ncxa,ncx,cxa_to_cx,rh_cxa,rh_cx)
+
+! Fill masked points with minimum support radius
+do icx=1,ncx
+   if (.not.mask_cx(icx)) rh_cx(icx) = rh_min
+end do
 
 if (mpl%main) then
    ! Check consistency
@@ -3012,26 +2386,15 @@ if (mpl%main) then
    ! First step: reduce grid
 
    ! Minimum length-scale
-   rad_min = half*rh_min/resol
+   rad_min = half*rh_min/(resol*grid_fac)
 
    ! Get grid based on minimum radius
    if (geom%global) then
       ! Global grid
-      call get_grid(mpl,rad_min,agrid,ncr)
+      call get_grid(mpl,rad_min,ncx,agrid,ncr)
    else
       ! Regional grid
-      call get_grid(mpl,rad_min,geom%aconfig_work_grid,geom%xmin,geom%xmax,geom%ymin,geom%ymax,agrid,ncr)
-   end if
-
-   if (ncr>ncx) then
-      ! Get grid based on size
-      if (geom%global) then
-         ! Global grid
-         call get_grid(mpl,ncx,agrid,ncr)
-      else
-         ! Regional grid
-         call get_grid(mpl,ncx,geom%aconfig_work_grid,geom%xmin,geom%xmax,geom%ymin,geom%ymax,agrid,ncr)
-      end if
+      call get_grid(mpl,rad_min,ncx,geom%aconfig_work_grid,geom%xmin,geom%xmax,geom%ymin,geom%ymax,agrid,ncr)
    end if
 
    ! Allocation
@@ -3052,7 +2415,7 @@ if (mpl%main) then
          ! Find nearest neighbor
          call tree_cx%find_nearest_neighbors(mpl,lonlat(1),lonlat(2),1,nn_index)
          icx = nn_index(1)
-         
+
          ! Keep valid points on each processor
          lmask_cx(icx) = .true.
       end do
@@ -3077,18 +2440,16 @@ if (mpl%main) then
       end if
    end do
 
-   if (indist(rh_min,rh_max)) then
+   if (draw_type=='regular') then
       ! Uniform support radius
       ns = ncr
-      allocate(s_to_cx(ns))
-      s_to_cx = cr_to_cx
       do is=1,ns
          s_to_cr(is) = is
       end do
-   else
+   elseif (draw_type=='random') then
       ! Print result
       write(cfmt,'(a,i2.2,a)') '(a',ifmt+3,',a,i8,a,i8,a)'
-      write(mpl%test,trim(cfmt)) '','Grid reduction from ',tree_cx%neff,' to ',ncr,' points'
+      write(mpl%test,trim(cfmt)) '','Grid reduction from ',tree_cx%n,' to ',ncr,' points'
       if (ifmt>0) call mpl%flush
 
       ! Allocation
@@ -3098,25 +2459,24 @@ if (mpl%main) then
       ! Longitude / latitude / radius on reduced grid
       do icr=1,ncr
          icx = cr_to_cx(icr)
-         icxeff = tree_cx%to_eff(icx)
-         lon_cr(icr) = tree_cx%lon(icxeff)
-         lat_cr(icr) = tree_cx%lat(icxeff)
+         lon_cr(icr) = tree_cx%lon(icx)
+         lat_cr(icr) = tree_cx%lat(icx)
       end do
 
       ! Initialize tree
       call tree_cr%init(mpl,ncr,lon_cr,lat_cr)
-   
+
       ! Allocation
       allocate(active_list(ncr))
       allocate(grid_flag(ncr))
-   
+
       ! Initialization
       ns = 0
       active_list_size = 0
       active_list = 0
       s_to_cr = 0
       grid_flag = 0
-   
+
       ! Arbitrary starting point
       if (rng%reset_seed) then
          ! Deterministic run, use the domain center
@@ -3132,31 +2492,32 @@ if (mpl%main) then
       call xyz2lonlat(mpl,x_start,y_start,z_start,lon_start,lat_start)
       call tree_cr%find_nearest_neighbors(mpl,lon_start,lat_start,1,nn_index)
       icr_test = nn_index(1)
-   
+
       ! Update lists
       ns = ns+1
       active_list_size = active_list_size+1
       active_list(active_list_size) = icr_test
       s_to_cr(ns) = icr_test
       grid_flag(icr_test) = ns
-   
+
       ! Loop while active list is not empty
       do while (active_list_size>0)
          ! Base sample
          call rng%rand(1,active_list_size,ir_base)
          icr_base = active_list(ir_base)
          found = .false.
-   
+
          ! List points in the annulus
          call tree_cr%find_nearest_neighbors(mpl,tree_cr%lon(icr_base),tree_cr%lat(icr_base),two*rad_cr(icr_base), &
  & nn_base,nn_index_base)
          call tree_cr%count_nearest_neighbors(mpl,tree_cr%lon(icr_base),tree_cr%lat(icr_base),rad_cr(icr_base),nn_int)
-   
-         do itry=1,nn_base-nn_int
-            icr_test = nn_index_base(nn_int+itry)
+
+         do itry=1,ntry
+            call rng%rand(nn_int+1,nn_base,ir_test)
+            icr_test = nn_index_base(ir_test)
             call tree_cr%find_nearest_neighbors(mpl,tree_cr%lon(icr_test),tree_cr%lat(icr_test),rad_cr(icr_test), &
  & nn_test,nn_index_test)
-   
+
             valid = .true.
             do i=1,nn_test
                icr = nn_index_test(i)
@@ -3166,7 +2527,7 @@ if (mpl%main) then
                end if
             end do
             deallocate(nn_index_test)
-   
+
             if (valid) then
                ns = ns+1
                active_list_size = active_list_size+1
@@ -3177,34 +2538,89 @@ if (mpl%main) then
                exit
             end if
          end do
-   
+
          if (.not.found) then
             ! Remove base sample from active list
             active_list(ir_base:active_list_size-1) = active_list(ir_base+1:active_list_size)
             active_list_size = active_list_size-1
          end if
-   
+
          ! Release memory
          deallocate(nn_index_base)
       end do
-   
-      ! Copy sample
-      allocate(s_to_cx(ns))
+
+      ! Allocation
+      allocate(lon_s(ns))
+      allocate(lat_s(ns))
+      allocate(acc_s(ns))
+
+      ! Define sampling coordinates
       do is=1,ns
          icr = s_to_cr(is)
-         icx = cr_to_cx(icr)
-         s_to_cx(is) = icx
+         lon_s(is) = lon_cr(icr)
+         lat_s(is) = lat_cr(icr)
       end do
+
+      ! Build sampling tree
+      call tree_s%init(mpl,ns,lon_s,lat_s)
+
+      ! Find nearest neighbor for each sampling point
+      do is=1,ns
+         ! Get distance to the nearest neighbor
+         call tree_s%find_nearest_neighbors(mpl,lon_s(is),lat_s(is),2,nn_index_check,nn_dist_check)
+         if (nn_dist_check(1)>zero) call mpl%abort('{subr}','error in sampling')
+
+         ! Get theoretical distance to the nearest neighbor
+         icr1 = s_to_cr(is)
+         icr2 = s_to_cr(nn_index_check(2))
+         acc_s(is) = nn_dist_check(2)/sqrt(rad_cr(icr1)*rad_cr(icr2))
+      end do
+
+      ! Print results
+      write(cfmt,'(a,i2.2,a)') '(a',ifmt+3,',a,f5.2,a,f5.2,a,f5.2)'
+      write(mpl%test,trim(cfmt)) '','Effective resolution (min/max/avg): ',resol/maxval(acc_s),' / ',resol/minval(acc_s),' / ', &
+ & resol/(sum(acc_s)/real(ns,kind_real))
+      if (ifmt>0) call mpl%flush
 
       ! Release memory
       deallocate(lon_cr)
       deallocate(lat_cr)
       deallocate(active_list)
       deallocate(grid_flag)
+      deallocate(lon_s)
+      deallocate(lat_s)
+      deallocate(acc_s)
+   else
+      ! Error message
+      call mpl%abort('${subr}$','wrong sampling method')
    end if
+
+   ! Remove masked points
+   do is=1,ns
+      icr = s_to_cr(is)
+      icx = cr_to_cx(icr)
+      if (.not.mask_cx(icx)) then
+         ns = ns-1
+         s_to_cr(is) = 0
+      end if
+   end do
+
+   ! Copy sample
+   allocate(s_to_cx(ns))
+   js = 0
+   do is=1,ncx
+      icr = s_to_cr(is)
+      if (icr>0) then
+         js = js+1
+         icx = cr_to_cx(icr)
+         s_to_cx(js) = icx
+      end if
+   end do
 
    ! Release memory
    deallocate(cr_to_cx)
+   deallocate(s_to_cr)
+   deallocate(rad_cr)
 end if
 
 ! Reorder points
@@ -3216,7 +2632,6 @@ call mpl%f_comm%broadcast(ns,mpl%rootproc-1)
 if (.not.mpl%main) allocate(s_to_cx(ns))
 allocate(lon_s(ns))
 allocate(lat_s(ns))
-allocate(acc_s(ns))
 allocate(order_s(ns))
 allocate(gmask_s(ns))
 
@@ -3227,35 +2642,9 @@ if (mpl%main) then
    ! Define sampling coordinates
    do is=1,ns
       icx = s_to_cx(is)
-      icxeff = tree_cx%to_eff(icx)
-      lon_s(is) = tree_cx%lon(icxeff)
-      lat_s(is) = tree_cx%lat(icxeff)
+      lon_s(is) = tree_cx%lon(icx)
+      lat_s(is) = tree_cx%lat(icx)
    end do
-
-   ! Build sampling tree
-   call tree_s%init(mpl,ns,lon_s,lat_s)
-
-   ! Find nearest neighbor for each sampling point
-   do is=1,ns
-      ! Get distance to the nearest neighbor
-      call tree_s%find_nearest_neighbors(mpl,lon_s(is),lat_s(is),2,nn_index_check,nn_dist_check)
-      if (nn_dist_check(1)>zero) call mpl%abort('{subr}','error in sampling')
-
-      ! Get theoretical distance to the nearest neighbor
-      icr1 = s_to_cr(is)
-      icr2 = s_to_cr(nn_index_check(2))
-      acc_s(is) = nn_dist_check(2)/sqrt(rad_cr(icr1)*rad_cr(icr2))
-   end do
-
-   ! Print results
-   write(cfmt,'(a,i2.2,a)') '(a',ifmt+3,',a,f5.2,a,f5.2,a,f5.2)'
-   write(mpl%test,trim(cfmt)) '','Effective resolution (min/max/avg): ',resol/maxval(acc_s),' / ',resol/minval(acc_s),' / ', &
- & resol/(sum(acc_s)/real(ns,kind_real))
-   if (ifmt>0) call mpl%flush
-
-   ! Release memory
-   deallocate(s_to_cr)
-   deallocate(rad_cr)
 end if
 
 ! Broadcast sampling coordinates
@@ -3281,7 +2670,6 @@ if (ifmt>0) call mpl%flush
 deallocate(rh_cx)
 deallocate(lon_s)
 deallocate(lat_s)
-deallocate(acc_s)
 deallocate(order_s)
 deallocate(gmask_s)
 call tree_s%dealloc
@@ -3289,7 +2677,7 @@ call tree_s%dealloc
 ! Probe out
 @:probe_out()
 
-end subroutine geom_initialize_sampling_floating
+end subroutine geom_initialize_sampling_from_rad
 
 !----------------------------------------------------------------------
 ! Subroutine: geom_define_test_vectors

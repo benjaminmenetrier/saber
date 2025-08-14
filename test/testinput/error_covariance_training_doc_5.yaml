@@ -39,7 +39,7 @@ background error:
         write nicas steps: true
         internal dirac test: true
       nicas:
-        resolution: 10.0
+        resolution: 7.0
       dirac:
       - longitude: -78.0
         latitude: 11.6

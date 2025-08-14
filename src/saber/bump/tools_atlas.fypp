@@ -12,7 +12,7 @@ module tools_atlas
 use atlas_module, only: atlas_structuredgrid,atlas_regionalgrid,atlas_field,atlas_integer,atlas_real,atlas_functionspace, &
  & atlas_functionspace_nodecolumns,atlas_functionspace_pointcloud,atlas_functionspace_structuredcolumns, &
  & atlas_projection,atlas_config,atlas_json
-use tools_const, only: zero,quarter,half,four,eight,rad2deg,pi
+use tools_const, only: zero,quarter,half,four,eight,rad2deg,pi,req
 use tools_kinds, only: kind_int,kind_real
 use tools_func, only: sphere_dist,convert_i2l,convert_l2i
 use type_mpl, only: mpl_type
@@ -74,7 +74,7 @@ character(len=6) :: gridid
 @:probe_in()
 
 ! Check number of points
-if (nmin<3) call mpl%abort('${subr}$','minimum number of points is too small')
+if (nmin<40) call mpl%abort('${subr}$','minimum number of points is too small')
 
 ! Get truncation
 trunc = floor(-4.5_kind_real+sqrt(20.25_kind_real+quarter*real(nmin,kind_real)))+1
@@ -97,18 +97,19 @@ end subroutine atlas_get_global_grid_from_size
 ! Subroutine: atlas_get_global_grid_from_cell
 !> Define global ATLAS grid (reduced Gaussian) from maximum cell size
 !----------------------------------------------------------------------
-subroutine atlas_get_global_grid_from_cell(mpl,dxmax,agrid,n)
+subroutine atlas_get_global_grid_from_cell(mpl,dxmax,nmax,agrid,n)
 
 implicit none
 
 ! Passed variables
 type(mpl_type),intent(inout) :: mpl               !< MPI data
 real(kind_real),intent(in) :: dxmax               !< Maximum cell size
+integer,intent(in) :: nmax                        !< Maximum grid size
 type(atlas_structuredgrid),intent(inout) :: agrid !< ATLAS grid
 integer,intent(out),optional :: n                 !< Grid size
 
 ! Local variables
-integer :: trunc
+integer :: trunc,trunc_max
 character(len=6) :: gridid
 
 ! Set name
@@ -120,11 +121,21 @@ character(len=6) :: gridid
 ! Check cell size
 if (.not.(dxmax>zero)) call mpl%abort('${subr}$','maximum cell size should be positive')
 
+! Check number of points
+if (nmax<40) call mpl%abort('${subr}$','maximum number of points is too small')
+
+! Get maximum truncation
+trunc_max = floor(-4.5_kind_real+sqrt(20.25_kind_real+quarter*real(nmax,kind_real)))
+
 ! Get truncation
 trunc = (floor(eight*pi/dxmax)-4)+1
+trunc = min(trunc_max,trunc)
+
+! Set maximum truncation
+if (trunc>9999) call mpl%abort('${subr}$','octahedral truncation is too large')
 
 ! Define ID
-write(gridid,'(a,i5.5)') 'O',trunc
+write(gridid,'(a,i4.4)') 'O',trunc
 
 ! Define grid
 agrid = atlas_structuredgrid(gridid)
@@ -169,7 +180,7 @@ type(atlas_projection) :: aproj
 @:probe_in()
 
 ! Check number of points
-if (nmin<3) call mpl%abort('${subr}$','minimum number of points is too small')
+if (nmin<9) call mpl%abort('${subr}$','minimum number of points is too small')
 
 ! Input grid specifications
 if (.not.aconfig_grid%get('xspace.N',nx_work)) call mpl%abort('{subr}','missing xspace.N')
@@ -182,8 +193,8 @@ n_work = nx_work*ny_work
 
 ! Reduction factor
 alpha = sqrt(real(nmin,kind_real)/real(n_work,kind_real))
-nx = floor(real(nx_work,kind_real)*alpha)
-ny = floor(real(nx_work,kind_real)*alpha)
+nx = floor(real(nx_work,kind_real)*alpha)+1
+ny = floor(real(nx_work,kind_real)*alpha)+1
 if (nx<2) call mpl%abort('${subr}$','nx is too small')
 if (ny<2) call mpl%abort('${subr}$','ny is too small')
 
@@ -215,13 +226,14 @@ end subroutine atlas_get_regional_grid_from_size
 ! Subroutine: atlas_get_regional_grid_from_cell
 !> Define regional ATLAS grid from maximum cell size
 !----------------------------------------------------------------------
-subroutine atlas_get_regional_grid_from_cell(mpl,dxmax,aconfig_grid,xmin,xmax,ymin,ymax,agrid,n)
+subroutine atlas_get_regional_grid_from_cell(mpl,dxmax,nmax,aconfig_grid,xmin,xmax,ymin,ymax,agrid,n)
 
 implicit none
 
 ! Passed variables
 type(mpl_type),intent(inout) :: mpl               !< MPI data
 real(kind_real),intent(in) :: dxmax               !< Maximum cell size
+integer,intent(in) :: nmax                        !< Maximum grid size
 type(atlas_config),intent(in) :: aconfig_grid     !< ATLAS grid configuration
 real(kind_real),intent(in) :: xmin                !< Computational grid minimum x value
 real(kind_real),intent(in) :: xmax                !< Computational grid maximum x value
@@ -231,8 +243,8 @@ type(atlas_structuredgrid),intent(inout) :: agrid !< ATLAS grid
 integer,intent(out),optional :: n                 !< Grid size
 
 ! Local variables
-integer :: nx_work,ny_work,n_work,nx,ny
-real(kind_real) :: xstart,xend,ystart,yend,alpha,xy_min(2),xy_max(2)
+integer :: nx_work,ny_work,n_work,nx,ny,ntmp
+real(kind_real) :: xstart,xend,ystart,yend,dx,dy,alpha,xy_min(2),xy_max(2)
 type(atlas_config) :: aconfig_proj
 type(atlas_projection) :: aproj
 
@@ -242,7 +254,56 @@ type(atlas_projection) :: aproj
 ! Probe in
 @:probe_in()
 
-call mpl%abort('nope','not implemented yet')
+! Check cell size
+if (.not.(dxmax>zero)) call mpl%abort('${subr}$','maximum cell size should be positive')
+
+! Check number of points
+if (nmax<9) call mpl%abort('${subr}$','maximum number of points is too small')
+
+! Input grid specifications
+if (.not.aconfig_grid%get('xspace.N',nx_work)) call mpl%abort('{subr}','missing xspace.N')
+if (.not.aconfig_grid%get('yspace.N',ny_work)) call mpl%abort('{subr}','missing yspace.N')
+if (.not.aconfig_grid%get('xspace.start',xstart)) call mpl%abort('{subr}','missing xspace.start')
+if (.not.aconfig_grid%get('xspace.end',xend)) call mpl%abort('{subr}','missing xspace.end')
+if (.not.aconfig_grid%get('yspace.start',ystart)) call mpl%abort('{subr}','missing yspace.start')
+if (.not.aconfig_grid%get('yspace.end',yend)) call mpl%abort('{subr}','missing yspace.end')
+n_work = nx_work*ny_work
+dx = real(xend-xstart,kind_real)/(req*real(nx_work-1,kind_real))
+dy = real(yend-ystart,kind_real)/(req*real(ny_work-1,kind_real))
+
+! Reduction factor
+alpha = max(dx,dy)/dxmax
+nx = floor(real(nx_work,kind_real)*alpha)+1
+ny = floor(real(nx_work,kind_real)*alpha)+1
+
+if (nx<2) call mpl%abort('${subr}$','nx is too small')
+if (ny<2) call mpl%abort('${subr}$','ny is too small')
+
+! Check grid size
+if (nx*ny>nmax) then
+   alpha = sqrt(real(nmax,kind_real)/real(n_work,kind_real))
+   nx = floor(real(nx_work,kind_real)*alpha)
+   ny = floor(real(nx_work,kind_real)*alpha)
+end if
+
+! Set new regional grid
+xy_min = (/xstart,ystart/)
+xy_max = (/xend,yend/)
+
+! Get grid projection
+if (aconfig_grid%get('projection',aconfig_proj)) then
+   ! Get projection
+   aproj = atlas_projection(aconfig_proj)
+
+   ! Build grid
+   agrid = atlas_regionalgrid(nx,ny,xy_min,xy_max,aproj)
+else
+   ! Build grid without projection
+   agrid = atlas_regionalgrid(nx,ny,xy_min,xy_max)
+end if
+
+! Define number of points
+if (present(n)) n = nx*ny
 
 ! Probe out
 @:probe_out()
