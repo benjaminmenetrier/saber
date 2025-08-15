@@ -224,7 +224,7 @@ void bump_config_init_f90(eckit::LocalConfiguration * config) {
   param(samplingDef.local_rad, samplingConf);
   // Local diagnostics calculation latitude band half-width [in degrees]
   param(samplingDef.local_dlat, samplingConf);
-  // Diagnostic draw type ('random' or 'octahedral')
+  // Diagnostic draw type ('random' or 'regular')
   param(samplingDef.draw_type, samplingConf);
   // Maximum number of random number draws
   param(samplingDef.irmax, samplingConf);
@@ -278,10 +278,6 @@ void bump_config_init_f90(eckit::LocalConfiguration * config) {
   param(varianceDef.var_npass, varianceConf);
   // Resolution for the NICAS smoother
   param(varianceDef.smoother_resol, varianceConf);
-  // Maximum size of the Sc1 subset for the NICAS smoother
-  param(varianceDef.smoother_nc1max, varianceConf);
-  // Minimum effective resolution for the NICAS smoother
-  param(varianceDef.smoother_resol_eff_min, varianceConf);
 
   // Optimality test section
   OptimalityTestDef optimalityTestDef;
@@ -312,18 +308,12 @@ void bump_config_init_f90(eckit::LocalConfiguration * config) {
   eckit::LocalConfiguration nicasConf;
   // Resolution
   param(nicasDef.resol, nicasConf);
-  // Maximum size of the Sc1 subset
-  param(nicasDef.nc1max, nicasConf);
-  // Minimum effective resolution
-  param(nicasDef.resol_eff_min, nicasConf);
-  // NICAS draw type ('random' or 'octahedral')
+  // NICAS draw type ('random' or 'regular')
   param(nicasDef.nicas_draw_type, nicasConf);
   // Force specific support radii
   param(nicasDef.forced_radii, nicasConf);
   // Factor to get interpolation radius from convolution radius if nicas_interp_type = 'si'
   param(nicasDef.nicas_si_factor, nicasConf);
-  // Scaling on convolution length-scale to account for smooth interpolation effect
-  param(nicasDef.nicas_si_scaling, nicasConf);
   // Normalization randomization size
   param(nicasDef.norm_rand_size, nicasConf);
   // Positive-definiteness test

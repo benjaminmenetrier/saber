@@ -499,7 +499,7 @@ do ig=1,nam%ng
    write(mpl%info,'(a7,a,a,a)') '','Group ',trim(nam%group_names(ig)),':'
    call mpl%flush
 
-   if ((nam%nicas_interp_type(ig)=='si').and.nam%nicas_si_scaling) then
+   if (nam%nicas_interp_type(ig)=='si') then
       ! Interpolate scaling linearly
       cmat%blk(ig)%scaling = mpl%msv%valr
       do isi=1,nsi-1

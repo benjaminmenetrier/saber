@@ -396,7 +396,7 @@ struct SamplingDef {
   std::pair<const char *, double> local_dlat =
     std::make_pair("averaging latitude width", 0.0);
 
-  // Diagnostic draw type ('random' or 'octahedral')
+  // Diagnostic draw type ('random' or 'regular')
   std::pair<const char *, std::string> draw_type =
     std::make_pair("grid type", "random");
 
@@ -501,14 +501,6 @@ struct VarianceDef {
   // Resolution for the NICAS smoother
   std::pair<const char *, double> smoother_resol =
     std::make_pair("smoother resolution", 5.0);
-
-  // Maximum size of the Sc1 subset for the NICAS smoother
-  std::pair<const char *, int> smoother_nc1max =
-    std::make_pair("smoother max horizontal grid size", 50000);
-
-  // Minimum effective resolution for the NICAS smoother
-  std::pair<const char *, double> smoother_resol_eff_min =
-    std::make_pair("smoother min effective resolution", 2.0);
 };
 
 // Optimality test section
@@ -555,15 +547,7 @@ struct NICASDef {
   std::pair<const char *, double> resol =
     std::make_pair("resolution", 0.0);
 
-  // Maximum size of the Sc1 subset
-  std::pair<const char *, int> nc1max =
-    std::make_pair("max horizontal grid size", 15000);
-
-  // Minimum effective resolution
-  std::pair<const char *, double> resol_eff_min =
-    std::make_pair("min effective resolution", 3.0);
-
-  // NICAS draw type ('random' or 'octahedral')
+  // NICAS draw type ('random' or 'regular')
   std::pair<const char *, std::string> nicas_draw_type =
     std::make_pair("grid type", "random");
 
@@ -573,11 +557,7 @@ struct NICASDef {
 
   // Factor to get interpolation radius from convolution radius if nicas_interp_type = 'si'
   std::pair<const char *, double> nicas_si_factor =
-    std::make_pair("smooth interpolation factor", 0.25);
-
-  // Scaling on convolution length-scale to account for smooth interpolation effect
-  std::pair<const char *, bool> nicas_si_scaling =
-    std::make_pair("smooth interpolation scaling", false);
+    std::make_pair("smooth interpolation factor", 0.8);
 
   // Normalization randomization size
   std::pair<const char *, int> norm_rand_size =

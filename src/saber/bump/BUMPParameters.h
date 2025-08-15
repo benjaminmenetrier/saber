@@ -443,7 +443,7 @@ class SamplingSection : public oops::Parameters {
   oops::Parameter<double> local_rad = param(def.local_rad, this);
   // Local diagnostics calculation latitude band half-width [in degrees]
   oops::Parameter<double> local_dlat = param(def.local_dlat, this);
-  // Diagnostic draw type ('random' or 'octahedral')
+  // Diagnostic draw type ('random' or 'regular')
   oops::Parameter<std::string> draw_type = param(def.draw_type, this);
   // Maximum number of random number draws
   oops::Parameter<int> irmax = param(def.irmax, this);
@@ -550,10 +550,6 @@ class VarianceSection : public oops::Parameters {
     this};
   // Resolution for the NICAS smoother
   oops::Parameter<double> smoother_resol = param(def.smoother_resol, this);
-  // Maximum size of the Sc1 subset for the NICAS smoother
-  oops::Parameter<int> smoother_nc1max = param(def.smoother_nc1max, this);
-  // Minimum effective resolution for the NICAS smoother
-  oops::Parameter<double> smoother_resol_eff_min = param(def.smoother_resol_eff_min, this);
 };
 
 // -----------------------------------------------------------------------------
@@ -608,11 +604,7 @@ class NICASSection : public oops::Parameters {
  public:
   // Resolution
   oops::Parameter<double> resol = param(def.resol, this);
-  // Maximum size of the Sc1 subset
-  oops::Parameter<int> nc1max = param(def.nc1max, this);
-  // Minimum effective resolution
-  oops::Parameter<double> resol_eff_min = param(def.resol_eff_min, this);
-  // NICAS draw type ('random' or 'octahedral')
+  // NICAS draw type ('random' or 'regular')
   oops::Parameter<std::string> nicas_draw_type = param(def.nicas_draw_type, this);
   // Force specific support radii
   oops::Parameter<bool> forced_radii = param(def.forced_radii, this);
@@ -631,8 +623,6 @@ class NICASSection : public oops::Parameters {
     this};
   // Factor to get interpolation radius from convolution radius if nicas_interp_type = 'si'
   oops::Parameter<double> nicas_si_factor = param(def.nicas_si_factor, this);
-  // Scaling on convolution length-scale to account for smooth interpolation effect
-  oops::Parameter<bool> nicas_si_scaling = param(def.nicas_si_scaling, this);
   // Normalization randomization size
   oops::Parameter<int> norm_rand_size = param(def.norm_rand_size, this);
   // Positive-definiteness test

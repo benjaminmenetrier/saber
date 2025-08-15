@@ -167,8 +167,6 @@ type nam_type
    integer :: var_npass                                       !< Number of passes for the variance filtering (0 for uniform variance)
    real(kind_real),allocatable :: var_rhflt(:,:)              !< Variance initial filtering support radius [in meters]
    real(kind_real) :: smoother_resol                          !< Resolution for the NICAS smoother
-   integer :: smoother_nc1max                                 !< Maximum size of the Sc1 subset for the NICAS smoother
-   real(kind_real) :: smoother_resol_eff_min                  !< Minimum effective resolution for the NICAS smoother
 
    ! Optimality test section
    integer :: optimality_nfac                                 !< Number of length-scale factors for optimization
@@ -190,8 +188,6 @@ type nam_type
 
    ! NICAS section
    real(kind_real) :: resol                                   !< Resolution
-   integer :: nc1max                                          !< Maximum size of the Sc1 subset
-   real(kind_real) :: resol_eff_min                           !< Minimum effective resolution
    character(len=1024) :: nicas_draw_type                     !< NICAS draw type ('random' or 'octahedral')
    logical :: forced_radii                                    !< Force specific support radii
    real(kind_real),allocatable :: rh(:,:)                     !< Forced horizontal support radius [in meters]
@@ -199,7 +195,6 @@ type nam_type
    real(kind_real),allocatable :: loc_wgt_sqrt(:,:)           !< Weights square-root for the 'block_weighted' strategy
    character(len=2),allocatable :: nicas_interp_type(:)       !< NICAS C1B to C0A interpolation type ('c0': C0 mesh-based, 'c1': C1 mesh-based or 'si': smooth interpolation)
    real(kind_real) :: nicas_si_factor                         !< Factor to get interpolation radius from convolution radius if nicas_interp_type = 'si'
-   logical :: nicas_si_scaling                                !< Scaling on convolution length-scale to account for smooth interpolation effect
    integer :: norm_rand_size                                  !< Normalization randomization size (default is 0, which means exact normalization)
    logical :: pos_def_test                                    !< Positive-definiteness test
    logical :: interp_test                                     !< Horizontal NICAS interpolation test
@@ -780,8 +775,6 @@ if (conf%get('variance',section)) then
    call nam%get(section,'filtering passes',nam%var_npass)
    call nam%get(mpl,section,'initial length-scale',nam%var_rhflt,one/req)
    call nam%get(section,'smoother resolution',nam%smoother_resol)
-   call nam%get(section,'smoother min effective resolution',nam%smoother_resol_eff_min)
-   call nam%get(section,'smoother max horizontal grid size',nam%smoother_nc1max)
 end if
 
 ! Optimality test section
@@ -834,8 +827,6 @@ end if
 if (conf%get('nicas',section)) then
    if (lverbose) call print_section(mpl,section,'NICAS')
    call nam%get(section,'resolution',nam%resol)
-   call nam%get(section,'max horizontal grid size',nam%nc1max)
-   call nam%get(section,'min effective resolution',nam%resol_eff_min)
    call nam%get(section,'grid type',nam%nicas_draw_type)
    call nam%get(section,'explicit length-scales',nam%forced_radii)
    call nam%get(mpl,section,'horizontal length-scale',nam%rh,one/req)
@@ -910,7 +901,6 @@ if (conf%get('nicas',section)) then
       end if
    end if
    call nam%get(section,'smooth interpolation factor',nam%nicas_si_factor)
-   call nam%get(section,'smooth interpolation scaling',nam%nicas_si_scaling)
    call nam%get(section,'normalization randomization size',nam%norm_rand_size)
    call nam%get(section,'positive-definiteness test',nam%pos_def_test)
    call nam%get(section,'horizontal interpolation test',nam%interp_test)
@@ -1303,8 +1293,6 @@ if (nam%new_var) then
          end do
       end if
       if (.not.(nam%smoother_resol>zero)) call mpl%abort('${subr}$','smoother_resol should be positive')
-      if (nam%smoother_nc1max<=0) call mpl%abort('${subr}$','smoother_nc1max should be positive')
-      if (.not.(nam%smoother_resol_eff_min>zero)) call mpl%abort('${subr}$','smoother_resol_eff_min should be positive')
    end if
 end if
 
@@ -1353,8 +1341,6 @@ if (nam%new_nicas.or.nam%load_nicas_local.or.nam%load_nicas_global) then
    end if
    if (nam%new_nicas) then
       if (.not.(nam%resol>zero)) call mpl%abort('${subr}$','resol should be positive')
-      if (nam%nc1max<=0) call mpl%abort('${subr}$','nc1max should be positive')
-      if (.not.(nam%resol_eff_min>zero)) call mpl%abort('${subr}$','resol_eff_min should be positive')
    end if
    if (nam%forced_radii) then
       if (.not.allocated(nam%rh)) call mpl%abort('${subr}$','rh is missing')
