@@ -1095,7 +1095,7 @@ real(kind_real) :: area_124,area_234
 real(kind_real),allocatable :: v_c0a(:,:)
 logical :: valid
 type(atlas_functionspace_structuredcolumns) :: afunctionspace_sc
-type(atlas_config) :: aconfig_grid,aconfig_domain,aconfig_work_grid,aconfig_work_proj
+type(atlas_config) :: aconfig_grid,aconfig_domain,aconfig_work_proj
 type(atlas_structuredgrid) :: agrid_work
 type(hull_type) :: hull
 type(minim_type) :: minim
@@ -1374,22 +1374,18 @@ else
       call geom%aconfig_work_grid%set('west',west-dist_maxmin*rad2deg)
    end if
 
-   ! Get work grid domain
+   ! Add work grid domain
    agrid_work = atlas_structuredgrid(geom%aconfig_work_grid)
-   aconfig_work_grid = agrid_work%spec()
-   if (.not.aconfig_work_grid%get('domain',aconfig_domain)) call mpl%abort('${subr}$','missing domain')
+   geom%aconfig_work_grid = agrid_work%spec()
+   if (.not.geom%aconfig_work_grid%get('domain',aconfig_domain)) call mpl%abort('${subr}$','missing domain')
+
+   ! Get grid domain
    if (.not.aconfig_domain%get('type',domain_type)) call mpl%abort('${subr}$','missing domain type')
    if (trim(domain_type)/='rectangular') call mpl%abort('${subr}$','only rectangular domains allowed')
    if (.not.aconfig_domain%get('xmin',geom%xmin)) call mpl%abort('${subr}$','missing domain xmin')
    if (.not.aconfig_domain%get('xmax',geom%xmax)) call mpl%abort('${subr}$','missing domain xmax')
    if (.not.aconfig_domain%get('ymin',geom%ymin)) call mpl%abort('${subr}$','missing domain ymin')
    if (.not.aconfig_domain%get('ymax',geom%ymax)) call mpl%abort('${subr}$','missing domain ymax')
-
-   ! Convert to radian
-   geom%xmin = geom%xmin*deg2rad
-   geom%xmax = geom%xmax*deg2rad
-   geom%ymin = geom%ymin*deg2rad
-   geom%ymax = geom%ymax*deg2rad
 
    ! Get grid projection
    if (.not.geom%aconfig_work_grid%get('projection',aconfig_work_proj)) call mpl%abort('${subr}$','missing projection')
@@ -2033,7 +2029,7 @@ do while (.not.valid)
       call rng%rand(zero,one,y)
       x = geom%xmin+x*(geom%xmax-geom%xmin)
       y = geom%ymin+y*(geom%ymax-geom%ymin)
-      call geom%aproj_work%xy2lonlat(x*rad2deg,y*rad2deg,lon,lat)
+      call geom%aproj_work%xy2lonlat(x,y,lon,lat)
       lon = lon*deg2rad
       lat = lat*deg2rad
    end if
@@ -2090,7 +2086,7 @@ if (mpl%main) then
       call get_grid(mpl,nmin,agrid,ns)
    else
       ! Regional grid
-      call get_grid(mpl,nmin,geom%aconfig_work_grid,geom%xmin,geom%xmax,geom%ymin,geom%ymax,agrid,ns)
+      call get_grid(mpl,nmin,geom%aconfig_work_grid,agrid,ns)
    end if
 
    ! Allocation
@@ -2285,7 +2281,7 @@ if (mpl%main) then
       call get_grid(mpl,rh_min,agrid,ncr)
    else
       ! Regional grid
-      call get_grid(mpl,rh_min,geom%aconfig_work_grid,geom%xmin,geom%xmax,geom%ymin,geom%ymax,agrid,ncr)
+      call get_grid(mpl,rh_min,geom%aconfig_work_grid,agrid,ncr)
    end if
 
    ! Allocation
