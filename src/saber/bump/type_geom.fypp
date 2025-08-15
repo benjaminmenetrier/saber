@@ -211,11 +211,9 @@ contains
 end type geom_type
 
 
-integer,parameter :: niter = 10         !< Number of iterations to estimate the work grid inflation
-integer,parameter :: nfacmin = 4        !< Minimum size factor for the first subsampling
-integer,parameter :: nsmax = 1000000    !< Maximum sampling size
-integer,parameter :: ntry = 10          !< Number of random points generated for sampling selection
-real(kind_real),parameter :: frep = 0.2 !< Extra-points removal factor
+integer,parameter :: niter = 10                !< Number of iterations to estimate the work grid inflation
+integer,parameter :: ntry = 30                 !< Number of random points generated for sampling selection
+real(kind_real),parameter :: grid_factor = two !< Grid factor for the grid reduction in Bridson's method
 
 private
 public :: geom_type
@@ -1159,8 +1157,8 @@ geom%area = geom%hull_c0%area
 if (geom%global) then
    ! Global domain
 
-   ! Arbitrary center (north pole)
-   geom%v_center = (/zero,zero,one/)
+   ! Arbitrary center
+   geom%v_center = (/one,zero,zero/)
 else
    ! Regional domain
 
@@ -2348,7 +2346,6 @@ logical,allocatable :: mask_cx(:),lmask_cx(:),gmask_s(:)
 character(len=1024) :: cfmt
 type(atlas_structuredgrid) :: agrid
 type(tree_type) :: tree_cr,tree_s
-real(kind_real) :: grid_fac = 3.0
 
 ! Set name
 @:set_name(geom_initialize_sampling_from_rad)
@@ -2372,21 +2369,22 @@ else
 end if
 
 ! Communication
+call mpl%loc_to_glb(ncxa,ncx,cxa_to_cx,mask_cxa,mask_cx)
 call mpl%loc_to_glb(ncxa,ncx,cxa_to_cx,rh_cxa,rh_cx)
-
-! Fill masked points with minimum support radius
-do icx=1,ncx
-   if (.not.mask_cx(icx)) rh_cx(icx) = rh_min
-end do
 
 if (mpl%main) then
    ! Check consistency
    if (tree_cx%n/=ncx) call mpl%abort('${subr}$','inconsistent tree size')
 
+   ! Fill masked points with minimum support radius
+   do icx=1,ncx
+      if (.not.mask_cx(icx)) rh_cx(icx) = rh_min
+   end do
+
    ! First step: reduce grid
 
    ! Minimum length-scale
-   rad_min = half*rh_min/(resol*grid_fac)
+   rad_min = half*rh_min/(resol*grid_factor)
 
    ! Get grid based on minimum radius
    if (geom%global) then
@@ -2513,7 +2511,13 @@ if (mpl%main) then
          call tree_cr%count_nearest_neighbors(mpl,tree_cr%lon(icr_base),tree_cr%lat(icr_base),rad_cr(icr_base),nn_int)
 
          do itry=1,ntry
-            call rng%rand(nn_int+1,nn_base,ir_test)
+            if (.true.) then
+               ! Random value in annulus
+               call rng%rand(nn_int+1,nn_base,ir_test)
+            else
+               ! Ordered value in annulus
+               ir_test = min(nn_int+itry,nn_base)
+            end if
             icr_test = nn_index_base(ir_test)
             call tree_cr%find_nearest_neighbors(mpl,tree_cr%lon(icr_test),tree_cr%lat(icr_test),rad_cr(icr_test), &
  & nn_test,nn_index_test)
@@ -2549,6 +2553,11 @@ if (mpl%main) then
          deallocate(nn_index_base)
       end do
 
+      ! Release memory
+      deallocate(active_list)
+      deallocate(grid_flag)
+      call tree_cr%dealloc
+
       ! Allocation
       allocate(lon_s(ns))
       allocate(lat_s(ns))
@@ -2583,13 +2592,11 @@ if (mpl%main) then
       if (ifmt>0) call mpl%flush
 
       ! Release memory
-      deallocate(lon_cr)
-      deallocate(lat_cr)
-      deallocate(active_list)
-      deallocate(grid_flag)
       deallocate(lon_s)
       deallocate(lat_s)
       deallocate(acc_s)
+      deallocate(lon_cr)
+      deallocate(lat_cr)
    else
       ! Error message
       call mpl%abort('${subr}$','wrong sampling method')
@@ -2608,7 +2615,7 @@ if (mpl%main) then
    ! Copy sample
    allocate(s_to_cx(ns))
    js = 0
-   do is=1,ncx
+   do is=1,ncr
       icr = s_to_cr(is)
       if (icr>0) then
          js = js+1

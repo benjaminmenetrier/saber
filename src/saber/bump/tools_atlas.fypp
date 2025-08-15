@@ -12,7 +12,7 @@ module tools_atlas
 use atlas_module, only: atlas_structuredgrid,atlas_regionalgrid,atlas_field,atlas_integer,atlas_real,atlas_functionspace, &
  & atlas_functionspace_nodecolumns,atlas_functionspace_pointcloud,atlas_functionspace_structuredcolumns, &
  & atlas_projection,atlas_config,atlas_json
-use tools_const, only: zero,quarter,half,four,eight,rad2deg,pi,req
+use tools_const, only: zero,quarter,half,rad2deg,pi,req
 use tools_kinds, only: kind_int,kind_real
 use tools_func, only: sphere_dist,convert_i2l,convert_l2i
 use type_mpl, only: mpl_type
@@ -109,7 +109,7 @@ type(atlas_structuredgrid),intent(inout) :: agrid !< ATLAS grid
 integer,intent(out),optional :: n                 !< Grid size
 
 ! Local variables
-integer :: trunc,trunc_max
+integer :: trunc,ln
 character(len=6) :: gridid
 
 ! Set name
@@ -124,12 +124,12 @@ if (.not.(dxmax>zero)) call mpl%abort('${subr}$','maximum cell size should be po
 ! Check number of points
 if (nmax<40) call mpl%abort('${subr}$','maximum number of points is too small')
 
-! Get maximum truncation
-trunc_max = floor(-4.5_kind_real+sqrt(20.25_kind_real+quarter*real(nmax,kind_real)))
-
 ! Get truncation
-trunc = (floor(eight*pi/dxmax)-4)+1
-trunc = min(trunc_max,trunc)
+trunc = (floor(half*pi/dxmax)-4)+1
+
+! Check grid size
+ln = 4*trunc**2+36*trunc
+if (ln>nmax) call mpl%abort('${subr}$','cannot create a subgrid at higher resolution than the initial grid')
 
 ! Set maximum truncation
 if (trunc>9999) call mpl%abort('${subr}$','octahedral truncation is too large')
@@ -140,8 +140,8 @@ write(gridid,'(a,i4.4)') 'O',trunc
 ! Define grid
 agrid = atlas_structuredgrid(gridid)
 
-! Define number of points
-if (present(n)) n = 4*trunc**2+36*trunc
+! Copy number of points
+if (present(n)) n = ln
 
 ! Probe out
 @:probe_out()
@@ -243,7 +243,7 @@ type(atlas_structuredgrid),intent(inout) :: agrid !< ATLAS grid
 integer,intent(out),optional :: n                 !< Grid size
 
 ! Local variables
-integer :: nx_work,ny_work,n_work,nx,ny,ntmp
+integer :: nx_work,ny_work,n_work,nx,ny,ln
 real(kind_real) :: xstart,xend,ystart,yend,dx,dy,alpha,xy_min(2),xy_max(2)
 type(atlas_config) :: aconfig_proj
 type(atlas_projection) :: aproj
@@ -275,16 +275,12 @@ dy = real(yend-ystart,kind_real)/(req*real(ny_work-1,kind_real))
 alpha = max(dx,dy)/dxmax
 nx = floor(real(nx_work,kind_real)*alpha)+1
 ny = floor(real(nx_work,kind_real)*alpha)+1
-
 if (nx<2) call mpl%abort('${subr}$','nx is too small')
 if (ny<2) call mpl%abort('${subr}$','ny is too small')
 
 ! Check grid size
-if (nx*ny>nmax) then
-   alpha = sqrt(real(nmax,kind_real)/real(n_work,kind_real))
-   nx = floor(real(nx_work,kind_real)*alpha)
-   ny = floor(real(nx_work,kind_real)*alpha)
-end if
+ln = nx*ny
+if (ln>nmax) call mpl%abort('${subr}$','cannot create a subgrid at higher resolution than the initial grid')
 
 ! Set new regional grid
 xy_min = (/xstart,ystart/)
@@ -302,8 +298,8 @@ else
    agrid = atlas_regionalgrid(nx,ny,xy_min,xy_max)
 end if
 
-! Define number of points
-if (present(n)) n = nx*ny
+! Copy number of points
+if (present(n)) n = ln
 
 ! Probe out
 @:probe_out()

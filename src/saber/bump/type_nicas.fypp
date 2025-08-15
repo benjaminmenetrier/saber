@@ -330,45 +330,34 @@ if (nam%strategy=='crossed') then
          exit
       end if
    end do
+else
+   ! Missing reference group
+   nicas%igref = mpl%msv%vali
+end if
 
-   do ig=1,nam%ng
-      do icmp=1,nicas%blk(ig)%ncmp
-         ! Control variable size
-         nicas%blk(ig)%cmp(icmp)%ncv = nicas%blk(nicas%igref)%cmp(icmp)%nsa
+do ig=1,nam%ng
+   do icmp=1,nicas%blk(ig)%ncmp
+      ! Control variable size
+      nicas%blk(ig)%cmp(icmp)%ncv = nicas%blk(ig)%cmp(icmp)%nsa
 
-         ! Control variable section starting and end indices
-         if (geom%grp2d(ig)) then
-            if (geom%nl2d==1) then
-               ! First level only
-               nicas%blk(ig)%cmp(icmp)%ias = 1
-               nicas%blk(ig)%cmp(icmp)%iae = nicas%blk(ig)%cmp(icmp)%nsa
-            else
-               ! Last level only
-               nicas%blk(ig)%cmp(icmp)%ias = nicas%blk(ig)%cmp(icmp)%ncv-nicas%blk(ig)%cmp(icmp)%nsa+1
-               nicas%blk(ig)%cmp(icmp)%iae = nicas%blk(ig)%cmp(icmp)%ncv
-            end if
-         else
-            ! 
+      ! Control variable section starting and end indices
+      if ((nam%strategy=='crossed').and.geom%grp2d(ig)) then
+         if (geom%nl2d==1) then
+            ! First level only
             nicas%blk(ig)%cmp(icmp)%ias = 1
             nicas%blk(ig)%cmp(icmp)%iae = nicas%blk(ig)%cmp(icmp)%nsa
+         else
+            ! Last level only
+            nicas%blk(ig)%cmp(icmp)%ias = nicas%blk(ig)%cmp(icmp)%ncv-nicas%blk(ig)%cmp(icmp)%nsa+1
+            nicas%blk(ig)%cmp(icmp)%iae = nicas%blk(ig)%cmp(icmp)%ncv
          end if
-      end do
-   end do
-else
-   ! Missing value
-   nicas%igref = mpl%msv%vali
-
-   do ig=1,nam%ng
-      do icmp=1,nicas%blk(ig)%ncmp
-         ! Control variable size
-         nicas%blk(ig)%cmp(icmp)%ncv = nicas%blk(ig)%cmp(icmp)%nsa
-
-         ! Control variable section starting and end indices
+      else
+         ! All levels
          nicas%blk(ig)%cmp(icmp)%ias = 1
          nicas%blk(ig)%cmp(icmp)%iae = nicas%blk(ig)%cmp(icmp)%nsa
-      end do
+      end if
    end do
-end if
+end do
 
 ! Probe out
 @:probe_out()
@@ -909,14 +898,6 @@ call mpl%flush
 write(mpl%info,'(a)') '--- Compute NICAS parameters'
 call mpl%flush
 
-do ig=1,nam%ng
-   write(mpl%info,'(a)') '--- Block: '//trim(nam%group_names(ig))
-   call mpl%flush
-
-   ! NICAS parameters
-   call nicas%blk(ig)%compute_parameters(mpl,rng,nam,geom)
-end do
-
 if (nam%strategy=='crossed') then
    ! Define reference group
    nicas%igref = 1
@@ -927,44 +908,54 @@ if (nam%strategy=='crossed') then
       end if
    end do
 
-   do ig=1,nam%ng
-      do icmp=1,nicas%blk(ig)%ncmp
-         ! Control variable size
-         nicas%blk(ig)%cmp(icmp)%ncv = nicas%blk(nicas%igref)%cmp(icmp)%nsa
+   ! NICAS parameters for the reference group
+   write(mpl%info,'(a)') '--- Block: '//trim(nam%group_names(nicas%igref))
+   call mpl%flush
+   call nicas%blk(nicas%igref)%compute_parameters(mpl,rng,nam,geom)
 
-         ! Control variable section starting and end indices
-         if (geom%grp2d(ig)) then
-            if (geom%nl2d==1) then
-               ! First level only
-               nicas%blk(ig)%cmp(icmp)%ias = 1
-               nicas%blk(ig)%cmp(icmp)%iae = nicas%blk(ig)%cmp(icmp)%nsa
-            else
-               ! Last level only
-               nicas%blk(ig)%cmp(icmp)%ias = nicas%blk(ig)%cmp(icmp)%ncv-nicas%blk(ig)%cmp(icmp)%nsa+1
-               nicas%blk(ig)%cmp(icmp)%iae = nicas%blk(ig)%cmp(icmp)%ncv
-            end if
-         else
-            ! 
-            nicas%blk(ig)%cmp(icmp)%ias = 1
-            nicas%blk(ig)%cmp(icmp)%iae = nicas%blk(ig)%cmp(icmp)%nsa
-         end if
-      end do
+   ! NICAS parameters for other blocks
+   do ig=1,nam%ng
+      if (ig/=nicas%igref) then
+         write(mpl%info,'(a)') '--- Block: '//trim(nam%group_names(ig))
+         call mpl%flush
+         call nicas%blk(ig)%compute_parameters(mpl,rng,nam,geom,nicas%blk(nicas%igref))
+      end if
    end do
 else
-   ! Missing value
+   ! Missing reference group
    nicas%igref = mpl%msv%vali
 
+   ! NICAS parameters for all groups
    do ig=1,nam%ng
-      do icmp=1,nicas%blk(ig)%ncmp
-         ! Control variable size
-         nicas%blk(ig)%cmp(icmp)%ncv = nicas%blk(ig)%cmp(icmp)%nsa
-
-         ! Control variable section starting and end indices
-         nicas%blk(ig)%cmp(icmp)%ias = 1
-         nicas%blk(ig)%cmp(icmp)%iae = nicas%blk(ig)%cmp(icmp)%nsa
-      end do
+      write(mpl%info,'(a)') '--- Block: '//trim(nam%group_names(ig))
+      call mpl%flush
+      call nicas%blk(ig)%compute_parameters(mpl,rng,nam,geom)
    end do
 end if
+
+do ig=1,nam%ng
+   do icmp=1,nicas%blk(ig)%ncmp
+      ! Control variable size
+      nicas%blk(ig)%cmp(icmp)%ncv = nicas%blk(ig)%cmp(icmp)%nsa
+
+      ! Control variable section starting and end indices
+      if ((nam%strategy=='crossed').and.geom%grp2d(ig)) then
+         if (geom%nl2d==1) then
+            ! First level only
+            nicas%blk(ig)%cmp(icmp)%ias = 1
+            nicas%blk(ig)%cmp(icmp)%iae = nicas%blk(ig)%cmp(icmp)%nsa
+         else
+            ! Last level only
+            nicas%blk(ig)%cmp(icmp)%ias = nicas%blk(ig)%cmp(icmp)%ncv-nicas%blk(ig)%cmp(icmp)%nsa+1
+            nicas%blk(ig)%cmp(icmp)%iae = nicas%blk(ig)%cmp(icmp)%ncv
+         end if
+      else
+         ! All levels
+         nicas%blk(ig)%cmp(icmp)%ias = 1
+         nicas%blk(ig)%cmp(icmp)%iae = nicas%blk(ig)%cmp(icmp)%nsa
+      end if
+   end do
+end do
 
 if (nam%write_nicas_local.or.nam%write_nicas_global.or.nam%write_nicas_grids) then
    ! Write NICAS parameters

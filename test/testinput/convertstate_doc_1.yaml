@@ -1,4 +1,4 @@
-input geometry:
+input geometry: &geom
   function space: StructuredColumns
   grid:
     type: regular_gaussian
@@ -8,42 +8,34 @@ input geometry:
     - air_horizontal_streamfunction
     levels: 1
   halo: 1
-output geometry:
-  function space: StructuredColumns
-  grid:
-    type: regular_gaussian
-    N: 50
-  groups:
-  - variables:
-    - air_horizontal_streamfunction
-    levels: 1
+output geometry: *geom
 states:
 - input:
     date: 2010-01-01T12:00:00Z
     state variables:
     - air_horizontal_streamfunction
-    constant value: 5000.0e3
+    constant value: 6000.0e3
   output:
     filepath: testdata/convertstate_doc_1/rh1_avg
 - input:
     date: 2010-01-01T12:00:00Z
     state variables:
     - air_horizontal_streamfunction
-    constant value: -800.0e3
+    constant value: -1000.0e3
   output:
     filepath: testdata/convertstate_doc_1/rh1_pert
 - input:
     date: 2010-01-01T12:00:00Z
     state variables:
     - air_horizontal_streamfunction
-    constant value: 5000.0e3
+    constant value: 6000.0e3
   output:
     filepath: testdata/convertstate_doc_1/rh2_avg
 - input:
     date: 2010-01-01T12:00:00Z
     state variables:
     - air_horizontal_streamfunction
-    constant value: 800.0e3
+    constant value: 1000.0e3
   output:
     filepath: testdata/convertstate_doc_1/rh2_pert
 - input:

@@ -160,8 +160,6 @@ type nicas_cmp_type
    logical :: anisotropic                               !< Anisotropic tensor flag
    logical :: verbosity                                 !< Verbosity flag
    real(kind_real) :: resol                             !< Resolution
-   integer :: nc1max                                    !< Maximum size of the Sc1 subset
-   real(kind_real) :: resol_eff_min                     !< Minimum effective resolution
    character(len=1024) :: draw_type                     !< Draw type
    character(len=2) :: interp_type                      !< Interpolation type
    logical :: smoother                                  !< Smoother flag
@@ -828,7 +826,7 @@ if (any(nicas_cmp%vlev)) then
    allocate(nicas_cmp%hor(nicas_cmp%nl1))
 
    do il1=1,nicas_cmp%nl1
-      ! Get group  
+      ! Get group
       write(levname,'(a,i3.3)') 'sublevel_',il1
       nicas_cmp%hor(il1)%levid = inquire_grp(mpl,nicas_cmp%cmpid,levname)
 
@@ -2389,16 +2387,17 @@ end subroutine nicas_cmp_write_steps_data
 ! Subroutine: nicas_cmp_compute_parameters
 !> Compute NICAS parameters
 !----------------------------------------------------------------------
-subroutine nicas_cmp_compute_parameters(nicas_cmp,mpl,rng,nam,geom)
+subroutine nicas_cmp_compute_parameters(nicas_cmp,mpl,rng,nam,geom,nicas_cmp_ref)
 
 implicit none
 
 ! Passed variables
-class(nicas_cmp_type),intent(inout) :: nicas_cmp !< NICAS data component
-type(mpl_type),intent(inout) :: mpl              !< MPI data
-type(rng_type),intent(inout) :: rng              !< Random number generator
-type(nam_type),intent(in) :: nam                 !< Namelist
-type(geom_type),intent(in) :: geom               !< Geometry
+class(nicas_cmp_type),intent(inout) :: nicas_cmp          !< NICAS data component
+type(mpl_type),intent(inout) :: mpl                       !< MPI data
+type(rng_type),intent(inout) :: rng                       !< Random number generator
+type(nam_type),intent(in) :: nam                          !< Namelist
+type(geom_type),intent(in) :: geom                        !< Geometry
+type(nicas_cmp_type),intent(in),optional :: nicas_cmp_ref !< Reference NICAS data component
 
 ! Local variables
 integer :: il1,il1s,c_n_s
@@ -2426,13 +2425,21 @@ end if
 ! Compute adaptive sampling, vertical
 write(mpl%info,'(a10,a)') '','Compute adaptive sampling, vertical'
 call mpl%flush(flush=nicas_cmp%verbosity)
-call nicas_cmp%compute_vertical(mpl,nam,geom)
+if (present(nicas_cmp_ref)) then
+   call nicas_cmp%compute_vertical(mpl,nam,geom,nicas_cmp_ref)
+else
+   call nicas_cmp%compute_vertical(mpl,nam,geom)
+end if
 
 if (any(nicas_cmp%vlev)) then
    ! Compute adaptive sampling, horizontal
    write(mpl%info,'(a10,a)') '','Compute adaptive sampling, horizontal'
    call mpl%flush(flush=nicas_cmp%verbosity)
-   call nicas_cmp%compute_horizontal(mpl,rng,nam,geom)
+   if (present(nicas_cmp_ref)) then
+      call nicas_cmp%compute_horizontal(mpl,rng,nam,geom,nicas_cmp_ref)
+   else
+      call nicas_cmp%compute_horizontal(mpl,rng,nam,geom)
+   end if
 
    ! Compute convolution data
    write(mpl%info,'(a10,a)') '','Compute convolution data'
@@ -2567,15 +2574,16 @@ end subroutine nicas_cmp_compute_parameters_horizontal_smoother
 ! Subroutine: nicas_cmp_compute_vertical
 !> Compute NICAS sampling, vertical dimension
 !----------------------------------------------------------------------
-subroutine nicas_cmp_compute_vertical(nicas_cmp,mpl,nam,geom)
+subroutine nicas_cmp_compute_vertical(nicas_cmp,mpl,nam,geom,nicas_cmp_ref)
 
 implicit none
 
 ! Passed variables
-class(nicas_cmp_type),intent(inout) :: nicas_cmp !< NICAS data component
-type(mpl_type),intent(inout) :: mpl              !< MPI data
-type(nam_type),intent(in) :: nam                 !< Namelist
-type(geom_type),intent(in) :: geom               !< Geometry
+class(nicas_cmp_type),intent(inout) :: nicas_cmp          !< NICAS data component
+type(mpl_type),intent(inout) :: mpl                       !< MPI data
+type(nam_type),intent(in) :: nam                          !< Namelist
+type(geom_type),intent(in) :: geom                        !< Geometry
+type(nicas_cmp_type),intent(in),optional :: nicas_cmp_ref !< Reference NICAS data component
 
 ! Local variables
 integer :: il0,il0first,il0last,il0_prev,il1,ic0a,il0inf,il0sup,jl0,jl1
@@ -2592,160 +2600,176 @@ logical :: slev(nicas_cmp%nl0)
 ! Associate
 associate(ig=>nicas_cmp%ig)
 
-if (.not.nam%load_nicas_global) then
-   ! Vertical sampling
-   write(mpl%info,'(a13,a)') '','Compute vertical subset L1'
+if (present(nicas_cmp_ref)) then
+   write(mpl%info,'(a13,a)') '','Copy vertical sampling from reference NICAS block'
    call mpl%flush(flush=nicas_cmp%verbosity)
 
-   ! Get valid levels
-   do il0=1,nicas_cmp%nl0
-      npos(il0) = zss_count(((nicas_cmp%rhs(:,il0)>zero).or.(nicas_cmp%rvs(:,il0)>zero)).and.geom%gmask_c0a(:,il0))
-      nmis(il0) = zss_count((mpl%msv%is(nicas_cmp%rhs(:,il0)).or.mpl%msv%is(nicas_cmp%rvs(:,il0))).and.geom%gmask_c0a(:,il0))
-   end do
-   call mpl%f_comm%allreduce(npos,fckit_mpi_sum())
-   call mpl%f_comm%allreduce(nmis,fckit_mpi_sum())
-   nicas_cmp%vlev = nicas_cmp%vlev.and.(npos>0).and.(nmis==0)
-   if (geom%grp2d(ig)) then
-      do il0=1,nicas_cmp%nl0
-         nicas_cmp%vlev(il0) = (nicas_cmp%vlev(il0).and.(geom%nl2d==il0))
-      end do
+   ! Copy levels
+   if (.not.nam%load_nicas_global) then
+      nicas_cmp%vlev = nicas_cmp_ref%vlev
+      nicas_cmp%nl1 = nicas_cmp_ref%nl1
+     allocate(nicas_cmp%l1_to_l0(nicas_cmp%nl1))
+      nicas_cmp%l1_to_l0 = nicas_cmp_ref%l1_to_l0
    end if
-end if
 
-! Initialization
-il0first = mpl%msv%vali
-il0last = mpl%msv%vali
-do il0=1,nicas_cmp%nl0
-   if (nicas_cmp%vlev(il0).and.mpl%msv%is(il0first)) il0first = il0
-end do
-do il0=nicas_cmp%nl0,1,-1
-   if (nicas_cmp%vlev(il0).and.mpl%msv%is(il0last)) il0last = il0
-end do
-il0_prev = il0first
+   ! Copy vertical interpolation
+   call nicas_cmp%v%copy(nicas_cmp_ref%v)
+else
+   if (.not.nam%load_nicas_global) then
+      ! Vertical sampling
+      write(mpl%info,'(a13,a)') '','Compute vertical subset L1'
+      call mpl%flush(flush=nicas_cmp%verbosity)
 
-if (nam%load_nicas_global) then
-   ! Retrieve sampling levels
-   slev = .false.
+      ! Get valid levels
+      do il0=1,nicas_cmp%nl0
+         npos(il0) = zss_count(((nicas_cmp%rhs(:,il0)>zero).or.(nicas_cmp%rvs(:,il0)>zero)).and.geom%gmask_c0a(:,il0))
+         nmis(il0) = zss_count((mpl%msv%is(nicas_cmp%rhs(:,il0)).or.mpl%msv%is(nicas_cmp%rvs(:,il0))).and.geom%gmask_c0a(:,il0))
+      end do
+      call mpl%f_comm%allreduce(npos,fckit_mpi_sum())
+      call mpl%f_comm%allreduce(nmis,fckit_mpi_sum())
+      nicas_cmp%vlev = nicas_cmp%vlev.and.(npos>0).and.(nmis==0)
+      if (geom%grp2d(ig)) then
+         do il0=1,nicas_cmp%nl0
+            nicas_cmp%vlev(il0) = (nicas_cmp%vlev(il0).and.(geom%nl2d==il0))
+         end do
+      end if
+   end if
+
+   ! Initialization
+   il0first = mpl%msv%vali
+   il0last = mpl%msv%vali
+   do il0=1,nicas_cmp%nl0
+      if (nicas_cmp%vlev(il0).and.mpl%msv%is(il0first)) il0first = il0
+   end do
+   do il0=nicas_cmp%nl0,1,-1
+      if (nicas_cmp%vlev(il0).and.mpl%msv%is(il0last)) il0last = il0
+   end do
+   il0_prev = il0first
+
+   if (nam%load_nicas_global) then
+      ! Retrieve sampling levels
+      slev = .false.
+      do il1=1,nicas_cmp%nl1
+         il0 = nicas_cmp%l1_to_l0(il1)
+         slev(il0) = .true.
+      end do
+   else
+      ! Compute sampling levels
+      slev = .false.
+      do il0=1,nicas_cmp%nl0
+         if (nicas_cmp%vlev(il0)) then
+            ! Look for convolution levels
+            if ((il0==il0first).or.(il0==il0last)) then
+               ! Keep first and last levels
+               slev(il0) = .true.
+            else
+               ! Compute minimum normalized distance with level il0_prev
+               distnorm = huge_real
+               do ic0a=1,geom%nc0a
+                  if (geom%gmask_c0a(ic0a,il0)) then
+                     rv = half*(nicas_cmp%rvs(ic0a,il0)+nicas_cmp%rvs(ic0a,il0_prev))
+                     if (rv>zero) distnorm(ic0a) = abs(geom%vert_coord_c0a(ic0a,il0)-geom%vert_coord_c0a(ic0a,il0_prev))/rv
+                  end if
+               end do
+               distnormmin = zss_minval(distnorm)
+               call mpl%f_comm%allreduce(distnormmin,fckit_mpi_min())
+               slev(il0) = distnormmin>one/nicas_cmp%resol
+            end if
+
+            ! Update
+            if (slev(il0)) il0_prev = il0
+        end if
+      end do
+
+      ! Count effective levels
+      nicas_cmp%nl1 = count(slev)
+      allocate(nicas_cmp%l1_to_l0(nicas_cmp%nl1))
+      write(mpl%test,'(a13,a)') '','Effective levels: '
+      call mpl%flush(newl=.false.,flush=nicas_cmp%verbosity)
+      il1 = 0
+      do il0=1,nicas_cmp%nl0
+         if (slev(il0)) then
+            write(mpl%test,'(i4,a)') il0,' '
+            call mpl%flush(newl=.false.,flush=nicas_cmp%verbosity)
+            il1 = il1+1
+            nicas_cmp%l1_to_l0(il1) = il0
+         end if
+      end do
+      write(mpl%test,'(a)') ''
+      call mpl%flush(flush=nicas_cmp%verbosity)
+   end if
+
+   ! Inverse conversion
+   l0_to_l1 = mpl%msv%vali
    do il1=1,nicas_cmp%nl1
       il0 = nicas_cmp%l1_to_l0(il1)
-      slev(il0) = .true.
-   end do
-else
-   ! Compute sampling levels
-   slev = .false.
-   do il0=1,nicas_cmp%nl0
-      if (nicas_cmp%vlev(il0)) then
-         ! Look for convolution levels
-         if ((il0==il0first).or.(il0==il0last)) then
-            ! Keep first and last levels
-            slev(il0) = .true.
-         else
-            ! Compute minimum normalized distance with level il0_prev
-            distnorm = huge_real
-            do ic0a=1,geom%nc0a
-               if (geom%gmask_c0a(ic0a,il0)) then
-                  rv = half*(nicas_cmp%rvs(ic0a,il0)+nicas_cmp%rvs(ic0a,il0_prev))
-                  if (rv>zero) distnorm(ic0a) = abs(geom%vert_coord_c0a(ic0a,il0)-geom%vert_coord_c0a(ic0a,il0_prev))/rv
-               end if
-            end do
-            distnormmin = zss_minval(distnorm)
-            call mpl%f_comm%allreduce(distnormmin,fckit_mpi_min())
-            slev(il0) = distnormmin>one/nicas_cmp%resol
-         end if
-
-         ! Update
-         if (slev(il0)) il0_prev = il0
-     end if
+      l0_to_l1(il0) = il1
    end do
 
-   ! Count effective levels
-   nicas_cmp%nl1 = count(slev)
-   allocate(nicas_cmp%l1_to_l0(nicas_cmp%nl1))
-   write(mpl%test,'(a13,a)') '','Effective levels: '
-   call mpl%flush(newl=.false.,flush=nicas_cmp%verbosity)
-   il1 = 0
-   do il0=1,nicas_cmp%nl0
-      if (slev(il0)) then
-         write(mpl%test,'(i4,a)') il0,' '
-         call mpl%flush(newl=.false.,flush=nicas_cmp%verbosity)
-         il1 = il1+1
-         nicas_cmp%l1_to_l0(il1) = il0
+   ! Initialize vertical interpolation
+   nicas_cmp%v%prefix = 'v'
+   nicas_cmp%v%n_src = nicas_cmp%nl1
+   nicas_cmp%v%n_dst = nicas_cmp%nl0
+
+   ! Count levels
+   nicas_cmp%v%n_s = nicas_cmp%nl1
+   il0inf = il0first
+   do jl0=1,nicas_cmp%nl0
+      if (slev(jl0)) then
+         il0sup = jl0
+         do il0=il0inf+1,il0sup-1
+            if (nicas_cmp%vlev(il0)) nicas_cmp%v%n_s = nicas_cmp%v%n_s+2
+         end do
+         il0inf = jl0
       end if
    end do
-   write(mpl%test,'(a)') ''
-   call mpl%flush(flush=nicas_cmp%verbosity)
-end if
 
-! Inverse conversion
-l0_to_l1 = mpl%msv%vali
-do il1=1,nicas_cmp%nl1
-   il0 = nicas_cmp%l1_to_l0(il1)
-   l0_to_l1(il0) = il1
-end do
+   ! Allocation
+   call nicas_cmp%v%alloc(geom%nc0a)
 
-! Initialize vertical interpolation
-nicas_cmp%v%prefix = 'v'
-nicas_cmp%v%n_src = nicas_cmp%nl1
-nicas_cmp%v%n_dst = nicas_cmp%nl0
-
-! Count levels
-nicas_cmp%v%n_s = nicas_cmp%nl1
-il0inf = il0first
-do jl0=1,nicas_cmp%nl0
-   if (slev(jl0)) then
-      il0sup = jl0
-      do il0=il0inf+1,il0sup-1
-         if (nicas_cmp%vlev(il0)) nicas_cmp%v%n_s = nicas_cmp%v%n_s+2
+   ! Set identity for subsampled levels
+   do jl1=1,nicas_cmp%nl1
+      jl0 = nicas_cmp%l1_to_l0(jl1)
+      nicas_cmp%v%row(jl1) = jl0
+      nicas_cmp%v%col(jl1) = jl0
+      do ic0a=1,geom%nc0a
+         nicas_cmp%v%Svec(jl1,ic0a) = one
       end do
-      il0inf = jl0
-   end if
-end do
-
-! Allocation
-call nicas_cmp%v%alloc(geom%nc0a)
-
-! Set identity for subsampled levels
-do jl1=1,nicas_cmp%nl1
-   jl0 = nicas_cmp%l1_to_l0(jl1)
-   nicas_cmp%v%row(jl1) = jl0
-   nicas_cmp%v%col(jl1) = jl0
-   do ic0a=1,geom%nc0a
-      nicas_cmp%v%Svec(jl1,ic0a) = one
+      if (geom%nc0a==0) nicas_cmp%v%S(jl1) = zero
    end do
-   if (geom%nc0a==0) nicas_cmp%v%S(jl1) = zero
-end do
-nicas_cmp%v%n_s = nicas_cmp%nl1
+   nicas_cmp%v%n_s = nicas_cmp%nl1
 
-! Compute linear interpolation for other levels
-il0inf = il0first
-do jl0=1,nicas_cmp%nl0
-   if (slev(jl0)) then
-      il0sup = jl0
-      do il0=il0inf+1,il0sup-1
-         if (nicas_cmp%vlev(il0)) then
-            nicas_cmp%v%n_s = nicas_cmp%v%n_s+1
-            nicas_cmp%v%row(nicas_cmp%v%n_s) = il0
-            nicas_cmp%v%col(nicas_cmp%v%n_s) = il0inf
-            do ic0a=1,geom%nc0a
-               nicas_cmp%v%Svec(nicas_cmp%v%n_s,ic0a) = abs(geom%vert_coord_c0a(ic0a,il0sup)-geom%vert_coord_c0a(ic0a,il0)) &
+   ! Compute linear interpolation for other levels
+   il0inf = il0first
+   do jl0=1,nicas_cmp%nl0
+      if (slev(jl0)) then
+         il0sup = jl0
+         do il0=il0inf+1,il0sup-1
+            if (nicas_cmp%vlev(il0)) then
+               nicas_cmp%v%n_s = nicas_cmp%v%n_s+1
+               nicas_cmp%v%row(nicas_cmp%v%n_s) = il0
+               nicas_cmp%v%col(nicas_cmp%v%n_s) = il0inf
+               do ic0a=1,geom%nc0a
+                  nicas_cmp%v%Svec(nicas_cmp%v%n_s,ic0a) = abs(geom%vert_coord_c0a(ic0a,il0sup)-geom%vert_coord_c0a(ic0a,il0)) &
  & /abs(geom%vert_coord_c0a(ic0a,il0sup)-geom%vert_coord_c0a(ic0a,il0inf))
-            end do
-            nicas_cmp%v%n_s = nicas_cmp%v%n_s+1
-            nicas_cmp%v%row(nicas_cmp%v%n_s) = il0
-            nicas_cmp%v%col(nicas_cmp%v%n_s) = il0sup
-            do ic0a=1,geom%nc0a
-               nicas_cmp%v%Svec(nicas_cmp%v%n_s,ic0a) = abs(geom%vert_coord_c0a(ic0a,il0)-geom%vert_coord_c0a(ic0a,il0inf)) &
+               end do
+               nicas_cmp%v%n_s = nicas_cmp%v%n_s+1
+               nicas_cmp%v%row(nicas_cmp%v%n_s) = il0
+               nicas_cmp%v%col(nicas_cmp%v%n_s) = il0sup
+               do ic0a=1,geom%nc0a
+                  nicas_cmp%v%Svec(nicas_cmp%v%n_s,ic0a) = abs(geom%vert_coord_c0a(ic0a,il0)-geom%vert_coord_c0a(ic0a,il0inf)) &
  & /abs(geom%vert_coord_c0a(ic0a,il0sup)-geom%vert_coord_c0a(ic0a,il0inf))
-            end do
-            if (geom%nc0a==0) nicas_cmp%v%S(nicas_cmp%v%n_s) = zero
-         end if
-      end do
-      il0inf = jl0
-   end if
-end do
+               end do
+               if (geom%nc0a==0) nicas_cmp%v%S(nicas_cmp%v%n_s) = zero
+            end if
+         end do
+         il0inf = jl0
+      end if
+   end do
 
-! Conversion
-nicas_cmp%v%col = l0_to_l1(nicas_cmp%v%col)
+   ! Conversion
+   nicas_cmp%v%col = l0_to_l1(nicas_cmp%v%col)
+end if
 
 ! End associate
 end associate
@@ -2759,16 +2783,17 @@ end subroutine nicas_cmp_compute_vertical
 ! Subroutine: nicas_cmp_compute_horizontal
 !> Compute NICAS sampling, subset Sc1
 !----------------------------------------------------------------------
-subroutine nicas_cmp_compute_horizontal(nicas_cmp,mpl,rng,nam,geom)
+subroutine nicas_cmp_compute_horizontal(nicas_cmp,mpl,rng,nam,geom,nicas_cmp_ref)
 
 implicit none
 
 ! Passed variables
-class(nicas_cmp_type),intent(inout) :: nicas_cmp !< NICAS data component
-type(mpl_type),intent(inout) :: mpl              !< MPI data
-type(rng_type),intent(inout) :: rng              !< Random number generator
-type(nam_type),intent(in) :: nam                 !< Namelist
-type(geom_type),intent(in) :: geom               !< Geometry
+class(nicas_cmp_type),intent(inout) :: nicas_cmp          !< NICAS data component
+type(mpl_type),intent(inout) :: mpl                       !< MPI data
+type(rng_type),intent(inout) :: rng                       !< Random number generator
+type(nam_type),intent(in) :: nam                          !< Namelist
+type(geom_type),intent(in) :: geom                        !< Geometry
+type(nicas_cmp_type),intent(in),optional :: nicas_cmp_ref !< Reference NICAS data component
 
 ! Local variables
 integer :: il1,il1s,jl1,il0,il0s,jl0,ic1,ic0,iproc,ic1a,n,ix,iy,ic0u,ic0a,ic1u,ifmt,i_s,jc1,jproc,jc1u,ic1b,jc1b,jc0u,ic0b
@@ -2776,8 +2801,8 @@ integer :: nc0own,ic0own,jc0b,is,isu,isa,isb,ndiff
 integer :: nn_index(1)
 integer,allocatable :: c1_to_c0(:),c0u_to_c0b(:),c0b_to_c0(:),c0own_to_c0(:),sb_to_s(:)
 integer,allocatable :: order_c1(:),order_s(:),order_inv_s(:),order_inv_sa(:)
-real(kind_real) :: nc1_real,resol_eff,lon,lat,alon,alat
-real(kind_real) :: rhs_min(nicas_cmp%nl0),rhs_max(nicas_cmp%nl0),rhs_avg(nicas_cmp%nl0),lonlat(2),g(3)
+real(kind_real) :: lon,lat,alon,alat
+real(kind_real) :: lonlat(2),g(3)
 real(kind_real),allocatable :: lon_c1(:),lat_c1(:),lon_s(:),lat_s(:),interpolation_radius(:)
 real(kind_real),allocatable :: fld_src_c1a(:),fld_src_c1b(:),fld_src_c1(:)
 real(kind_real),allocatable :: grad_ref_c1a(:,:),grad_ssrf_c1a(:,:),grad_op_c1a(:,:),grad_op_c1(:,:)
@@ -2796,46 +2821,42 @@ type(linop_type),allocatable :: grad(:)
 @:probe_in()
 
 if (.not.nam%load_nicas_global) then
-   ! Compute averaged horizontal support radius
-   do il0=1,nicas_cmp%nl0
-      rhs_min(il0) = zss_minval(nicas_cmp%rhs(:,il0)/nicas_cmp%scaling,mask=geom%gmask_c0a(:,il0))
-      rhs_max(il0) = zss_maxval(nicas_cmp%rhs(:,il0)/nicas_cmp%scaling,mask=geom%gmask_c0a(:,il0))
-      rhs_avg(il0) = zss_sum(nicas_cmp%rhs(:,il0)/nicas_cmp%scaling,mask=geom%gmask_c0a(:,il0))
-   end do
-   call mpl%f_comm%allreduce(rhs_min,fckit_mpi_min())
-   call mpl%f_comm%allreduce(rhs_max,fckit_mpi_max())
-   call mpl%f_comm%allreduce(rhs_avg,fckit_mpi_sum())
-   rhs_avg = rhs_avg/real(geom%nc0_gmask(1:nicas_cmp%nl0),kind_real)
-
    ! Allocation
    allocate(nicas_cmp%hor(nicas_cmp%nl1))
 
-   ! Define base sublevels
-   do il1=1,nicas_cmp%nl1
-      ! Initialization
-      nicas_cmp%hor(il1)%il1s = il1
-      il0 = nicas_cmp%l1_to_l0(il1)
-
-      ! Look for similar sublevels
-      do jl1=1,il1-1
-         if ((nicas_cmp%hor(il1)%il1s==il1).and.(nicas_cmp%hor(jl1)%il1s==jl1)) then
-            jl0 = nicas_cmp%l1_to_l0(jl1)
-            ndiff = 0
-            do ic0a=1,geom%nc0a
-               if (ndiff==0) then
-                  if (nicas_cmp%rhs(ic0a,il0)>zero) then
-                     if (abs(nicas_cmp%rhs(ic0a,jl0)-nicas_cmp%rhs(ic0a,il0))/nicas_cmp%rhs(ic0a,il0)>nam%sim_levs_th) &
- & ndiff = ndiff+1
-                  else
-                     if (nicas_cmp%rhs(ic0a,jl0)>zero) ndiff = ndiff+1
-                  end if
-               end if
-            end do
-            call mpl%f_comm%allreduce(ndiff,fckit_mpi_sum())
-            if (ndiff==0) nicas_cmp%hor(il1)%il1s = jl1
-         end if
+   if (present(nicas_cmp_ref)) then
+      ! Copy base sublevels
+      do il1=1,nicas_cmp%nl1
+         nicas_cmp%hor(il1)%il1s = nicas_cmp_ref%hor(il1)%il1s
       end do
-   end do
+   else
+      ! Define base sublevels
+      do il1=1,nicas_cmp%nl1
+         ! Initialization
+         nicas_cmp%hor(il1)%il1s = il1
+         il0 = nicas_cmp%l1_to_l0(il1)
+
+         ! Look for similar sublevels
+         do jl1=1,il1-1
+            if ((nicas_cmp%hor(il1)%il1s==il1).and.(nicas_cmp%hor(jl1)%il1s==jl1)) then
+               jl0 = nicas_cmp%l1_to_l0(jl1)
+               ndiff = 0
+               do ic0a=1,geom%nc0a
+                  if (ndiff==0) then
+                     if (nicas_cmp%rhs(ic0a,il0)>zero) then
+                        if (abs(nicas_cmp%rhs(ic0a,jl0)-nicas_cmp%rhs(ic0a,il0))/nicas_cmp%rhs(ic0a,il0)>nam%sim_levs_th) &
+ & ndiff = ndiff+1
+                     else
+                        if (nicas_cmp%rhs(ic0a,jl0)>zero) ndiff = ndiff+1
+                     end if
+                  end if
+               end do
+               call mpl%f_comm%allreduce(ndiff,fckit_mpi_sum())
+               if (ndiff==0) nicas_cmp%hor(il1)%il1s = jl1
+            end if
+         end do
+      end do
+   end if
 end if
 
 ! Vertically dependent horizontal subsampling
@@ -2854,135 +2875,148 @@ do il1=1,nicas_cmp%nl1
       ifmt = 0
       if (nicas_cmp%verbosity) ifmt = 16
 
-      ! Start sampling timer
-      call mpl%start_timer('nicas_setup_sampling')
+      if (present(nicas_cmp_ref)) then
+         write(mpl%info,'(a16,a)') '','Copy horizontal sampling from reference NICAS block'
+         call mpl%flush(flush=nicas_cmp%verbosity)
 
-      if (.not.nam%load_nicas_global) then
-         ! Compute nc1
-         write(mpl%test,'(a16,a,f10.2,a,f10.2,a,f10.2,a)') '','Horizontal support radius: ',rhs_avg(il0s)*reqkm,' km (', &
- & rhs_min(il0s)*reqkm,' km - ',rhs_max(il0s)*reqkm,' km)'
-         call mpl%flush(flush=nicas_cmp%verbosity)
-         nc1_real = two*geom%area_ver_c0(il0s)*nicas_cmp%resol**2/(sqrt(three)*rhs_avg(il0s)**2)
-         if (nc1_real>real(huge_int,kind_real)) call mpl%abort('${subr}$','estimated nc1 is too large for an integer')
-         nicas_cmp%hor(il1s)%nc1 = floor(nc1_real)
-         write(mpl%test,'(a16,a,i8)') '','Estimated nc1 from horizontal support radius: ',nicas_cmp%hor(il1s)%nc1
-         call mpl%flush(flush=nicas_cmp%verbosity)
-         if (nicas_cmp%hor(il1s)%nc1>nicas_cmp%nc1max) then
-            if (nicas_cmp%verbosity) call mpl%warning('${subr}$','required nc1 larger than nc1max, resetting to nc1max')
-            nicas_cmp%hor(il1s)%nc1 = nicas_cmp%nc1max
-         end if
-         if (nicas_cmp%hor(il1s)%nc1<3) then
-            call mpl%warning('${subr}$','nicas_cmp%nc1 lower than 3')
-            nicas_cmp%hor(il1s)%nc1 = 3
-         end if
-         nicas_cmp%hor(il1s)%nc1 = min(nicas_cmp%hor(il1s)%nc1,geom%nc0_gmask(il0s))
+         if (.not.nam%load_nicas_global) then
+            ! Copy sizes
+            nicas_cmp%hor(il1s)%nc1 = nicas_cmp_ref%hor(il1s)%nc1
+            nicas_cmp%hor(il1s)%nc1a = nicas_cmp_ref%hor(il1s)%nc1a
 
-         ! Compute sampling
-         write(mpl%info,'(a16,a)') '','Compute horizontal subset Sc1:'
-         call mpl%flush(flush=nicas_cmp%verbosity)
-         call geom%initialize_sampling(mpl,rng,nicas_cmp%draw_type,geom%nc0a,geom%gmask_hor_c0a,nicas_cmp%rhs(:,il0s), &
+            ! Allocation
+            allocate(nicas_cmp%hor(il1s)%lon_c1a(nicas_cmp%hor(il1s)%nc1a))
+            allocate(nicas_cmp%hor(il1s)%lat_c1a(nicas_cmp%hor(il1s)%nc1a))
+            do jl1=1,nicas_cmp%nl1
+               if (il1s==nicas_cmp%hor(jl1)%il1s) allocate(nicas_cmp%hor(jl1)%vert_coord_c1a(nicas_cmp%hor(il1s)%nc1a))
+            end do
+            allocate(nicas_cmp%hor(il1s)%proc_to_nc1a(mpl%nproc))
+            allocate(nicas_cmp%hor(il1s)%proc_to_c1_offset(mpl%nproc))
+
+            ! Copy
+            nicas_cmp%hor(il1s)%lon_c1a = nicas_cmp_ref%hor(il1s)%lon_c1a
+            nicas_cmp%hor(il1s)%lat_c1a = nicas_cmp_ref%hor(il1s)%lat_c1a
+            do jl1=1,nicas_cmp%nl1
+               if (il1s==nicas_cmp%hor(jl1)%il1s) nicas_cmp%hor(jl1)%vert_coord_c1a = nicas_cmp_ref%hor(jl1)%vert_coord_c1a
+            end do
+            nicas_cmp%hor(il1s)%proc_to_nc1a = nicas_cmp_ref%hor(il1s)%proc_to_nc1a
+            nicas_cmp%hor(il1s)%proc_to_c1_offset = nicas_cmp_ref%hor(il1s)%proc_to_c1_offset
+         end if
+
+         ! Copy size
+         nicas_cmp%hor(il1s)%nc1u = nicas_cmp_ref%hor(il1s)%nc1u
+
+         ! Allocation
+         allocate(nicas_cmp%hor(il1s)%c1a_to_c1(nicas_cmp%hor(il1s)%nc1a))
+         allocate(nicas_cmp%hor(il1s)%c1u_to_c1(nicas_cmp%hor(il1s)%nc1u))
+
+         ! Copy
+         nicas_cmp%hor(il1s)%c1a_to_c1 = nicas_cmp_ref%hor(il1s)%c1a_to_c1
+         nicas_cmp%hor(il1s)%c1u_to_c1 = nicas_cmp_ref%hor(il1s)%c1u_to_c1
+      else
+         ! Start sampling timer
+         call mpl%start_timer('nicas_setup_sampling')
+
+         if (.not.nam%load_nicas_global) then
+            ! Compute sampling
+            write(mpl%info,'(a16,a)') '','Compute horizontal subset Sc1:'
+            call mpl%flush(flush=nicas_cmp%verbosity)
+            call geom%initialize_sampling(mpl,rng,nicas_cmp%draw_type,geom%nc0a,geom%gmask_hor_c0a,nicas_cmp%rhs(:,il0s), &
  & nicas_cmp%resol,geom%nc0,geom%tree_c0,geom%c0a_to_c0,ifmt,nicas_cmp%hor(il1s)%nc1,c1_to_c0)
 
-         ! Count Sc1 point in halo A
-         nicas_cmp%hor(il1s)%nc1a = 0
-         do ic1=1,nicas_cmp%hor(il1s)%nc1
-            ic0 = c1_to_c0(ic1)
-            iproc = geom%c0_to_proc(ic0)
-            if (iproc==mpl%myproc) nicas_cmp%hor(il1s)%nc1a = nicas_cmp%hor(il1s)%nc1a+1
-         end do
+            ! Count Sc1 point in halo A
+            nicas_cmp%hor(il1s)%nc1a = 0
+            do ic1=1,nicas_cmp%hor(il1s)%nc1
+               ic0 = c1_to_c0(ic1)
+               iproc = geom%c0_to_proc(ic0)
+               if (iproc==mpl%myproc) nicas_cmp%hor(il1s)%nc1a = nicas_cmp%hor(il1s)%nc1a+1
+            end do
 
-         ! Allocation
-         allocate(nicas_cmp%hor(il1s)%lon_c1a(nicas_cmp%hor(il1s)%nc1a))
-         allocate(nicas_cmp%hor(il1s)%lat_c1a(nicas_cmp%hor(il1s)%nc1a))
-         do jl1=1,nicas_cmp%nl1
-            if (il1s==nicas_cmp%hor(jl1)%il1s) allocate(nicas_cmp%hor(jl1)%vert_coord_c1a(nicas_cmp%hor(il1s)%nc1a))
-         end do
+            ! Allocation
+            allocate(nicas_cmp%hor(il1s)%lon_c1a(nicas_cmp%hor(il1s)%nc1a))
+            allocate(nicas_cmp%hor(il1s)%lat_c1a(nicas_cmp%hor(il1s)%nc1a))
+            do jl1=1,nicas_cmp%nl1
+               if (il1s==nicas_cmp%hor(jl1)%il1s) allocate(nicas_cmp%hor(jl1)%vert_coord_c1a(nicas_cmp%hor(il1s)%nc1a))
+            end do
 
-         ! Get lon/lat/vert_coord
-         ic1a = 0
-         do ic1=1,nicas_cmp%hor(il1s)%nc1
-            ic0 = c1_to_c0(ic1)
-            iproc = geom%c0_to_proc(ic0)
-            if (iproc==mpl%myproc) then
-               ic1a = ic1a+1
-               ic0a = geom%c0_to_c0a(ic0)
-               nicas_cmp%hor(il1s)%lon_c1a(ic1a) = geom%lon_c0a(ic0a)
-               nicas_cmp%hor(il1s)%lat_c1a(ic1a) = geom%lat_c0a(ic0a)
-               do jl1=1,nicas_cmp%nl1
-                  if (il1s==nicas_cmp%hor(jl1)%il1s) then
-                     jl0 = nicas_cmp%l1_to_l0(jl1)
-                     nicas_cmp%hor(jl1)%vert_coord_c1a(ic1a) = geom%vert_coord_c0a(ic0a,jl0)
-                  end if
-               end do
-            end if
-         end do
+            ! Get lon/lat/vert_coord
+            ic1a = 0
+            do ic1=1,nicas_cmp%hor(il1s)%nc1
+               ic0 = c1_to_c0(ic1)
+               iproc = geom%c0_to_proc(ic0)
+               if (iproc==mpl%myproc) then
+                  ic1a = ic1a+1
+                  ic0a = geom%c0_to_c0a(ic0)
+                  nicas_cmp%hor(il1s)%lon_c1a(ic1a) = geom%lon_c0a(ic0a)
+                  nicas_cmp%hor(il1s)%lat_c1a(ic1a) = geom%lat_c0a(ic0a)
+                  do jl1=1,nicas_cmp%nl1
+                     if (il1s==nicas_cmp%hor(jl1)%il1s) then
+                        jl0 = nicas_cmp%l1_to_l0(jl1)
+                        nicas_cmp%hor(jl1)%vert_coord_c1a(ic1a) = geom%vert_coord_c0a(ic0a,jl0)
+                     end if
+                  end do
+               end if
+            end do
 
-         ! Release memory
-         deallocate(c1_to_c0)
+            ! Release memory
+            deallocate(c1_to_c0)
 
-         ! Print subset Sc1 size
-         write(mpl%test,'(a16,a,i8)') '','Final nc1: ',nicas_cmp%hor(il1s)%nc1
-         call mpl%flush(flush=nicas_cmp%verbosity)
-         resol_eff = sqrt(real(nicas_cmp%hor(il1s)%nc1,kind_real)*sqrt(three)*rhs_avg(il0s)**2/(two*geom%area_ver_c0(il0s)))
-         write(mpl%test,'(a16,a,f5.2)') '','Effective horizontal resolution: ',resol_eff
-         call mpl%flush(flush=nicas_cmp%verbosity)
-         if (resol_eff < nicas_cmp%resol_eff_min.and..false.) then ! TODO
-            if (.not.nicas_cmp%verbosity) then
-            write(mpl%info,'(a16,a,i8)') '','Final nc1: ',nicas_cmp%hor(il1s)%nc1
-            call mpl%flush
-             write(mpl%info,'(a16,a,f5.2)') '','Effective horizontal resolution: ',resol_eff
-            call mpl%flush
-            end if
-            msg = 'effective resolution is too low, please increase resolution and/or max horizontal grid size parameters,' &
- & //' or decrease min effective resolution (risky)'
-            call mpl%abort('${subr}$',msg)
-         else if (resol_eff < 3) then
-            msg = 'effective resolution is very low, please increase resolution and/or max horizontal grid size parameters'
-            call mpl%warning('${subr}$',msg)
-         end if
+            ! Print subset Sc1 size
+            write(mpl%test,'(a16,a,i8)') '','Subgrid size: ',nicas_cmp%hor(il1s)%nc1
+            call mpl%flush(flush=nicas_cmp%verbosity)
 
-         ! Allocation
-         allocate(nicas_cmp%hor(il1s)%proc_to_nc1a(mpl%nproc))
-         allocate(nicas_cmp%hor(il1s)%proc_to_c1_offset(mpl%nproc))
+            ! Allocation
+            allocate(nicas_cmp%hor(il1s)%proc_to_nc1a(mpl%nproc))
+            allocate(nicas_cmp%hor(il1s)%proc_to_c1_offset(mpl%nproc))
 
-         ! Communication
-         call mpl%f_comm%allgather(nicas_cmp%hor(il1s)%nc1a,nicas_cmp%hor(il1s)%proc_to_nc1a)
+            ! Communication
+            call mpl%f_comm%allgather(nicas_cmp%hor(il1s)%nc1a,nicas_cmp%hor(il1s)%proc_to_nc1a)
 
-         ! Subset Sc1 offset for halo A
-         nicas_cmp%hor(il1s)%proc_to_c1_offset(1) = 0
-         do iproc=2,mpl%nproc
-            nicas_cmp%hor(il1s)%proc_to_c1_offset(iproc) = nicas_cmp%hor(il1s)%proc_to_c1_offset(iproc-1) &
+            ! Subset Sc1 offset for halo A
+            nicas_cmp%hor(il1s)%proc_to_c1_offset(1) = 0
+            do iproc=2,mpl%nproc
+               nicas_cmp%hor(il1s)%proc_to_c1_offset(iproc) = nicas_cmp%hor(il1s)%proc_to_c1_offset(iproc-1) &
  & +nicas_cmp%hor(il1s)%proc_to_nc1a(iproc-1)
-         end do
-      end if
-
-      ! Compute halo A and universe conversions and communication for subset Sc1
-      write(mpl%info,'(a16,a)') '','Compute halo A and universe conversions and communication for subset Sc1'
-      call mpl%flush(flush=nicas_cmp%verbosity)
-
-      ! Get subset Sc1 size on universe
-      nicas_cmp%hor(il1s)%nc1u = sum(nicas_cmp%hor(il1s)%proc_to_nc1a,mask=nicas_cmp%myuniverse)
-
-      ! Allocation
-      allocate(nicas_cmp%hor(il1s)%c1a_to_c1(nicas_cmp%hor(il1s)%nc1a))
-      allocate(nicas_cmp%hor(il1s)%c1u_to_c1(nicas_cmp%hor(il1s)%nc1u))
-
-      ! Conversions
-      do ic1=1,nicas_cmp%hor(il1s)%nc1
-         iproc = nicas_cmp%c1_to_proc(ic1,il1s)
-         if (nicas_cmp%myuniverse(iproc)) then
-            ic1u = nicas_cmp%c1_to_c1u(ic1,il1s)
-            nicas_cmp%hor(il1s)%c1u_to_c1(ic1u) = ic1
-            if (iproc==mpl%myproc) then
-               ic1a = nicas_cmp%c1_to_c1a(ic1,il1s)
-               nicas_cmp%hor(il1s)%c1a_to_c1(ic1a) = ic1
-            end if
+            end do
          end if
-      end do
 
-      ! Stop sampling timer
-      call mpl%stop_timer('nicas_setup_sampling')
+         ! Compute halo A and universe conversions and communication for subset Sc1
+         write(mpl%info,'(a16,a)') '','Compute halo A and universe conversions and communication for subset Sc1'
+         call mpl%flush(flush=nicas_cmp%verbosity)
 
+         ! Get subset Sc1 size on universe
+         nicas_cmp%hor(il1s)%nc1u = sum(nicas_cmp%hor(il1s)%proc_to_nc1a,mask=nicas_cmp%myuniverse)
+
+         ! Allocation
+         allocate(nicas_cmp%hor(il1s)%c1a_to_c1(nicas_cmp%hor(il1s)%nc1a))
+         allocate(nicas_cmp%hor(il1s)%c1u_to_c1(nicas_cmp%hor(il1s)%nc1u))
+
+         ! Conversions
+         do ic1=1,nicas_cmp%hor(il1s)%nc1
+            iproc = nicas_cmp%c1_to_proc(ic1,il1s)
+            if (nicas_cmp%myuniverse(iproc)) then
+               ic1u = nicas_cmp%c1_to_c1u(ic1,il1s)
+               nicas_cmp%hor(il1s)%c1u_to_c1(ic1u) = ic1
+               if (iproc==mpl%myproc) then
+                  ic1a = nicas_cmp%c1_to_c1a(ic1,il1s)
+                  nicas_cmp%hor(il1s)%c1a_to_c1(ic1a) = ic1
+               end if
+            end if
+         end do
+
+         ! Stop sampling timer
+         call mpl%stop_timer('nicas_setup_sampling')
+      end if
+   end if
+end do
+
+
+! Interpolation
+do il1=1,nicas_cmp%nl1
+   ! Base sublevel
+   il1s = nicas_cmp%hor(il1)%il1s
+
+   if (il1==il1s) then
       ! Start interpolation timer
       call mpl%start_timer('nicas_setup_interp')
 
@@ -3281,6 +3315,7 @@ do il1=1,nicas_cmp%nl1
    end if
 end do
 
+! Interpolation test
 if (nam%interp_test.and.(nicas_cmp%interp_type=='c1').and.compute_interp) then
    write(mpl%info,'(a16,a)') '','Horizontal C1 interpolation test:'
    call mpl%flush(flush=nicas_cmp%verbosity)
@@ -3304,7 +3339,7 @@ if (nam%interp_test.and.(nicas_cmp%interp_type=='c1').and.compute_interp) then
       if (il1==il1s) then
          ! Level
          il0s = nicas_cmp%l1_to_l0(il1s)
-   
+
          ! Allocation
          allocate(fld_src_c1a(nicas_cmp%hor(il1s)%nc1a))
          allocate(fld_src_c1b(nicas_cmp%hor(il1s)%nc1b))
@@ -3314,53 +3349,53 @@ if (nam%interp_test.and.(nicas_cmp%interp_type=='c1').and.compute_interp) then
          allocate(grad_op_c1a(nicas_cmp%hor(il1s)%nc1a,3))
          allocate(grad_op_c1(nicas_cmp%hor(il1s)%nc1,3))
          allocate(grad(nicas_cmp%hor(il1s)%nc1a))
-   
+
          ! Function parameters
          alon = 3.0_kind_real
          alat = 3.0_kind_real
-   
+
          ! Define source function and its derivatives
          do ic1a=1,nicas_cmp%hor(il1s)%nc1a
             lon = nicas_cmp%hor(il1s)%lon_c1a(ic1a)
             lat = nicas_cmp%hor(il1s)%lat_c1a(ic1a)
-   
+
             ! Function
             fld_src_c1a(ic1a) = cos(alon*lon)*cos(alat*lat)
-   
+
             ! X-derivative
             grad_ref_c1a(ic1a,1) = sin(alon*lon)*alon*cos(alat*lat)*sin(lon)+cos(alon*lon)*sin(alat*lat)*alat*sin(lat)*cos(lon)
-   
+
             ! Y-derivative
             grad_ref_c1a(ic1a,2) = -sin(alon*lon)*alon*cos(alat*lat)*cos(lon)+cos(alon*lon)*sin(alat*lat)*alat*sin(lat)*sin(lon)
-   
+
             ! Z-derivative
             grad_ref_c1a(ic1a,3) = -cos(alon*lon)*sin(alat*lat)*alat*cos(lat)
          end do
-   
+
          ! Define reference destination function
          do ic0a=1,geom%nc0a
             lon = geom%lon_c0a(ic0a)
             lat = geom%lat_c0a(ic0a)
             nicas_cmp%fld_ref(ic0a,il0s) = cos(alon*lon)*cos(alat*lat)
          end do
-   
+
          ! Compute gradient
          call mpl%loc_to_glb(nicas_cmp%hor(il1s)%nc1a,nicas_cmp%hor(il1s)%nc1,nicas_cmp%hor(il1s)%c1a_to_c1,fld_src_c1a, &
  & fld_src_c1,.true.)
-   
+
          ! SSRF gradient estimation
          do ic1a=1,nicas_cmp%hor(il1s)%nc1a
             ic1 = nicas_cmp%hor(il1s)%c1a_to_c1(ic1a)
             call nicas_cmp%hor(il1s)%mesh_c1%compute_grad(mpl,ic1,fld_src_c1,g)
             grad_ssrf_c1a(ic1a,:) = g
          end do
-   
+
          ! Compute gradient operator
          do ic1a=1,nicas_cmp%hor(il1s)%nc1a
             ic1 = nicas_cmp%hor(il1s)%c1a_to_c1(ic1a)
             call grad(ic1a)%compute_grad(mpl,ic1,nicas_cmp%hor(il1s)%mesh_c1)
          end do
-   
+
          ! Apply operator
          do ic1a=1,nicas_cmp%hor(il1s)%nc1a
             grad_op_c1a(ic1a,:) = zero
@@ -3368,21 +3403,21 @@ if (nam%interp_test.and.(nicas_cmp%interp_type=='c1').and.compute_interp) then
                grad_op_c1a(ic1a,:) = grad_op_c1a(ic1a,:)+grad(ic1a)%Svec(i_s,:)*fld_src_c1(grad(ic1a)%col(i_s))
             end do
          end do
-   
+
          ! SSRF C1 estimation
          call nicas_cmp%hor(il1s)%mesh_c1%compute_c1_interp(mpl,nicas_cmp%hor(il1s)%tree_c1,fld_src_c1, &
  & geom%nc0a,geom%lon_c0a,geom%lat_c0a,nicas_cmp%fld_ssrf(:,il0s))
-   
+
          ! Interpolation operator
          call nicas_cmp%hor(il1s)%com_c1_AB%ext(mpl,fld_src_c1a,fld_src_c1b)
          call nicas_cmp%hor(il1s)%interp_c1b_to_c0a%apply(mpl,fld_src_c1b,nicas_cmp%fld_op(:,il0s))
-   
+
          ! SSRF C1 estimation using gradient operator
          call mpl%loc_to_glb(nicas_cmp%hor(il1s)%nc1a,nicas_cmp%hor(il1s)%nc1,nicas_cmp%hor(il1s)%c1a_to_c1,grad_op_c1a, &
  & grad_op_c1,.true.)
          call nicas_cmp%hor(il1s)%mesh_c1%compute_c1_interp(mpl,nicas_cmp%hor(il1s)%tree_c1,fld_src_c1, &
  & geom%nc0a,geom%lon_c0a,geom%lat_c0a,nicas_cmp%fld_ssrf_from_op(:,il0s),grad_op_c1)
-   
+
          ! Print results
          write(mpl%info,'(a19,a,i3,a)') '','Sublevel ',il1s,': '
          call mpl%flush(flush=nicas_cmp%verbosity)
@@ -3405,7 +3440,7 @@ if (nam%interp_test.and.(nicas_cmp%interp_type=='c1').and.compute_interp) then
          write(mpl%info,'(a22,a,e15.8,a,e15.8,a,e15.8,a)') '','Check operator:   ', &
  & sum(abs(nicas_cmp%fld_op(:,il0s)-nicas_cmp%fld_ssrf_from_op(:,il0s)))/real(geom%nc0a,kind_real)
          call mpl%flush(flush=nicas_cmp%verbosity)
-   
+
          ! Release memory
          deallocate(fld_src_c1a)
          deallocate(fld_src_c1b)
@@ -3673,10 +3708,10 @@ if (.not.nam%load_nicas_global) then
 
       ! Base sublevel
       il1s = nicas_cmp%hor(il1)%il1s
-   
+
       ! Index
       il0 = nicas_cmp%l1_to_l0(il1)
-   
+
       ! Allocation
       allocate(rh_c0b(nicas_cmp%hor(il1s)%nc0b))
       allocate(rh_c1a(nicas_cmp%hor(il1s)%nc1a))

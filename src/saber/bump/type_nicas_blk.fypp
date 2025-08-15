@@ -579,8 +579,6 @@ do icmp=1,nicas_blk%ncmp
    nicas_blk%cmp(icmp)%ncmp = nicas_blk%ncmp
    nicas_blk%cmp(icmp)%verbosity = nicas_blk%verbosity
    nicas_blk%cmp(icmp)%resol = nam%resol
-   nicas_blk%cmp(icmp)%nc1max = nam%nc1max
-   nicas_blk%cmp(icmp)%resol_eff_min = nam%resol_eff_min
    nicas_blk%cmp(icmp)%draw_type = nam%nicas_draw_type
    nicas_blk%cmp(icmp)%interp_type = nam%nicas_interp_type(ig)
    nicas_blk%cmp(icmp)%smoother = .false.
@@ -910,16 +908,17 @@ end subroutine nicas_blk_write_steps_data
 ! Subroutine: nicas_blk_compute_parameters
 !> Compute NICAS parameters
 !----------------------------------------------------------------------
-subroutine nicas_blk_compute_parameters(nicas_blk,mpl,rng,nam,geom)
+subroutine nicas_blk_compute_parameters(nicas_blk,mpl,rng,nam,geom,nicas_blk_ref)
 
 implicit none
 
 ! Passed variables
-class(nicas_blk_type),intent(inout) :: nicas_blk !< NICAS data block
-type(mpl_type),intent(inout) :: mpl              !< MPI data
-type(rng_type),intent(inout) :: rng              !< Random number generator
-type(nam_type),intent(in) :: nam                 !< Namelist
-type(geom_type),intent(in) :: geom               !< Geometry
+class(nicas_blk_type),intent(inout) :: nicas_blk          !< NICAS data block
+type(mpl_type),intent(inout) :: mpl                       !< MPI data
+type(rng_type),intent(inout) :: rng                       !< Random number generator
+type(nam_type),intent(in) :: nam                          !< Namelist
+type(geom_type),intent(in) :: geom                        !< Geometry
+type(nicas_blk_type),intent(in),optional :: nicas_blk_ref !< Reference NICAS data block
 
 ! Local variables
 integer :: icmp
@@ -936,11 +935,6 @@ associate(ig=>nicas_blk%ig)
 ! Allocation
 if (.not.allocated(nicas_blk%cmp)) allocate(nicas_blk%cmp(nicas_blk%ncmp))
 
-if (.not.nam%load_nicas_global) then
-   ! Reset random numbers seed
-   if (trim(nam%strategy)=='crossed') call rng%reseed
-end if
-
 do icmp=1,nicas_blk%ncmp
    write(mpl%info,'(a7,a,i1)') '','Component: ',icmp
    call mpl%flush
@@ -950,8 +944,6 @@ do icmp=1,nicas_blk%ncmp
    nicas_blk%cmp(icmp)%ncmp = nicas_blk%ncmp
    nicas_blk%cmp(icmp)%verbosity = nicas_blk%verbosity
    nicas_blk%cmp(icmp)%resol = nam%resol
-   nicas_blk%cmp(icmp)%nc1max = nam%nc1max
-   nicas_blk%cmp(icmp)%resol_eff_min = nam%resol_eff_min
    nicas_blk%cmp(icmp)%draw_type = nam%nicas_draw_type
    nicas_blk%cmp(icmp)%interp_type = nam%nicas_interp_type(ig)
    nicas_blk%cmp(icmp)%smoother = .false.
@@ -965,7 +957,11 @@ do icmp=1,nicas_blk%ncmp
    end if
 
    ! Component work
-   call nicas_blk%cmp(icmp)%compute_parameters(mpl,rng,nam,geom)
+   if (present(nicas_blk_ref)) then
+      call nicas_blk%cmp(icmp)%compute_parameters(mpl,rng,nam,geom,nicas_blk_ref%cmp(icmp))
+   else
+      call nicas_blk%cmp(icmp)%compute_parameters(mpl,rng,nam,geom)
+   end if
 end do
 
 ! End associate
@@ -1100,8 +1096,6 @@ do il0i=1,nl0i
    nicas_blk%cmp(il0i)%ncmp = 1
    nicas_blk%cmp(il0i)%verbosity = .false.
    nicas_blk%cmp(il0i)%resol = nam%smoother_resol
-   nicas_blk%cmp(il0i)%nc1max = nam%smoother_nc1max
-   nicas_blk%cmp(il0i)%resol_eff_min = nam%smoother_resol_eff_min
    nicas_blk%cmp(il0i)%draw_type = 'octahedral'
    nicas_blk%cmp(il0i)%interp_type = 'si'
    nicas_blk%cmp(il0i)%smoother = .true.

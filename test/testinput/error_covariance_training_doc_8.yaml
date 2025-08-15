@@ -28,7 +28,7 @@ background error:
         multivariate strategy: univariate
         write nicas grids: true
       nicas:
-        resolution: 4.0
+        resolution: 5.0
       input model files:
       - parameter: rh
         file:
