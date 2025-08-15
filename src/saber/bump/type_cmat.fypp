@@ -1,4 +1,4 @@
-#:include 'instrumentation.fypp'
+#:include 'generics.fypp'
 !----------------------------------------------------------------------
 ! Module: type_cmat
 !> C matrix derived type
@@ -21,7 +21,6 @@ use type_hdiag, only: hdiag_type
 use type_mom, only: mom_type
 use type_mpl, only: mpl_type
 use type_nam, only: nam_type
-@:use_probe()
 use type_samp, only: samp_type
 
 implicit none
@@ -74,9 +73,6 @@ integer :: ig
 ! Set name
 @:set_name(cmat_alloc)
 
-! Probe in
-@:probe_in()
-
 ! Allocation
 if (.not.allocated(cmat%blk)) allocate(cmat%blk(nam%ng))
 do ig=1,nam%ng
@@ -93,9 +89,6 @@ end do
 
 ! Update allocation flag
 cmat%allocated = .true.
-
-! Probe out
-@:probe_out()
 
 end subroutine cmat_alloc
 
@@ -118,16 +111,10 @@ integer :: ig
 ! Set name
 @:set_name(cmat_init)
 
-! Probe in
-@:probe_in()
-
 ! Initialize blocks
 do ig=1,nam%ng
    call cmat%blk(ig)%init(mpl)
 end do
-
-! Probe out
-@:probe_out()
 
 end subroutine cmat_init
 
@@ -148,9 +135,6 @@ integer :: ig
 ! Set name
 @:set_name(cmat_partial_dealloc)
 
-! Probe in
-@:probe_in()
-
 ! Release memory
 if (allocated(cmat%blk)) then
    do ig=1,size(cmat%blk)
@@ -160,9 +144,6 @@ end if
 
 ! Update allocation flag
 cmat%allocated = .false.
-
-! Probe out
-@:probe_out()
 
 end subroutine cmat_partial_dealloc
 
@@ -183,9 +164,6 @@ integer :: ig
 ! Set name
 @:set_name(cmat_dealloc)
 
-! Probe in
-@:probe_in()
-
 ! Release memory
 if (allocated(cmat%blk)) then
    do ig=1,size(cmat%blk)
@@ -196,9 +174,6 @@ end if
 
 ! Update allocation flag
 cmat%allocated = .false.
-
-! Probe out
-@:probe_out()
 
 end subroutine cmat_dealloc
 
@@ -225,9 +200,6 @@ real(kind_real) :: lscaling_factor
 ! Set name
 @:set_name(cmat_from_hdiag)
 
-! Probe in
-@:probe_in()
-
 ! Local scaling factor
 lscaling_factor = one
 if (present(scaling_factor)) lscaling_factor = scaling_factor
@@ -253,9 +225,6 @@ do ig=1,nam%ng
    cmat%blk(ig)%rv = diag%blk(0,ig)%rv_c0a*lscaling_factor
 end do
 
-! Probe out
-@:probe_out()
-
 end subroutine cmat_from_hdiag
 
 !----------------------------------------------------------------------
@@ -277,9 +246,6 @@ integer :: ig,il0
 
 ! Set name
 @:set_name(cmat_from_nam)
-
-! Probe in
-@:probe_in()
 
 if (nam%forced_radii) then
    if (.not.cmat%allocated) then
@@ -304,9 +270,6 @@ if (nam%forced_radii) then
    end do
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine cmat_from_nam
 
 !----------------------------------------------------------------------
@@ -330,9 +293,6 @@ logical :: anisotropic
 
 ! Set name
 @:set_name(cmat_from_bump)
-
-! Probe in
-@:probe_in()
 
 do ig=1,nam%ng
    ! Anisotropic flag
@@ -392,9 +352,6 @@ do ig=1,nam%ng
    call cmat%blk(ig)%partial_bump_dealloc
 end do
 
-! Probe out
-@:probe_out()
-
 end subroutine cmat_from_bump
 
 !----------------------------------------------------------------------
@@ -418,9 +375,6 @@ real(kind_real),allocatable :: rhmin(:)
 
 ! Set name
 @:set_name(cmat_setup_sampling)
-
-! Probe in
-@:probe_in()
 
 ! Sampling parameters
 if (trim(nam%strategy)=='crossed') then
@@ -519,9 +473,6 @@ do ig=1,nam%ng
    call mpl%flush
 end do
 
-! Probe out
-@:probe_out()
-
 end subroutine cmat_setup_sampling
 
 !----------------------------------------------------------------------
@@ -544,9 +495,6 @@ real(kind_real) :: universe_radius(nam%ng)
 
 ! Set name
 @:set_name(cmat_write_universe_radius)
-
-! Probe in
-@:probe_in()
 
 ! Initialization
 universe_radius = zero
@@ -582,9 +530,6 @@ if (mpl%main) then
    ! Close file
    close(lunit)
 end if
-
-! Probe out
-@:probe_out()
 
 end subroutine cmat_write_universe_radius
 

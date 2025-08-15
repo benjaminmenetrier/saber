@@ -1,4 +1,4 @@
-#:include 'instrumentation.fypp'
+#:include 'generics.fypp'
 !----------------------------------------------------------------------
 ! Module: type_samp
 !> Sampling derived type
@@ -29,7 +29,6 @@ use type_linop, only: linop_type
 use type_mesh, only: mesh_type
 use type_mpl, only: mpl_type
 use type_nam, only: nam_type
-@:use_probe()
 use type_rng, only: rng_type
 use type_tree, only: tree_type
 
@@ -205,9 +204,6 @@ type(geom_type),intent(in) :: geom     !< Geometry
 ! Set name
 @:set_name(samp_alloc)
 
-! Probe in
-@:probe_in()
-
 ! Initialization
 samp%nproc = mpl%nproc
 samp%sc1 = (.not.nam%from_gsi)
@@ -230,9 +226,6 @@ end if
 ! Copy universe
 samp%myuniverse = geom%myuniverse
 
-! Probe out
-@:probe_out()
-
 end subroutine samp_alloc
 
 !----------------------------------------------------------------------
@@ -251,9 +244,6 @@ integer :: il0ic1,il0ic3,il0,jc3,jc4
 
 ! Set name
 @:set_name(samp_dealloc)
-
-! Probe in
-@:probe_in()
 
 ! Release memory
 if (allocated(samp%myuniverse)) deallocate(samp%myuniverse)
@@ -341,9 +331,6 @@ call samp%com_c2_AU%dealloc
 call samp%io_c1%dealloc
 call samp%io_c2%dealloc
 
-! Probe out
-@:probe_out()
-
 end subroutine samp_dealloc
 
 !----------------------------------------------------------------------
@@ -363,9 +350,6 @@ type(samp_type),intent(in) :: other    !< Other sampling
 
 ! Set name
 @:set_name(samp_copy)
-
-! Probe in
-@:probe_in()
 
 ! Allocation
 call samp%alloc(mpl,nam,geom)
@@ -443,9 +427,6 @@ if (samp%sc3) then
    samp%smask_c3a = other%smask_c3a
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine samp_copy
 
 !----------------------------------------------------------------------
@@ -468,9 +449,6 @@ type(samp_type) :: samp_tmp
 
 ! Set name
 @:set_name(samp_read_local)
-
-! Probe in
-@:probe_in()
 
 do iproc=1,mpl%nproc
    ! Reading task
@@ -550,9 +528,6 @@ if (samp%sc2) then
       end if
    end do
 end if
-
-! Probe out
-@:probe_out()
 
 end subroutine samp_read_local
 
@@ -657,9 +632,6 @@ end if
 ! Close file
 call close_file(mpl,ncid)
 
-! Probe out
-@:probe_out()
-
 end subroutine samp_read_local_single
 
 !----------------------------------------------------------------------
@@ -682,9 +654,6 @@ type(samp_type) :: samp_tmp
 
 ! Set name
 @:set_name(samp_write_local)
-
-! Probe in
-@:probe_in()
 
 do iproc=1,mpl%nproc
    ! Writing task
@@ -722,9 +691,6 @@ end do
 ! Update tag
 call mpl%update_tag(4)
 
-! Probe out
-@:probe_out()
-
 end subroutine samp_write_local
 
 !----------------------------------------------------------------------
@@ -748,9 +714,6 @@ integer :: lon_c3a_id,lat_c3a_id,smask_c3a_id,lon_c2a_id,lat_c2a_id,vert_coord_c
 
 ! Set name
 @:set_name(samp_write_local_single)
-
-! Probe in
-@:probe_in()
 
 ! Open file
 ncid = create_file(mpl,nam%fname_samp,iproc)
@@ -808,9 +771,6 @@ end if
 ! Close file
 call close_file(mpl,ncid)
 
-! Probe out
-@:probe_out()
-
 end subroutine samp_write_local_single
 
 !----------------------------------------------------------------------
@@ -838,9 +798,6 @@ logical,allocatable :: gmask_c1(:),gmask_c2(:)
 
 ! Set name
 @:set_name(samp_read_global)
-
-! Probe in
-@:probe_in()
 
 ! Open file
 ncid = open_file(mpl,nam%fname_samp)
@@ -1054,9 +1011,6 @@ end if
 ! Close file
 call close_file(mpl,ncid)
 
-! Probe out
-@:probe_out()
-
 end subroutine samp_read_global
 
 !----------------------------------------------------------------------
@@ -1079,9 +1033,6 @@ integer :: lon_c2_id,lat_c2_id,vert_coord_c2_id,smask_c2_id
 
 ! Set name
 @:set_name(samp_write_global)
-
-! Probe in
-@:probe_in()
 
 ! Open file
 ncid = create_file(mpl,nam%fname_samp)
@@ -1139,9 +1090,6 @@ end if
 ! Close file
 call close_file(mpl,ncid)
 
-! Probe out
-@:probe_out()
-
 end subroutine samp_write_global
 
 !----------------------------------------------------------------------
@@ -1169,9 +1117,6 @@ real(kind_real),allocatable :: lon_vbal(:,:,:),lat_vbal(:,:,:)
 
 ! Set name
 @:set_name(samp_write_grids)
-
-! Probe in
-@:probe_in()
 
 ! Open file
 ncid = create_file(mpl,trim(nam%prefix)//'sampling_grids',mpl%myproc,io_override=.true.)
@@ -1338,9 +1283,6 @@ if (samp%sc1.and.nam%new_vbal) then
    deallocate(lat_vbal)
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine samp_write_grids
 
 !----------------------------------------------------------------------
@@ -1366,9 +1308,6 @@ logical,allocatable :: bufl(:)
 
 ! Set name
 @:set_name(samp_send)
-
-! Probe in
-@:probe_in()
 
 ! Initialization
 nbufi = 0
@@ -1539,9 +1478,6 @@ deallocate(bufi)
 deallocate(bufr)
 deallocate(bufl)
 
-! Probe out
-@:probe_out()
-
 end subroutine samp_send
 
 !----------------------------------------------------------------------
@@ -1568,9 +1504,6 @@ type(fckit_mpi_status) :: status
 
 ! Set name
 @:set_name(samp_receive)
-
-! Probe in
-@:probe_in()
 
 ! Receive buffer size
 call mpl%f_comm%receive(bufs,iproc-1,mpl%tag,status)
@@ -1694,9 +1627,6 @@ deallocate(bufi)
 deallocate(bufr)
 deallocate(bufl)
 
-! Probe out
-@:probe_out()
-
 end subroutine samp_receive
 
 !----------------------------------------------------------------------
@@ -1724,9 +1654,6 @@ character(len=1024) :: color
 
 ! Set name
 @:set_name(samp_setup)
-
-! Probe in
-@:probe_in()
 
 ! Allocation
 call samp%alloc(mpl,nam,geom)
@@ -1880,9 +1807,6 @@ end if
 ! Reset random seed if necessary
 call rng%reseed
 
-! Probe out
-@:probe_out()
-
 end subroutine samp_setup
 
 !----------------------------------------------------------------------
@@ -1902,9 +1826,6 @@ type(geom_type),intent(in) :: geom           !< Geometry
 
 ! Set name
 @:set_name(samp_setup_mpi)
-
-! Probe in
-@:probe_in()
 
 if (samp%sc1) then
    ! Compute MPI distribution, subset Sc1, halo A and universe
@@ -1956,9 +1877,6 @@ end if
 ! Reset random seed if necessary
 call rng%reseed
 
-! Probe out
-@:probe_out()
-
 end subroutine samp_setup_mpi
 
 !----------------------------------------------------------------------
@@ -1977,9 +1895,6 @@ type(geom_type),intent(in) :: geom     !< Geometry
 
 ! Set name
 @:set_name(samp_setup_write)
-
-! Probe in
-@:probe_in()
 
 if (nam%write_samp_global) then
    if (samp%sc1.and.(.not.samp%io_c1%initialized)) then
@@ -2020,9 +1935,6 @@ if (nam%write_samp_grids) then
    call samp%write_grids(mpl,nam,geom)
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine samp_setup_write
 
 !----------------------------------------------------------------------
@@ -2049,9 +1961,6 @@ character(len=1024) :: mask_type
 
 ! Set name
 @:set_name(samp_compute_mask)
-
-! Probe in
-@:probe_in()
 
 ! Allocation
 allocate(samp%smask_c0a(geom%nc0a,geom%nl0))
@@ -2208,9 +2117,6 @@ do il0=1,geom%nl0
    call mpl%flush
 end do
 
-! Probe out
-@:probe_out()
-
 end subroutine samp_compute_mask
 
 !----------------------------------------------------------------------
@@ -2241,9 +2147,6 @@ type(atlas_structuredgrid) :: agrid
 
 ! Set name
 @:set_name(samp_compute_c1_or_c2)
-
-! Probe in
-@:probe_in()
 
 ! Copy ncx
 if (subset==1) then
@@ -2290,165 +2193,75 @@ if (samp%lat_bands.and.(subset==2)) then
       end if
    end if
 else
-   ! Initialize subsampling
-   select case (trim(nam%samp_draw_type))
-   case ('random')
-      ! Check subsampling size
-      if (ncx>samp%nc0_smask(0)) then
-         ! Not enough points remaining in the sampling mask
-         call mpl%warning('${subr}$','not enough points remaining in sampling mask, resetting ncx to the largest possible value')
-         ncx = samp%nc0_smask(0)
-      end if
+   ! Check subsampling size
+   if (ncx>samp%nc0_smask(0)) then
+      ! Not enough points remaining in the sampling mask
+      call mpl%warning('${subr}$','not enough points remaining in sampling mask, resetting ncx to the largest possible value')
+      ncx = samp%nc0_smask(0)
+   end if
 
-      ! Allocation
-      allocate(fmask_c0a(geom%nc0a))
-      if (mpl%main) then
-         allocate(fmask_c0(geom%nc0))
-         allocate(smask_hor_c0(geom%nc0))
-      else
-         allocate(fmask_c0(0))
-         allocate(smask_hor_c0(0))
-      end if
+   ! Allocation
+   allocate(fmask_c0a(geom%nc0a))
+   if (mpl%main) then
+      allocate(fmask_c0(geom%nc0))
+      allocate(smask_hor_c0(geom%nc0))
+   else
+      allocate(fmask_c0(0))
+      allocate(smask_hor_c0(0))
+   end if
 
-      ! Initialization
-      fmask_c0a = .false.
-      if (subset==2) then
-         ! Forced points mask with local diagnostic points
-         do ildwv=1,nam%nldwv
-            iproc = samp%ldwv_to_proc(ildwv)
-            if (iproc==mpl%myproc) then
-               ic0a = samp%ldwv_to_c0a(ildwv)
-               fmask_c0a(ic0a) = .true.
-            end if
-         end do
-      end if
-
-      ! Communication
-      call mpl%loc_to_glb(geom%nc0a,geom%nc0,geom%c0a_to_c0,fmask_c0a,fmask_c0)
-      call mpl%loc_to_glb(geom%nc0a,geom%nc0,geom%c0a_to_c0,samp%smask_hor_c0a,smask_hor_c0)
-
-      ! Compte subsampling
-      write(mpl%info,'(a7,a,i1,a)') '','Compute horizontal subset Sc',subset,':'
-      call mpl%flush
-      call geom%initialize_sampling(mpl,geom%nc0,geom%tree_c0,smask_hor_c0,fmask_c0,7,ncx,cx_to_c0)
-
-      ! Count Scx point in halo A
-      ncxa = 0
-      do icx=1,ncx
-         ic0 = cx_to_c0(icx)
-         iproc = geom%c0_to_proc(ic0)
-         if (iproc==mpl%myproc) ncxa = ncxa+1
-      end do
-
-      ! Allocation
-      allocate(lon_cxa(ncxa))
-      allocate(lat_cxa(ncxa))
-
-      ! Get lon/lat
-      icxa = 0
-      do icx=1,ncx
-         ic0 = cx_to_c0(icx)
-         iproc = geom%c0_to_proc(ic0)
+   ! Initialization
+   fmask_c0a = .false.
+   if (subset==2) then
+      ! Forced points mask with local diagnostic points
+      do ildwv=1,nam%nldwv
+         iproc = samp%ldwv_to_proc(ildwv)
          if (iproc==mpl%myproc) then
-            icxa = icxa+1
-            ic0u = geom%c0_to_c0u(ic0)
-            lon_cxa(icxa) = geom%lon_c0u(ic0u)
-            lat_cxa(icxa) = geom%lat_c0u(ic0u)
+            ic0a = samp%ldwv_to_c0a(ildwv)
+            fmask_c0a(ic0a) = .true.
          end if
       end do
+   end if
 
-      ! Release memory
-      deallocate(fmask_c0a)
-      deallocate(fmask_c0)
-      deallocate(smask_hor_c0)
-      deallocate(cx_to_c0)
-   case ('octahedral','regular')
-      ! Deprecation message
-      call mpl%warning('${subr}$','"octahedral" draw type should be replaced with "regular"')
+   ! Communication
+   call mpl%loc_to_glb(geom%nc0a,geom%nc0,geom%c0a_to_c0,fmask_c0a,fmask_c0)
+   call mpl%loc_to_glb(geom%nc0a,geom%nc0,geom%c0a_to_c0,samp%smask_hor_c0a,smask_hor_c0)
 
-      ! Use a regular grid
-      write(mpl%info,'(a7,a,i1)') '','Use a regular grid for subset Sc',subset
-      call mpl%flush
+   ! Compte subsampling
+   write(mpl%info,'(a7,a,i1,a)') '','Compute horizontal subset Sc',subset,':'
+   call mpl%flush
+   call geom%initialize_sampling(mpl,geom%nc0,geom%tree_c0,smask_hor_c0,fmask_c0,7,ncx,cx_to_c0)
 
-      ! Grid size
-      n = floor(real(ncx,kind_real)*geom%area/geom%area_max_c0*(one+repro_th))
+   ! Count Scx point in halo A
+   ncxa = 0
+   do icx=1,ncx
+      ic0 = cx_to_c0(icx)
+      iproc = geom%c0_to_proc(ic0)
+      if (iproc==mpl%myproc) ncxa = ncxa+1
+   end do
 
-      if (geom%global) then
-         ! Global grid
-         call get_grid(mpl,n,agrid)
-      else
-         ! Regional grid
-         call get_grid(mpl,n,geom%aconfig_work_grid,geom%xmin,geom%xmax,geom%ymin,geom%ymax,agrid)
+   ! Allocation
+   allocate(lon_cxa(ncxa))
+   allocate(lat_cxa(ncxa))
+
+   ! Get lon/lat
+   icxa = 0
+   do icx=1,ncx
+      ic0 = cx_to_c0(icx)
+      iproc = geom%c0_to_proc(ic0)
+      if (iproc==mpl%myproc) then
+         icxa = icxa+1
+         ic0u = geom%c0_to_c0u(ic0)
+         lon_cxa(icxa) = geom%lon_c0u(ic0u)
+         lat_cxa(icxa) = geom%lat_c0u(ic0u)
       end if
+   end do
 
-      ! Count valid and local points
-      ncxa = 0
-      do iy=1,int(agrid%ny(),kind_int)
-         do ix=1,int(agrid%nx(iy),kind_int)
-            ! Get longitude/latitude
-            lonlat = agrid%lonlat(ix,iy)*deg2rad
-            call lonlatmod(lonlat(1),lonlat(2))
-
-            ! Check if the point is inside the universe
-            call geom%hull_c0u%inside(mpl,lonlat(1),lonlat(2),valid)
-
-            if (valid) then
-               ! Find nearest neighbor in universe
-               call geom%tree_c0u%find_nearest_neighbors(mpl,lonlat(1),lonlat(2),1,nn_index)
-
-               ! Check mask
-               ic0u = nn_index(1)
-               if (geom%gmask_hor_c0u(ic0u)) then
-                  ! Find processor
-                  ic0 = geom%c0u_to_c0(ic0u)
-                  iproc = geom%c0_to_proc(ic0)
-
-                  ! Increment number of local points
-                  if (iproc==mpl%myproc) ncxa = ncxa+1
-               end if
-            end if
-         end do
-      end do
-
-      ! Allocation
-      allocate(lon_cxa(ncxa))
-      allocate(lat_cxa(ncxa))
-
-      ! Copy grid lon/lat
-      icxa = 0
-      do iy=1,int(agrid%ny(),kind_int)
-         do ix=1,int(agrid%nx(iy),kind_int)
-            ! Get longitude/latitude
-            lonlat = agrid%lonlat(ix,iy)*deg2rad
-            call lonlatmod(lonlat(1),lonlat(2))
-
-            ! Check if the point is inside the universe
-            call geom%hull_c0u%inside(mpl,lonlat(1),lonlat(2),valid)
-
-            if (valid) then
-               ! Find nearest neighbor in universe
-               call geom%tree_c0u%find_nearest_neighbors(mpl,lonlat(1),lonlat(2),1,nn_index)
-
-               ! Check mask
-               ic0u = nn_index(1)
-               if (geom%gmask_hor_c0u(ic0u)) then
-                  ! Find processor
-                  ic0 = geom%c0u_to_c0(ic0u)
-                  iproc = geom%c0_to_proc(ic0)
-
-                  if (iproc==mpl%myproc) then
-                     ! Local index
-                     icxa = icxa+1
-
-                     ! Copy lon/lat
-                     lon_cxa(icxa) = lonlat(1)
-                     lat_cxa(icxa) = lonlat(2)
-                  end if
-               end if
-            end if
-         end do
-      end do
-   end select
+   ! Release memory
+   deallocate(fmask_c0a)
+   deallocate(fmask_c0)
+   deallocate(smask_hor_c0)
+   deallocate(cx_to_c0)
 end if
 
 ! Communication
@@ -2531,9 +2344,6 @@ deallocate(vert_coord_cxa)
 deallocate(smask_cxa)
 deallocate(cxa_to_cx)
 
-! Probe out
-@:probe_out()
-
 end subroutine samp_compute_c1_or_c2
 
 !----------------------------------------------------------------------
@@ -2559,9 +2369,6 @@ logical,allocatable :: c3a_free(:,:,:)
 
 ! Set name
 @:set_name(samp_compute_c3)
-
-! Probe in
-@:probe_in()
 
 ! Allocation
 allocate(samp%lon_c3a(samp%nc1a,nam%nc3,nam%nc4))
@@ -2715,9 +2522,6 @@ do ic1a=1,samp%nc1a
 end do
 call mpl%prog_final
 
-! Probe out
-@:probe_out()
-
 end subroutine samp_compute_c3
 
 !----------------------------------------------------------------------
@@ -2738,9 +2542,6 @@ integer :: ic1,ic1a,ic1u,iproc
 
 ! Set name
 @:set_name(samp_compute_mpi_c1au)
-
-! Probe in
-@:probe_in()
 
 ! Get subset Sc1 size on universe
 samp%nc1u = sum(samp%proc_to_nc1a,mask=samp%myuniverse)
@@ -2788,9 +2589,6 @@ call mpl%flush
 write(mpl%info,'(a10,a,i8)') '','nc1u = ',samp%nc1u
 call mpl%flush
 
-! Probe out
-@:probe_out()
-
 end subroutine samp_compute_mpi_c1au
 
 !----------------------------------------------------------------------
@@ -2813,9 +2611,6 @@ type(tree_type) :: tree
 
 ! Set name
 @:set_name(samp_compute_mpi_c2au)
-
-! Probe in
-@:probe_in()
 
 ! Define universe
 if (samp%lat_bands) then
@@ -2902,9 +2697,6 @@ end do
 ! Release memory
 call tree%dealloc
 
-! Probe out
-@:probe_out()
-
 end subroutine samp_compute_mpi_c2au
 
 !----------------------------------------------------------------------
@@ -2933,9 +2725,6 @@ type(tree_type) :: tree_c2
 
 ! Set name
 @:set_name(samp_compute_mpi_c2b)
-
-! Probe in
-@:probe_in()
 
 ! Allocation
 allocate(lon_c2(samp%nc2))
@@ -3117,9 +2906,6 @@ if (samp%compute_c2b_to_c1a) then
    call mpl%flush
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine samp_compute_mpi_c2b
 
 !----------------------------------------------------------------------
@@ -3143,9 +2929,6 @@ logical :: lcheck_c0b(geom%nc0u)
 
 ! Set name
 @:set_name(samp_compute_mpi_c0b)
-
-! Probe in
-@:probe_in()
 
 ! Allocation
 allocate(samp%l0_to_l0ic1(geom%nl0))
@@ -3235,9 +3018,6 @@ deallocate(c0b_to_c0)
 write(mpl%info,'(a10,a,i8)') '','nc0b = ',samp%nc0b
 call mpl%flush
 
-! Probe out
-@:probe_out()
-
 end subroutine samp_compute_mpi_c0b
 
 !----------------------------------------------------------------------
@@ -3262,9 +3042,6 @@ logical :: smask(samp%nc1a,geom%nl0),lcheck_c0c(geom%nc0u)
 
 ! Set name
 @:set_name(samp_compute_mpi_c0c)
-
-! Probe in
-@:probe_in()
 
 ! Allocation
 allocate(samp%nl0ic3(nam%nc3,nam%nc4))
@@ -3375,9 +3152,6 @@ deallocate(c0c_to_c0)
 write(mpl%info,'(a10,a,i8)') '','nc0c = ',samp%nc0c
 call mpl%flush
 
-! Probe out
-@:probe_out()
-
 end subroutine samp_compute_mpi_c0c
 
 !----------------------------------------------------------------------
@@ -3403,9 +3177,6 @@ type(tree_type) :: tree
 
 ! Set name
 @:set_name(samp_compute_mpi_d)
-
-! Probe in
-@:probe_in()
 
 ! Allocation
 allocate(samp%local_mask(samp%nc1u,samp%nc2a))
@@ -3517,9 +3288,6 @@ call mpl%flush
 write(mpl%info,'(a10,a,i8)') '','nc1d =      ',samp%nc1d
 call mpl%flush
 
-! Probe out
-@:probe_out()
-
 end subroutine samp_compute_mpi_d
 
 !----------------------------------------------------------------------
@@ -3544,9 +3312,6 @@ type(tree_type) :: tree
 
 ! Set name
 @:set_name(samp_compute_mpi_e)
-
-! Probe in
-@:probe_in()
 
 ! Allocation
 allocate(samp%vbal_mask(samp%nc1u,samp%nc2b))
@@ -3638,9 +3403,6 @@ call mpl%flush
 write(mpl%info,'(a10,a,i8)') '','nc1e =      ',samp%nc1e
 call mpl%flush
 
-! Probe out
-@:probe_out()
-
 end subroutine samp_compute_mpi_e
 
 !----------------------------------------------------------------------
@@ -3671,9 +3433,6 @@ type(com_type) :: com_c2_AF
 
 ! Set name
 @:set_name(samp_diag_filter)
-
-! Probe in
-@:probe_in()
 
 if (rflt>zero) then
    ! Define halo F
@@ -3810,9 +3569,6 @@ if (rflt>zero) then
    if (present(val_c2a)) deallocate(val_c2f)
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine samp_diag_filter
 
 !----------------------------------------------------------------------
@@ -3834,9 +3590,6 @@ real(kind_real),allocatable :: diag_c2u(:)
 
 ! Set name
 @:set_name(samp_diag_fill)
-
-! Probe in
-@:probe_in()
 
 ! Count missing points
 if (samp%nc2a>0) then
@@ -3870,9 +3623,6 @@ elseif (nmsr>0) then
    deallocate(diag_c2u)
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine samp_diag_fill
 
 !----------------------------------------------------------------------
@@ -3893,14 +3643,8 @@ integer :: ic1a
 ! Set name
 @:set_name(samp_c1_to_c1a)
 
-! Probe in
-@:probe_in()
-
 ! Call generic function
 ic1a = cx_to_cxa(samp%nproc,samp%proc_to_c1_offset,ic1)
-
-! Probe out
-@:probe_out()
 
 end function samp_c1_to_c1a
 
@@ -3922,14 +3666,8 @@ integer :: iproc
 ! Set name
 @:set_name(samp_c1_to_proc)
 
-! Probe in
-@:probe_in()
-
 ! Call generic function
 iproc = cx_to_proc(samp%nproc,samp%proc_to_c1_offset,ic1)
-
-! Probe out
-@:probe_out()
 
 end function samp_c1_to_proc
 
@@ -3951,14 +3689,8 @@ integer :: ic1u
 ! Set name
 @:set_name(samp_c1_to_c1u)
 
-! Probe in
-@:probe_in()
-
 ! Call generic function
 ic1u = cx_to_cxu(samp%nproc,samp%proc_to_c1_offset,samp%proc_to_nc1a,samp%myuniverse,ic1)
-
-! Probe out
-@:probe_out()
 
 end function samp_c1_to_c1u
 
@@ -3980,14 +3712,8 @@ integer :: ic2a
 ! Set name
 @:set_name(samp_c2_to_c2a)
 
-! Probe in
-@:probe_in()
-
 ! Call generic function
 ic2a = cx_to_cxa(samp%nproc,samp%proc_to_c2_offset,ic2)
-
-! Probe out
-@:probe_out()
 
 end function samp_c2_to_c2a
 
@@ -4009,14 +3735,8 @@ integer :: iproc
 ! Set name
 @:set_name(samp_c2_to_proc)
 
-! Probe in
-@:probe_in()
-
 ! Call generic function
 iproc = cx_to_proc(samp%nproc,samp%proc_to_c2_offset,ic2)
-
-! Probe out
-@:probe_out()
 
 end function samp_c2_to_proc
 
@@ -4038,14 +3758,8 @@ integer :: ic2u
 ! Set name
 @:set_name(samp_c2_to_c2u)
 
-! Probe in
-@:probe_in()
-
 ! Call generic function
 ic2u = cx_to_cxu(samp%nproc,samp%proc_to_c2_offset,samp%proc_to_nc2a,samp%myuniverse,ic2)
-
-! Probe out
-@:probe_out()
 
 end function samp_c2_to_c2u
 

@@ -1,4 +1,4 @@
-#:include 'instrumentation.fypp'
+#:include 'generics.fypp'
 !----------------------------------------------------------------------
 ! Module: tools_const
 !> Define usual constants
@@ -64,14 +64,8 @@ implicit none
 ! Set name
 @:set_name(const_initialize_constants)
 
-! Probe in
-@:probe_in()
-
 ! ATLAS geometry for a unit sphere
 ageometry = atlas_geometry('UnitSphere')
-
-! Probe out
-@:probe_out()
 
 end subroutine const_initialize_constants
 

@@ -1,4 +1,4 @@
-#:include 'instrumentation.fypp'
+#:include 'generics.fypp'
 !----------------------------------------------------------------------
 ! Module: type_avg_blk
 !> Averaged statistics block derived type
@@ -18,7 +18,6 @@ use type_geom, only: geom_type
 use type_mom_blk, only: mom_blk_type
 use type_mpl, only: mpl_type
 use type_nam, only: nam_type
-@:use_probe()
 use type_samp, only: samp_type
 
 implicit none
@@ -87,9 +86,6 @@ integer,intent(in) :: nsub                   !< Sub-ensembles number
 ! Set name
 @:set_name(avg_blk_alloc_blk)
 
-! Probe in
-@:probe_in()
-
 ! Set attributes
 avg_blk%ic2a = ic2a
 avg_blk%iv = iv
@@ -126,9 +122,6 @@ if (.not.allocated(avg_blk%nc1a)) then
    end if
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine avg_blk_alloc_blk
 
 !----------------------------------------------------------------------
@@ -147,9 +140,6 @@ integer,intent(in) :: ic2a                   !< Local index
 
 ! Set name
 @:set_name(avg_blk_alloc_grp)
-
-! Probe in
-@:probe_in()
 
 ! Set attribute
 avg_blk%ic2a = ic2a
@@ -170,9 +160,6 @@ if (.not.allocated(avg_blk%nc1a)) then
    end if
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine avg_blk_alloc_grp
 
 !----------------------------------------------------------------------
@@ -188,9 +175,6 @@ class(avg_blk_type),intent(inout) :: avg_blk !< Averaged statistics block
 
 ! Set name
 @:set_name(avg_blk_dealloc)
-
-! Probe in
-@:probe_in()
 
 ! Allocation
 if (allocated(avg_blk%nc1a)) deallocate(avg_blk%nc1a)
@@ -213,9 +197,6 @@ if (allocated(avg_blk%m22_bins)) deallocate(avg_blk%m22_bins)
 if (allocated(avg_blk%m22_hist)) deallocate(avg_blk%m22_hist)
 if (allocated(avg_blk%cor_bins)) deallocate(avg_blk%cor_bins)
 if (allocated(avg_blk%cor_hist)) deallocate(avg_blk%cor_hist)
-
-! Probe out
-@:probe_out()
 
 end subroutine avg_blk_dealloc
 
@@ -242,9 +223,6 @@ character(len=1024) :: grpname
 
 ! Set name
 @:set_name(avg_blk_write)
-
-! Probe in
-@:probe_in()
 
 ! Create file
 ncid = create_file(mpl,filename,0)
@@ -299,9 +277,6 @@ call put_var(mpl,grpid,cor_hist_id,avg_blk%cor_hist)
 ! Close file
 call close_file(mpl,ncid)
 
-! Probe out
-@:probe_out()
-
 end subroutine avg_blk_write
 
 !----------------------------------------------------------------------
@@ -332,9 +307,6 @@ logical :: valid
 
 ! Set name
 @:set_name(avg_blk_compute_global)
-
-! Probe in
-@:probe_in()
 
 ! Allocation
 allocate(list_m11(samp%nc1a))
@@ -730,9 +702,6 @@ else
    avg_blk%cor_var = mpl%msv%valr
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine avg_blk_compute_global
 
 !----------------------------------------------------------------------
@@ -759,9 +728,6 @@ logical :: valid
 
 ! Set name
 @:set_name(avg_blk_compute_local)
-
-! Probe in
-@:probe_in()
 
 ! Associate
 associate(ic2a=>avg_blk%ic2a)
@@ -974,9 +940,6 @@ end if
 ! End associate
 end associate
 
-! Probe out
-@:probe_out()
-
 end subroutine avg_blk_compute_local
 
 !----------------------------------------------------------------------
@@ -1001,9 +964,6 @@ real(kind_real),allocatable :: m11asysq_gau(:,:),m2m2asy_gau(:,:),m11asysq(:,:),
 
 ! Set name
 @:set_name(avg_blk_compute_asy)
-
-! Probe in
-@:probe_in()
 
 ! Associate
 associate(ic2a=>avg_blk%ic2a)
@@ -1136,9 +1096,6 @@ end if
 
 ! End associate
 end associate
-
-! Probe out
-@:probe_out()
 
 end subroutine avg_blk_compute_asy
 

@@ -1,4 +1,4 @@
-#:include 'instrumentation.fypp'
+#:include 'generics.fypp'
 !----------------------------------------------------------------------
 ! Module: type_bnda
 !> Boundaries derived type
@@ -15,7 +15,6 @@ use tools_kinds, only: kind_real
 use tools_repro, only: repro_th,inf
 use type_mesh, only: mesh_type
 use type_mpl, only: mpl_type
-@:use_probe()
 
 implicit none
 
@@ -66,9 +65,6 @@ real(kind_real) :: lon_arc(2),lat_arc(2),xbnda(2),ybnda(2),zbnda(2)
 
 ! Set name
 @:set_name(bnda_hor_init)
-
-! Probe in
-@:probe_in()
 
 ! Count boundary nodes
 bnda_hor%n = 0
@@ -131,9 +127,6 @@ do ibnda=1,bnda_hor%n
    call vector_product(bnda_hor%v1(:,ibnda),bnda_hor%v2(:,ibnda),bnda_hor%va(:,ibnda))
 end do
 
-! Probe out
-@:probe_out()
-
 end subroutine bnda_hor_init
 
 !----------------------------------------------------------------------
@@ -159,9 +152,6 @@ integer :: il0
 ! Set name
 @:set_name(bnda_init)
 
-! Probe in
-@:probe_in()
-
 ! Allocation
 allocate(bnda%hor(0:nl0))
 
@@ -170,9 +160,6 @@ call bnda%hor(0)%init(mpl,mesh,gmask_hor)
 do il0=1,nl0
    call bnda%hor(il0)%init(mpl,mesh,gmask(:,il0))
 end do
-
-! Probe out
-@:probe_out()
 
 end subroutine bnda_init
 
@@ -193,9 +180,6 @@ integer :: il0
 ! Set name
 @:set_name(bnda_dealloc)
 
-! Probe in
-@:probe_in()
-
 ! Release memory
 if (allocated(bnda%hor)) then
    do il0=0,size(bnda%hor)-1
@@ -205,9 +189,6 @@ if (allocated(bnda%hor)) then
    end do
    deallocate(bnda%hor)
 end if
-
-! Probe out
-@:probe_out()
 
 end subroutine bnda_dealloc
 
@@ -237,9 +218,6 @@ logical :: lprt
 
 ! Set name
 @:set_name(bnda_check_arc)
-
-! Probe in
-@:probe_in()
 
 if (allocated(bnda%hor)) then
    ! Local flag
@@ -285,9 +263,6 @@ if (allocated(bnda%hor)) then
       end do
    end if
 end if
-
-! Probe out
-@:probe_out()
 
 end subroutine bnda_check_arc
 

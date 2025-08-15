@@ -1,4 +1,4 @@
-#:include 'instrumentation.fypp'
+#:include 'generics.fypp'
 !----------------------------------------------------------------------
 ! Module: tools_stripack
 !> STRIPACK routines
@@ -15,7 +15,6 @@ use tools_const, only: zero,one,two,four,hundred,pi
 use tools_kinds, only: kind_real
 use tools_repro, only: eq,inf,sup,supeq,small
 use type_mpl, only: mpl_type
-@:use_probe()
 
 implicit none
 
@@ -98,9 +97,6 @@ logical :: output
 ! Set name
 @:set_name(stripack_addnod)
 
-! Probe in
-@:probe_in()
-
 ! Initialization
 kk = k
 if (kk<4) call mpl%abort('${subr}$','K<4')
@@ -173,9 +169,6 @@ do
   io1 = abs(list(lpo1))
 end do
 
-! Probe out
-@:probe_out()
-
 end subroutine stripack_addnod
 
 !----------------------------------------------------------------------
@@ -200,9 +193,6 @@ integer :: k,lp,lsav,n1,n2,next,nsav
 
 ! Set name
 @:set_name(stripack_bdyadd)
-
-! Probe in
-@:probe_in()
 
 ! Initialization
 k = kk
@@ -249,9 +239,6 @@ lptr(lnew) = lsav
 lend(k) = lnew
 lnew = lnew+1
 
-! Probe out
-@:probe_out()
-
 end subroutine stripack_bdyadd
 
 !----------------------------------------------------------------------
@@ -276,9 +263,6 @@ integer :: i,k,lp,n0,na,nn,nst,nt
 ! Set name
 @:set_name(stripack_bnodes)
 
-! Probe in
-@:probe_in()
-
 ! Initialization
 nn = n
 
@@ -297,7 +281,6 @@ if (nst==0) then
    nb = 0
    na = 3*(nn-2)
    nt = 2*(nn-2)
-@:probe_out()
    return
 end if
 
@@ -324,9 +307,6 @@ nb = k
 nt = 2*n-nb-2
 na = nt+n-1
 
-! Probe out
-@:probe_out()
-
 end subroutine stripack_bnodes
 
 !----------------------------------------------------------------------
@@ -350,9 +330,6 @@ integer :: k,lp,lsav,next,nst
 
 ! Set name
 @:set_name(stripack_covsph)
-
-! Probe in
-@:probe_in()
 
 ! Initialization
 k = kk
@@ -380,9 +357,6 @@ do
 end do
 lptr(lnew-1) = lsav
 lend(k) = lnew-1
-
-! Probe out
-@:probe_out()
 
 end subroutine stripack_covsph
 
@@ -412,9 +386,6 @@ real(kind_real) :: t1,t2,t3
 ! Set name
 @:set_name(stripack_det)
 
-! Probe in
-@:probe_in()
-
 ! Compute determinant terms
 t1 = x0*(y1*z2-y2*z1)
 t2 = y0*(x1*z2-x2*z1)
@@ -425,9 +396,6 @@ output = t1-t2+t3
 
 ! Indistinguishability threshold for cross-platform reproducibility
 if (small(output,t1).or.small(output,t2).or.small(output,t3)) output = zero
-
-! Probe out
-@:probe_out()
 
 end subroutine stripack_det
 
@@ -521,17 +489,11 @@ integer :: lsav
 ! Set name
 @:set_name(stripack_insert)
 
-! Probe in
-@:probe_in()
-
 lsav = lptr(lp)
 lptr(lp) = lnew
 list(lnew) = k
 lptr(lnew) = lsav
 lnew = lnew+1
-
-! Probe out
-@:probe_out()
 
 end subroutine stripack_insert
 
@@ -559,9 +521,6 @@ integer :: k,lp,n1,n2,n3
 ! Set name
 @:set_name(stripack_intadd)
 
-! Probe in
-@:probe_in()
-
 ! Initialization.
 k = kk
 n1 = i1
@@ -586,9 +545,6 @@ lptr(lnew+2) = lnew
 lend(k) = lnew+2
 lnew = lnew+3
 
-! Probe out
-@:probe_out()
-
 end subroutine stripack_intadd
 
 !----------------------------------------------------------------------
@@ -612,9 +568,6 @@ real(kind_real) :: u,x
 ! Set name
 @:set_name(stripack_jrand)
 
-! Probe in
-@:probe_in()
-
 ! Initialization
 ix = mod(171*ix,30269)
 iy = mod(172*iy,30307)
@@ -630,9 +583,6 @@ u = x-int(x)
 
 ! Random integer
 output = int(real(n,kind_real)*u)+1
-
-! Probe out
-@:probe_out()
 
 end subroutine stripack_jrand
 
@@ -662,15 +612,9 @@ real(kind_real) :: zz
 ! Set name
 @:set_name(stripack_left)
 
-! Probe in
-@:probe_in()
-
 ! LEFT = TRUE iff <N0,N1 X N2> = det(N0,N1,N2) >= 0.
 call det(x1,y1,z1,x2,y2,z2,x0,y0,z0,zz)
 output = sup(zz,zero)
-
-! Probe out
-@:probe_out()
 
 end subroutine stripack_left
 
@@ -695,9 +639,6 @@ integer :: lp,nd
 ! Set name
 @:set_name(stripack_lstptr)
 
-! Probe in
-@:probe_in()
-
 ! Initialization
 lp = lptr(lpl)
 
@@ -708,9 +649,6 @@ do
    if (lp==lpl) exit
 end do
 output = lp
-
-! Probe out
-@:probe_out()
 
 end subroutine stripack_lstptr
 
@@ -738,14 +676,10 @@ integer :: lp,lph,lpsav
 ! Set name
 @:set_name(stripack_swap)
 
-! Probe in
-@:probe_in()
-
 ! Test for IN1 and IN2 adjacent.
 call lstptr(lend(in1),in2,list,lptr,lp)
 if (abs(list(lp))==in2) then
    lp21 = 0
-@:probe_out()
    return
 end if
 
@@ -780,9 +714,6 @@ list(lph) = in1
 lptr(lph) = lpsav
 lp21 = lph
 
-! Probe out
-@:probe_out()
-
 end subroutine stripack_swap
 
 !----------------------------------------------------------------------
@@ -808,9 +739,6 @@ real(kind_real) :: dx1,dx2,dx3,dy1,dy2,dy3,dz1,dz2,dz3,x4,y4,z4,zz
 ! Set name
 @:set_name(stripack_swptst)
 
-! Probe in
-@:probe_in()
-
 ! Initialization
 x4 = x(n4)
 y4 = y(n4)
@@ -828,9 +756,6 @@ dz3 = z(n3)-z4
 ! N4 lies above the plane of (N1,N2,N3) iff N3 lies above the plane of (N2,N1,N4) iff Det(N3-N4,N2-N4,N1-N4) = (N3-N4,N2-N4 X N1-N4) > 0.
 call det(dx2,dy2,dz2,dx1,dy1,dz1,dx3,dy3,dz3,zz)
 output = sup(zz,zero)
-
-! Probe out
-@:probe_out()
 
 end subroutine stripack_swptst
 
@@ -865,9 +790,6 @@ real(kind_real) :: output,eps,ptn1,ptn2,q(3),s12,tol,xp,yp,zp
 
 ! Set name
 @:set_name(stripack_trfind)
-
-! Probe in
-@:probe_in()
 
 ! Initialize variables.
 xp = p(1)
@@ -943,7 +865,6 @@ if (inf(abs(x(n0)*xp+y(n0)*yp+z(n0)*zp),one-four*eps)) then
          i1 = 0
          i2 = 0
          i3 = 0
-@:probe_out()
          return
       end if
    end do
@@ -1025,7 +946,6 @@ i2 = n2
 i3 = n3
 b1 = max(b1,zero)
 b2 = max(b2,zero)
-@:probe_out()
 return
 
 ! P Right N1->N2, where N1->N2 is a boundary edge. Save N1 and N2, and set NL = 0 to indicate that NL has not yet been found.
@@ -1061,7 +981,6 @@ if (n2/=n1s) go to 10
 i1 = n1s
 i2 = n1s
 i3 = 0
-@:probe_out()
 return
 
 ! N2 is the rightmost visible node.
@@ -1098,7 +1017,6 @@ if (nl==0) then
    i1 = n1
    i2 = n1
    i3 = 0
-@:probe_out()
    return
 
    ! N1 is the leftmost visible node.
@@ -1110,9 +1028,6 @@ end if
 i1 = nf
 i2 = nl
 i3 = 0
-
-! Probe out
-@:probe_out()
 
 end subroutine stripack_trfind
 
@@ -1144,9 +1059,6 @@ logical :: output_1,output_2
 
 ! Set name
 @:set_name(stripack_trmesh)
-
-! Probe in
-@:probe_in()
 
 ! Initialization
 nn = n
@@ -1204,10 +1116,7 @@ end if
 
 ! Initialize LNEW and test for N = 3.
 lnew = 7
-if (nn==3) then
-@:probe_out()
-   return
-end if
+if (nn==3) return
 
 ! A nearest-node data structure (NEAR, NEXT, and DIST) is used to obtain an expected-time (N*log(N)) incremental algorithm by enabling constant search time for locating each new node in the triangulation. For each unprocessed node K, NEAR(K) is the index of the triangulation node closest to K (used as the starting point for the search in Subroutine TRFIND) and DIST(K) is an increasing function of the arc length (angular distance) between nodes K and NEAR(K): -cos(a) for arc length a. Since it is necessary to efficiently find the subset of unprocessed nodes associated with each triangulation node J (those that have J as their NEAR entries), the subsets are stored in NEAR and NEXT as follows:  for each node J in the triangulation, I = NEAR(J) is the first unprocessed node in J's set (with I = 0 if the set is empty), L = NEXT(I) (if 0<I) is the second, NEXT(L) (if 0<L) is the third, etc. The nodes in each set are initially ordered by increasing indexes (which maximizes efficiency) but that ordering is not maintained as the data structure is updated.
 
@@ -1292,9 +1201,6 @@ do k=4,nn
    ! Bottom of loop on neighbors J.
    if (lp/=lpl) go to 3
 end do
-
-! Probe out
-@:probe_out()
 
 end subroutine stripack_trmesh
 

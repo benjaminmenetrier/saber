@@ -1,4 +1,4 @@
-#:include 'instrumentation.fypp'
+#:include 'generics.fypp'
 !----------------------------------------------------------------------
 ! Module: type_mom
 !> Moments derived type
@@ -20,7 +20,6 @@ use type_geom, only: geom_type
 use type_mom_blk, only: mom_blk_type
 use type_mpl, only: mpl_type
 use type_nam, only: nam_type
-@:use_probe()
 use type_samp, only: samp_type
 
 implicit none
@@ -82,9 +81,6 @@ integer :: iv
 ! Set name
 @:set_name(mom_alloc)
 
-! Probe in
-@:probe_in()
-
 ! Set attributes
 mom%ne = ne
 mom%nsub = nsub
@@ -103,9 +99,6 @@ if (nam%check_dirac) then
    end if
    allocate(mom%dirac(geom%nc0a,geom%nl0,nam%nv,3))
 end if
-
-! Probe out
-@:probe_out()
 
 end subroutine mom_alloc
 
@@ -127,9 +120,6 @@ integer :: iv
 ! Set name
 @:set_name(mom_init)
 
-! Probe in
-@:probe_in()
-
 ! Initialization
 do iv=1,nam%nv
    call mom%blk(iv)%init(nam%iterative_algo)
@@ -141,9 +131,6 @@ if (nam%check_dirac) then
    end if
    mom%dirac = zero
 end if
-
-! Probe out
-@:probe_out()
 
 end subroutine mom_init
 
@@ -164,9 +151,6 @@ integer :: iv
 ! Set name
 @:set_name(mom_partial_dealloc)
 
-! Probe in
-@:probe_in()
-
 ! Release memory
 if (allocated(mom%blk)) then
    do iv=1,size(mom%blk)
@@ -176,9 +160,6 @@ if (allocated(mom%blk)) then
 end if
 if (allocated(mom%m1)) deallocate(mom%m1)
 if (allocated(mom%m2)) deallocate(mom%m2)
-
-! Probe out
-@:probe_out()
 
 end subroutine mom_partial_dealloc
 
@@ -196,15 +177,9 @@ class(mom_type),intent(inout) :: mom !< Moments
 ! Set name
 @:set_name(mom_dealloc)
 
-! Probe in
-@:probe_in()
-
 ! Release memory
 call mom%partial_dealloc
 if (allocated(mom%dirac)) deallocate(mom%dirac)
-
-! Probe out
-@:probe_out()
 
 end subroutine mom_dealloc
 
@@ -231,9 +206,6 @@ type(mom_type) :: mom_tmp
 
 ! Set name
 @:set_name(mom_read)
-
-! Probe in
-@:probe_in()
 
 do iproc=1,mpl%nproc
    ! Reading task
@@ -270,9 +242,6 @@ end do
 ! Update tag
 call mpl%update_tag(3)
 
-! Probe out
-@:probe_out()
-
 end subroutine mom_read
 
 !----------------------------------------------------------------------
@@ -299,9 +268,6 @@ character(len=1024) :: fname_mom,grpname
 
 ! Set name
 @:set_name(mom_read_single)
-
-! Probe in
-@:probe_in()
 
 do isub=1,ens%nsub
    ! Set file name
@@ -351,9 +317,6 @@ do isub=1,ens%nsub
    call close_file(mpl,ncid)
 end do
 
-! Probe out
-@:probe_out()
-
 end subroutine mom_read_single
 
 !----------------------------------------------------------------------
@@ -377,9 +340,6 @@ type(mom_type) :: mom_tmp
 
 ! Set name
 @:set_name(mom_write)
-
-! Probe in
-@:probe_in()
 
 do iproc=1,mpl%nproc
    ! Writing task
@@ -416,9 +376,6 @@ end do
 ! Update tag
 call mpl%update_tag(3)
 
-! Probe out
-@:probe_out()
-
 end subroutine mom_write
 
 !----------------------------------------------------------------------
@@ -443,9 +400,6 @@ character(len=1024) :: fname_mom,grpname
 
 ! Set name
 @:set_name(mom_write_single)
-
-! Probe in
-@:probe_in()
 
 do isub=1,mom%nsub
    ! Set file name
@@ -492,9 +446,6 @@ do isub=1,mom%nsub
    call close_file(mpl,ncid)
 end do
 
-! Probe out
-@:probe_out()
-
 end subroutine mom_write_single
 
 !----------------------------------------------------------------------
@@ -519,9 +470,6 @@ real(kind_real),allocatable :: bufr(:)
 
 ! Set name
 @:set_name(mom_send)
-
-! Probe in
-@:probe_in()
 
 ! Initialization
 nbufi = 0
@@ -594,9 +542,6 @@ call mpl%f_comm%send(bufr,iproc-1,mpl%tag+2)
 deallocate(bufi)
 deallocate(bufr)
 
-! Probe out
-@:probe_out()
-
 end subroutine mom_send
 
 !----------------------------------------------------------------------
@@ -625,9 +570,6 @@ type(fckit_mpi_status) :: status
 
 ! Set name
 @:set_name(mom_receive)
-
-! Probe in
-@:probe_in()
 
 ! Receive buffer size
 call mpl%f_comm%receive(bufs,iproc-1,mpl%tag,status)
@@ -682,9 +624,6 @@ if (ibufr/=nbufr) call mpl%abort('${subr}$','wrong final index ibufr')
 ! Release memory
 deallocate(bufr)
 
-! Probe out
-@:probe_out()
-
 end subroutine mom_receive
 
 !----------------------------------------------------------------------
@@ -714,9 +653,6 @@ real(kind_real),allocatable :: fld_c3a(:,:,:,:),wgt_dir(:),pert_c0a(:,:,:)
 
 ! Set name
 @:set_name(mom_update)
-
-! Probe in
-@:probe_in()
 
 ! Update moments
 write(mpl%info,'(a)') '-------------------------------------------------------------------'
@@ -972,9 +908,6 @@ if (ie==mom%ne) then
    end if
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine mom_update
 
 !----------------------------------------------------------------------
@@ -1003,9 +936,6 @@ real(kind_real),allocatable :: fld_c3a(:,:,:,:),wgt_dir(:),m2(:,:,:)
 
 ! Set name
 @:set_name(mom_compute)
-
-! Probe in
-@:probe_in()
 
 ! Allocation
 mom%nc1a = samp%nc1a
@@ -1222,9 +1152,6 @@ if (nam%write_mom) then
    call mpl%flush
    call mom%write(mpl,nam,geom,samp)
 end if
-
-! Probe out
-@:probe_out()
 
 end subroutine mom_compute
 

@@ -1,4 +1,4 @@
-#:include 'instrumentation.fypp'
+#:include 'generics.fypp'
 !----------------------------------------------------------------------
 ! Module: tools_wrfda
 !> WRFDA functions
@@ -14,7 +14,6 @@ module tools_wrfda
 use tools_const, only: zero,one
 use tools_kinds, only: kind_real
 use type_mpl, only: mpl_type
-@:use_probe()
 
 implicit none
 
@@ -59,9 +58,6 @@ real(kind_real) :: evec(n,n),eval(n),evalinv(n)
 ! Set name
 @:set_name(wrfda_pseudoinv)
 
-! Probe in
-@:probe_in()
-
 ! EOF decomposition
 call da_eof_decomposition(mpl,n,a,evec,eval)
 
@@ -91,9 +87,6 @@ end do
 ! Rebuild inverse
 call da_eof_recomposition(n,lmmax,evec,evalinv,ainv)
 
-! Probe out
-@:probe_out()
-
 end subroutine wrfda_pseudoinv
 
 !----------------------------------------------------------------------
@@ -119,9 +112,6 @@ external :: dsyev
 ! Set name
 @:set_name(wrfda_da_eof_decomposition)
 
-! Probe in
-@:probe_in()
-
 ! Initialization
 work = 3*n-1
 evec_copy = a
@@ -136,9 +126,6 @@ do i=1,n
    eval(i) = eval_copy(n+1-i)
    evec(:,i) = evec_copy(:,n+1-i)
 end do
-
-! Probe out
-@:probe_out()
 
 end subroutine wrfda_da_eof_decomposition
 
@@ -165,9 +152,6 @@ real(kind_real) :: total_variance,cumul_variance
 ! Set name
 @:set_name(wrfda_da_eof_dominant_mode)
 
-! Probe in
-@:probe_in()
-
 ! Total variance
 total_variance = sum(eval)
 
@@ -181,9 +165,6 @@ do i=1,n
       exit
    end if
 end do
-
-! Probe out
-@:probe_out()
 
 end function wrfda_da_eof_dominant_mode
 
@@ -209,9 +190,6 @@ real(kind_real) :: tmp(n,n)
 ! Set name
 @:set_name(wrfda_da_eof_recomposition)
 
-! Probe in
-@:probe_in()
-
 ! First matrix product
 tmp = zero
 do i=1,n
@@ -233,9 +211,6 @@ do i=1,n
       a(i,j) = a(j,i)
    end do
 end do
-
-! Probe out
-@:probe_out()
 
 end subroutine wrfda_da_eof_recomposition
 

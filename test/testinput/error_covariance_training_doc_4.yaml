@@ -39,7 +39,7 @@ background error:
         write nicas steps: true
         internal dirac test: true
       nicas:
-        resolution: 7.0
+        resolution: 5
         explicit length-scales: true
         horizontal length-scale:
         - groups:

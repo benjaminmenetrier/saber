@@ -53,4 +53,11 @@
 #:endif
 #:enddef
 
+
+! Set_name function
+#:def set_name(subr_in)
+   #:global subr
+   #:set subr = subr_in
+#:enddef set_name
+
 #:endmute

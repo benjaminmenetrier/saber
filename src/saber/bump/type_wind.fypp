@@ -1,4 +1,4 @@
-#:include 'instrumentation.fypp'
+#:include 'generics.fypp'
 !----------------------------------------------------------------------
 ! Module: type_wind
 !> Wind derived type
@@ -21,7 +21,6 @@ use type_linop, only: linop_type
 use type_mesh, only: mesh_type
 use type_mpl, only: mpl_type
 use type_nam, only: nam_type
-@:use_probe()
 use type_rng, only: rng_type
 use type_tree, only: tree_type
 
@@ -79,9 +78,6 @@ class(wind_type),intent(inout) :: wind !< Wind
 ! Set name
 @:set_name(wind_dealloc)
 
-! Probe in
-@:probe_in()
-
 ! Release memory
 if (allocated(wind%c0b_to_c0)) deallocate(wind%c0b_to_c0)
 call wind%com_c0_AB%dealloc
@@ -89,9 +85,6 @@ call wind%transform%dealloc
 if (allocated(wind%c0m_to_c0)) deallocate(wind%c0m_to_c0)
 call wind%com_c0_AM%dealloc
 call wind%missing%dealloc
-
-! Probe out
-@:probe_out()
 
 end subroutine wind_dealloc
 
@@ -114,9 +107,6 @@ type(wind_type) :: wind_tmp
 
 ! Set name
 @:set_name(wind_read_local)
-
-! Probe in
-@:probe_in()
 
 ! Read wind transform
 do iproc=1,mpl%nproc
@@ -180,9 +170,6 @@ end do
 ! Update tag
 call mpl%update_tag(4)
 
-! Probe out
-@:probe_out()
-
 end subroutine wind_read_local
 
 !----------------------------------------------------------------------
@@ -208,9 +195,6 @@ logical :: lcheck_c0b(geom%nc0u),lcheck_c0m(geom%nc0u)
 
 ! Set name
 @:set_name(wind_read_global)
-
-! Probe in
-@:probe_in()
 
 ! Open file
 ncid = open_file(mpl,nam%fname_wind)
@@ -394,9 +378,6 @@ call wind%com_c0_AM%setup(mpl,'com_c0_AM',geom%nc0a,wind%nc0m,geom%nc0,geom%c0a_
 deallocate(c0u_to_c0b)
 deallocate(c0u_to_c0m)
 
-! Probe out
-@:probe_out()
-
 end subroutine wind_read_global
 
 !----------------------------------------------------------------------
@@ -418,9 +399,6 @@ type(wind_type) :: wind_tmp
 
 ! Set name
 @:set_name(wind_write_local)
-
-! Probe in
-@:probe_in()
 
 ! Write wind blocks
 do iproc=1,mpl%nproc
@@ -487,9 +465,6 @@ end do
 ! Update tag
 call mpl%update_tag(4)
 
-! Probe out
-@:probe_out()
-
 end subroutine wind_write_local
 
 !----------------------------------------------------------------------
@@ -513,9 +488,6 @@ real(kind_real),allocatable :: bufr(:)
 ! Set name
 @:set_name(wind_send)
 
-! Probe in
-@:probe_in()
-
 ! Buffer size
 call wind%buffer_size(mpl,nbufi,nbufr)
 
@@ -533,9 +505,6 @@ call mpl%f_comm%send(bufs,iproc-1,mpl%tag)
 ! Send data
 call mpl%f_comm%send(bufi,iproc-1,mpl%tag+1)
 call mpl%f_comm%send(bufr,iproc-1,mpl%tag+2)
-
-! Probe out
-@:probe_out()
 
 end subroutine wind_send
 
@@ -561,9 +530,6 @@ type(fckit_mpi_status) :: status
 ! Set name
 @:set_name(wind_receive)
 
-! Probe in
-@:probe_in()
-
 ! Receive buffer size
 call mpl%f_comm%receive(bufs,iproc-1,mpl%tag,status)
 nbufi = bufs(1)
@@ -583,9 +549,6 @@ call wind%deserialize(mpl,nbufi,nbufr,bufi,bufr)
 ! Release memory
 deallocate(bufi)
 deallocate(bufr)
-
-! Probe out
-@:probe_out()
 
 end subroutine wind_receive
 
@@ -608,9 +571,6 @@ integer :: nnbufi,nnbufr
 
 ! Set name
 @:set_name(wind_buffer_size)
-
-! Probe in
-@:probe_in()
 
 ! Initialization
 nbufi = 0
@@ -640,9 +600,6 @@ call wind%missing%buffer_size(nnbufi,nnbufr)
 nbufi = nbufi+nnbufi
 nbufr = nbufr+nnbufr
 
-! Probe out
-@:probe_out()
-
 end subroutine wind_buffer_size
 
 !----------------------------------------------------------------------
@@ -666,9 +623,6 @@ integer :: ibufi,ibufr,nnbufi,nnbufr
 
 ! Set name
 @:set_name(wind_serialize)
-
-! Probe in
-@:probe_in()
 
 ! Initialization
 ibufi = 0
@@ -714,9 +668,6 @@ ibufr = ibufr+nnbufr
 if (ibufi/=nbufi) call mpl%abort('${subr}$','inconsistent final offset/buffer size (integer)')
 if (ibufr/=nbufr) call mpl%abort('${subr}$','inconsistent final offset/buffer size (real)')
 
-! Probe out
-@:probe_out()
-
 end subroutine wind_serialize
 
 !----------------------------------------------------------------------
@@ -740,9 +691,6 @@ integer :: ibufi,ibufr,nnbufi,nnbufr
 
 ! Set name
 @:set_name(wind_deserialize)
-
-! Probe in
-@:probe_in()
 
 ! Initialization
 ibufi = 0
@@ -790,9 +738,6 @@ call wind%missing%deserialize(mpl,nnbufi,nnbufr,bufi(ibufi+1:ibufi+nnbufi),bufr(
 ibufi = ibufi+nnbufi
 ibufr = ibufr+nnbufr
 
-! Probe out
-@:probe_out()
-
 end subroutine wind_deserialize
 
 !----------------------------------------------------------------------
@@ -819,9 +764,6 @@ real(kind_real),allocatable :: transform_Svec_c0a(:,:,:),missing_S_c0a(:,:)
 
 ! Set name
 @:set_name(wind_write_global)
-
-! Probe in
-@:probe_in()
 
 ! Write global wind data
 write(mpl%info,'(a7,a,i6)') '','Write global wind data'
@@ -960,9 +902,6 @@ deallocate(missing_nop)
 deallocate(missing_col_c0a)
 deallocate(missing_S_c0a)
 
-! Probe out
-@:probe_out()
-
 end subroutine wind_write_global
 
 !----------------------------------------------------------------------
@@ -994,9 +933,6 @@ type(tree_type) :: tree
 
 ! Set name
 @:set_name(wind_setup)
-
-! Probe in
-@:probe_in()
 
 if (nam%new_wind) then
    ! Check mask
@@ -1228,9 +1164,6 @@ if (nam%write_wind_local) call wind%write_local(mpl,nam)
 ! Write global wind
 if (nam%write_wind_global) call wind%write_global(mpl,nam,geom)
 
-! Probe out
-@:probe_out()
-
 end subroutine wind_setup
 
 !----------------------------------------------------------------------
@@ -1259,9 +1192,6 @@ real(kind_real) :: u_c0m(wind%nc0m,geom%nl0),v_c0m(wind%nc0m,geom%nl0)
 ! Set name
 @:set_name(wind_psichi_to_uv)
 
-! Probe in
-@:probe_in()
-
 ! Halo extension
 call wind%com_c0_AB%ext(mpl,psi,psi_c0b)
 call wind%com_c0_AB%ext(mpl,chi,chi_c0b)
@@ -1287,9 +1217,6 @@ do il0=1,geom%nl0
    call wind%missing%apply(mpl,u_c0m(:,il0),u(:,il0))
    call wind%missing%apply(mpl,v_c0m(:,il0),v(:,il0))
 end do
-
-! Probe out
-@:probe_out()
 
 end subroutine wind_psichi_to_uv
 
@@ -1319,9 +1246,6 @@ real(kind_real) :: u_c0m(wind%nc0m,geom%nl0),v_c0m(wind%nc0m,geom%nl0)
 
 ! Set name
 @:set_name(wind_psichi_to_uv_ad)
-
-! Probe in
-@:probe_in()
 
 if (wind%dipole_test) then
    ! Set output psi/chi to input u/v
@@ -1355,9 +1279,6 @@ else
    call wind%com_c0_AB%red(mpl,chi_c0b,chi)
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine wind_psichi_to_uv_ad
 
 !----------------------------------------------------------------------
@@ -1384,9 +1305,6 @@ real(kind_real) :: re(geom%nc0a,2),re_avg(2)
 
 ! Set name
 @:set_name(wind_test_accuracy)
-
-! Probe in
-@:probe_in()
 
 write(mpl%test,'(a7,a)') '','Accuracy tests:'
 call mpl%flush
@@ -1435,9 +1353,6 @@ do im=1,nm
    write(mpl%test,'(a13,a,f9.5,a)') '','- psi/chi to v: ',re_avg(2),'%'
    call mpl%flush
 end do
-
-! Probe out
-@:probe_out()
 
 end subroutine wind_test_accuracy
 

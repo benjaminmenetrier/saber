@@ -443,8 +443,6 @@ class SamplingSection : public oops::Parameters {
   oops::Parameter<double> local_rad = param(def.local_rad, this);
   // Local diagnostics calculation latitude band half-width [in degrees]
   oops::Parameter<double> local_dlat = param(def.local_dlat, this);
-  // Diagnostic draw type ('random' or 'regular')
-  oops::Parameter<std::string> draw_type = param(def.draw_type, this);
   // Maximum number of random number draws
   oops::Parameter<int> irmax = param(def.irmax, this);
   // Vertical balance C2B to C0A interpolation type ('c0': C0 mesh-based, 'c1': C1 mesh-based

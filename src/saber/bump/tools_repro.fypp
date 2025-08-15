@@ -1,5 +1,4 @@
 #:include 'generics.fypp'
-#:include 'instrumentation.fypp'
 !----------------------------------------------------------------------
 ! Module: tools_repro
 !> Reproducibility functions
@@ -11,7 +10,6 @@ module tools_repro
 
 use tools_const, only: zero,one,pi
 use tools_kinds, only: kind_int,kind_real
-@:use_probe()
 
 implicit none
 
@@ -75,9 +73,6 @@ logical :: test
 ! Set name
 @:set_name(repro_eq_${dtype}$)
 
-! Probe in
-@:probe_in()
-
 #{if dtype == 'int'}# test = (x==y) #{endif}#
 #:if dtype == 'real'
    if (repro_ops) then
@@ -87,9 +82,6 @@ logical :: test
    end if
 #:endif
 #{if dtype == 'logical'}# test = (x.eqv.y) #{endif}#
-
-! Probe out
-@:probe_out()
 
 end function repro_eq_${dtype}$
 #:endfor
@@ -113,14 +105,8 @@ logical :: test
 ! Set name
 @:set_name(repro_inf_${dtype}$)
 
-! Probe in
-@:probe_in()
-
 test = (x<y)
 #{if dtype == 'real'}# if (repro_ops) test = test.and.(.not.indist(x,y)) #{endif}#
-
-! Probe out
-@:probe_out()
 
 end function repro_inf_${dtype}$
 #:endfor
@@ -144,13 +130,7 @@ logical :: test
 ! Set name
 @:set_name(repro_infeq_${dtype}$)
 
-! Probe in
-@:probe_in()
-
 test = inf(x,y).or.eq(x,y)
-
-! Probe out
-@:probe_out()
 
 end function repro_infeq_${dtype}$
 #:endfor
@@ -174,14 +154,8 @@ logical :: test
 ! Set name
 @:set_name(repro_sup_${dtype}$)
 
-! Probe in
-@:probe_in()
-
 test = (x>y)
 #{if dtype == 'real'}# if (repro_ops) test = test.and.(.not.indist(x,y)) #{endif}#
-
-! Probe out
-@:probe_out()
 
 end function repro_sup_${dtype}$
 #:endfor
@@ -205,13 +179,7 @@ logical :: test
 ! Set name
 @:set_name(repro_supeq_${dtype}$)
 
-! Probe in
-@:probe_in()
-
 test = sup(x,y).or.eq(x,y)
-
-! Probe out
-@:probe_out()
 
 end function repro_supeq_${dtype}$
 #:endfor
@@ -234,9 +202,6 @@ logical :: test
 ! Set name
 @:set_name(repro_indist)
 
-! Probe in
-@:probe_in()
-
 if (repro_ops) then
    if ((abs(x)>zero).or.(abs(y)>zero)) then
       test = abs(x-y)<repro_th*(abs(x+y))
@@ -246,9 +211,6 @@ if (repro_ops) then
 else
    test = .not.(abs(x-y)>zero)
 end if
-
-! Probe out
-@:probe_out()
 
 end function repro_indist
 
@@ -270,14 +232,8 @@ logical :: test
 ! Set name
 @:set_name(repro_small)
 
-! Probe in
-@:probe_in()
-
 test = .false.
 if (repro_ops) test = abs(x)<repro_th*abs(y)
-
-! Probe out
-@:probe_out()
 
 end function repro_small
 

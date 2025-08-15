@@ -1,4 +1,4 @@
-#:include 'instrumentation.fypp'
+#:include 'generics.fypp'
 !----------------------------------------------------------------------
 ! Module: type_cv_cmp
 !> Control vector component derived type
@@ -10,7 +10,6 @@ module type_cv_cmp
 
 use tools_kinds, only: kind_real
 use type_mpl, only: mpl_type
-@:use_probe()
 
 implicit none
 
@@ -46,9 +45,6 @@ logical :: lgetsizeonly
 ! Set name
 @:set_name(cv_cmp_alloc)
 
-! Probe in
-@:probe_in()
-
 ! Local flag
 lgetsizeonly = .false.
 if (present(getsizeonly)) lgetsizeonly = getsizeonly
@@ -64,9 +60,6 @@ if (.not.lgetsizeonly) then
    cv_cmp%alpha = mpl%msv%valr
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine cv_cmp_alloc
 
 !----------------------------------------------------------------------
@@ -81,14 +74,8 @@ class(cv_cmp_type),intent(inout) :: cv_cmp !< Control vector component
 ! Set name
 @:set_name(cv_cmp_dealloc)
 
-! Probe in
-@:probe_in()
-
 ! Release memory
 if (allocated(cv_cmp%alpha)) deallocate(cv_cmp%alpha)
-
-! Probe out
-@:probe_out()
 
 end subroutine cv_cmp_dealloc
 

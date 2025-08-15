@@ -1,4 +1,4 @@
-#:include 'instrumentation.fypp'
+#:include 'generics.fypp'
 !----------------------------------------------------------------------
 ! Module: type_tree
 !> Tree derived type
@@ -16,7 +16,6 @@ use tools_kinds, only: kind_real
 use tools_qsort, only: qsort
 use tools_repro, only: repro_ops,sup,indist
 use type_mpl, only: mpl_type
-@:use_probe()
 
 implicit none
 
@@ -69,9 +68,6 @@ type(atlas_geometry) :: ageometry
 
 ! Set name
 @:set_name(tree_init)
-
-! Probe in
-@:probe_in()
 
 ! Allocation
 tree%n = n
@@ -129,9 +125,6 @@ call tree%kd%build(tree%neff,lon_deg,lat_deg)
 deallocate(lon_deg)
 deallocate(lat_deg)
 
-! Probe out
-@:probe_out()
-
 end subroutine tree_init
 
 !----------------------------------------------------------------------
@@ -148,9 +141,6 @@ class(tree_type),intent(inout) :: tree !< Tree
 ! Set name
 @:set_name(tree_dealloc)
 
-! Probe in
-@:probe_in()
-
 if (allocated(tree%from_eff)) then
    ! Release memory
    deallocate(tree%mask)
@@ -162,9 +152,6 @@ if (allocated(tree%from_eff)) then
    ! Destroy KDTree
    call tree%kd%final()
 end if
-
-! Probe out
-@:probe_out()
 
 end subroutine tree_dealloc
 
@@ -194,9 +181,6 @@ logical :: separate
 
 ! Set name
 @:set_name(tree_find_nearest_neighbors_from_nn)
-
-! Probe in
-@:probe_in()
 
 ! Check nn
 if (nn<=0) call mpl%abort('${subr}$','number of nearest neighbors should be positive')
@@ -289,9 +273,6 @@ if (tree%neff>0) then
    deallocate(nn_dist_tmp)
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine tree_find_nearest_neighbors_from_nn
 
 !----------------------------------------------------------------------
@@ -318,9 +299,6 @@ real(kind_real) :: ch
 
 ! Set name
 @:set_name(tree_find_nearest_neighbors_from_rad)
-
-! Probe in
-@:probe_in()
 
 ! Check sr
 if (sr<zero) call mpl%abort('${subr}$','search radius should not be negative')
@@ -355,9 +333,6 @@ if (tree%neff>0) then
    end if
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine tree_find_nearest_neighbors_from_rad
 
 !----------------------------------------------------------------------
@@ -382,9 +357,6 @@ real(kind_real) :: ch
 ! Set name
 @:set_name(tree_count_nearest_neighbors)
 
-! Probe in
-@:probe_in()
-
 ! Check sr
 if (sr<zero) call mpl%abort('${subr}$','search radius should not be negative')
 
@@ -393,9 +365,6 @@ ch = two*sin(half*min(sr,pi))
 
 ! Count nearest neighbors
 call tree%kd%closestPointsWithinRadius(lon*rad2deg,lat*rad2deg,ch,nn)
-
-! Probe out
-@:probe_out()
 
 end subroutine tree_count_nearest_neighbors
 

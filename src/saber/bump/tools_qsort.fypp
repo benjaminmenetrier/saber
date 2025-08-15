@@ -1,5 +1,4 @@
 #:include 'generics.fypp'
-#:include 'instrumentation.fypp'
 !----------------------------------------------------------------------
 ! Module: tools_qsort
 !> Qsort routines
@@ -15,7 +14,6 @@ module tools_qsort
 
 use tools_kinds, only: kind_int,kind_real
 use tools_repro, only: eq,inf
-@:use_probe()
 
 implicit none
 
@@ -286,9 +284,6 @@ ${ftype[dtype]}$ :: temp
 ! Set name
 @:set_name(qsort_interchange_sort_${dtype}$)
 
-! Probe in
-@:probe_in()
-
 do i=left_end,right_end-1
    do j=i+1,right_end
       if (list(i)>list(j)) then
@@ -301,9 +296,6 @@ do i=left_end,right_end-1
       end if
    end do
 end do
-
-! Probe out
-@:probe_out()
 
 end subroutine qsort_interchange_sort_${dtype}$
 #:endfor

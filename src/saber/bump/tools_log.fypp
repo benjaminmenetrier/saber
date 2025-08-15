@@ -1,4 +1,4 @@
-#:include 'instrumentation.fypp'
+#:include 'generics.fypp'
 !----------------------------------------------------------------------
 ! Module: tools_log
 !> Log utilities
@@ -11,7 +11,6 @@ module tools_log
 use fckit_c_interop_module, only : c_str_right_trim
 use fckit_log_module, only: fckit_log,fckit_logchannel
 use iso_c_binding, only: c_char,c_int32_t
-@:use_probe()
 
 implicit none
 
@@ -55,9 +54,6 @@ integer(c_int32_t) :: inewl,iflush
 ! Set name
 @:set_name(log_write_log)
 
-! Probe in
-@:probe_in()
-
 ! Select channel
 if (channel%is_null()) then
    call fckit_log%info(msg,newl,flush)
@@ -68,9 +64,6 @@ else
    if (flush) iflush = 1
    call log__write_log(channel%c_ptr(),c_str_right_trim(msg),inewl,iflush)
 end if
-
-! Probe out
-@:probe_out()
 
 end subroutine log_write_log
 

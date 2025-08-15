@@ -1,4 +1,4 @@
-#:include 'instrumentation.fypp'
+#:include 'generics.fypp'
 !----------------------------------------------------------------------
 ! Module: type_vbal
 !> Vertical balance derived type
@@ -21,7 +21,6 @@ use type_geom, only: geom_type
 use type_gsi, only: gsi_type
 use type_mpl, only: mpl_type
 use type_nam, only: nam_type
-@:use_probe()
 use type_rng, only: rng_type
 use type_samp, only: samp_type
 use type_vbal_blk, only: vbal_blk_type
@@ -106,9 +105,6 @@ integer :: iv,jv,lnsub
 ! Set name
 @:set_name(vbal_alloc)
 
-! Probe in
-@:probe_in()
-
 ! Local number of sub-ensembles
 lnsub = 0
 if (present(nsub)) lnsub = nsub
@@ -132,9 +128,6 @@ do iv=1,nam%nv
    end do
 end do
 
-! Probe out
-@:probe_out()
-
 end subroutine vbal_alloc
 
 !----------------------------------------------------------------------
@@ -154,9 +147,6 @@ integer :: iv,jv
 ! Set name
 @:set_name(vbal_partial_dealloc)
 
-! Probe in
-@:probe_in()
-
 ! Release memory
 if (allocated(vbal%blk)) then
    do jv=1,size(vbal%blk,2)
@@ -165,9 +155,6 @@ if (allocated(vbal%blk)) then
       end do
    end do
 end if
-
-! Probe out
-@:probe_out()
 
 end subroutine vbal_partial_dealloc
 
@@ -188,9 +175,6 @@ integer :: iv,jv
 ! Set name
 @:set_name(vbal_dealloc)
 
-! Probe in
-@:probe_in()
-
 ! Release memory
 if (allocated(vbal%h_n_s)) deallocate(vbal%h_n_s)
 if (allocated(vbal%h_c2b)) deallocate(vbal%h_c2b)
@@ -204,9 +188,6 @@ if (allocated(vbal%blk)) then
    deallocate(vbal%blk)
 end if
 if (allocated(vbal%dirac)) deallocate(vbal%dirac)
-
-! Probe out
-@:probe_out()
 
 end subroutine vbal_dealloc
 
@@ -232,9 +213,6 @@ type(vbal_type) :: vbal_tmp
 
 ! Set name
 @:set_name(vbal_cov_read_local)
-
-! Probe in
-@:probe_in()
 
 ! Allocation
 call vbal%alloc(mpl,nam,geom,samp,nsub)
@@ -276,9 +254,6 @@ end do
 
 ! Update tag
 call mpl%update_tag(3)
-
-! Probe out
-@:probe_out()
 
 end subroutine vbal_cov_read_local
 
@@ -361,9 +336,6 @@ do iv=1,nam%nv
    end do
 end do
 
-! Probe out
-@:probe_out()
-
 end subroutine vbal_cov_read_local_single
 
 !----------------------------------------------------------------------
@@ -387,9 +359,6 @@ type(vbal_type) :: vbal_tmp
 
 ! Set name
 @:set_name(vbal_cov_write_local)
-
-! Probe in
-@:probe_in()
 
 do iproc=1,mpl%nproc
    ! Writing task
@@ -426,9 +395,6 @@ end do
 ! Update tag
 call mpl%update_tag(3)
 
-! Probe out
-@:probe_out()
-
 end subroutine vbal_cov_write_local
 
 !----------------------------------------------------------------------
@@ -454,9 +420,6 @@ character(len=1024) :: grpname
 
 ! Set name
 @:set_name(vbal_cov_write_local_single)
-
-! Probe in
-@:probe_in()
 
 ! Open files
 ncid = create_file(mpl,nam%fname_vbal_cov_default,iproc)
@@ -489,9 +452,6 @@ end do
 ! Close files
 call close_file(mpl,ncid)
 
-! Probe out
-@:probe_out()
-
 end subroutine vbal_cov_write_local_single
 
 !----------------------------------------------------------------------
@@ -518,9 +478,6 @@ character(len=1024) :: grpname,fname_vbal_cov
 
 ! Set name
 @:set_name(vbal_cov_read_global)
-
-! Probe in
-@:probe_in()
 
 ! Allocation
 call vbal%alloc(mpl,nam,geom,samp,nsub)
@@ -573,9 +530,6 @@ do iv=1,nam%nv
    end do
 end do
 
-! Probe out
-@:probe_out()
-
 end subroutine vbal_cov_read_global
 
 !----------------------------------------------------------------------
@@ -601,9 +555,6 @@ character(len=1024) :: grpname
 
 ! Set name
 @:set_name(vbal_cov_write_global)
-
-! Probe in
-@:probe_in()
 
 ! Open files
 ncid = create_file(mpl,nam%fname_vbal_cov_default)
@@ -636,9 +587,6 @@ end do
 ! Close files
 call close_file(mpl,ncid)
 
-! Probe out
-@:probe_out()
-
 end subroutine vbal_cov_write_global
 
 !----------------------------------------------------------------------
@@ -663,9 +611,6 @@ real(kind_real),allocatable :: bufr(:)
 
 ! Set name
 @:set_name(vbal_cov_send)
-
-! Probe in
-@:probe_in()
 
 ! Initialization
 nbufi = 0
@@ -717,9 +662,6 @@ call mpl%f_comm%send(bufr,iproc-1,mpl%tag+2)
 deallocate(bufi)
 deallocate(bufr)
 
-! Probe out
-@:probe_out()
-
 end subroutine vbal_cov_send
 
 !----------------------------------------------------------------------
@@ -745,9 +687,6 @@ type(fckit_mpi_status) :: status
 
 ! Set name
 @:set_name(vbal_cov_receive)
-
-! Probe in
-@:probe_in()
 
 ! Receive buffer size
 call mpl%f_comm%receive(bufs,iproc-1,mpl%tag,status)
@@ -789,9 +728,6 @@ if (ibufr/=nbufr) call mpl%abort('${subr}$','wrong final index ibufr')
 ! Release memory
 deallocate(bufr)
 
-! Probe out
-@:probe_out()
-
 end subroutine vbal_cov_receive
 
 !----------------------------------------------------------------------
@@ -816,9 +752,6 @@ integer :: iv,jv
 ! Set name
 @:set_name(vbal_run_vbal)
 
-! Probe in
-@:probe_in()
-
 ! Allocation
 call vbal%alloc(mpl,nam,geom,samp,ens%nsub)
 
@@ -838,9 +771,6 @@ if (nam%write_vbal_cov) then
    if (nam%load_samp_local.or.nam%write_samp_local) call vbal%cov_write_local(mpl,nam,geom,samp)
    if (nam%load_samp_global.or.nam%write_samp_global) call vbal%cov_write_global(mpl,nam,geom,samp)
 end if
-
-! Probe out
-@:probe_out()
 
 end subroutine vbal_cov_run
 
@@ -867,9 +797,6 @@ integer :: iv,jv
 ! Set name
 @:set_name(vbal_cov_update)
 
-! Probe in
-@:probe_in()
-
 ! Update vertical covariance
 write(mpl%info,'(a)') '-------------------------------------------------------------------'
 call mpl%flush
@@ -891,9 +818,6 @@ if ((ie==nam%ens1_ne).and.nam%write_vbal) then
    if (nam%load_samp_local.or.nam%write_samp_local) call vbal%cov_write_local(mpl,nam,geom,samp)
    if (nam%load_samp_global.or.nam%write_samp_global) call vbal%cov_write_global(mpl,nam,geom,samp)
 end if
-
-! Probe out
-@:probe_out()
 
 end subroutine vbal_cov_update
 
@@ -919,9 +843,6 @@ type(vbal_type) :: vbal_tmp
 
 ! Set name
 @:set_name(vbal_read_local)
-
-! Probe in
-@:probe_in()
 
 ! Allocation
 allocate(vbal%h_n_s(geom%nc0a,geom%nl0i))
@@ -1027,9 +948,6 @@ deallocate(reg_c2b)
 ! Write balance operator
 if (nam%write_vbal.and.nam%write_samp_global) call vbal%write_global(mpl,nam,geom,samp)
 
-! Probe out
-@:probe_out()
-
 end subroutine vbal_read_local
 
 !----------------------------------------------------------------------
@@ -1054,9 +972,6 @@ character(len=1024) :: grpname
 
 ! Set name
 @:set_name(vbal_read_local_single)
-
-! Probe in
-@:probe_in()
 
 ! Open file
 ncid = open_file(mpl,nam%fname_vbal,iproc)
@@ -1089,9 +1004,6 @@ end do
 ! Close file
 call close_file(mpl,ncid)
 
-! Probe out
-@:probe_out()
-
 end subroutine vbal_read_local_single
 
 !----------------------------------------------------------------------
@@ -1116,9 +1028,6 @@ type(vbal_type) :: vbal_tmp
 
 ! Set name
 @:set_name(vbal_write_local)
-
-! Probe in
-@:probe_in()
 
 ! Write vertical balance operators
 write(mpl%info,'(a)') '-------------------------------------------------------------------'
@@ -1224,9 +1133,6 @@ do iv=1,nam%nv
 end do
 if (allocated(explained_var_norm)) deallocate(explained_var_norm)
 
-! Probe out
-@:probe_out()
-
 end subroutine vbal_write_local
 
 !----------------------------------------------------------------------
@@ -1252,9 +1158,6 @@ character(len=1024) :: grpname
 
 ! Set name
 @:set_name(vbal_write_local_single)
-
-! Probe in
-@:probe_in()
 
 ! Create files
 ncid = create_file(mpl,nam%fname_vbal,iproc)
@@ -1295,9 +1198,6 @@ end do
 ! Close files
 call close_file(mpl,ncid)
 
-! Probe out
-@:probe_out()
-
 end subroutine vbal_write_local_single
 
 !----------------------------------------------------------------------
@@ -1323,9 +1223,6 @@ character(len=1024) :: grpname
 
 ! Set name
 @:set_name(vbal_read_global)
-
-! Probe in
-@:probe_in()
 
 ! Allocation
 allocate(vbal%h_n_s(geom%nc0a,geom%nl0i))
@@ -1406,9 +1303,6 @@ deallocate(reg_c2b)
 ! Write balance operator
 if (nam%write_vbal.and.nam%write_samp_local) call vbal%write_local(mpl,nam,geom,samp)
 
-! Probe out
-@:probe_out()
-
 end subroutine vbal_read_global
 
 !----------------------------------------------------------------------
@@ -1436,9 +1330,6 @@ character(len=1024) :: grpname
 
 ! Set name
 @:set_name(vbal_write_global)
-
-! Probe in
-@:probe_in()
 
 ! Write vertical balance operators
 write(mpl%info,'(a)') '-------------------------------------------------------------------'
@@ -1536,9 +1427,6 @@ end if
 ! Close files
 call close_file(mpl,ncid)
 
-! Probe out
-@:probe_out()
-
 end subroutine vbal_write_global
 
 !----------------------------------------------------------------------
@@ -1563,9 +1451,6 @@ real(kind_real),allocatable :: bufr(:)
 
 ! Set name
 @:set_name(vbal_send)
-
-! Probe in
-@:probe_in()
 
 ! Initialization
 nbufi = 0
@@ -1637,9 +1522,6 @@ call mpl%f_comm%send(bufr,iproc-1,mpl%tag+2)
 deallocate(bufi)
 deallocate(bufr)
 
-! Probe out
-@:probe_out()
-
 end subroutine vbal_send
 
 !----------------------------------------------------------------------
@@ -1665,9 +1547,6 @@ type(fckit_mpi_status) :: status
 
 ! Set name
 @:set_name(vbal_receive)
-
-! Probe in
-@:probe_in()
 
 ! Receive buffer size
 call mpl%f_comm%receive(bufs,iproc-1,mpl%tag,status)
@@ -1725,9 +1604,6 @@ if (ibufr/=nbufr) call mpl%abort('${subr}$','wrong final index ibufr')
 ! Release memory
 deallocate(bufr)
 
-! Probe out
-@:probe_out()
-
 end subroutine vbal_receive
 
 !----------------------------------------------------------------------
@@ -1754,9 +1630,6 @@ type(ens_type) :: ensu
 
 ! Set name
 @:set_name(vbal_run_vbal)
-
-! Probe in
-@:probe_in()
 
 ! Allocation
 allocate(vbal%h_n_s(geom%nc0a,geom%nl0i))
@@ -1949,9 +1822,6 @@ end if
 ! Release memory
 call ensu%dealloc
 
-! Probe out
-@:probe_out()
-
 end subroutine vbal_run_vbal
 
 !----------------------------------------------------------------------
@@ -1976,9 +1846,6 @@ real(kind_real) :: rlatm,rlatp
 
 ! Set name
 @:set_name(vbal_from_gsi)
-
-! Probe in
-@:probe_in()
 
 ! Allocation
 call vbal%alloc(mpl,nam,geom,samp)
@@ -2051,9 +1918,6 @@ do iv=1,nam%nv
    end do
 end do
 
-! Probe out
-@:probe_out()
-
 end subroutine vbal_from_gsi
 
 !----------------------------------------------------------------------
@@ -2074,9 +1938,6 @@ type(geom_type),intent(in) :: geom     !< Geometry
 ! Set name
 @:set_name(vbal_run_vbal_tests)
 
-! Probe in
-@:probe_in()
-
 ! Test inverse
 if (nam%check_vbal) call vbal%test_inverse(mpl,rng,nam,geom)
 
@@ -2088,9 +1949,6 @@ if (nam%check_dirac) call vbal%test_dirac(mpl,nam,geom)
 
 ! Reset random seed if necessary
 call rng%reseed
-
-! Probe out
-@:probe_out()
 
 end subroutine vbal_run_vbal_tests
 
@@ -2115,9 +1973,6 @@ real(kind_real) :: fld_tmp(geom%nc0a,geom%nl0),fld_out(geom%nc0a,geom%nl0,nam%nv
 ! Set name
 @:set_name(vbal_apply)
 
-! Probe in
-@:probe_in()
-
 ! Initialization
 fld_out = fld
 
@@ -2138,9 +1993,6 @@ end do
 
 ! Final copy
 fld = fld_out
-
-! Probe out
-@:probe_out()
 
 end subroutine vbal_apply
 
@@ -2165,9 +2017,6 @@ real(kind_real) :: fld_tmp(geom%nc0a,geom%nl0),fld_out(geom%nc0a,geom%nl0,nam%nv
 ! Set name
 @:set_name(vbal_apply_inv)
 
-! Probe in
-@:probe_in()
-
 ! Initialization
 fld_out = fld
 
@@ -2188,9 +2037,6 @@ end do
 
 ! Final copy
 fld = fld_out
-
-! Probe out
-@:probe_out()
 
 end subroutine vbal_apply_inv
 
@@ -2215,9 +2061,6 @@ real(kind_real) :: fld_tmp(geom%nc0a,geom%nl0),fld_out(geom%nc0a,geom%nl0,nam%nv
 ! Set name
 @:set_name(vbal_apply_ad)
 
-! Probe in
-@:probe_in()
-
 ! Initialization
 fld_out = fld
 
@@ -2238,9 +2081,6 @@ end do
 
 ! Final copy
 fld = fld_out
-
-! Probe out
-@:probe_out()
 
 end subroutine vbal_apply_ad
 
@@ -2265,9 +2105,6 @@ real(kind_real) :: fld_tmp(geom%nc0a,geom%nl0),fld_out(geom%nc0a,geom%nl0,nam%nv
 ! Set name
 @:set_name(vbal_apply_inv_ad)
 
-! Probe in
-@:probe_in()
-
 ! Initialization
 fld_out = fld
 
@@ -2288,9 +2125,6 @@ end do
 
 ! Final copy
 fld = fld_out
-
-! Probe out
-@:probe_out()
 
 end subroutine vbal_apply_inv_ad
 
@@ -2315,9 +2149,6 @@ real(kind_real) :: fld(geom%nc0a,geom%nl0,nam%nv),fld_save(geom%nc0a,geom%nl0,na
 
 ! Set name
 @:set_name(vbal_test_inverse)
-
-! Probe in
-@:probe_in()
 
 ! Generate random field
 call rng%rand(zero,one,fld_save)
@@ -2368,9 +2199,6 @@ call mpl%flush
 write(mpl%test,'(a7,a,l1)') '','Vertical balance inverse/direct (adjoint) test result:  ',mse/norm<repro_th
 call mpl%flush
 
-! Probe out
-@:probe_out()
-
 end subroutine vbal_test_inverse
 
 !----------------------------------------------------------------------
@@ -2396,9 +2224,6 @@ real(kind_real) :: fld2(geom%nc0a,geom%nl0,nam%nv),fld2_save(geom%nc0a,geom%nl0,
 
 ! Set name
 @:set_name(vbal_test_adjoint)
-
-! Probe in
-@:probe_in()
 
 ! Generate random field
 call rng%rand(zero,one,fld1_save)
@@ -2452,9 +2277,6 @@ write(mpl%test,'(a7,a,l1)') '','Vertical balance inverse adjoint test results: '
  & two*abs(sum1-sum2)/abs(sum1+sum2)<repro_th
 call mpl%flush
 
-! Probe out
-@:probe_out()
-
 end subroutine vbal_test_adjoint
 
 !----------------------------------------------------------------------
@@ -2478,9 +2300,6 @@ real(kind_real) :: fld_c0a(geom%nc0a,geom%nl0,nam%nv)
 ! Set name
 @:set_name(vbal_test_dirac)
 
-! Probe in
-@:probe_in()
-
 ! Allocation
 allocate(vbal%dirac(geom%nc0a,geom%nl0,nam%nv))
 
@@ -2499,9 +2318,6 @@ do idir=1,geom%ndir
       end do
    end do
 end do
-
-! Probe out
-@:probe_out()
 
 end subroutine vbal_test_dirac
 

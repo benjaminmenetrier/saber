@@ -38,7 +38,7 @@ background error:
         adjoints test: true
         internal dirac test: true
       nicas:
-        resolution: 4.0
+        resolution: 5
         explicit length-scales: true
         horizontal length-scale:
         - groups:

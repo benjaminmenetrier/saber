@@ -1,4 +1,4 @@
-#:include 'instrumentation.fypp'
+#:include 'generics.fypp'
 !----------------------------------------------------------------------
 ! Module: type_linop
 !> Linear operator derived type
@@ -21,7 +21,6 @@ use tools_ssrfpack, only: constr,aplyr
 use type_bnda, only: bnda_type
 use type_mesh, only: mesh_type
 use type_mpl, only: mpl_type
-@:use_probe()
 use type_tree, only: tree_type
 
 implicit none
@@ -92,9 +91,6 @@ integer,intent(in),optional :: nvec      !< Size of the vector of linear operato
 ! Set name
 @:set_name(linop_alloc)
 
-! Probe in
-@:probe_in()
-
 ! Vector size
 if (present(nvec)) then
    linop%nvec = nvec
@@ -110,9 +106,6 @@ if (linop%nvec>0) then
 else
    allocate(linop%S(linop%n_s))
 end if
-
-! Probe out
-@:probe_out()
 
 end subroutine linop_alloc
 
@@ -130,17 +123,11 @@ class(linop_type),intent(inout) :: linop !< Linear operator
 ! Set name
 @:set_name(linop_dealloc)
 
-! Probe in
-@:probe_in()
-
 ! Release memory
 if (allocated(linop%row)) deallocate(linop%row)
 if (allocated(linop%col)) deallocate(linop%col)
 if (allocated(linop%S)) deallocate(linop%S)
 if (allocated(linop%Svec)) deallocate(linop%Svec)
-
-! Probe out
-@:probe_out()
 
 end subroutine linop_dealloc
 
@@ -160,13 +147,12 @@ integer,intent(in),optional :: n_s           !< Number of operations to copy
 ! Set name
 @:set_name(linop_copy)
 
-! Probe in
-@:probe_in()
-
 ! Release memory
 call linop_out%dealloc
 
 ! Copy attributes
+linop_out%n_src = linop_in%n_src
+linop_out%n_dst = linop_in%n_dst
 if (present(n_s)) then
    linop_out%n_s = n_s
 else
@@ -187,9 +173,6 @@ if (linop_in%n_s>0) then
    end if
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine linop_copy
 
 !----------------------------------------------------------------------
@@ -209,9 +192,6 @@ real(kind_real),allocatable :: S(:),Svec(:,:)
 
 ! Set name
 @:set_name(linop_trim)
-
-! Probe in
-@:probe_in()
 
 if (linop%n_s>0) then
    ! Allocation
@@ -249,9 +229,6 @@ else
    call linop%dealloc
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine linop_trim
 
 !----------------------------------------------------------------------
@@ -272,9 +249,6 @@ integer :: nvec
 
 ! Set name
 @:set_name(linop_read)
-
-! Probe in
-@:probe_in()
 
 ! Get group
 linop%grpid = inquire_grp(mpl,ncid,linop%prefix)
@@ -308,9 +282,6 @@ if (linop%n_s>0) then
    end if
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine linop_read
 
 !----------------------------------------------------------------------
@@ -331,9 +302,6 @@ integer :: n_s_id,nvec_id
 
 ! Set name
 @:set_name(linop_write_def)
-
-! Probe in
-@:probe_in()
 
 ! Define group
 linop%grpid = define_grp(mpl,ncid,linop%prefix)
@@ -358,9 +326,6 @@ if (linop%n_s>0) then
    end if
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine linop_write_def
 
 !----------------------------------------------------------------------
@@ -378,9 +343,6 @@ type(mpl_type),intent(inout) :: mpl   !< MPI data
 ! Set name
 @:set_name(linop_write_data)
 
-! Probe in
-@:probe_in()
-
 if (linop%n_s>0) then
    ! Write variables
    call put_var(mpl,linop%grpid,linop%row_id,linop%row(1:linop%n_s))
@@ -391,9 +353,6 @@ if (linop%n_s>0) then
       call put_var(mpl,linop%grpid,linop%S_id,linop%S(1:linop%n_s))
    end if
 end if
-
-! Probe out
-@:probe_out()
 
 end subroutine linop_write_data
 
@@ -413,9 +372,6 @@ integer,intent(out) :: nbufr          !< Buffer size (real)
 ! Set name
 @:set_name(linop_buffer_size)
 
-! Probe in
-@:probe_in()
-
 ! Define buffer size
 nbufi = 6+2*linop%n_s
 if (linop%nvec>0) then
@@ -423,9 +379,6 @@ if (linop%nvec>0) then
 else
    nbufr = linop%n_s
 end if
-
-! Probe out
-@:probe_out()
 
 end subroutine linop_buffer_size
 
@@ -450,9 +403,6 @@ integer :: ibufi,ibufr
 
 ! Set name
 @:set_name(linop_serialize)
-
-! Probe in
-@:probe_in()
 
 ! Initialization
 ibufi = 0
@@ -491,9 +441,6 @@ end if
 if (ibufi/=nbufi) call mpl%abort('${subr}$','inconsistent final offset/buffer size (integer)')
 if (ibufr/=nbufr) call mpl%abort('${subr}$','inconsistent final offset/buffer size (real)')
 
-! Probe out
-@:probe_out()
-
 end subroutine linop_serialize
 
 !----------------------------------------------------------------------
@@ -517,9 +464,6 @@ integer :: ibufi,ibufr,nvec
 
 ! Set name
 @:set_name(linop_deserialize)
-
-! Probe in
-@:probe_in()
 
 ! Initialization
 ibufi = 0
@@ -564,9 +508,6 @@ end if
 if (ibufi/=nbufi) call mpl%abort('${subr}$','inconsistent final offset/buffer size (integer)')
 if (ibufr/=nbufr) call mpl%abort('${subr}$','inconsistent final offset/buffer size (real)')
 
-! Probe out
-@:probe_out()
-
 end subroutine linop_deserialize
 
 !----------------------------------------------------------------------
@@ -593,9 +534,6 @@ logical,allocatable :: missing_src(:),missing_dst(:)
 
 ! Set name
 @:set_name(linop_apply)
-
-! Probe in
-@:probe_in()
 
 if (check_data) then
    ! Check linear operation
@@ -685,9 +623,6 @@ if (check_data) then
    end if
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine linop_apply
 
 !----------------------------------------------------------------------
@@ -710,9 +645,6 @@ integer :: i_s
 
 ! Set name
 @:set_name(linop_apply_ad)
-
-! Probe in
-@:probe_in()
 
 if (check_data) then
    ! Check linear operation
@@ -755,9 +687,6 @@ if (check_data) then
    end if
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine linop_apply_ad
 
 !----------------------------------------------------------------------
@@ -781,9 +710,6 @@ type(linop_type) :: linop_tmp
 
 ! Set name
 @:set_name(linop_add_op)
-
-! Probe in
-@:probe_in()
 
 ! Update
 n_s = n_s+1
@@ -818,9 +744,6 @@ else
    linop%S(n_s) = S
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine linop_add_op
 
 !----------------------------------------------------------------------
@@ -842,9 +765,6 @@ integer :: ithread,offset
 
 ! Set name
 @:set_name(linop_gather)
-
-! Probe in
-@:probe_in()
 
 if (mpl%nthread>1) then
    ! Total number of operations
@@ -869,9 +789,6 @@ else
    ! Copy
    call linop%copy(linop_arr(1),n_s_arr(1))
 end if
-
-! Probe out
-@:probe_out()
 
 end subroutine linop_gather
 
@@ -914,9 +831,6 @@ type(linop_type) :: grad(n_src)
 
 ! Set name
 @:set_name(linop_interp)
-
-! Probe in
-@:probe_in()
 
 ! Local flag
 lc1_interp = .false.
@@ -1159,9 +1073,6 @@ if (lc1_interp) then
    end do
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine linop_interp
 
 !----------------------------------------------------------------------
@@ -1190,9 +1101,6 @@ character(len=7) :: cfmt
 
 ! Set name
 @:set_name(linop_interp_lat)
-
-! Probe in
-@:probe_in()
 
 ! Allocation
 linop%n_s = 2*n_dst
@@ -1276,9 +1184,6 @@ if (linop%n_s>0) then
    linop%col = order(linop%col(1:linop%n_s))
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine linop_interp_lat
 
 !----------------------------------------------------------------------
@@ -1320,9 +1225,6 @@ type(linop_type) :: c(mpl%nthread)
 
 ! Set name
 @:set_name(linop_interp_nn)
-
-! Probe in
-@:probe_in()
 
 ! Local interpolation radius
 lrh = zero
@@ -1462,9 +1364,6 @@ if (linop%n_s>0) then
    if (any(missing)) call mpl%abort('${subr}$','missing destination points')
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine linop_interp_nn
 
 !----------------------------------------------------------------------
@@ -1492,9 +1391,6 @@ logical :: lspherical,valid
 
 ! Set name
 @:set_name(linop_compute_grad)
-
-! Probe in
-@:probe_in()
 
 ! Local flags
 lspherical = .false.
@@ -1648,9 +1544,6 @@ deallocate(km)
 deallocate(xp)
 deallocate(yp)
 deallocate(zp)
-
-! Probe out
-@:probe_out()
 
 end subroutine linop_compute_grad
 

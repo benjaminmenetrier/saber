@@ -1,4 +1,3 @@
-#:include 'instrumentation.fypp'
 #:include 'generics.fypp'
 !----------------------------------------------------------------------
 ! Module: tools_gc99
@@ -16,7 +15,6 @@ use tools_const, only: zero,half,one,two
 use tools_kinds, only: kind_real
 use tools_repro, only: eq,inf,infeq
 use type_mpl, only: mpl_type
-@:use_probe()
 
 implicit none
 
@@ -195,9 +193,6 @@ real(kind_real) :: rndm,rndp
 ! Set name
 @:set_name(gc99_fit_func)
 
-! Probe in
-@:probe_in()
-
 ! Check bounds
 if (inf(nd,zero)) call mpl%abort('${subr}$','negative normalized distance')
 
@@ -238,9 +233,6 @@ elseif (infeq(nd,one)) then
    end if
 end if
 
-! Probe out
-@:probe_out()
-
 end function gc99_fit_func
 
 !----------------------------------------------------------------------
@@ -259,9 +251,6 @@ real(kind_real) :: value
 ! Set name
 @:set_name(gc99_fit_func_sqrt)
 
-! Probe in
-@:probe_in()
-
 ! Check bounds
 if (inf(nd,zero)) call mpl%abort('${subr}$','negative normalized distance')
 
@@ -275,9 +264,6 @@ elseif (infeq(nd,half)) then
    ! Inside support
    value = one-(two*nd)
 end if
-
-! Probe out
-@:probe_out()
 
 end function gc99_fit_func_sqrt
 

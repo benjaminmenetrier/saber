@@ -1,4 +1,4 @@
-#:include 'instrumentation.fypp'
+#:include 'generics.fypp'
 !----------------------------------------------------------------------
 ! Module: tools_fit
 !> Fit-related tools
@@ -15,7 +15,6 @@ use tools_gc99, only: naxis_inv,axis_inv,axis_invmax,func_inv_hor,func_inv_ver,f
 use tools_kinds, only: kind_real,huge_real
 use tools_repro, only: inf,sup,infeq
 use type_mpl, only: mpl_type
-@:use_probe()
 
 implicit none
 
@@ -85,9 +84,6 @@ real(kind_real) :: nd
 ! Set name
 @:set_name(fit_diag_iso)
 
-! Probe in
-@:probe_in()
-
 if (mpl%msv%isnot(r)) then
    do i=1,n
       ! Normalized distance
@@ -106,9 +102,6 @@ else
    ! Set to missing values
    fit = mpl%msv%valr
 end if
-
-! Probe out
-@:probe_out()
 
 end subroutine fit_diag_iso
 
@@ -138,9 +131,6 @@ real(kind_real) :: H11,H22,H12,dx,dy,nd
 ! Set name
 @:set_name(fit_diag_tensor)
 
-! Probe in
-@:probe_in()
-
 if (mpl%msv%isnot(D11).or.mpl%msv%isnot(D22).or.mpl%msv%isnot(D12)) then
    ! Inverse D to get H
    call tensor_d2h(mpl,D11,D22,D12,H11,H22,H12)
@@ -162,9 +152,6 @@ else
    ! Set to missing values
    fit = mpl%msv%valr
 end if
-
-! Probe out
-@:probe_out()
 
 end subroutine fit_diag_tensor
 
@@ -192,9 +179,6 @@ real(kind_real) :: ver_sqrt(nl0,nl0),ver_full(nl0,nl0),ver_full_norm(nl0)
 
 ! Set name
 @:set_name(fit_diag_ver)
-
-! Probe in
-@:probe_in()
 
 if (mpl%msv%isanynot(rv)) then
    ! Initialization
@@ -249,9 +233,6 @@ else
    fit = mpl%msv%valr
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine fit_diag_ver
 
 !----------------------------------------------------------------------
@@ -283,9 +264,6 @@ real(kind_real) :: hor_fit(nc3),ver_fit(nl0r,nl0)
 ! Set name
 @:set_name(fit_diag_iso_full)
 
-! Probe in
-@:probe_in()
-
 ! Initialization
 fit = zero
 
@@ -310,9 +288,6 @@ do icmp=1,ncmp
       end do
    end do
 end do
-
-! Probe out
-@:probe_out()
 
 end subroutine fit_diag_iso_full
 
@@ -349,9 +324,6 @@ real(kind_real) :: hor_fit(nc3,nc4),ver_fit(nl0r,nl0)
 ! Set name
 @:set_name(fit_diag_tensor_full)
 
-! Probe in
-@:probe_in()
-
 ! Initialization
 fit = zero
 
@@ -379,9 +351,6 @@ do icmp=1,ncmp
    end do
 end do
 
-! Probe out
-@:probe_out()
-
 end subroutine fit_diag_tensor_full
 
 !----------------------------------------------------------------------
@@ -406,9 +375,6 @@ real(kind_real) :: det,D12full
 
 ! Set name
 @:set_name(fit_tensor_d2h)
-
-! Probe in
-@:probe_in()
 
 if (mpl%msv%isnot(D11).and.mpl%msv%isnot(D22).and.mpl%msv%isnot(D12)) then
    ! Full D12 component
@@ -435,9 +401,6 @@ else
    H12 = mpl%msv%valr
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine fit_tensor_d2h
 
 !----------------------------------------------------------------------
@@ -461,9 +424,6 @@ real(kind_real) :: det,D12sq
 ! Set name
 @:set_name(fit_tensor_d2r)
 
-! Probe in
-@:probe_in()
-
 if (mpl%msv%isnot(D11).and.mpl%msv%isnot(D22).and.mpl%msv%isnot(D12)) then
    ! Full D12 component
    D12sq = D11*D22*D12**2
@@ -481,9 +441,6 @@ else
    ! Missing values
    rh = mpl%msv%valr
 end if
-
-! Probe out
-@:probe_out()
 
 end subroutine fit_tensor_d2r
 
@@ -507,9 +464,6 @@ real(kind_real) :: det,tr,diff,ev1,ev2
 ! Set name
 @:set_name(fit_tensor_check_cond)
 
-! Probe in
-@:probe_in()
-
 ! Compute trace and determinant
 tr = D11+D22
 det = D11*D22*(one-D12**2)
@@ -531,9 +485,6 @@ else
    ! Non-positive definite tensor
    valid = .false.
 end if
-
-! Probe out
-@:probe_out()
 
 end subroutine fit_tensor_check_cond
 
@@ -563,9 +514,6 @@ real(kind_real),allocatable :: scaletest(:),axis_invtest(:)
 
 ! Set name
 @:set_name(fit_fast_fit)
-
-! Probe in
-@:probe_in()
 
 if (any(dist<zero)) call mpl%abort('${subr}$','negative distance')
 
@@ -720,9 +668,6 @@ else
    fit_r = mpl%msv%valr
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine fit_fast_fit
 
 !----------------------------------------------------------------------
@@ -746,9 +691,6 @@ real(kind_real) :: kernel(n,n),distnorm,profile_init(n),norm
 
 ! Set name
 @:set_name(fit_ver_smooth)
-
-! Probe in
-@:probe_in()
 
 if (n>1) then
    if (rv<zero) call mpl%abort('${subr}$','negative filtering support radius')
@@ -784,9 +726,6 @@ if (n>1) then
    end if
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine fit_ver_smooth
 
 !----------------------------------------------------------------------
@@ -815,9 +754,6 @@ type(atlas_config) :: aconfig_work_grid,aconfig_work_proj
 
 ! Set name
 @:set_name(fit_work_grid)
-
-! Probe in
-@:probe_in()
 
 ! Initialize cost function
 f = huge_real
@@ -894,9 +830,6 @@ do idir=1,2
       end if
    end do
 end do
-
-! Probe out
-@:probe_out()
 
 end subroutine fit_work_grid
 

@@ -1,4 +1,3 @@
-#:include 'instrumentation.fypp'
 #:include 'generics.fypp'
 !----------------------------------------------------------------------
 ! Module: tools_func
@@ -18,7 +17,6 @@ use tools_qsort, only: qsort
 use tools_repro, only: repro_th,inf,sup,infeq,small,eq
 use tools_wrfda, only: da_eof_decomposition
 use type_mpl, only: mpl_type
-@:use_probe()
 
 implicit none
 
@@ -173,17 +171,11 @@ integer :: var_size
 ! Set name
 @:set_name(func_fletcher32)
 
-! Probe in
-@:probe_in()
-
 ! Initialization
 var_size  = size(var)
 
 ! Call C function
 value = c_fletcher32(var_size,var)
-
-! Probe out
-@:probe_out()
 
 end function func_fletcher32
 
@@ -201,9 +193,6 @@ real(kind_real),intent(inout) :: lat !< Latitude [radians]
 
 ! Set name
 @:set_name(func_lonlatmod)
-
-! Probe in
-@:probe_in()
 
 ! Check latitude bounds
 if (lat>half*pi) then
@@ -224,9 +213,6 @@ end if
 ! Same zero longitude for poles
 if (abs(lat)>(half-1.0e-6_kind_real)*pi) lon = zero
 
-! Probe out
-@:probe_out()
-
 end subroutine func_lonlatmod
 
 !----------------------------------------------------------------------
@@ -244,14 +230,8 @@ integer(kind_short),intent(out) :: rad_short !< Short integer value
 ! Set name
 @:set_name(func_rad2short)
 
-! Probe in
-@:probe_in()
-
 ! Convert to integer
 rad_short = int(rad_real/pi*real(huge_short),kind_short)
-
-! Probe out
-@:probe_out()
 
 end subroutine func_rad2short
 
@@ -277,9 +257,6 @@ integer(kind_short) :: lonlat(2*ncx)
 ! Set name
 @:set_name(func_grid_hash)
 
-! Probe in
-@:probe_in()
-
 ! Intialization
 lonlat = 0_kind_short
 
@@ -293,9 +270,6 @@ end do
 
 ! Compute hash
 hash = fletcher32(lonlat)
-
-! Probe out
-@:probe_out()
 
 end subroutine func_grid_hash
 
@@ -326,9 +300,6 @@ character(len=13) :: cfmt
 
 ! Set name
 @:set_name(func_independent_levels)
-
-! Probe in
-@:probe_in()
 
 ! Compute local hash for the mask of each level
 do ilx=1,nlx
@@ -418,9 +389,6 @@ do ilxi=1,nlxi
 end do
 call mpl%flush
 
-! Probe out
-@:probe_out()
-
 end subroutine func_independent_levels
 
 !----------------------------------------------------------------------
@@ -443,14 +411,8 @@ real(kind_real),intent(out) :: dist !< Great-circle distance
 ! Set name
 @:set_name(func_cart_dist)
 
-! Probe in
-@:probe_in()
-
 ! Compute distance
 dist = sqrt((x_f-x_i)**2+(y_f-y_i)**2+(z_f-z_i)**2)
-
-! Probe out
-@:probe_out()
 
 end subroutine func_cart_dist
 
@@ -475,9 +437,6 @@ real(kind_real) :: cosdlon,sindlon,coslat_i,coslat_f,sinlat_i,sinlat_f,x,y
 ! Set name
 @:set_name(func_sphere_bearing)
 
-! Probe in
-@:probe_in()
-
 ! Trigonometry
 cosdlon = cos(lon_f-lon_i)
 sindlon = sin(lon_f-lon_i)
@@ -490,9 +449,6 @@ sinlat_f = sin(lat_f)
 x = coslat_f*sindlon
 y = coslat_i*sinlat_f-sinlat_i*coslat_f*cosdlon
 bearing = atan2(y,x)
-
-! Probe out
-@:probe_out()
 
 end subroutine func_sphere_bearing
 
@@ -514,17 +470,11 @@ real(kind_real),intent(out) :: dist !< Great-circle distance
 ! Set name
 @:set_name(func_sphere_dist)
 
-! Probe in
-@:probe_in()
-
 ! Create ATLAS geometry
 
 
 ! Compute distance
 dist = ageometry%distance(lon_i*rad2deg,lat_i*rad2deg,lon_f*rad2deg,lat_f*rad2deg)
-
-! Probe out
-@:probe_out()
 
 end subroutine func_sphere_dist
 
@@ -547,9 +497,6 @@ real(kind_real),intent(out) :: z    !< Z coordinate
 ! Set name
 @:set_name(func_lonlat2xyz)
 
-! Probe in
-@:probe_in()
-
 if (mpl%msv%isnot(lat).and.mpl%msv%isnot(lon)) then
    ! Check longitude/latitude
    if (inf(lon,-pi).and.sup(lon,pi)) call mpl%abort('${subr}$','wrong longitude')
@@ -563,9 +510,6 @@ else
    y = mpl%msv%valr
    z = mpl%msv%valr
 end if
-
-! Probe out
-@:probe_out()
 
 end subroutine func_lonlat2xyz
 
@@ -590,9 +534,6 @@ real(kind_real) :: r,xn,yn,zn
 
 ! Set name
 @:set_name(func_xyz2lonlat)
-
-! Probe in
-@:probe_in()
 
 if (mpl%msv%isnot(x).and.mpl%msv%isnot(y).and.mpl%msv%isnot(z)) then
    ! Normalize x,y,z
@@ -619,9 +560,6 @@ else
    lat = mpl%msv%valr
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine func_xyz2lonlat
 
 !----------------------------------------------------------------------
@@ -643,9 +581,6 @@ real(kind_real) :: r
 ! Set name
 @:set_name(func_vector_product)
 
-! Probe in
-@:probe_in()
-
 ! Vector product
 vp(1) = v1(2)*v2(3)-v1(3)*v2(2)
 vp(2) = v1(3)*v2(1)-v1(1)*v2(3)
@@ -658,9 +593,6 @@ if (r>repro_th) then
 else
    vp = zero
 end if
-
-! Probe out
-@:probe_out()
 
 end subroutine func_vector_product
 
@@ -684,9 +616,6 @@ real(kind_real) :: terms(6)
 ! Set name
 @:set_name(func_det)
 
-! Probe in
-@:probe_in()
-
 ! Terms
 terms(1) = v1(2)*v2(3)*v3(1)
 terms(2) = -v1(3)*v2(2)*v3(1)
@@ -697,9 +626,6 @@ terms(6) = -v1(2)*v2(1)*v3(3)
 
 ! Sum
 p = sum(terms)
-
-! Probe out
-@:probe_out()
 
 end subroutine func_det
 
@@ -729,9 +655,6 @@ real(kind_real) :: dv1(3),dv2(3),dv3(3),u12(3),u23(3),u31(3)
 
 ! Set name
 @:set_name(func_area)
-
-! Probe in
-@:probe_in()
 
 ! Initialization
 dv1 = v1
@@ -784,9 +707,6 @@ else
    if (area<zero) area = zero
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine func_area
 
 !----------------------------------------------------------------------
@@ -810,9 +730,6 @@ real(kind_real) :: lwgt
 ! Set name
 @:set_name(func_add)
 
-! Probe in
-@:probe_in()
-
 ! Initialize weight
 lwgt = one
 if (present(wgt)) lwgt = wgt
@@ -822,9 +739,6 @@ if (mpl%msv%isnot(val)) then
    cumul = cumul+lwgt*val
    num = num+lwgt
 end if
-
-! Probe out
-@:probe_out()
 
 end subroutine func_add
 
@@ -844,18 +758,12 @@ real(kind_real),intent(in) :: num    !< Divider
 ! Set name
 @:set_name(func_divide)
 
-! Probe in
-@:probe_in()
-
 ! Divide cumul by num
 if (abs(num)>zero) then
    val = val/num
 else
    val = mpl%msv%valr
 end if
-
-! Probe out
-@:probe_out()
 
 end subroutine func_divide
 
@@ -878,9 +786,6 @@ integer :: il0_prev,il0,dl0_tmp
 ! Set name
 @:set_name(func_vert_interp_size)
 
-! Probe in
-@:probe_in()
-
 ! Initialization
 nl1 = 1
 il0_prev = 1
@@ -893,9 +798,6 @@ do il0=2,nl0
       nl1 = nl1+1
    end if
 end do
-
-! Probe out
-@:probe_out()
 
 end subroutine func_vert_interp_size
 
@@ -923,9 +825,6 @@ integer :: il1,il1_inf,il1_sup
 
 ! Set name
 @:set_name(func_vert_interp_setup)
-
-! Probe in
-@:probe_in()
 
 ! Initialization
 il1 = 1
@@ -963,9 +862,6 @@ do il1_inf=1,nl1
    end do
 end do
 
-! Probe out
-@:probe_out()
-
 end subroutine func_vert_interp_setup
 
 !----------------------------------------------------------------------
@@ -993,9 +889,6 @@ integer :: il0
 ! Set name
 @:set_name(func_vert_interp)
 
-! Probe in
-@:probe_in()
-
 ! Interpolate
 do il0=1,nl0
    if ((mpl%msv%is(data_l1(il1inf(il0))).and.(rinf(il0)>zero)) &
@@ -1005,9 +898,6 @@ do il0=1,nl0
       data_l0(il0) = rinf(il0)*data_l1(il1inf(il0))+rsup(il0)*data_l1(il1sup(il0))
    end if
 end do
-
-! Probe out
-@:probe_out()
 
 end subroutine func_vert_interp
 
@@ -1032,9 +922,6 @@ real(kind_real),allocatable :: apack(:),upack(:)
 
 ! Set name
 @:set_name(func_cholesky)
-
-! Probe in
-@:probe_in()
 
 ! Allocation
 nn = (n*(n+1))/2
@@ -1067,9 +954,6 @@ end do
 deallocate(apack)
 deallocate(upack)
 
-! Probe out
-@:probe_out()
-
 end subroutine func_cholesky
 
 !----------------------------------------------------------------------
@@ -1093,9 +977,6 @@ real(kind_real),allocatable :: apack(:),cpack(:)
 
 ! Set name
 @:set_name(func_syminv)
-
-! Probe in
-@:probe_in()
 
 ! Allocation
 nn = (n*(n+1))/2
@@ -1128,9 +1009,6 @@ end do
 deallocate(apack)
 deallocate(cpack)
 
-! Probe out
-@:probe_out()
-
 end subroutine func_syminv
 
 !----------------------------------------------------------------------
@@ -1158,9 +1036,6 @@ logical :: found
 
 ! Set name
 @:set_name(func_histogram)
-
-! Probe in
-@:probe_in()
 
 ! Check data
 if (nbins<=0) call mpl%abort('${subr}$','the number of bins should be positive')
@@ -1203,9 +1078,6 @@ else
    hist = zero
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine func_histogram
 
 !----------------------------------------------------------------------
@@ -1230,17 +1102,11 @@ integer :: iproc
 ! Set name
 @:set_name(func_cx_to_cxa)
 
-! Probe in
-@:probe_in()
-
 ! Find processor
 iproc = cx_to_proc(nproc,proc_to_cx_offset,icx)
 
 ! Get halo A index
 icxa = icx-proc_to_cx_offset(iproc)
-
-! Probe out
-@:probe_out()
 
 end function func_cx_to_cxa
 
@@ -1263,19 +1129,10 @@ integer :: iproc
 ! Set name
 @:set_name(func_cx_to_proc)
 
-! Probe in
-@:probe_in()
-
 ! Find processor
 do iproc=1,nproc-1
-   if ((proc_to_cx_offset(iproc)<icx).and.(icx<=proc_to_cx_offset(iproc+1))) then
-@:probe_out()
-      return
-   end if
+   if ((proc_to_cx_offset(iproc)<icx).and.(icx<=proc_to_cx_offset(iproc+1))) return
 end do
-
-! Probe out
-@:probe_out()
 
 end function func_cx_to_proc
 
@@ -1303,9 +1160,6 @@ integer :: iproc,icxa,offset,jproc
 ! Set name
 @:set_name(func_cx_to_cxu)
 
-! Probe in
-@:probe_in()
-
 ! Find processor
 iproc = cx_to_proc(nproc,proc_to_cx_offset,icx)
 
@@ -1326,9 +1180,6 @@ else
    icxu = 0
 end if
 
-! Probe out
-@:probe_out()
-
 end function func_cx_to_cxu
 
 !----------------------------------------------------------------------
@@ -1347,9 +1198,6 @@ logical,intent(out) :: fldl         !< Logical field
 ! Set name
 @:set_name(func_convert_i2l_r0)
 
-! Probe in
-@:probe_in()
-
 if (fldi==0) then
    fldl = .false.
 elseif (fldi==1) then
@@ -1357,9 +1205,6 @@ elseif (fldi==1) then
 else
    call mpl%abort('${subr}$','wrong integer value')
 end if
-
-! Probe out
-@:probe_out()
 
 end subroutine func_convert_i2l_r0
 
@@ -1385,9 +1230,6 @@ integer :: i${arg_dim}$
 ! Set name
 @:set_name(func_convert_i2l_r${rank}$)
 
-! Probe in
-@:probe_in()
-
 #:for arg_dim in reversed(range(1,rank+1))
 do i${arg_dim}$=1,size(fldl,${arg_dim}$)
 #:endfor
@@ -1403,9 +1245,6 @@ do i${arg_dim}$=1,size(fldl,${arg_dim}$)
 #:for arg_dim in range(1,rank+1)
 end do
 #:endfor
-
-! Probe out
-@:probe_out()
 
 end subroutine func_convert_i2l_r${rank}$
 #:endfor
@@ -1425,17 +1264,11 @@ integer,intent(out) :: fldi !< Integer field
 ! Set name
 @:set_name(func_convert_l2i_r0)
 
-! Probe in
-@:probe_in()
-
 if (fldl) then
    fldi = 1
 else
    fldi = 0
 end if
-
-! Probe out
-@:probe_out()
 
 end subroutine func_convert_l2i_r0
 
@@ -1460,9 +1293,6 @@ integer :: i${arg_dim}$
 ! Set name
 @:set_name(func_convert_l2i_r${rank}$)
 
-! Probe in
-@:probe_in()
-
 #:for arg_dim in reversed(range(1,rank+1))
 do i${arg_dim}$=1,size(fldl,${arg_dim}$)
 #:endfor
@@ -1478,9 +1308,6 @@ do i${arg_dim}$=1,size(fldl,${arg_dim}$)
 #:for arg_dim in range(1,rank+1)
 end do
 #:endfor
-
-! Probe out
-@:probe_out()
 
 end subroutine func_convert_l2i_r${rank}$
 #:endfor
@@ -1505,9 +1332,6 @@ ${ftype[dtype]}$ :: value
 ! Set name
 @:set_name(func_zss_maxval_${dtype}$_r${rank}$)
 
-! Probe in
-@:probe_in()
-
 if (size(array)>0) then
    if (present(mask)) then
       if (any(mask)) then
@@ -1521,9 +1345,6 @@ if (size(array)>0) then
 else
    value = -${huge[dtype]}$
 endif
-
-! Probe out
-@:probe_out()
 
 end function func_zss_maxval_${dtype}$_r${rank}$
 #:endfor
@@ -1549,9 +1370,6 @@ ${ftype[dtype]}$ :: value
 ! Set name
 @:set_name(func_zss_minval_${dtype}$_r${rank}$)
 
-! Probe in
-@:probe_in()
-
 if (size(array)>0) then
    if (present(mask)) then
       if (any(mask)) then
@@ -1565,9 +1383,6 @@ if (size(array)>0) then
 else
    value = ${huge[dtype]}$
 endif
-
-! Probe out
-@:probe_out()
 
 end function func_zss_minval_${dtype}$_r${rank}$
 #:endfor
@@ -1593,9 +1408,6 @@ ${ftype[dtype]}$ :: value
 ! Set name
 @:set_name(func_zss_sum_${dtype}$_r${rank}$)
 
-! Probe in
-@:probe_in()
-
 if (size(array)>0) then
    if (present(mask)) then
       if (any(mask)) then
@@ -1609,9 +1421,6 @@ if (size(array)>0) then
 else
    value = ${zero[dtype]}$
 endif
-
-! Probe out
-@:probe_out()
 
 end function func_zss_sum_${dtype}$_r${rank}$
 #:endfor
@@ -1635,17 +1444,11 @@ integer :: value
 ! Set name
 @:set_name(func_zss_count_r${rank}$)
 
-! Probe in
-@:probe_in()
-
 if (size(array)>0) then
    value = count(array)
 else
    value = 0
 endif
-
-! Probe out
-@:probe_out()
 
 end function func_zss_count_r${rank}$
 #:endfor
@@ -1674,9 +1477,6 @@ logical,allocatable :: lgmask(${dim[rank]}$)
 
 ! Set name
 @:set_name(func_global_average_r${rank}$)
-
-! Probe in
-@:probe_in()
 
 ! Array shape
 shp = shape(array)
@@ -1711,9 +1511,6 @@ call mpl%f_comm%allreduce(norm,fckit_mpi_sum())
 
 ! Average
 if (norm>zero) value = value/norm
-
-! Probe out
-@:probe_out()
 
 end function func_global_average_r${rank}$
 #:endfor

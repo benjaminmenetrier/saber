@@ -1,5 +1,4 @@
 #:include 'generics.fypp'
-#:include 'instrumentation.fypp'
 !----------------------------------------------------------------------
 ! Module: type_nam
 !> Namelist derived type
@@ -15,7 +14,6 @@ use tools_kinds, only: kind_real,kind_int,huge_real
 use tools_func, only: cholesky,convert_i2l,zss_minval
 use tools_repro, only: eq
 use type_mpl, only: mpl_type
-@:use_probe()
 
 implicit none
 
@@ -130,7 +128,6 @@ type nam_type
    logical :: local_diag                                      !< Activate local diagnostics
    real(kind_real) :: local_rad                               !< Local diagnostics calculation radius [in meters]
    real(kind_real) :: local_dlat                              !< Local diagnostics calculation latitude band half-width [in degrees]
-   character(len=1024) :: samp_draw_type                      !< Diagnostic draw type ('random' or 'octahedral')
    integer :: irmax                                           !< Maximum number of random number draws
    character(len=2) :: samp_interp_type                       !< Sampling C2B to C0A interpolation type ('c0': C0 mesh-based, 'c1': C1 mesh-based or 'si': smooth interpolation)
    integer :: nmask                                           !< Number of masks
@@ -276,9 +273,6 @@ type(fckit_configuration) :: conf
 ! Set name
 @:set_name(nam_init)
 
-! Probe in
-@:probe_in()
-
 ! Initialize empty configuration
 conf = fckit_configuration()
 
@@ -292,9 +286,6 @@ nam%nmask = 0
 nam%nldwv = 0
 nam%ndir = 0
 call nam%from_conf(mpl,conf,.false.)
-
-! Probe out
-@:probe_out()
 
 end subroutine nam_init
 
@@ -325,9 +316,6 @@ type(fckit_configuration),allocatable :: confs(:)
 
 ! Set name
 @:set_name(nam_from_conf)
-
-! Probe in
-@:probe_in()
 
 ! Local flag
 lverbose = .true.
@@ -602,7 +590,6 @@ if (conf%get('sampling',section)) then
    call nam%get(section,'local diagnostic',nam%local_diag)
    call nam%get(section,'averaging length-scale',nam%local_rad)
    call nam%get(section,'averaging latitude width',nam%local_dlat)
-   call nam%get(section,'grid type',nam%samp_draw_type)
    call nam%get(section,'max number of draws',nam%irmax)
    call nam%get(section,'interpolation type',nam%samp_interp_type)
    if (section%get('masks',confs)) then
@@ -975,9 +962,6 @@ if (conf%get('external',section)) then
    call nam%get(section,'geographical mask name',nam%gmask_name)
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine nam_from_conf
 
 !----------------------------------------------------------------------
@@ -997,9 +981,6 @@ integer :: ig
 
 ! Set name
 @:set_name(nam_final)
-
-! Probe in
-@:probe_in()
 
 ! Namelist parameters normalization (meters to radians and degrees to radians)
 nam%universe_radius = nam%universe_radius/req
@@ -1051,9 +1032,6 @@ character(len=2) :: ildwvchar
 
 ! Set name
 @:set_name(nam_check)
-
-! Probe in
-@:probe_in()
 
 ! General section
 if (nam%repro_ops) then
@@ -1200,13 +1178,6 @@ if (nam%new_vbal_cov.or.nam%new_vbal.or.(nam%new_hdiag.and.(.not.nam%from_gsi)).
       end if
    end if
 end if
-select case (nam%samp_draw_type)
-case ('random')
-case ('octahedral')
-   if (nam%nldwv>0) call mpl%abort('${subr}$','no local diagnostics with an octahedral draw')
-case default
-   call mpl%abort('${subr}$','wrong samp_draw_type')
-end select
 if ((nam%new_hdiag.and.(.not.nam%from_gsi)).or.nam%check_optimality) then
    if (nam%nc3<=0) call mpl%abort('${subr}$','nc3 should be positive')
    if (nam%nc4<=0) call mpl%abort('${subr}$','nc4 should be positive')
@@ -1390,9 +1361,6 @@ end if
 if (nam%new_wind.and.(nam%load_wind_local.or.nam%load_wind_global)) &
  & call mpl%abort('${subr}$','new_wind and load_wind_local/load_wind_global are exclusive')
 
-! Probe out
-@:probe_out()
-
 end subroutine nam_check
 
 !----------------------------------------------------------------------
@@ -1414,9 +1382,6 @@ integer :: i
 ! Set name
 @:set_name(nam_alias)
 
-! Probe in
-@:probe_in()
-
 ! Loop over I/O key-value couples
 val = key
 if (allocated(nam%alias_code)) then
@@ -1427,9 +1392,6 @@ if (allocated(nam%alias_code)) then
       end if
    end do
 end if
-
-! Probe out
-@:probe_out()
 
 end subroutine nam_alias
 
@@ -1453,9 +1415,6 @@ character(len=:),allocatable :: str
 ! Set name
 @:set_name(nam_print_conf)
 
-! Probe in
-@:probe_in()
-
 ! Print title
 write(mpl%info,'(a7,a,a)') '',trim(title),':'
 call mpl%flush(.false.)
@@ -1471,9 +1430,6 @@ do while (str_size>1024)
 end do
 write(mpl%info,'(a)') str(1:str_size)
 call mpl%flush
-
-! Probe out
-@:probe_out()
 
 end subroutine nam_print_conf
 
@@ -1497,9 +1453,6 @@ character(len=:),allocatable :: str
 ! Set name
 @:set_name(nam_print_confs)
 
-! Probe in
-@:probe_in()
-
 ! Print title
 write(mpl%info,'(a7,a,a)') '',trim(title),':'
 call mpl%flush()
@@ -1517,9 +1470,6 @@ do iconf=1,size(confs)
    write(mpl%info,'(a10,a)') '',str(1:str_size)
    call mpl%flush
 end do
-
-! Probe out
-@:probe_out()
 
 end subroutine nam_print_confs
 
@@ -1544,9 +1494,6 @@ ${ftype[dtype]}$,intent(out) :: val          !< Value
 ! Set name
 @:set_name(nam_get_${dtype}$)
 
-! Probe in
-@:probe_in()
-
 if (conf%has(key)) then
    #:if dtype == "string"
       call conf%get_or_die(key, str)
@@ -1555,9 +1502,6 @@ if (conf%has(key)) then
       call conf%get_or_die(key, val)
    #:endif
 end if
-
-! Probe out
-@:probe_out()
 
 end subroutine nam_get_${dtype}$
 #:endfor
@@ -1585,9 +1529,6 @@ type(fckit_configuration),allocatable :: confs(:)
 
 ! Set name
 @:set_name(nam_get_int_value)
-
-! Probe in
-@:probe_in()
 
 if (conf%has(key).and.(nam%ng>0)) then
    ! Release memory
@@ -1620,9 +1561,6 @@ if (conf%has(key).and.(nam%ng>0)) then
    end do
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine nam_get_int_value
 
 !----------------------------------------------------------------------
@@ -1650,9 +1588,6 @@ type(fckit_configuration),allocatable :: confs(:)
 
 ! Set name
 @:set_name(nam_get_real_value_or_profile)
-
-! Probe in
-@:probe_in()
 
 ! Local normalization factor
 lnorm = one
@@ -1700,9 +1635,6 @@ if (conf%has(key).and.(nam%nl0>0).and.(nam%ng>0)) then
    end do
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine nam_get_real_value_or_profile
 
 !----------------------------------------------------------------------
@@ -1725,9 +1657,6 @@ character(len=1024) :: variable
 
 ! Set name
 @:set_name(nam_read_universe_radius)
-
-! Probe in
-@:probe_in()
 
 ! Initialization
 variable_found = .false.
@@ -1771,9 +1700,6 @@ end if
 
 ! Broadcast universe radius
 call mpl%f_comm%broadcast(nam%universe_radius,mpl%rootproc-1)
-
-! Probe out
-@:probe_out()
 
 end subroutine nam_read_universe_radius
 

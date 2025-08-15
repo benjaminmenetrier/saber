@@ -58,8 +58,7 @@ background error:
       fit:
         number of components: 2
       nicas:
-        resolution: 4.0
-        min effective resolution: 2.0
+        resolution: 5
         interpolation in global file: true
       dirac:
       - longitude: 0.0

@@ -1,4 +1,4 @@
-#:include 'instrumentation.fypp'
+#:include 'generics.fypp'
 !----------------------------------------------------------------------
 ! Module: type_ens
 !> Ensemble derived type
@@ -19,7 +19,6 @@ use type_fieldset, only: fieldset_type
 use type_geom, only: geom_type
 use type_mpl, only: mpl_type
 use type_nam, only: nam_type
-@:use_probe()
 
 implicit none
 
@@ -80,16 +79,10 @@ integer,intent(in) :: nsub           !< Number of sub-ensembles
 ! Set name
 @:set_name(ens_set_att)
 
-! Probe in
-@:probe_in()
-
 ! Copy attributes
 ens%ne = ne
 ens%nsub = nsub
 ens%loaded = .false.
-
-! Probe out
-@:probe_out()
 
 end subroutine ens_set_att
 
@@ -109,9 +102,6 @@ integer,intent(in) :: nsub           !< Number of sub-ensembles
 ! Set name
 @:set_name(ens_alloc)
 
-! Probe in
-@:probe_in()
-
 ! Copy attributes
 call ens%set_att(ne,nsub)
 
@@ -120,9 +110,6 @@ if (ne>0) then
    allocate(ens%mem(ne))
    allocate(ens%mean(nsub))
 end if
-
-! Probe out
-@:probe_out()
 
 end subroutine ens_alloc
 
@@ -143,9 +130,6 @@ integer :: ie,isub
 ! Set name
 @:set_name(ens_partial_dealloc)
 
-! Probe in
-@:probe_in()
-
 ! Release memory
 if (allocated(ens%mem)) then
    do ie=1,ens%ne
@@ -163,9 +147,6 @@ call ens%m2%final()
 call ens%m4%final()
 ens%loaded = .false.
 
-! Probe out
-@:probe_out()
-
 end subroutine ens_partial_dealloc
 
 !----------------------------------------------------------------------
@@ -182,17 +163,11 @@ class(ens_type),intent(inout) :: ens !< Ensemble
 ! Set name
 @:set_name(ens_dealloc)
 
-! Probe in
-@:probe_in()
-
 ! Release memory
 call ens%partial_dealloc
 if (allocated(ens%norm_m2)) deallocate(ens%norm_m2)
 if (allocated(ens%norm_m4)) deallocate(ens%norm_m4)
 if (allocated(ens%norm_kurt)) deallocate(ens%norm_kurt)
-
-! Probe out
-@:probe_out()
 
 end subroutine ens_dealloc
 
@@ -217,9 +192,6 @@ integer :: ie,isub
 ! Set name
 @:set_name(ens_copy)
 
-! Probe in
-@:probe_in()
-
 ! Copy data
 if (allocated(ens_in%mem)) then
    do ie=1,ens_in%ne
@@ -237,9 +209,6 @@ if (.not.ens_in%m2%is_null()) call ens_out%m2%init(mpl,ens_in%m2,geom%gmask_mga,
  & nam%variables(1:nam%nv),nam%lev2d,copy=.true.)
 if (.not.ens_in%m4%is_null()) call ens_out%m4%init(mpl,ens_in%m4,geom%gmask_mga, &
  & nam%variables(1:nam%nv),nam%lev2d,copy=.true.)
-
-! Probe out
-@:probe_out()
 
 end subroutine ens_copy
 
@@ -263,9 +232,6 @@ integer :: isub,ie_sub,ie
 ! Set name
 @:set_name(ens_compute_mean)
 
-! Probe in
-@:probe_in()
-
 do isub=1,ens%nsub
    ! Initialization
    call ens%mean(isub)%init(mpl,ens%mem(1),geom%gmask_mga,nam%variables(1:nam%nv),nam%lev2d)
@@ -280,9 +246,6 @@ do isub=1,ens%nsub
    end do
    call ens%mean(isub)%mult_fields(mpl,one/real(ens%ne/ens%nsub,kind_real))
 end do
-
-! Probe out
-@:probe_out()
 
 end subroutine ens_compute_mean
 
@@ -306,9 +269,6 @@ type(fieldset_type) :: pert
 
 ! Set name
 @:set_name(ens_compute_moments)
-
-! Probe in
-@:probe_in()
 
 ! Initialization
 call ens%m2%init(mpl,ens%mem(1),geom%gmask_mga,nam%variables(1:nam%nv),nam%lev2d)
@@ -339,9 +299,6 @@ end do
 call ens%m2%mult_fields(mpl,one/real(ens%ne-ens%nsub,kind_real))
 call ens%m4%mult_fields(mpl,one/real(ens%ne,kind_real))
 
-! Probe out
-@:probe_out()
-
 end subroutine ens_compute_moments
 
 !----------------------------------------------------------------------
@@ -364,9 +321,6 @@ type(fieldset_type) :: std
 
 ! Set name
 @:set_name(ens_normalize)
-
-! Probe in
-@:probe_in()
 
 ! Compute ensemble mean
 call ens%compute_mean(mpl,nam,geom)
@@ -398,9 +352,6 @@ end do
 ! Recompute moments
 call ens%compute_moments(mpl,nam,geom)
 
-! Probe out
-@:probe_out()
-
 end subroutine ens_normalize
 
 !----------------------------------------------------------------------
@@ -427,9 +378,6 @@ real(kind_real),allocatable :: mean(:,:)
 
 ! Set name
 @:set_name(ens_get_c0_single)
-
-! Probe in
-@:probe_in()
 
 select case (trim(fieldtype))
 case ('member')
@@ -466,9 +414,6 @@ end select
 ! Model grid to subset Sc0
 call geom%copy_mga_to_c0a(mpl,fld_mga,fld_c0a)
 
-! Probe out
-@:probe_out()
-
 end subroutine ens_get_c0_single
 
 !----------------------------------------------------------------------
@@ -494,16 +439,10 @@ integer :: iv
 ! Set name
 @:set_name(ens_get_c0_all)
 
-! Probe in
-@:probe_in()
-
 ! Loop over fields
 do iv=1,nam%nv
    call ens%get_c0(mpl,iv,geom,fieldtype,i,fld_c0a(:,:,iv))
 end do
-
-! Probe out
-@:probe_out()
 
 end subroutine ens_get_c0_all
 
@@ -530,9 +469,6 @@ real(kind_real) :: fld_mga(geom%nmga,geom%nl0)
 ! Set name
 @:set_name(ens_set_c0_single)
 
-! Probe in
-@:probe_in()
-
 ! Subset Sc0 to model grid
 call geom%copy_c0a_to_mga(mpl,fld_c0a,fld_mga)
 
@@ -543,9 +479,6 @@ case ('member')
 case default
    call mpl%abort('${subr}$','wrong field type')
 end select
-
-! Probe out
-@:probe_out()
 
 end subroutine ens_set_c0_single
 
@@ -572,16 +505,10 @@ integer :: iv
 ! Set name
 @:set_name(ens_set_c0_all)
 
-! Probe in
-@:probe_in()
-
 ! Loop over fields
 do iv=1,nam%nv
    call ens%set_c0(mpl,iv,geom,fieldtype,i,fld_c0a(:,:,iv))
 end do
-
-! Probe out
-@:probe_out()
 
 end subroutine ens_set_c0_all
 
@@ -608,9 +535,6 @@ real(kind_real) :: pert(geom%nc0a,geom%nl0,nam%nv)
 
 ! Set name
 @:set_name(ens_apply_bens)
-
-! Probe in
-@:probe_in()
 
 ! Initialization
 fld_copy = fld
@@ -644,9 +568,6 @@ do ie=1,ens%ne
    !$omp end parallel do
 end do
 
-! Probe out
-@:probe_out()
-
 end subroutine ens_apply_bens
 
 !----------------------------------------------------------------------
@@ -673,9 +594,6 @@ real(kind_real),allocatable :: ens_loc(:),ens_norm(:,:),ens_step(:,:)
 
 ! Set name
 @:set_name(ens_normality)
-
-! Probe in
-@:probe_in()
 
 ! Allocation
 allocate(ens%norm_m2(geom%nc0a,geom%nl0,nam%nv))
@@ -793,9 +711,6 @@ deallocate(order)
 deallocate(ens_loc)
 deallocate(ens_norm)
 deallocate(ens_step)
-
-! Probe out
-@:probe_out()
 
 end subroutine ens_normality
 

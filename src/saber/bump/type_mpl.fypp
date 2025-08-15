@@ -1,5 +1,4 @@
 #:include 'generics.fypp'
-#:include 'instrumentation.fypp'
 !----------------------------------------------------------------------
 ! Module: type_mpl
 !> MPI parameters derived type
@@ -20,17 +19,10 @@ use tools_kinds, only: kind_int,kind_float,kind_double,kind_real
 use tools_log, only: write_log
 use tools_qsort, only: qsort
 use type_msv, only: msv_type
-#:if getvar('ENABLE_BUMP_INSTRUMENTATION', 0)
-use type_probe, only: iinst,cinst,probe
-#:endif
 
 implicit none
 
-integer,parameter :: ddis = 5                !< Progression display step
-#:if getvar('ENABLE_BUMP_INSTRUMENTATION', 0)
-   real(kind_real) :: min_total_timing = one !< Minimum total timing to print
-   integer :: max_calls = 10                 !< Number of timing to print with maximum calls
-#:endif
+integer,parameter :: ddis = 5 !< Progression display step
 
 type timer_type
    character(len=1024) :: name !< Timer name
@@ -142,10 +134,6 @@ contains
    procedure :: prog_init => mpl_prog_init
    procedure :: prog_print => mpl_prog_print
    procedure :: prog_final => mpl_prog_final
-   #:if getvar('ENABLE_BUMP_INSTRUMENTATION', 0)
-      procedure :: print_instance => mpl_print_instance
-      procedure :: timings => mpl_timings
-   #:endif
    procedure :: init_timers => mpl_init_timers
    procedure :: start_timer => mpl_start_timer
    procedure :: stop_timer => mpl_stop_timer
@@ -187,9 +175,6 @@ type(fckit_mpi_comm) :: world_comm
 
 ! Set name
 @:set_name(mpl_init)
-
-! Probe in
-@:probe_in()
 
 ! Get own FCKIT MPI communicator wrapper
 mpl%f_comm = f_comm
@@ -248,9 +233,6 @@ write(mpl%info,'(a,i3,a,i2,a)') '--- Parallelization with ',mpl%nproc,' MPI task
  & mpl%nthread,' OpenMP threads'
 call mpl%flush
 
-! Probe out
-@:probe_out()
-
 end subroutine mpl_init
 
 !----------------------------------------------------------------------
@@ -267,16 +249,10 @@ class(mpl_type),intent(inout) :: mpl !< MPI data
 ! Set name
 @:set_name(mpl_final)
 
-! Probe in
-@:probe_in()
-
 ! Release memory
 if (allocated(mpl%pioproc)) deallocate(mpl%pioproc)
 if (allocated(mpl%done)) deallocate(mpl%done)
 if (allocated(mpl%t)) deallocate(mpl%t)
-
-! Probe out
-@:probe_out()
 
 end subroutine mpl_final
 
@@ -298,9 +274,6 @@ logical :: lnewl,lflush
 
 ! Set name
 @:set_name(mpl_flush)
-
-! Probe in
-@:probe_in()
 
 if (mpl%verbose) then
    ! Set local flags
@@ -361,9 +334,6 @@ if (mpl%verbose) then
    end if
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine mpl_flush
 
 !----------------------------------------------------------------------
@@ -382,9 +352,6 @@ character(len=*),intent(in) :: message !< Message
 ! Write standard output message
 write(output_unit,'(a,i6.6,a)') '!!! ABORT in '//trim(subr)//' on task #',mpl%myproc,': '//trim(message)
 flush(output_unit)
-
-! Print traceback
-@:probe_traceback(output_unit)
 
 ! Abort with proper MPI communicator
 call mpl%f_comm%abort(1)
@@ -425,18 +392,12 @@ integer,intent(in) :: add            !< Tag update incrememnt
 ! Set name
 @:set_name(mpl_update_tag)
 
-! Probe in
-@:probe_in()
-
 ! Update tag
 mpl%tag = mpl%tag+add
 
 ! Apply bounds (between 1 and 10000)
 mpl%tag = mod(mpl%tag,10000)
 mpl%tag = max(mpl%tag,1)
-
-! Probe out
-@:probe_out()
 
 end subroutine mpl_update_tag
 
@@ -461,9 +422,6 @@ ${ftype[dtype]}$,allocatable :: rbuf(:)
 ! Set name
 @:set_name(mpl_allgather_${dtype}$_r1)
 
-! Probe in
-@:probe_in()
-
 ! Buffer size
 n = size(var)
 
@@ -483,9 +441,6 @@ call mpl%f_comm%allgather(var,rbuf,sendcount,recvcounts,displs)
 
 ! Reshape
 proc_to_var = reshape(rbuf,(/n,mpl%nproc/))
-
-! Probe out
-@:probe_out()
 
 end subroutine mpl_allgather_${dtype}$_r1
 #:endfor
@@ -511,9 +466,6 @@ real(kind_real) :: dp_loc(1)
 ! Set name
 @:set_name(mpl_dot_prod_r${rank}$)
 
-! Probe in
-@:probe_in()
-
 ! Check sizes
 if (size(fld1)/=size(fld2)) call mpl%abort('${subr}$','different sizes')
 
@@ -529,9 +481,6 @@ dp = dp_loc(1)
 
 ! Broadcast
 call mpl%f_comm%broadcast(dp,mpl%rootproc-1)
-
-! Probe out
-@:probe_out()
 
 end subroutine mpl_dot_prod_r${rank}$
 #:endfor
@@ -562,9 +511,6 @@ type(fckit_mpi_status) :: status
 
 ! Set name
 @:set_name(mpl_glb_to_loc_index)
-
-! Probe in
-@:probe_in()
 
 ! Get local rootproc and pool
 lrootproc = mpl%rootproc
@@ -628,9 +574,6 @@ else
 end if
 call mpl%update_tag(2)
 
-! Probe out
-@:probe_out()
-
 end subroutine mpl_glb_to_loc_index
 
 #:for dtype in dtypes_irl
@@ -663,9 +606,6 @@ type(fckit_mpi_status) :: status
 
 ! Set name
 @:set_name(mpl_glb_to_loc_${dtype}$_r${rank}$)
-
-! Probe in
-@:probe_in()
 
 ! Get local rootproc and pool
 lrootproc = mpl%rootproc
@@ -769,9 +709,6 @@ deallocate(rbuf)
 deallocate(glb_to_loc)
 deallocate(glb_to_proc)
 
-! Probe out
-@:probe_out()
-
 end subroutine mpl_glb_to_loc_${dtype}$_r${rank}$
    #:endfor
 #:endfor
@@ -805,9 +742,6 @@ type(fckit_mpi_status) :: status
 
 ! Set name
 @:set_name(mpl_loc_to_glb_${dtype}$_r${rank}$)
-
-! Probe in
-@:probe_in()
 
 ! Get local bcast
 lbcast = .false.
@@ -912,9 +846,6 @@ if (lbcast) call mpl%f_comm%broadcast(glb,mpl%rootproc-1)
 deallocate(glb_to_loc)
 deallocate(glb_to_proc)
 
-! Probe out
-@:probe_out()
-
 end subroutine mpl_loc_to_glb_${dtype}$_r${rank}$
    #:endfor
 #:endfor
@@ -937,9 +868,6 @@ integer :: ithread
 ! Set name
 @:set_name(mpl_prog_init)
 
-! Probe in
-@:probe_in()
-
 ! Print message
 ithread = 0
 !$ ithread = omp_get_thread_num()
@@ -955,9 +883,6 @@ allocate(mpl%done(nprog))
 mpl%nprog = nprog
 mpl%progint = ddis
 mpl%done = .false.
-
-! Probe out
-@:probe_out()
 
 end subroutine mpl_prog_init
 
@@ -980,9 +905,6 @@ real(kind_real) :: prog
 ! Set name
 @:set_name(mpl_prog_print)
 
-! Probe in
-@:probe_in()
-
 if (mpl%nprog>0) then
    ! Update progression array
    if (present(i)) mpl%done(i) = .true.
@@ -1004,9 +926,6 @@ if (mpl%nprog>0) then
    end do
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine mpl_prog_print
 
 !----------------------------------------------------------------------
@@ -1027,9 +946,6 @@ logical :: lnewl
 
 ! Set name
 @:set_name(mpl_prog_final)
-
-! Probe in
-@:probe_in()
 
 ! Set new line flag
 lnewl = .true.
@@ -1056,140 +972,7 @@ end do
 ! Release memory
 deallocate(mpl%done)
 
-! Probe out
-@:probe_out()
-
 end subroutine mpl_prog_final
-
-#:if getvar('ENABLE_BUMP_INSTRUMENTATION', 0)
-!----------------------------------------------------------------------
-! Subroutine: mpl_print_instance
-!> Print instance
-!----------------------------------------------------------------------
-subroutine mpl_print_instance(mpl)
-
-implicit none
-
-! Passed variable
-class(mpl_type),intent(inout) :: mpl !< MPI data
-
-! Set name
-@:set_name(mpl_print_instance)
-
-! Probe in
-@:probe_in()
-
-write(mpl%info,'(a,i6,a,a,a)') '--- This is instance #',iinst,' (',trim(cinst),')'
-call mpl%flush
-
-! Probe out
-@:probe_out()
-
-end subroutine mpl_print_instance
-
-!----------------------------------------------------------------------
-! Subroutine: mpl_timings
-!> Print execution timings
-!----------------------------------------------------------------------
-subroutine mpl_timings(mpl)
-
-implicit none
-
-! Passed variables
-class(mpl_type),intent(inout) :: mpl !< MPI data
-
-! Local variable
-integer :: probe_size,i,i_eff
-integer,allocatable :: n(:),order(:)
-real(kind_real) :: elapsed_total
-real(kind_real),allocatable :: stats(:,:)
-character(len=1024),allocatable :: subfunc(:)
-
-! Number of instrumented functions/subroutines called
-probe_size = count(probe%instance(iinst)%timing_associated)
-
-! Print number of instrumented functions/subroutines called
-write(mpl%info,'(a7,a,i3,a,i3)') '','Instrumented function/subroutines called: ',probe_size,'/',${subr_list_size}$
-call mpl%flush
-
-if (probe_size>0) then
-   ! Allocation
-   allocate(n(probe_size))
-   allocate(stats(probe_size,3))
-   allocate(subfunc(probe_size))
-   allocate(order(probe_size))
-
-   ! Get timings
-   i_eff = 0
-   do i=0,${subr_list_size}$-1
-      if (probe%instance(iinst)%timing_associated(i)) then
-         ! Update effective index
-         i_eff = i_eff+1
-
-         ! Save number of calls
-         n(i_eff) = probe%instance(iinst)%timing(i)%n
-
-         ! Compute stats
-         stats(i_eff,1) = probe%instance(iinst)%timing(i)%total_own
-         stats(i_eff,2) = probe%instance(iinst)%timing(i)%min_own
-         stats(i_eff,3) = probe%instance(iinst)%timing(i)%max_own
-
-         ! Save subroutine/function name
-         subfunc(i_eff) = trim(probe%instance(iinst)%timing(i)%subr)
-      end if
-   end do
-
-   ! Get total timing
-   elapsed_total = sum(stats(:,1))
-
-   ! Print elapsed time
-   write(mpl%info,'(a7,a,e10.3,a)') '','Elapsed time: ',elapsed_total,' s'
-   call mpl%flush
-
-   if (elapsed_total>zero) then
-      ! Order timings with total time
-      call qsort(probe_size,stats(:,1),order)
-      n = n(order)
-      stats(:,2:3) = stats(order,2:3)
-      subfunc = subfunc(order)
-
-      ! Print timing in decreasing total time
-      write(mpl%info,'(a7,a,f6.2,a)') '','Decreasing total time:'
-      call mpl%flush
-      do i=probe_size,1,-1
-         if (stats(i,1)/elapsed_total*hundred>min_total_timing) then
-            write(mpl%info,'(a10,a30,a,e10.3,a,e10.3,a,f6.2,a,e10.3,a,e10.3,a,e10.3)') '',subfunc(i),': ',stats(i,1),' s in ', &
- & real(n(i),kind_real),' call(s)  - ',stats(i,1)/elapsed_total*hundred,'% - min/mean/max: ',stats(i,2),' /', &
- & stats(i,1)/real(n(i),kind_real),' /',stats(i,3)
-            call mpl%flush
-         end if
-      end do
-
-      ! Order timings with number of calls
-      call qsort(probe_size,n,order)
-      stats(:,:) = stats(order,:)
-      subfunc = subfunc(order)
-
-      ! Print timing in decreasing number of calls
-      write(mpl%info,'(a7,a,f6.2,a)') '','Decreasing number of calls:'
-      call mpl%flush
-      do i=probe_size,max(probe_size-max_calls+1,1),-1
-         write(mpl%info,'(a10,a30,a,e10.3,a,e10.3,a,f6.2,a,e10.3,a,e10.3,a,e10.3)') '',subfunc(i),': ',stats(i,1),' s in ', &
- & real(n(i),kind_real),' call(s)  - ',stats(i,1)/elapsed_total*hundred,'% - min/mean/max: ',stats(i,2),' /', &
- & stats(i,1)/real(n(i),kind_real),' /',stats(i,3)
-         call mpl%flush
-      end do
-   end if
-
-   ! Release memory
-   deallocate(n)
-   deallocate(stats)
-   deallocate(subfunc)
-   deallocate(order)
-end if
-
-end subroutine mpl_timings
-#:endif
 
 !----------------------------------------------------------------------
 ! Subroutine: mpl_init_timers

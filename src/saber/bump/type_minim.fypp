@@ -1,4 +1,4 @@
-#:include 'instrumentation.fypp'
+#:include 'generics.fypp'
 !----------------------------------------------------------------------
 ! Module: type_minim
 !> Minimization data derived type
@@ -13,7 +13,6 @@ use tools_fit, only: diag_tensor,diag_iso,work_grid
 use tools_kinds, only: kind_real
 use tools_repro, only: repro_th,eq,inf,infeq,sup
 use type_mpl, only: mpl_type
-@:use_probe()
 
 implicit none
 
@@ -85,9 +84,6 @@ class(minim_type),intent(inout) :: minim !< Minimization data
 ! Set name
 @:set_name(minim_alloc)
 
-! Probe in
-@:probe_in()
-
 ! Allocation
 if (minim%nx>0) then
    allocate(minim%x(minim%nx))
@@ -96,9 +92,6 @@ if (minim%nx>0) then
    allocate(minim%bsup(minim%nx))
 end if
 if (minim%ny>0) allocate(minim%obs(minim%ny))
-
-! Probe out
-@:probe_out()
 
 end subroutine minim_alloc
 
@@ -116,18 +109,12 @@ class(minim_type),intent(inout) :: minim !< Minimization data
 ! Set name
 @:set_name(minim_partial_dealloc)
 
-! Probe in
-@:probe_in()
-
 ! Release memory
 if (allocated(minim%x)) deallocate(minim%x)
 if (allocated(minim%guess)) deallocate(minim%guess)
 if (allocated(minim%binf)) deallocate(minim%binf)
 if (allocated(minim%bsup)) deallocate(minim%bsup)
 if (allocated(minim%obs)) deallocate(minim%obs)
-
-! Probe out
-@:probe_out()
 
 end subroutine minim_partial_dealloc
 
@@ -145,17 +132,11 @@ class(minim_type),intent(inout) :: minim !< Minimization data
 ! Set name
 @:set_name(minim_dealloc)
 
-! Probe in
-@:probe_in()
-
 ! Release memory
 call minim%partial_dealloc
 if (allocated(minim%disth)) deallocate(minim%disth)
 if (allocated(minim%as)) deallocate(minim%as)
 if (allocated(minim%distv)) deallocate(minim%distv)
-
-! Probe out
-@:probe_out()
 
 end subroutine minim_dealloc
 
@@ -174,9 +155,6 @@ type(mpl_type),intent(inout) :: mpl      !< MPI data
 ! Set name
 @:set_name(minim_compute)
 
-! Probe in
-@:probe_in()
-
 ! Initialization
 call minim%vt_inv(mpl,minim%guess)
 
@@ -194,9 +172,6 @@ if (sup(minim%f_min,minim%f_guess)) minim%x = minim%guess
 
 ! Direct transform
 call minim%vt_dir(minim%x)
-
-! Probe out
-@:probe_out()
 
 end subroutine minim_compute
 
@@ -217,9 +192,6 @@ real(kind_real),intent(out) :: f          !< Cost function value
 ! Set name
 @:set_name(minim_cost)
 
-! Probe in
-@:probe_in()
-
 select case (trim(minim%cost_function))
 case ('rh')
    call minim%cost_rh(mpl,x,f)
@@ -234,9 +206,6 @@ case ('work_grid')
 case default
    call mpl%abort('${subr}$','wrong cost function')
 end select
-
-! Probe out
-@:probe_out()
 
 end subroutine minim_cost
 
@@ -261,9 +230,6 @@ real(kind_real) :: xtmp(minim%nx)
 ! Set name
 @:set_name(minim_cost_rh)
 
-! Probe in
-@:probe_in()
-
 ! Renormalize
 xtmp = x
 call minim%vt_dir(xtmp)
@@ -276,9 +242,6 @@ call diag_iso(mpl,minim%nc3,minim%disth,'hor',rh,fit_hor)
 
 ! Observations penalty
 f = sum((fit_hor-minim%obs)**2,mask=mpl%msv%isnot(minim%obs).and.mpl%msv%isnot(fit_hor))
-
-! Probe out
-@:probe_out()
 
 end subroutine minim_cost_rh
 
@@ -303,9 +266,6 @@ real(kind_real) :: xtmp(minim%nx),fit_pack(minim%ny)
 ! Set name
 @:set_name(minim_cost_tensor)
 
-! Probe in
-@:probe_in()
-
 ! Renormalize
 xtmp = x
 call minim%vt_dir(xtmp)
@@ -321,9 +281,6 @@ fit_pack = reshape(fit,(/minim%ny/))
 
 ! Observations penalty
 f = sum((fit_pack-minim%obs)**2,mask=mpl%msv%isnot(minim%obs).and.mpl%msv%isnot(fit_pack))
-
-! Probe out
-@:probe_out()
 
 end subroutine minim_cost_tensor
 
@@ -348,9 +305,6 @@ real(kind_real) :: xtmp(minim%nx)
 ! Set name
 @:set_name(minim_cost_rv)
 
-! Probe in
-@:probe_in()
-
 ! Renormalize
 xtmp = x
 call minim%vt_dir(xtmp)
@@ -363,9 +317,6 @@ call diag_iso(mpl,minim%nl0r,minim%distv,'ver',rv,fit_ver)
 
 ! Observations penalty
 f = sum((fit_ver-minim%obs)**2,mask=mpl%msv%isnot(minim%obs).and.mpl%msv%isnot(fit_ver))
-
-! Probe out
-@:probe_out()
 
 end subroutine minim_cost_rv
 
@@ -390,9 +341,6 @@ real(kind_real) :: xtmp(minim%nx),fit_pack(minim%ny),wgt_pack(minim%ny),wgt_sign
 
 ! Set name
 @:set_name(minim_cost_component)
-
-! Probe in
-@:probe_in()
 
 ! Renormalize
 xtmp = x
@@ -458,9 +406,6 @@ do iy=1,minim%ny
    end if
 end do
 
-! Probe out
-@:probe_out()
-
 end subroutine minim_cost_component
 
 !----------------------------------------------------------------------
@@ -483,9 +428,6 @@ real(kind_real) :: xtmp(minim%nx),lonlat_bnd(2,4)
 ! Set name
 @:set_name(minim_cost_work_grid)
 
-! Probe in
-@:probe_in()
-
 ! Renormalize
 xtmp = x
 call minim%vt_dir(xtmp)
@@ -500,9 +442,6 @@ lonlat_bnd = reshape(minim%obs,(/2,4/))
 
 ! Compute work grid corners and cost
 call work_grid(splon,splat,rota,lonlat_bnd,f)
-
-! Probe out
-@:probe_out()
 
 end subroutine minim_cost_work_grid
 
@@ -527,9 +466,6 @@ real(kind_real) :: delta(minim%nx),newx(minim%nx)
 
 ! Set name
 @:set_name(minim_hooke)
-
-! Probe in
-@:probe_in()
 
 ! Initialization
 newx = guess
@@ -607,9 +543,6 @@ do while ((iters<minim%hooke_itermax).and.inf(minim%hooke_tol,steplength))
    end if
 end do
 
-! Probe out
-@:probe_out()
-
 end subroutine minim_hooke
 
 !----------------------------------------------------------------------
@@ -637,9 +570,6 @@ real(kind_real) :: z(minim%nx)
 
 ! Set name
 @:set_name(minim_best_nearby)
-
-! Probe in
-@:probe_in()
 
 ! Initialization
 minf = prevbest
@@ -669,9 +599,6 @@ end do
 ! Update
 point = z
 
-! Probe out
-@:probe_out()
-
 end subroutine minim_best_nearby
 
 !----------------------------------------------------------------------
@@ -689,14 +616,8 @@ real(kind_real),intent(inout) :: x(minim%nx) !< Vector
 ! Set name
 @:set_name(minim_vt_dir)
 
-! Probe in
-@:probe_in()
-
 ! Linear expansion of the hyperbolic tangent of the variable
 x = minim%binf+half*(one+tanh(x))*(minim%bsup-minim%binf)
-
-! Probe out
-@:probe_out()
 
 end subroutine minim_vt_dir
 
@@ -719,9 +640,6 @@ integer :: ix
 ! Set name
 @:set_name(minim_vt_inv)
 
-! Probe in
-@:probe_in()
-
 ! Inverse hyperbolic tangent of the linearly bounded variable
 if (any((x<minim%binf).or.(x>minim%bsup))) call mpl%abort('${subr}$','variable out of bounds in vt_inv')
 do ix=1,minim%nx
@@ -731,9 +649,6 @@ do ix=1,minim%nx
       x(ix) = zero
    end if
 end do
-
-! Probe out
-@:probe_out()
 
 end subroutine minim_vt_inv
 

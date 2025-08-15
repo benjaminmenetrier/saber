@@ -1,4 +1,4 @@
-#:include 'instrumentation.fypp'
+#:include 'generics.fypp'
 !----------------------------------------------------------------------
 ! Module: type_diag_blk
 !> Diagnostic block derived type
@@ -22,7 +22,6 @@ use type_geom, only: geom_type
 use type_minim, only: minim_type
 use type_mpl, only: mpl_type
 use type_nam, only: nam_type
-@:use_probe()
 use type_samp, only: samp_type
 
 implicit none
@@ -99,9 +98,6 @@ integer :: jc3
 ! Set name
 @:set_name(diag_blk_alloc)
 
-! Probe in
-@:probe_in()
-
 ! Set attributes
 diag_blk%ic2a = ic2a
 diag_blk%prefix = prefix
@@ -144,9 +140,6 @@ if ((ic2a==0).or.nam%local_diag) then
    end if
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine diag_blk_alloc
 
 !----------------------------------------------------------------------
@@ -163,9 +156,6 @@ class(diag_blk_type),intent(inout) :: diag_blk !< Diagnostic block
 ! Set name
 @:set_name(diag_blk_partial_dealloc)
 
-! Probe in
-@:probe_in()
-
 ! Release memory
 if (allocated(diag_blk%frob_wgt)) deallocate(diag_blk%frob_wgt)
 if (allocated(diag_blk%raw)) deallocate(diag_blk%raw)
@@ -180,9 +170,6 @@ if (allocated(diag_blk%D12_l0)) deallocate(diag_blk%D12_l0)
 if (allocated(diag_blk%rv_l0)) deallocate(diag_blk%rv_l0)
 if (allocated(diag_blk%hyb_coef_raw)) deallocate(diag_blk%hyb_coef_raw)
 if (allocated(diag_blk%hyb_coef)) deallocate(diag_blk%hyb_coef)
-
-! Probe out
-@:probe_out()
 
 end subroutine diag_blk_partial_dealloc
 
@@ -200,9 +187,6 @@ class(diag_blk_type),intent(inout) :: diag_blk !< Diagnostic block
 ! Set name
 @:set_name(diag_blk_dealloc)
 
-! Probe in
-@:probe_in()
-
 ! Release memory
 call diag_blk%partial_dealloc
 if (allocated(diag_blk%rh_c0a)) deallocate(diag_blk%rh_c0a)
@@ -211,9 +195,6 @@ if (allocated(diag_blk%D22_c0a)) deallocate(diag_blk%D22_c0a)
 if (allocated(diag_blk%D12_c0a)) deallocate(diag_blk%D12_c0a)
 if (allocated(diag_blk%rv_c0a)) deallocate(diag_blk%rv_c0a)
 if (allocated(diag_blk%hyb_coef_c0a)) deallocate(diag_blk%hyb_coef_c0a)
-
-! Probe out
-@:probe_out()
 
 end subroutine diag_blk_dealloc
 
@@ -245,9 +226,6 @@ integer :: il0,jl0r,jl0,jl0rz,icmp
 
 ! Set name
 @:set_name(diag_blk_write)
-
-! Probe in
-@:probe_in()
 
 ! Associate
 associate(ic2a=>diag_blk%ic2a)
@@ -363,9 +341,6 @@ if (mpl%msv%isanynot(diag_blk%hyb_coef)) call put_var(mpl,grpid,hyb_coef_id,diag
 ! End associate
 end associate
 
-! Probe out
-@:probe_out()
-
 end subroutine diag_blk_write
 
 !----------------------------------------------------------------------
@@ -393,9 +368,6 @@ type(minim_type) :: minim
 
 ! Set name
 @:set_name(diag_blk_fitting)
-
-! Probe in
-@:probe_in()
 
 ! Check for 2D variable
 do il0=1,geom%nl0
@@ -869,9 +841,6 @@ deallocate(raw_ver)
 deallocate(distv)
 call minim%dealloc
 
-! Probe out
-@:probe_out()
-
 end subroutine diag_blk_fitting
 
 !----------------------------------------------------------------------
@@ -897,9 +866,6 @@ real(kind_real) :: P4,S_rho,norm,alpha,dalpha,alpha_star
 
 ! Set name
 @:set_name(diag_blk_localization)
-
-! Probe in
-@:probe_in()
 
 ! Compute noise level for the NICE metho
 if (nam%loc_option=='nice_with_table') then
@@ -1034,9 +1000,6 @@ end if
 ! Hybrid weight
 diag_blk%hyb_coef = mpl%msv%valr
 
-! Probe out
-@:probe_out()
-
 end subroutine diag_blk_localization
 
 !----------------------------------------------------------------------
@@ -1062,9 +1025,6 @@ real(kind_real) :: a,bc,d,e,f,num,num_1,num_2,den,wgt
 
 ! Set name
 @:set_name(diag_blk_hybridization)
-
-! Probe in
-@:probe_in()
 
 do il0=1,geom(2)%nl0
    ! Compute hybrid weights terms
@@ -1127,9 +1087,6 @@ do il0=1,geom(2)%nl0
       diag_blk%hyb_coef(il0) = mpl%msv%valr
    end if
 end do
-
-! Probe out
-@:probe_out()
 
 end subroutine diag_blk_hybridization
 

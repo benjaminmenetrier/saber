@@ -1,4 +1,4 @@
-#:include 'instrumentation.fypp'
+#:include 'generics.fypp'
 !----------------------------------------------------------------------
 ! Module: type_gsi
 !> GSI functions
@@ -16,7 +16,6 @@ use tools_repro, only: inf,infeq,sup,supeq,eq
 use type_geom, only: geom_type
 use type_mpl, only: mpl_type
 use type_nam, only: nam_type
-@:use_probe()
 
 implicit none
 
@@ -91,9 +90,6 @@ class(gsi_type),intent(inout) :: gsi !< GSI data
 ! Set name
 @:set_name(gsi_dealloc)
 
-! Probe in
-@:probe_in()
-
 ! Release memory
 if (allocated(gsi%lat)) deallocate(gsi%lat)
 if (allocated(gsi%l0_to_levm)) deallocate(gsi%l0_to_levm)
@@ -111,9 +107,6 @@ if (allocated(gsi%rv)) deallocate(gsi%rv)
 
 ! Update status
 gsi%initialized = .false.
-
-! Probe out
-@:probe_out()
 
 end subroutine gsi_dealloc
 
@@ -151,9 +144,6 @@ namelist/bkgerr/vs,hzscl,hswgt,bw,norsp,bkgv_flowdep,bkgv_rewgtfct,fpsproj,adjus
 
 ! Set name
 @:set_name(gsi_setup)
-
-! Probe in
-@:probe_in()
 
 if (mpl%main) then
    ! Open file
@@ -418,9 +408,6 @@ end if
 ! Update status
 gsi%initialized = .true.
 
-! Probe out
-@:probe_out()
-
 end subroutine gsi_setup
 
 !----------------------------------------------------------------------
@@ -443,14 +430,8 @@ real(kind_real),intent(out) :: rlatp !< Higher latitude coefficient
 ! Set name
 @:set_name(gsi_interp_lat)
 
-! Probe in
-@:probe_in()
-
 ! Linear interpolation
 call interp_linear(mpl,gsi%nlat,gsi%lat,lat,ilatm,ilatp,rlatm,rlatp)
-
-! Probe out
-@:probe_out()
 
 end subroutine gsi_interp_lat
 
@@ -477,9 +458,6 @@ integer :: i
 
 ! Set name
 @:set_name(gsi_interp_linear)
-
-! Probe in
-@:probe_in()
 
 if (axis(1)<axis(n)) then
    ! Increasing axis
@@ -545,9 +523,6 @@ else
    end if
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine gsi_interp_linear
 
 !----------------------------------------------------------------------
@@ -571,9 +546,6 @@ character(len=1024) :: buf
 
 ! Set name
 @:set_name(gsi_get_table_size)
-
-! Probe in
-@:probe_in()
 
 ! Initialization
 ncomment = 0
@@ -624,9 +596,6 @@ ntot = n
 ! Actual size
 nact = max(0,n-ncomment-1)
 
-! Probe out
-@:probe_out()
-
 end subroutine gsi_get_table_size
 
 !----------------------------------------------------------------------
@@ -652,9 +621,6 @@ character(len=256) :: buf
 
 ! Set name
 @:set_name(gsi_get_table)
-
-! Probe in
-@:probe_in()
 
 ! Initialization
 n = ntot
@@ -706,9 +672,6 @@ file_scan: do
       exit
    end if
 end do file_scan
-
-! Probe out
-@:probe_out()
 
 end subroutine gsi_get_table
 

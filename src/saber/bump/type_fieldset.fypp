@@ -1,4 +1,4 @@
-#:include 'instrumentation.fypp'
+#:include 'generics.fypp'
 !----------------------------------------------------------------------
 ! Module: type_fieldset
 !> Fieldset derived type (extension of ATLAS fieldset)
@@ -16,7 +16,6 @@ use tools_const, only: zero,one
 use tools_func, only: zss_sum
 use tools_kinds, only: kind_real
 use type_mpl, only: mpl_type
-@:use_probe()
 
 implicit none
 
@@ -82,9 +81,6 @@ type(atlas_field) :: afield
 ! Set name
 @:set_name(fieldset_init_from_functionspace)
 
-! Probe in
-@:probe_in()
-
 ! Initialization
 if (fieldset%is_null()) fieldset = atlas_fieldset()
 
@@ -132,9 +128,6 @@ end do
 ! Check fieldset
 call fieldset%check(mpl)
 
-! Probe out
-@:probe_out()
-
 end subroutine fieldset_init_from_functionspace
 
 !----------------------------------------------------------------------
@@ -165,9 +158,6 @@ type(atlas_functionspace) :: afunctionspace
 
 ! Set name
 @:set_name(fieldset_init_from_fieldset)
-
-! Probe in
-@:probe_in()
 
 ! Local flag
 lcopy = .false.
@@ -274,9 +264,6 @@ end do
 ! Check fieldset
 call fieldset_out%check(mpl)
 
-! Probe out
-@:probe_out()
-
 end subroutine fieldset_init_from_fieldset
 
 !----------------------------------------------------------------------
@@ -300,9 +287,6 @@ integer :: iv
 
 ! Set name
 @:set_name(fieldset_set_metadata)
-
-! Probe in
-@:probe_in()
 
 ! Get number of nodes
 fieldset%nmga = size(gmask,1)
@@ -329,9 +313,6 @@ fieldset%var2d = var2d
 ! Check fieldset
 call fieldset%check(mpl)
 
-! Probe out
-@:probe_out()
-
 end subroutine fieldset_set_metadata
 
 !----------------------------------------------------------------------
@@ -355,9 +336,6 @@ type(atlas_field) :: afield
 
 ! Set name
 @:set_name(fieldset_print)
-
-! Probe in
-@:probe_in()
 
 ! Check fieldset
 call fieldset%check(mpl)
@@ -388,9 +366,6 @@ do iv=1,fieldset%nv
    call afield%final()
 end do
 
-! Probe out
-@:probe_out()
-
 end subroutine fieldset_print
 
 !----------------------------------------------------------------------
@@ -412,9 +387,6 @@ type(atlas_field) :: afield
 
 ! Set name
 @:set_name(fieldset_zero_fields)
-
-! Probe in
-@:probe_in()
 
 ! Check fieldset
 call fieldset%check(mpl)
@@ -440,9 +412,6 @@ end do
 ! Apply mask
 call fieldset%apply_mask(mpl)
 
-! Probe out
-@:probe_out()
-
 end subroutine fieldset_zero_fields
 
 !----------------------------------------------------------------------
@@ -465,9 +434,6 @@ type(atlas_field) :: afield_in,afield_out
 
 ! Set name
 @:set_name(fieldset_add_fields)
-
-! Probe in
-@:probe_in()
 
 ! Check fieldsets
 call fieldset_out%check(mpl,fieldset_in)
@@ -496,9 +462,6 @@ end do
 ! Apply mask
 call fieldset_out%apply_mask(mpl)
 
-! Probe out
-@:probe_out()
-
 end subroutine fieldset_add_fields
 
 !----------------------------------------------------------------------
@@ -521,9 +484,6 @@ type(atlas_field) :: afield_in,afield_out
 
 ! Set name
 @:set_name(fieldset_sub_fields)
-
-! Probe in
-@:probe_in()
 
 ! Check fieldsets
 call fieldset_out%check(mpl,fieldset_in)
@@ -552,9 +512,6 @@ end do
 ! Apply mask
 call fieldset_out%apply_mask(mpl)
 
-! Probe out
-@:probe_out()
-
 end subroutine fieldset_sub_fields
 
 !----------------------------------------------------------------------
@@ -577,9 +534,6 @@ type(atlas_field) :: afield
 
 ! Set name
 @:set_name(fieldset_mult_fields_scalar)
-
-! Probe in
-@:probe_in()
 
 ! Check fieldset
 call fieldset%check(mpl)
@@ -605,9 +559,6 @@ end do
 ! Apply mask
 call fieldset%apply_mask(mpl)
 
-! Probe out
-@:probe_out()
-
 end subroutine fieldset_mult_fields_scalar
 
 !----------------------------------------------------------------------
@@ -630,9 +581,6 @@ type(atlas_field) :: afield_in,afield_out
 
 ! Set name
 @:set_name(fieldset_div_fields)
-
-! Probe in
-@:probe_in()
 
 ! Check fieldsets
 call fieldset_out%check(mpl,fieldset_in)
@@ -668,9 +616,6 @@ end do
 ! Apply mask
 call fieldset_out%apply_mask(mpl)
 
-! Probe out
-@:probe_out()
-
 end subroutine fieldset_div_fields
 
 !----------------------------------------------------------------------
@@ -692,9 +637,6 @@ type(atlas_field) :: afield
 
 ! Set name
 @:set_name(fieldset_square_fields)
-
-! Probe in
-@:probe_in()
 
 ! Check fieldset
 call fieldset%check(mpl)
@@ -720,9 +662,6 @@ end do
 ! Apply mask
 call fieldset%apply_mask(mpl)
 
-! Probe out
-@:probe_out()
-
 end subroutine fieldset_square_fields
 
 !----------------------------------------------------------------------
@@ -744,9 +683,6 @@ type(atlas_field) :: afield
 
 ! Set name
 @:set_name(fieldset_square_fields)
-
-! Probe in
-@:probe_in()
 
 ! Check fieldset
 call fieldset%check(mpl)
@@ -775,9 +711,6 @@ end do
 ! Apply mask
 call fieldset%apply_mask(mpl)
 
-! Probe out
-@:probe_out()
-
 end subroutine fieldset_sqrt_fields
 
 !----------------------------------------------------------------------
@@ -799,9 +732,6 @@ type(atlas_field) :: afield
 ! Set name
 @:set_name(fieldset_check_single)
 
-! Probe in
-@:probe_in()
-
 ! Check allocation
 if (.not.allocated(fieldset%mask3d)) call mpl%abort('${subr}$','mask is not allocated')
 if (.not.allocated(fieldset%variables)) call mpl%abort('${subr}$','variables is not allocated')
@@ -819,9 +749,6 @@ do iv=1,fieldset%nv
    if (get_atlas_field_size(mpl,afield)/=fieldset%nmga) call mpl%abort('${subr}$','wrong horizontal size')
    if ((afield%levels()/=1).and.(afield%levels()/=fieldset%nl0)) call mpl%abort('${subr}$','wrong number of levels')
 end do
-
-! Probe out
-@:probe_out()
 
 end subroutine fieldset_check_single
 
@@ -845,9 +772,6 @@ type(atlas_field) :: afield_in,afield_out
 
 ! Set name
 @:set_name(fieldset_check_pair)
-
-! Probe in
-@:probe_in()
 
 ! Check single fields
 call fieldset_in%check(mpl)
@@ -876,9 +800,6 @@ do iv=1,fieldset_in%nv
    call afield_out%final()
 end do
 
-! Probe out
-@:probe_out()
-
 end subroutine fieldset_check_pair
 
 !----------------------------------------------------------------------
@@ -901,9 +822,6 @@ real(kind_real),allocatable :: fld(:,:,:)
 
 ! Set name
 @:set_name(fieldset_apply_mask)
-
-! Probe in
-@:probe_in()
 
 ! Check fieldset
 call fieldset%check(mpl)
@@ -950,9 +868,6 @@ if (size(fieldset%mask3d)>0) then
    end if
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine fieldset_apply_mask
 
 !----------------------------------------------------------------------
@@ -975,9 +890,6 @@ type(atlas_field) :: afield
 ! Set name
 @:set_name(fieldset_to_array_single)
 
-! Probe in
-@:probe_in()
-
 ! Check fieldset
 call fieldset%check(mpl)
 
@@ -992,9 +904,6 @@ call field_to_array(afield,mpl,fld,fieldset%lev2d)
 
 ! Release pointer
 call afield%final()
-
-! Probe out
-@:probe_out()
 
 end subroutine fieldset_to_array_single
 
@@ -1017,9 +926,6 @@ integer :: iv
 ! Set name
 @:set_name(fieldset_to_array_all)
 
-! Probe in
-@:probe_in()
-
 ! Check fieldset
 call fieldset%check(mpl)
 
@@ -1030,9 +936,6 @@ if (size(fieldset%variables)/=size(fld,3)) call mpl%abort('${subr}$','inconsiste
 do iv=1,size(fieldset%variables)
    call fieldset%to_array(mpl,iv,fld(:,:,iv))
 end do
-
-! Probe out
-@:probe_out()
 
 end subroutine fieldset_to_array_all
 
@@ -1056,9 +959,6 @@ type(atlas_field) :: afield
 ! Set name
 @:set_name(fieldset_from_array_single)
 
-! Probe in
-@:probe_in()
-
 ! Check fieldset
 call fieldset%check(mpl)
 
@@ -1073,9 +973,6 @@ call field_from_array(afield,mpl,fld,fieldset%lev2d)
 
 ! Release pointer
 call afield%final()
-
-! Probe out
-@:probe_out()
 
 end subroutine fieldset_from_array_single
 
@@ -1098,9 +995,6 @@ integer :: iv
 ! Set name
 @:set_name(fieldset_from_array_all)
 
-! Probe in
-@:probe_in()
-
 ! Check fieldset
 call fieldset%check(mpl)
 
@@ -1111,9 +1005,6 @@ if (size(fieldset%variables)/=size(fld,3)) call mpl%abort('${subr}$','inconsiste
 do iv=1,size(fieldset%variables)
    call fieldset%from_array(mpl,iv,fld(:,:,iv))
 end do
-
-! Probe out
-@:probe_out()
 
 end subroutine fieldset_from_array_all
 

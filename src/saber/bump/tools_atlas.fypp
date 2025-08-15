@@ -1,5 +1,4 @@
 #:include 'generics.fypp'
-#:include 'instrumentation.fypp'
 !----------------------------------------------------------------------
 ! Module: tools_atlas
 !> ATLAS tools
@@ -16,7 +15,6 @@ use tools_const, only: zero,quarter,half,rad2deg,pi,req
 use tools_kinds, only: kind_int,kind_real
 use tools_func, only: sphere_dist,convert_i2l,convert_l2i
 use type_mpl, only: mpl_type
-@:use_probe()
 
 implicit none
 
@@ -70,9 +68,6 @@ character(len=6) :: gridid
 ! Set name
 @:set_name(atlas_get_global_grid_from_size)
 
-! Probe in
-@:probe_in()
-
 ! Check number of points
 if (nmin<40) call mpl%abort('${subr}$','minimum number of points is too small')
 
@@ -88,23 +83,19 @@ agrid = atlas_structuredgrid(gridid)
 ! Define number of points
 if (present(n)) n = 4*trunc**2+36*trunc
 
-! Probe out
-@:probe_out()
-
 end subroutine atlas_get_global_grid_from_size
 
 !----------------------------------------------------------------------
 ! Subroutine: atlas_get_global_grid_from_cell
 !> Define global ATLAS grid (reduced Gaussian) from maximum cell size
 !----------------------------------------------------------------------
-subroutine atlas_get_global_grid_from_cell(mpl,dxmax,nmax,agrid,n)
+subroutine atlas_get_global_grid_from_cell(mpl,dxmax,agrid,n)
 
 implicit none
 
 ! Passed variables
 type(mpl_type),intent(inout) :: mpl               !< MPI data
 real(kind_real),intent(in) :: dxmax               !< Maximum cell size
-integer,intent(in) :: nmax                        !< Maximum grid size
 type(atlas_structuredgrid),intent(inout) :: agrid !< ATLAS grid
 integer,intent(out),optional :: n                 !< Grid size
 
@@ -115,21 +106,11 @@ character(len=6) :: gridid
 ! Set name
 @:set_name(atlas_get_global_grid_from_cell)
 
-! Probe in
-@:probe_in()
-
 ! Check cell size
 if (.not.(dxmax>zero)) call mpl%abort('${subr}$','maximum cell size should be positive')
 
-! Check number of points
-if (nmax<40) call mpl%abort('${subr}$','maximum number of points is too small')
-
 ! Get truncation
 trunc = (floor(half*pi/dxmax)-4)+1
-
-! Check grid size
-ln = 4*trunc**2+36*trunc
-if (ln>nmax) call mpl%abort('${subr}$','cannot create a subgrid at higher resolution than the initial grid')
 
 ! Set maximum truncation
 if (trunc>9999) call mpl%abort('${subr}$','octahedral truncation is too large')
@@ -141,10 +122,7 @@ write(gridid,'(a,i4.4)') 'O',trunc
 agrid = atlas_structuredgrid(gridid)
 
 ! Copy number of points
-if (present(n)) n = ln
-
-! Probe out
-@:probe_out()
+if (present(n)) n = 4*trunc**2+36*trunc
 
 end subroutine atlas_get_global_grid_from_cell
 
@@ -175,9 +153,6 @@ type(atlas_projection) :: aproj
 
 ! Set name
 @:set_name(atlas_get_regional_grid_from_size)
-
-! Probe in
-@:probe_in()
 
 ! Check number of points
 if (nmin<9) call mpl%abort('${subr}$','minimum number of points is too small')
@@ -217,23 +192,19 @@ end if
 ! Define number of points
 if (present(n)) n = nx*ny
 
-! Probe out
-@:probe_out()
-
 end subroutine atlas_get_regional_grid_from_size
 
 !----------------------------------------------------------------------
 ! Subroutine: atlas_get_regional_grid_from_cell
 !> Define regional ATLAS grid from maximum cell size
 !----------------------------------------------------------------------
-subroutine atlas_get_regional_grid_from_cell(mpl,dxmax,nmax,aconfig_grid,xmin,xmax,ymin,ymax,agrid,n)
+subroutine atlas_get_regional_grid_from_cell(mpl,dxmax,aconfig_grid,xmin,xmax,ymin,ymax,agrid,n)
 
 implicit none
 
 ! Passed variables
 type(mpl_type),intent(inout) :: mpl               !< MPI data
 real(kind_real),intent(in) :: dxmax               !< Maximum cell size
-integer,intent(in) :: nmax                        !< Maximum grid size
 type(atlas_config),intent(in) :: aconfig_grid     !< ATLAS grid configuration
 real(kind_real),intent(in) :: xmin                !< Computational grid minimum x value
 real(kind_real),intent(in) :: xmax                !< Computational grid maximum x value
@@ -251,14 +222,8 @@ type(atlas_projection) :: aproj
 ! Set name
 @:set_name(atlas_get_regional_grid_from_cell)
 
-! Probe in
-@:probe_in()
-
 ! Check cell size
 if (.not.(dxmax>zero)) call mpl%abort('${subr}$','maximum cell size should be positive')
-
-! Check number of points
-if (nmax<9) call mpl%abort('${subr}$','maximum number of points is too small')
 
 ! Input grid specifications
 if (.not.aconfig_grid%get('xspace.N',nx_work)) call mpl%abort('{subr}','missing xspace.N')
@@ -278,10 +243,6 @@ ny = floor(real(nx_work,kind_real)*alpha)+1
 if (nx<2) call mpl%abort('${subr}$','nx is too small')
 if (ny<2) call mpl%abort('${subr}$','ny is too small')
 
-! Check grid size
-ln = nx*ny
-if (ln>nmax) call mpl%abort('${subr}$','cannot create a subgrid at higher resolution than the initial grid')
-
 ! Set new regional grid
 xy_min = (/xstart,ystart/)
 xy_max = (/xend,yend/)
@@ -299,10 +260,7 @@ else
 end if
 
 ! Copy number of points
-if (present(n)) n = ln
-
-! Probe out
-@:probe_out()
+if (present(n)) n = nx*ny
 
 end subroutine atlas_get_regional_grid_from_cell
 
@@ -328,9 +286,6 @@ character(len=1024) :: llev2d
 
 ! Set name
 @:set_name(atlas_field_to_array_${dtype}$)
-
-! Probe in
-@:probe_in()
 
 ! Local lev2d
 llev2d = 'first'
@@ -374,9 +329,6 @@ else
    end if
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine atlas_field_to_array_${dtype}$
 #:endfor
 
@@ -401,9 +353,6 @@ character(len=1024) :: llev2d
 ! Set name
 @:set_name(atlas_field_to_array_logical)
 
-! Probe in
-@:probe_in()
-
 ! Local lev2d
 llev2d = 'first'
 if (present(lev2d)) llev2d = lev2d
@@ -420,9 +369,6 @@ call convert_i2l(mpl,array_int,array)
 
 ! Release memory
 deallocate(array_int)
-
-! Probe out
-@:probe_out()
 
 end subroutine atlas_field_to_array_logical
 
@@ -448,9 +394,6 @@ character(len=1024) :: llev2d
 
 ! Set name
 @:set_name(atlas_field_from_array_${dtype}$)
-
-! Probe in
-@:probe_in()
 
 ! Local lev2d
 llev2d = 'first'
@@ -492,9 +435,6 @@ else
    end if
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine atlas_field_from_array_${dtype}$
 #:endfor
 
@@ -521,9 +461,6 @@ type(atlas_functionspace_structuredcolumns) :: afunctionspace_sc
 ! Set name
 @:set_name(atlas_get_atlas_functionspace_size)
 
-! Probe in
-@:probe_in()
-
 select case (afunctionspace%name())
 case ('NodeColumns')
    ! Get NodeColumns function space
@@ -546,9 +483,6 @@ case ('StructuredColumns')
 case default
    call mpl%abort('${subr}$','wrong function space '//afunctionspace%name())
 end select
-
-! Probe out
-@:probe_out()
 
 end function atlas_get_atlas_functionspace_size
 
@@ -573,17 +507,11 @@ type(atlas_functionspace) :: afunctionspace
 ! Set name
 @:set_name(atlas_get_atlas_field_size)
 
-! Probe in
-@:probe_in()
-
 ! Get generic function space
 afunctionspace = afield%functionspace()
 
 ! Get function space size
 nmga = get_atlas_functionspace_size(mpl,afunctionspace)
-
-! Probe out
-@:probe_out()
 
 end function atlas_get_atlas_field_size
 

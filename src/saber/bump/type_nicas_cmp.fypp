@@ -1,4 +1,4 @@
-#:include 'instrumentation.fypp'
+#:include 'generics.fypp'
 !----------------------------------------------------------------------
 ! Module: type_nicas_cmp
 !> NICAS data component derived type
@@ -29,7 +29,6 @@ use type_linop, only: linop_type
 use type_mesh, only: mesh_type
 use type_mpl, only: mpl_type
 use type_nam, only: nam_type
-@:use_probe()
 use type_rng, only: rng_type
 use type_tree, only: tree_type
 
@@ -347,16 +346,10 @@ class(balldata_type),intent(inout) :: balldata !< Ball data
 ! Set name
 @:set_name(balldata_alloc)
 
-! Probe in
-@:probe_in()
-
 ! Allocation
 allocate(balldata%bd_to_c1u(balldata%nbd))
 allocate(balldata%hnd(balldata%nbd))
 allocate(balldata%vnd(balldata%nbd))
-
-! Probe out
-@:probe_out()
 
 end subroutine balldata_alloc
 
@@ -374,16 +367,10 @@ class(balldata_type),intent(inout) :: balldata !< Ball data
 ! Set name
 @:set_name(balldata_dealloc)
 
-! Probe in
-@:probe_in()
-
 ! Release memory
 if (allocated(balldata%bd_to_c1u)) deallocate(balldata%bd_to_c1u)
 if (allocated(balldata%hnd)) deallocate(balldata%hnd)
 if (allocated(balldata%vnd)) deallocate(balldata%vnd)
-
-! Probe out
-@:probe_out()
 
 end subroutine balldata_dealloc
 
@@ -407,9 +394,6 @@ integer :: ibd,ic1u
 
 ! Set name
 @:set_name(balldata_pack)
-
-! Probe in
-@:probe_in()
 
 if (nc1u>0) then
    ! Count non-missing values
@@ -436,9 +420,6 @@ else
    call balldata%alloc
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine balldata_pack
 
 !----------------------------------------------------------------------
@@ -454,9 +435,6 @@ class(hor_type),intent(inout) :: hor !< Horizontal data
 
 ! Set name
 @:set_name(hor_partial_dealloc)
-
-! Probe in
-@:probe_in()
 
 ! Release memory
 if (allocated(hor%proc_to_nc1a)) deallocate(hor%proc_to_nc1a)
@@ -488,9 +466,6 @@ if (allocated(hor%H12_c1b)) deallocate(hor%H12_c1b)
 if (allocated(hor%c1a_to_sa)) deallocate(hor%c1a_to_sa)
 if (allocated(hor%c1u_to_su)) deallocate(hor%c1u_to_su)
 
-! Probe out
-@:probe_out()
-
 end subroutine hor_partial_dealloc
 
 !----------------------------------------------------------------------
@@ -507,17 +482,11 @@ class(hor_type),intent(inout) :: hor !< Horizontal data
 ! Set name
 @:set_name(hor_dealloc)
 
-! Probe in
-@:probe_in()
-
 ! Release memory
 call hor%partial_dealloc
 call hor%interp_c1b_to_c0a%dealloc
 
 if (allocated(hor%c1b_to_sb)) deallocate(hor%c1b_to_sb)
-
-! Probe out
-@:probe_out()
 
 end subroutine hor_dealloc
 
@@ -535,17 +504,11 @@ class(steps_type),intent(inout) :: steps !< Steps data
 ! Set name
 @:set_name(steps_dealloc)
 
-! Probe in
-@:probe_in()
-
 ! Release memory
 if (allocated(steps%lon)) deallocate(steps%lon)
 if (allocated(steps%lat)) deallocate(steps%lat)
 if (allocated(steps%lev)) deallocate(steps%lev)
 if (allocated(steps%values)) deallocate(steps%values)
-
-! Probe out
-@:probe_out()
 
 end subroutine steps_dealloc
 
@@ -568,9 +531,6 @@ integer :: inz,ic0a,il0
 
 ! Set name
 @:set_name(steps_add_fld)
-
-! Probe in
-@:probe_in()
 
 ! Count number of non-zero points
 steps%nnz = count(mpl%msv%isnot(fld))
@@ -601,9 +561,6 @@ if (steps%nnz>0) then
    end do
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine steps_add_fld
 
 !----------------------------------------------------------------------
@@ -629,9 +586,6 @@ integer :: inz,i
 ! Set name
 @:set_name(steps_add_vec)
 
-! Probe in
-@:probe_in()
-
 ! Count number of non-zero points
 steps%nnz = count(mpl%msv%isnot(vec))
 
@@ -655,9 +609,6 @@ if (steps%nnz>0) then
    end do
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine steps_add_vec
 
 !----------------------------------------------------------------------
@@ -676,9 +627,6 @@ integer :: il1,isb
 
 ! Set name
 @:set_name(nicas_cmp_partial_dealloc)
-
-! Probe in
-@:probe_in()
 
 ! Release memory
 if (allocated(nicas_cmp%myuniverse)) deallocate(nicas_cmp%myuniverse)
@@ -725,9 +673,6 @@ end if
 if (allocated(nicas_cmp%inorm_sb)) deallocate(nicas_cmp%inorm_sb)
 if (allocated(nicas_cmp%smoother_norm)) deallocate(nicas_cmp%smoother_norm)
 
-! Probe out
-@:probe_out()
-
 end subroutine nicas_cmp_partial_dealloc
 
 !----------------------------------------------------------------------
@@ -746,9 +691,6 @@ integer :: il1,i
 
 ! Set name
 @:set_name(nicas_cmp_dealloc)
-
-! Probe in
-@:probe_in()
 
 ! Release memory
 call nicas_cmp%partial_dealloc
@@ -780,9 +722,6 @@ do i=1,7
    call nicas_cmp%steps(i)%dealloc
 end do
 
-! Probe out
-@:probe_out()
-
 end subroutine nicas_cmp_dealloc
 
 !----------------------------------------------------------------------
@@ -804,9 +743,6 @@ character(len=1024) :: levname
 
 ! Set name
 @:set_name(nicas_cmp_read_local)
-
-! Probe in
-@:probe_in()
 
 ! Read valid levels
 allocate(nicas_cmp%vlev(nicas_cmp%nl0))
@@ -910,9 +846,6 @@ else
    nicas_cmp%ns = 0
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine nicas_cmp_read_local
 
 !----------------------------------------------------------------------
@@ -934,9 +867,6 @@ character(len=1024) :: levname
 
 ! Set name
 @:set_name(nicas_cmp_write_local_def)
-
-! Probe in
-@:probe_in()
 
 ! Define valid levels
 nicas_cmp%vlev_id = define_var(mpl,nicas_cmp%cmpid,'vlev','int',(/nicas_cmp%nl0_id/))
@@ -991,9 +921,6 @@ if (any(nicas_cmp%vlev)) then
    call nicas_cmp%v%write_def(mpl,nicas_cmp%cmpid)
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine nicas_cmp_write_local_def
 
 !----------------------------------------------------------------------
@@ -1013,9 +940,6 @@ integer :: il1,il1s
 
 ! Set name
 @:set_name(nicas_cmp_write_local_data)
-
-! Probe in
-@:probe_in()
 
 ! Write valid levels
 call put_var(mpl,nicas_cmp%cmpid,nicas_cmp%vlev_id,nicas_cmp%vlev)
@@ -1046,9 +970,6 @@ if (any(nicas_cmp%vlev)) then
    call nicas_cmp%v%write_data(mpl)
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine nicas_cmp_write_local_data
 
 !----------------------------------------------------------------------
@@ -1072,9 +993,6 @@ integer :: il1,il1s
 
 ! Set name
 @:set_name(nicas_cmp_buffer_size)
-
-! Probe in
-@:probe_in()
 
 ! nl0
 nbufi = nbufi+1
@@ -1142,9 +1060,6 @@ if (any(nicas_cmp%vlev)) then
    nbufr = nbufr+nnbufr
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine nicas_cmp_buffer_size
 
 !----------------------------------------------------------------------
@@ -1174,9 +1089,6 @@ integer :: il1,il1s
 
 ! Set name
 @:set_name(nicas_cmp_serialize)
-
-! Probe in
-@:probe_in()
 
 ! nl0
 bufi(ibufi+1) = nicas_cmp%nl0
@@ -1288,9 +1200,6 @@ if (any(nicas_cmp%vlev)) then
    ibufr = ibufr+nnbufr
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine nicas_cmp_serialize
 
 !----------------------------------------------------------------------
@@ -1320,9 +1229,6 @@ integer :: il1,il1s
 
 ! Set name
 @:set_name(nicas_cmp_deserialize)
-
-! Probe in
-@:probe_in()
 
 ! nl0
 nicas_cmp%nl0 = bufi(ibufi+1)
@@ -1459,9 +1365,6 @@ if (any(nicas_cmp%vlev)) then
    ibufr = ibufr+nnbufr
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine nicas_cmp_deserialize
 
 !----------------------------------------------------------------------
@@ -1489,9 +1392,6 @@ type(io_type) :: io_s
 
 ! Set name
 @:set_name(nicas_cmp_read_global)
-
-! Probe in
-@:probe_in()
 
 ! Number of processors
 nicas_cmp%nproc = mpl%nproc
@@ -1872,9 +1772,6 @@ else
    nicas_cmp%ns = 0
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine nicas_cmp_read_global
 
 !----------------------------------------------------------------------
@@ -1898,9 +1795,6 @@ character(len=1024) :: levname
 
 ! Set name
 @:set_name(nicas_cmp_write_global_def)
-
-! Probe in
-@:probe_in()
 
 ! Define vertical sampling
 write(mpl%info,'(a16,a)') '','Define vertical sampling'
@@ -2001,9 +1895,6 @@ if (any(nicas_cmp%vlev)) then
    deallocate(c_nop)
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine nicas_cmp_write_global_def
 
 !----------------------------------------------------------------------
@@ -2028,9 +1919,6 @@ type(io_type) :: io_c1,io_s
 
 ! Set name
 @:set_name(nicas_cmp_write_global_data)
-
-! Probe in
-@:probe_in()
 
 ! Write vertical sampling
 write(mpl%info,'(a10,a)') '','Write vertical sampling'
@@ -2173,9 +2061,6 @@ if (any(nicas_cmp%vlev)) then
    deallocate(c_S_sa)
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine nicas_cmp_write_global_data
 
 !----------------------------------------------------------------------
@@ -2195,9 +2080,6 @@ integer :: nsa_id,nsb_id,nsc_id
 
 ! Set name
 @:set_name(nicas_cmp_write_grids_def)
-
-! Probe in
-@:probe_in()
 
 if (any(nicas_cmp%vlev)) then
    ! Define dimensions
@@ -2223,9 +2105,6 @@ if (any(nicas_cmp%vlev)) then
    end if
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine nicas_cmp_write_grids_def
 
 !----------------------------------------------------------------------
@@ -2248,9 +2127,6 @@ real(kind_real) :: lat_sb(nicas_cmp%nsb),lat_sc(nicas_cmp%nsc)
 
 ! Set name
 @:set_name(nicas_cmp_write_grids_data)
-
-! Probe in
-@:probe_in()
 
 if (any(nicas_cmp%vlev)) then
    ! Copy
@@ -2297,9 +2173,6 @@ if (any(nicas_cmp%vlev)) then
    end if
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine nicas_cmp_write_grids_data
 
 !----------------------------------------------------------------------
@@ -2322,9 +2195,6 @@ character(len=7) :: stepsname
 ! Set name
 @:set_name(nicas_cmp_write_steps_def)
 
-! Probe in
-@:probe_in()
-
 do i=1,7
    if (nicas_cmp%steps(i)%nnz>0) then
       ! Create group
@@ -2341,9 +2211,6 @@ do i=1,7
       nicas_cmp%steps(i)%values_id = define_var(mpl,nicas_cmp%steps(i)%stepsid,'values','real',(/nnz_id/),io_override=.true.)
    end if
 end do
-
-! Probe out
-@:probe_out()
 
 end subroutine nicas_cmp_write_steps_def
 
@@ -2365,9 +2232,6 @@ integer :: i
 ! Set name
 @:set_name(nicas_cmp_write_steps_data)
 
-! Probe in
-@:probe_in()
-
 do i=1,7
    if (nicas_cmp%steps(i)%nnz>0) then
       ! Write variables
@@ -2377,9 +2241,6 @@ do i=1,7
       call put_var(mpl,nicas_cmp%steps(i)%stepsid,nicas_cmp%steps(i)%values_id,nicas_cmp%steps(i)%values,io_override=.true.)
    end if
 end do
-
-! Probe out
-@:probe_out()
 
 end subroutine nicas_cmp_write_steps_data
 
@@ -2404,9 +2265,6 @@ integer :: il1,il1s,c_n_s
 
 ! Set name
 @:set_name(nicas_cmp_compute_parameters)
-
-! Probe in
-@:probe_in()
 
 ! Number of points in subset Sc0, halo A
 nicas_cmp%nc0a = geom%nc0a
@@ -2519,9 +2377,6 @@ else
    call mpl%flush
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine nicas_cmp_compute_parameters
 
 !----------------------------------------------------------------------
@@ -2543,9 +2398,6 @@ real(kind_real),intent(in) :: rhflt              !< Horizontal support radius
 ! Set name
 @:set_name(nicas_cmp_compute_parameters_horizontal_smoother)
 
-! Probe in
-@:probe_in()
-
 ! Allocation
 allocate(nicas_cmp%rh(geom%nc0a,nicas_cmp%nl0))
 allocate(nicas_cmp%rv(geom%nc0a,nicas_cmp%nl0))
@@ -2564,9 +2416,6 @@ nicas_cmp%scaling = one
 
 ! Compute parameters
 call nicas_cmp%compute_parameters(mpl,rng,nam,geom)
-
-! Probe out
-@:probe_out()
 
 end subroutine nicas_cmp_compute_parameters_horizontal_smoother
 
@@ -2593,9 +2442,6 @@ logical :: slev(nicas_cmp%nl0)
 
 ! Set name
 @:set_name(nicas_cmp_compute_vertical)
-
-! Probe in
-@:probe_in()
 
 ! Associate
 associate(ig=>nicas_cmp%ig)
@@ -2774,9 +2620,6 @@ end if
 ! End associate
 end associate
 
-! Probe out
-@:probe_out()
-
 end subroutine nicas_cmp_compute_vertical
 
 !----------------------------------------------------------------------
@@ -2816,9 +2659,6 @@ type(linop_type),allocatable :: grad(:)
 
 ! Set name
 @:set_name(nicas_cmp_compute_horizontal)
-
-! Probe in
-@:probe_in()
 
 if (.not.nam%load_nicas_global) then
    ! Allocation
@@ -3662,9 +3502,6 @@ if (.not.nam%load_nicas_global) then
    end if
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine nicas_cmp_compute_horizontal
 
 !----------------------------------------------------------------------
@@ -3690,9 +3527,6 @@ logical,allocatable :: lcheck_sc(:)
 
 ! Set name
 @:set_name(nicas_cmp_compute_convol)
-
-! Probe in
-@:probe_in()
 
 ! Associate
 associate(ig=>nicas_cmp%ig)
@@ -3913,9 +3747,6 @@ call mpl%stop_timer('nicas_setup_convol')
 ! End associate
 end associate
 
-! Probe out
-@:probe_out()
-
 end subroutine nicas_cmp_compute_convol
 
 !----------------------------------------------------------------------
@@ -3943,9 +3774,6 @@ logical,allocatable :: mnd(:)
 
 ! Set name
 @:set_name(nicas_cmp_compute_convol_distance)
-
-! Probe in
-@:probe_in()
 
 ! Find largest possible radius
 do il0=1,nicas_cmp%nl0
@@ -4080,9 +3908,6 @@ end do
 !$omp end parallel do
 if (nicas_cmp%verbosity) call mpl%prog_final
 
-! Probe out
-@:probe_out()
-
 end subroutine nicas_cmp_compute_convol_distance
 
 !----------------------------------------------------------------------
@@ -4106,9 +3931,6 @@ type(linop_type) :: c(mpl%nthread)
 
 ! Set name
 @:set_name(nicas_cmp_compute_convol_weights)
-
-! Probe in
-@:probe_in()
 
 ! Allocation
 n_s_max = 10*nint(real(geom%nc0u*nicas_cmp%nl0)/real(mpl%nthread*mpl%nproc))
@@ -4175,9 +3997,6 @@ do ithread=1,mpl%nthread
    call c(ithread)%dealloc
 end do
 
-! Probe out
-@:probe_out()
-
 end subroutine nicas_cmp_compute_convol_weights
 
 !----------------------------------------------------------------------
@@ -4200,9 +4019,6 @@ real(kind_real),allocatable :: c_S(:,:)
 
 ! Set name
 @:set_name(nicas_cmp_compute_internal_normalization)
-
-! Probe in
-@:probe_in()
 
 if (.not.nam%load_nicas_global) then
    ! Compute convolution inverse mapping
@@ -4249,9 +4065,6 @@ allocate(nicas_cmp%inorm_sb(nicas_cmp%nsb))
 ! Halo extension from zone A to universe
 call nicas_cmp%com_s_AB%ext(mpl,nicas_cmp%inorm,nicas_cmp%inorm_sb)
 
-! Probe out
-@:probe_out()
-
 end subroutine nicas_cmp_compute_internal_normalization
 
 !----------------------------------------------------------------------
@@ -4278,9 +4091,6 @@ type(linop_type),allocatable :: v(:),h(:,:),c(:)
 
 ! Set name
 @:set_name(nicas_cmp_compute_normalization)
-
-! Probe in
-@:probe_in()
 
 ! Start normalization timer
 call mpl%start_timer('nicas_setup_norm')
@@ -4556,9 +4366,6 @@ deallocate(c)
 ! Stop normalization timer
 call mpl%stop_timer('nicas_setup_norm')
 
-! Probe out
-@:probe_out()
-
 end subroutine nicas_cmp_compute_normalization
 
 !----------------------------------------------------------------------
@@ -4584,9 +4391,6 @@ type(cv_cmp_type) :: cv_cmp
 
 ! Set name
 @:set_name(nicas_cmp_randomize_normalization)
-
-! Probe in
-@:probe_in()
 
 ! Allocation
 allocate(nicas_cmp%norm(geom%nc0a,geom%nl0))
@@ -4637,9 +4441,6 @@ do il0=1,geom%nl0
    end if
 end do
 
-! Probe out
-@:probe_out()
-
 end subroutine nicas_cmp_randomize_normalization
 
 !----------------------------------------------------------------------
@@ -4662,9 +4463,6 @@ real(kind_real),allocatable :: alpha(:)
 
 ! Set name
 @:set_name(nicas_cmp_random_cv)
-
-! Probe in
-@:probe_in()
 
 ! Allocation
 if (mpl%main) then
@@ -4693,9 +4491,6 @@ call mpl%glb_to_loc(nicas_cmp%nsa,nicas_cmp%ns,nicas_cmp%sa_to_s,alpha,cv_cmp%al
 deallocate(order_s)
 deallocate(alpha)
 
-! Probe out
-@:probe_out()
-
 end subroutine nicas_cmp_random_cv
 
 !----------------------------------------------------------------------
@@ -4721,9 +4516,6 @@ real(kind_real) :: alpha_a(nicas_cmp%nsa),alpha_b(nicas_cmp%nsb),alpha_c(nicas_c
 
 ! Set name
 @:set_name(nicas_cmp_apply_horizontal_smoother)
-
-! Probe in
-@:probe_in()
 
 ! Check that it is a smoother
 if (.not.nicas_cmp%smoother) call mpl%abort('${subr}$','apply is only for smoothers')
@@ -4764,9 +4556,6 @@ sume = zss_sum(fld,mask=geom%gmask_c0a(:,il0))
 call mpl%f_comm%allreduce(sume,fckit_mpi_sum())
 fld = fld*sums/sume
 
-! Probe out
-@:probe_out()
-
 end subroutine nicas_cmp_apply_horizontal_smoother
 
 !----------------------------------------------------------------------
@@ -4792,9 +4581,6 @@ logical :: lsteps
 
 ! Set name
 @:set_name(nicas_cmp_apply_sqrt)
-
-! Probe in
-@:probe_in()
 
 ! Local flag
 lsteps = .false.
@@ -4876,9 +4662,6 @@ if (any(nicas_cmp%vlev)) then
    end if
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine nicas_cmp_apply_sqrt
 
 !----------------------------------------------------------------------
@@ -4904,9 +4687,6 @@ logical :: lsteps
 
 ! Set name
 @:set_name(nicas_cmp_apply_sqrt_ad)
-
-! Probe in
-@:probe_in()
 
 ! Local flag
 lsteps = .false.
@@ -4988,9 +4768,6 @@ if (any(nicas_cmp%vlev)) then
    end if
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine nicas_cmp_apply_sqrt_ad
 
 !----------------------------------------------------------------------
@@ -5012,9 +4789,6 @@ real(kind_real) :: alpha_c(nicas_cmp%nsc)
 ! Set name
 @:set_name(nicas_cmp_apply_convol_sqrt)
 
-! Probe in
-@:probe_in()
-
 ! Halo extension from zone A to zone C
 call mpl%start_timer('nicas_apply_convol_sqrt_com')
 call nicas_cmp%com_s_AC%ext(mpl,alpha,alpha_c)
@@ -5027,9 +4801,6 @@ call mpl%stop_timer('nicas_apply_convol_sqrt_lin')
 
 ! Internal normalization
 alpha = alpha*nicas_cmp%inorm
-
-! Probe out
-@:probe_out()
 
 end subroutine nicas_cmp_apply_convol_sqrt
 
@@ -5052,9 +4823,6 @@ real(kind_real) :: alpha_c(nicas_cmp%nsc)
 ! Set name
 @:set_name(nicas_cmp_apply_convol_sqrt_ad)
 
-! Probe in
-@:probe_in()
-
 ! Internal normalization
 alpha = alpha*nicas_cmp%inorm
 
@@ -5067,9 +4835,6 @@ call mpl%stop_timer('nicas_apply_convol_sqrt_lin')
 call mpl%start_timer('nicas_apply_convol_sqrt_com')
 call nicas_cmp%com_s_AC%red(mpl,alpha_c,alpha)
 call mpl%stop_timer('nicas_apply_convol_sqrt_com')
-
-! Probe out
-@:probe_out()
 
 end subroutine nicas_cmp_apply_convol_sqrt_ad
 
@@ -5093,17 +4858,11 @@ real(kind_real) :: gamma(nicas_cmp%nc0a,nicas_cmp%nl1)
 ! Set name
 @:set_name(nicas_cmp_apply_interp)
 
-! Probe in
-@:probe_in()
-
 ! Horizontal interpolation
 call nicas_cmp%apply_interp_horizontal(mpl,alpha,gamma)
 
 ! Vertical interpolation
 call nicas_cmp%apply_interp_vertical(mpl,gamma,fld)
-
-! Probe out
-@:probe_out()
 
 end subroutine nicas_cmp_apply_interp
 
@@ -5127,17 +4886,11 @@ real(kind_real) :: gamma(nicas_cmp%nc0a,nicas_cmp%nl1)
 ! Set name
 @:set_name(nicas_cmp_apply_interp_ad)
 
-! Probe in
-@:probe_in()
-
 ! Vertical interpolation
 call nicas_cmp%apply_interp_vertical_ad(mpl,fld,gamma)
 
 ! Horizontal interpolation
 call nicas_cmp%apply_interp_horizontal_ad(mpl,gamma,alpha)
-
-! Probe out
-@:probe_out()
 
 end subroutine nicas_cmp_apply_interp_ad
 
@@ -5162,9 +4915,6 @@ real(kind_real),allocatable :: beta(:)
 ! Set name
 @:set_name(nicas_cmp_apply_interp_horizontal)
 
-! Probe in
-@:probe_in()
-
 !$omp parallel do schedule(static) private(il1,il1s,ic1b,isb) firstprivate(beta)
 do il1=1,nicas_cmp%nl1
    ! Base sublevel
@@ -5186,9 +4936,6 @@ do il1=1,nicas_cmp%nl1
    deallocate(beta)
 end do
 !$omp end parallel do
-
-! Probe out
-@:probe_out()
 
 end subroutine nicas_cmp_apply_interp_horizontal
 
@@ -5213,9 +4960,6 @@ real(kind_real),allocatable :: beta(:)
 ! Set name
 @:set_name(nicas_cmp_apply_interp_horizontal_ad)
 
-! Probe in
-@:probe_in()
-
 !$omp parallel do schedule(static) private(il1,il1s,ic1b,isb) firstprivate(beta)
 do il1=1,nicas_cmp%nl1
    ! Base sublevel
@@ -5237,9 +4981,6 @@ do il1=1,nicas_cmp%nl1
    deallocate(beta)
 end do
 !$omp end parallel do
-
-! Probe out
-@:probe_out()
 
 end subroutine nicas_cmp_apply_interp_horizontal_ad
 
@@ -5263,9 +5004,6 @@ real(kind_real),allocatable :: gamma_tmp(:),fld_tmp(:)
 
 ! Set name
 @:set_name(nicas_cmp_apply_interp_vertical)
-
-! Probe in
-@:probe_in()
 
 ! Initialization
 fld = zero
@@ -5294,9 +5032,6 @@ do ic0a=1,nicas_cmp%nc0a
 end do
 !$omp end parallel do
 
-! Probe out
-@:probe_out()
-
 end subroutine nicas_cmp_apply_interp_vertical
 
 !----------------------------------------------------------------------
@@ -5320,9 +5055,6 @@ real(kind_real),allocatable :: gamma_tmp(:),fld_tmp(:)
 ! Set name
 @:set_name(nicas_cmp_apply_interp_vertical_ad)
 
-! Probe in
-@:probe_in()
-
 ! Vertical interpolation
 !$omp parallel do schedule(static) private(ic0a) firstprivate(gamma_tmp,fld_tmp)
 do ic0a=1,nicas_cmp%nc0a
@@ -5344,9 +5076,6 @@ do ic0a=1,nicas_cmp%nc0a
    deallocate(fld_tmp)
 end do
 !$omp end parallel do
-
-! Probe out
-@:probe_out()
 
 end subroutine nicas_cmp_apply_interp_vertical_ad
 
@@ -5375,9 +5104,6 @@ type(cv_cmp_type) :: cv_cmp1,cv_cmp2
 
 ! Set name
 @:set_name(nicas_cmp_test_adjoint)
-
-! Probe in
-@:probe_in()
 
 ! Associate
 associate(ig=>nicas_cmp%ig)
@@ -5577,9 +5303,6 @@ call rng%reseed
 ! End associate
 end associate
 
-! Probe out
-@:probe_out()
-
 end subroutine nicas_cmp_test_adjoint
 
 !----------------------------------------------------------------------
@@ -5604,9 +5327,6 @@ real(kind_real) :: alpha(nicas_cmp%nsa),norm,val(nam%check_normalization)
 
 ! Set name
 @:set_name(nicas_cmp_test_normalization)
-
-! Probe in
-@:probe_in()
 
 ! Associate
 associate(ig=>nicas_cmp%ig)
@@ -5659,9 +5379,6 @@ call rng%reseed
 ! End associate
 end associate
 
-! Probe out
-@:probe_out()
-
 end subroutine nicas_cmp_test_normalization
 
 !----------------------------------------------------------------------
@@ -5687,9 +5404,6 @@ real(kind_real) :: fld(geom%nc0a),norm,val(nam%check_normalization)
 
 ! Set name
 @:set_name(nicas_cmp_test_normalization)
-
-! Probe in
-@:probe_in()
 
 ! Associate
 associate(ig=>nicas_cmp%ig)
@@ -5728,9 +5442,6 @@ call mpl%flush(flush=nicas_cmp%verbosity)
 ! End associate
 end associate
 
-! Probe out
-@:probe_out()
-
 end subroutine nicas_cmp_test_normalization_horizontal_smoother
 
 !----------------------------------------------------------------------
@@ -5755,17 +5466,11 @@ integer :: iproc
 ! Set name
 @:set_name(nicas_cmp_c1_to_c1a)
 
-! Probe in
-@:probe_in()
-
 ! Find processor
 iproc = nicas_cmp%c1_to_proc(ic1,il1s)
 
 ! Get halo A index
 ic1a = ic1-nicas_cmp%hor(il1s)%proc_to_c1_offset(iproc)
-
-! Probe out
-@:probe_out()
 
 end function nicas_cmp_c1_to_c1a
 
@@ -5788,19 +5493,10 @@ integer :: iproc
 ! Set name
 @:set_name(nicas_cmp_c1_to_proc)
 
-! Probe in
-@:probe_in()
-
 ! Find processor
 do iproc=1,nicas_cmp%nproc-1
-   if ((nicas_cmp%hor(il1s)%proc_to_c1_offset(iproc)<ic1).and.(ic1<=nicas_cmp%hor(il1s)%proc_to_c1_offset(iproc+1))) then
-@:probe_out()
-      return
-   end if
+   if ((nicas_cmp%hor(il1s)%proc_to_c1_offset(iproc)<ic1).and.(ic1<=nicas_cmp%hor(il1s)%proc_to_c1_offset(iproc+1))) return
 end do
-
-! Probe out
-@:probe_out()
 
 end function nicas_cmp_c1_to_proc
 
@@ -5826,9 +5522,6 @@ integer :: iproc,ic1a,offset,jproc
 ! Set name
 @:set_name(nicas_cmp_c1_to_c1u)
 
-! Probe in
-@:probe_in()
-
 ! Find processor
 iproc = nicas_cmp%c1_to_proc(ic1,il1s)
 
@@ -5848,9 +5541,6 @@ else
    ! Not in my universe
    ic1u = 0
 end if
-
-! Probe out
-@:probe_out()
 
 end function nicas_cmp_c1_to_c1u
 
@@ -5875,17 +5565,11 @@ integer :: iproc
 ! Set name
 @:set_name(nicas_cmp_s_to_sa)
 
-! Probe in
-@:probe_in()
-
 ! Find processor
 iproc = nicas_cmp%s_to_proc(is)
 
 ! Get halo A index
 isa = is-nicas_cmp%proc_to_s_offset(iproc)
-
-! Probe out
-@:probe_out()
 
 end function nicas_cmp_s_to_sa
 
@@ -5907,19 +5591,10 @@ integer :: iproc
 ! Set name
 @:set_name(nicas_cmp_s_to_proc)
 
-! Probe in
-@:probe_in()
-
 ! Find processor
 do iproc=1,nicas_cmp%nproc-1
-   if ((nicas_cmp%proc_to_s_offset(iproc)<is).and.(is<=nicas_cmp%proc_to_s_offset(iproc+1))) then
-@:probe_out()
-      return
-   end if
+   if ((nicas_cmp%proc_to_s_offset(iproc)<is).and.(is<=nicas_cmp%proc_to_s_offset(iproc+1))) return
 end do
-
-! Probe out
-@:probe_out()
 
 end function nicas_cmp_s_to_proc
 
@@ -5944,9 +5619,6 @@ integer :: iproc,isa,offset,jproc
 ! Set name
 @:set_name(nicas_cmp_s_to_su)
 
-! Probe in
-@:probe_in()
-
 ! Find processor
 iproc = nicas_cmp%s_to_proc(is)
 
@@ -5966,9 +5638,6 @@ else
    ! Not in my universe
    isu = 0
 end if
-
-! Probe out
-@:probe_out()
 
 end function nicas_cmp_s_to_su
 

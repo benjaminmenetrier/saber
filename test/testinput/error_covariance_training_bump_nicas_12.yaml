@@ -27,7 +27,7 @@ background error:
         multivariate strategy: univariate
         compute nicas: true
       nicas:
-        resolution: 4.0
+        resolution: 5
         explicit length-scales: true
         horizontal length-scale:
         - groups:

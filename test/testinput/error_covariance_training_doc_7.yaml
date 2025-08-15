@@ -46,7 +46,7 @@ background error:
       model:
         do not cross mask boundaries: true
       nicas:
-        resolution: 7.0
+        resolution: 5
         interpolation type:
         - groups:
           - air_horizontal_streamfunction

@@ -1,5 +1,4 @@
 #:include 'generics.fypp'
-#:include 'instrumentation.fypp'
 !----------------------------------------------------------------------
 ! Module: type_msv
 !> Deal with missing values
@@ -11,7 +10,6 @@ module type_msv
 
 use iso_fortran_env, only: output_unit
 use tools_kinds,only: kind_int,kind_real
-@:use_probe()
 
 implicit none
 
@@ -103,14 +101,8 @@ logical :: test
 ! Set name
 @:set_name(msv_isnot_${dtype}$_r0)
 
-! Probe in
-@:probe_in()
-
 ! Check distance to missing value
 test = abs(value-${msv[dtype]}$)>${zero[dtype]}$
-
-! Probe out
-@:probe_out()
 
 end function msv_isnot_${dtype}$_r0
 #:endfor
@@ -139,14 +131,8 @@ logical :: test( &
 ! Set name
 @:set_name(msv_isnot_${dtype}$_r${rank}$)
 
-! Probe in
-@:probe_in()
-
 ! Check distance to missing value
 test = abs(array-${msv[dtype]}$)>${zero[dtype]}$
-
-! Probe out
-@:probe_out()
 
 end function msv_isnot_${dtype}$_r${rank}$
    #:endfor
@@ -171,14 +157,8 @@ logical :: test
 ! Set name
 @:set_name(msv_is_${dtype}$_r0)
 
-! Probe in
-@:probe_in()
-
 ! Inverse of msv%isnot
 test = .not.msv%isnot(value)
-
-! Probe out
-@:probe_out()
 
 end function msv_is_${dtype}$_r0
 #:endfor
@@ -207,14 +187,8 @@ logical :: test( &
 ! Set name
 @:set_name(msv_is_${dtype}$_r${rank}$)
 
-! Probe in
-@:probe_in()
-
 ! Inverse of msv%isnot
 test = .not.msv%isnot(array)
-
-! Probe out
-@:probe_out()
 
 end function msv_is_${dtype}$_r${rank}$
    #:endfor
@@ -240,9 +214,6 @@ logical :: test
 ! Set name
 @:set_name(msv_isanynot_${dtype}$_r${rank}$)
 
-! Probe in
-@:probe_in()
-
 ! Check array size
 if (size(array)==0) then
    write(output_unit,'(a)') 'Error: empty array in ${subr}$'
@@ -252,9 +223,6 @@ end if
 
 ! Any of msv%isnot
 test = any(msv%isnot(array))
-
-! Probe out
-@:probe_out()
 
 end function msv_isanynot_${dtype}$_r${rank}$
    #:endfor
@@ -280,9 +248,6 @@ logical :: test
 ! Set name
 @:set_name(msv_isany_${dtype}$_r${rank}$)
 
-! Probe in
-@:probe_in()
-
 ! Check array size
 if (size(array)==0) then
    write(output_unit,'(a)') 'Error: empty array in ${subr}$'
@@ -292,9 +257,6 @@ end if
 
 ! Inverse of msv%isallnot
 test = .not.msv%isallnot(array)
-
-! Probe out
-@:probe_out()
 
 end function msv_isany_${dtype}$_r${rank}$
    #:endfor
@@ -320,9 +282,6 @@ logical :: test
 ! Set name
 @:set_name(msv_isallnot_${dtype}$_r${rank}$)
 
-! Probe in
-@:probe_in()
-
 ! Check array size
 if (size(array)==0) then
    write(output_unit,'(a)') 'Error: empty array in ${subr}$'
@@ -332,9 +291,6 @@ end if
 
 ! All of msv%isnot
 test = all(msv%isnot(array))
-
-! Probe out
-@:probe_out()
 
 end function msv_isallnot_${dtype}$_r${rank}$
    #:endfor
@@ -360,9 +316,6 @@ logical :: test
 ! Set name
 @:set_name(msv_isall_${dtype}$_r${rank}$)
 
-! Probe in
-@:probe_in()
-
 ! Check array size
 if (size(array)==0) then
    write(output_unit,'(a)') 'Error: empty array in ${subr}$'
@@ -372,9 +325,6 @@ end if
 
 ! Inverse of msv%isanynot
 test = .not.msv%isanynot(array)
-
-! Probe out
-@:probe_out()
 
 end function msv_isall_${dtype}$_r${rank}$
    #:endfor

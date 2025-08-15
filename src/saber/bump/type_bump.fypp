@@ -1,4 +1,4 @@
-#:include 'instrumentation.fypp'
+#:include 'generics.fypp'
 !----------------------------------------------------------------------
 ! Module: type_bump
 !> BUMP derived type
@@ -27,7 +27,6 @@ use type_mom, only: mom_type
 use type_mpl, only: mpl_type
 use type_nam, only: nam_type
 use type_nicas, only: nicas_type
-@:use_probe()
 use type_rng, only: rng_type
 use type_samp, only: samp_type
 use type_var, only: var_type
@@ -110,12 +109,6 @@ type(fckit_configuration),intent(in) :: conf           !< FCKIT configuration
 ! Set name
 @:set_name(bump_create)
 
-! Get instance
-@:get_instance(bump)
-
-! Probe in
-@:probe_in()
-
 ! Initialize constants
 call initialize_constants
 
@@ -133,9 +126,6 @@ call bump%nam%final(bump%mpl)
 
 ! Setup BUMP
 call bump%setup(afunctionspace,fieldset)
-
-! Probe out
-@:probe_out()
 
 end subroutine bump_create
 
@@ -158,15 +148,6 @@ character(len=1024) :: cname
 
 ! Set name
 @:set_name(bump_setup)
-
-! Get instance
-@:get_instance(bump)
-
-! Probe in
-@:probe_in()
-
-! Header
-@:print_bump_instance()
 
 if (bump%nam%timers) then
    ! Initialize timers
@@ -289,9 +270,6 @@ if ((bump%nam%from_gsi.and.(bump%nam%new_vbal.or.bump%nam%new_var.or.bump%nam%ne
    call bump%gsi%setup(bump%mpl,bump%nam,bump%geom(1))
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine bump_setup
 
 !----------------------------------------------------------------------
@@ -309,12 +287,6 @@ type(fieldset_type),intent(in) :: fieldset              !< SABER geometry fields
 
 ! Set name
 @:set_name(bump_dual_resolution_setup)
-
-! Get instance
-@:get_instance(bump)
-
-! Probe in
-@:probe_in()
 
 ! Initialize second geometry
 write(bump%mpl%info,'(a)') '-------------------------------------------------------------------'
@@ -334,9 +306,6 @@ if (bump%nam%ens2_ne>0) then
    call bump%mpl%flush
    call bump%ens(2)%set_att(bump%nam%ens2_ne,bump%nam%ens2_nsub)
 end if
-
-! Probe out
-@:probe_out()
 
 end subroutine bump_dual_resolution_setup
 
@@ -359,12 +328,6 @@ integer :: ne,nsub
 
 ! Set name
 @:set_name(bump_add_member)
-
-! Get instance
-@:get_instance(bump)
-
-! Probe in
-@:probe_in()
 
 ! Check ensemble number
 if (igeom==1) then
@@ -389,9 +352,6 @@ call bump%ens(igeom)%mem(ie)%init(bump%mpl,fieldset,bump%geom(igeom)%gmask_mga,b
 call bump%mpl%flush
 call bump%ens(igeom)%mem(ie)%print(bump%mpl,bump%geom(igeom)%owned_mga)
 
-! Probe out
-@:probe_out()
-
 end subroutine bump_add_member
 
 !----------------------------------------------------------------------
@@ -413,12 +373,6 @@ real(kind_real) :: fld_c0a(bump%geom(1)%nc0a,bump%geom(1)%nl0,bump%nam%nv)
 ! Set name
 @:set_name(bump_update_vbal_cov)
 
-! Get instance index
-@:get_instance(bump)
-
-! Probe in
-@:probe_in()
-
 if (ie==1) then
    ! Setup sampling
    write(bump%mpl%info,'(a)') '-------------------------------------------------------------------'
@@ -438,9 +392,6 @@ call bump%geom(1)%fieldset_to_c0(bump%mpl,bump%nam,fieldset,fld_c0a)
 
 ! Update vertical covariances
 call bump%vbal%cov_update(bump%mpl,bump%nam,bump%geom(1),bump%samp(1),fld_c0a,ie)
-
-! Probe out
-@:probe_out()
 
 end subroutine bump_update_vbal_cov
 
@@ -463,12 +414,6 @@ real(kind_real) :: fld_c0a(bump%geom(1)%nc0a,bump%geom(1)%nl0,bump%nam%nv)
 ! Set name
 @:set_name(bump_update_var)
 
-! Get instance index
-@:get_instance(bump)
-
-! Probe in
-@:probe_in()
-
 ! Set fieldset metadata
 call fieldset%set_metadata(bump%mpl,bump%geom(1)%gmask_mga,bump%nam%variables(1:bump%nam%nv),bump%nam%lev2d,bump%nam%var2d)
 
@@ -477,9 +422,6 @@ call bump%geom(1)%fieldset_to_c0(bump%mpl,bump%nam,fieldset,fld_c0a)
 
 ! Update variance
 call bump%var%update(bump%mpl,bump%rng,bump%nam,bump%geom(1),fld_c0a,ie)
-
-! Probe out
-@:probe_out()
 
 end subroutine bump_update_var
 
@@ -502,12 +444,6 @@ real(kind_real) :: fld_c0a(bump%geom(igeom)%nc0a,bump%geom(igeom)%nl0,bump%nam%n
 
 ! Set name
 @:set_name(bump_update_mom)
-
-! Get instance index
-@:get_instance(bump)
-
-! Probe in
-@:probe_in()
 
 ! Check ensemble number
 if ((igeom/=1).and.(igeom/=2)) call bump%mpl%abort('${subr}$','wrong ensemble number')
@@ -537,9 +473,6 @@ call bump%geom(igeom)%fieldset_to_c0(bump%mpl,bump%nam,fieldset,fld_c0a)
 ! Update moments
 call bump%mom(igeom)%update(bump%mpl,bump%nam,bump%geom(igeom),bump%samp(igeom),fld_c0a,ie,igeom)
 
-! Probe out
-@:probe_out()
-
 end subroutine bump_update_mom
 
 !----------------------------------------------------------------------
@@ -555,12 +488,6 @@ class(bump_type),intent(inout) :: bump !< BUMP
 
 ! Set name
 @:set_name(bump_run_drivers)
-
-! Get instance
-@:get_instance(bump)
-
-! Probe in
-@:probe_in()
 
 if (bump%nam%check_consistency.or.bump%nam%check_optimality) then
    ! Copy namelist support radii into C matrix, ensemble 1
@@ -916,9 +843,6 @@ if (bump%nam%new_wind.or.bump%nam%load_wind_local.or.bump%nam%load_wind_global) 
    call bump%wind%setup(bump%mpl,bump%rng,bump%nam,bump%geom(1))
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine bump_run_drivers
 
 !----------------------------------------------------------------------
@@ -939,12 +863,6 @@ real(kind_real) :: rh_diag,rv_diag
 ! Set name
 @:set_name(bump_check_consistency)
 
-! Get instance
-@:get_instance(bump)
-
-! Probe in
-@:probe_in()
-
 do ig=1,bump%nam%ng
    write(bump%mpl%info,'(a7,a)') '','Block: '//trim(bump%nam%group_names(ig))
    call bump%mpl%flush
@@ -957,9 +875,6 @@ do ig=1,bump%nam%ng
       call bump%mpl%flush
    end do
 end do
-
-! Probe out
-@:probe_out()
 
 end subroutine bump_check_consistency
 
@@ -986,12 +901,6 @@ type(nicas_type) :: nicas_test
 
 ! Set name
 @:set_name(bump_check_consistency)
-
-! Get instance
-@:get_instance(bump)
-
-! Probe in
-@:probe_in()
 
 ! Define test vectors
 write(bump%mpl%info,'(a4,a)') '','Define test vectors'
@@ -1094,9 +1003,6 @@ do ifac=-bump%nam%optimality_nfac,bump%nam%optimality_nfac
    call bump%mpl%flush()
 end do
 
-! Probe out
-@:probe_out()
-
 end subroutine bump_check_optimality
 
 !----------------------------------------------------------------------
@@ -1117,12 +1023,6 @@ real(kind_real) :: fld_c0a(bump%geom(1)%nc0a,bump%geom(1)%nl0,bump%nam%nv)
 ! Set name
 @:set_name(bump_apply_vbal)
 
-! Get instance
-@:get_instance(bump)
-
-! Probe in
-@:probe_in()
-
 ! Set fieldset metadata
 call fieldset%set_metadata(bump%mpl,bump%geom(1)%gmask_mga,bump%nam%variables(1:bump%nam%nv),bump%nam%lev2d,bump%nam%var2d)
 
@@ -1134,9 +1034,6 @@ call bump%vbal%apply(bump%nam,bump%geom(1),fld_c0a)
 
 ! Fortran array on subset Sc0 to fieldset
 call bump%geom(1)%c0_to_fieldset(bump%mpl,bump%nam,fld_c0a,fieldset)
-
-! Probe out
-@:probe_out()
 
 end subroutine bump_apply_vbal
 
@@ -1158,12 +1055,6 @@ real(kind_real) :: fld_c0a(bump%geom(1)%nc0a,bump%geom(1)%nl0,bump%nam%nv)
 ! Set name
 @:set_name(bump_apply_vbal_ad)
 
-! Get instance
-@:get_instance(bump)
-
-! Probe in
-@:probe_in()
-
 ! Set fieldset metadata
 call fieldset%set_metadata(bump%mpl,bump%geom(1)%gmask_mga,bump%nam%variables(1:bump%nam%nv),bump%nam%lev2d,bump%nam%var2d)
 
@@ -1175,9 +1066,6 @@ call bump%vbal%apply_ad(bump%nam,bump%geom(1),fld_c0a)
 
 ! Fortran array on subset Sc0 to fieldset
 call bump%geom(1)%c0_to_fieldset(bump%mpl,bump%nam,fld_c0a,fieldset)
-
-! Probe out
-@:probe_out()
 
 end subroutine bump_apply_vbal_ad
 
@@ -1199,12 +1087,6 @@ real(kind_real) :: fld_c0a(bump%geom(1)%nc0a,bump%geom(1)%nl0,bump%nam%nv)
 ! Set name
 @:set_name(bump_apply_vbal_inv)
 
-! Get instance
-@:get_instance(bump)
-
-! Probe in
-@:probe_in()
-
 ! Set fieldset metadata
 call fieldset%set_metadata(bump%mpl,bump%geom(1)%gmask_mga,bump%nam%variables(1:bump%nam%nv),bump%nam%lev2d,bump%nam%var2d)
 
@@ -1216,9 +1098,6 @@ call bump%vbal%apply_inv(bump%nam,bump%geom(1),fld_c0a)
 
 ! Fortran array on subset Sc0 to fieldset
 call bump%geom(1)%c0_to_fieldset(bump%mpl,bump%nam,fld_c0a,fieldset)
-
-! Probe out
-@:probe_out()
 
 end subroutine bump_apply_vbal_inv
 
@@ -1240,12 +1119,6 @@ real(kind_real) :: fld_c0a(bump%geom(1)%nc0a,bump%geom(1)%nl0,bump%nam%nv)
 ! Set name
 @:set_name(bump_apply_stddev)
 
-! Get instance
-@:get_instance(bump)
-
-! Probe in
-@:probe_in()
-
 ! Set fieldset metadata
 call fieldset%set_metadata(bump%mpl,bump%geom(1)%gmask_mga,bump%nam%variables(1:bump%nam%nv),bump%nam%lev2d,bump%nam%var2d)
 
@@ -1257,9 +1130,6 @@ call bump%var%apply_sqrt(bump%mpl,bump%nam,bump%geom(1),fld_c0a)
 
 ! Fortran array on subset Sc0 to fieldset
 call bump%geom(1)%c0_to_fieldset(bump%mpl,bump%nam,fld_c0a,fieldset)
-
-! Probe out
-@:probe_out()
 
 end subroutine bump_apply_stddev
 
@@ -1281,12 +1151,6 @@ real(kind_real) :: fld_c0a(bump%geom(1)%nc0a,bump%geom(1)%nl0,bump%nam%nv)
 ! Set name
 @:set_name(bump_apply_stddev_inv)
 
-! Get instance
-@:get_instance(bump)
-
-! Probe in
-@:probe_in()
-
 ! Set fieldset metadata
 call fieldset%set_metadata(bump%mpl,bump%geom(1)%gmask_mga,bump%nam%variables(1:bump%nam%nv),bump%nam%lev2d,bump%nam%var2d)
 
@@ -1298,9 +1162,6 @@ call bump%var%apply_sqrt_inv(bump%mpl,bump%nam,bump%geom(1),fld_c0a)
 
 ! Fortran array on subset Sc0 to fieldset
 call bump%geom(1)%c0_to_fieldset(bump%mpl,bump%nam,fld_c0a,fieldset)
-
-! Probe out
-@:probe_out()
 
 end subroutine bump_apply_stddev_inv
 
@@ -1322,12 +1183,6 @@ real(kind_real) :: fld_c0a(bump%geom(1)%nc0a,bump%geom(1)%nl0,bump%nam%nv)
 ! Set name
 @:set_name(bump_apply_nicas)
 
-! Get instance
-@:get_instance(bump)
-
-! Probe in
-@:probe_in()
-
 ! Set fieldset metadata
 call fieldset%set_metadata(bump%mpl,bump%geom(1)%gmask_mga,bump%nam%variables(1:bump%nam%nv),bump%nam%lev2d,bump%nam%var2d)
 
@@ -1339,9 +1194,6 @@ call bump%nicas(1)%apply(bump%mpl,bump%nam,bump%geom(1),fld_c0a)
 
 ! Fortran array on subset Sc0 to fieldset
 call bump%geom(1)%c0_to_fieldset(bump%mpl,bump%nam,fld_c0a,fieldset)
-
-! Probe out
-@:probe_out()
 
 end subroutine bump_apply_nicas
 
@@ -1363,20 +1215,11 @@ type(cv_type) :: cv
 ! Set name
 @:set_name(bump_get_cv_size)
 
-! Get instance
-@:get_instance(bump)
-
-! Probe in
-@:probe_in()
-
 ! Allocate control variable
 call bump%nicas(1)%alloc_cv(bump%mpl,bump%nam,bump%geom(1),cv,getsizeonly=.true.)
 
 ! Copy size
 n = cv%n
-
-! Probe out
-@:probe_out()
 
 end subroutine bump_get_cv_size
 
@@ -1402,12 +1245,6 @@ type(cv_type) :: cv
 ! Set name
 @:set_name(bump_apply_nicas_sqrt)
 
-! Get instance
-@:get_instance(bump)
-
-! Probe in
-@:probe_in()
-
 ! Allocation
 call bump%nicas(1)%alloc_cv(bump%mpl,bump%nam,bump%geom(1),cv)
 
@@ -1432,9 +1269,6 @@ call fieldset%set_metadata(bump%mpl,bump%geom(1)%gmask_mga,bump%nam%variables(1:
 ! Fortran array on subset Sc0 to fieldset
 call bump%geom(1)%c0_to_fieldset(bump%mpl,bump%nam,fld_c0a,fieldset)
 
-! Probe out
-@:probe_out()
-
 end subroutine bump_apply_nicas_sqrt
 
 !----------------------------------------------------------------------
@@ -1458,12 +1292,6 @@ type(cv_type) :: cv
 ! Set name
 @:set_name(bump_apply_nicas_sqrt_ad)
 
-! Get instance
-@:get_instance(bump)
-
-! Probe in
-@:probe_in()
-
 ! Set fieldset metadata
 call fieldset%set_metadata(bump%mpl,bump%geom(1)%gmask_mga,bump%nam%variables(1:bump%nam%nv),bump%nam%lev2d,bump%nam%var2d)
 
@@ -1475,9 +1303,6 @@ call bump%nicas(1)%apply_sqrt_ad(bump%mpl,bump%nam,bump%geom(1),fld_c0a,cv)
 
 ! Pack control variable
 call cv%pack(acv,offset)
-
-! Probe out
-@:probe_out()
 
 end subroutine bump_apply_nicas_sqrt_ad
 
@@ -1500,12 +1325,6 @@ type(cv_type) :: cv
 ! Set name
 @:set_name(bump_randomize)
 
-! Get instance
-@:get_instance(bump)
-
-! Probe in
-@:probe_in()
-
 ! Generate random control vector
 call bump%nicas(1)%random_cv(bump%mpl,bump%rng,bump%nam,bump%geom(1),cv)
 
@@ -1517,9 +1336,6 @@ call fieldset%set_metadata(bump%mpl,bump%geom(1)%gmask_mga,bump%nam%variables(1:
 
 ! Fortran array on subset Sc0 to fieldset
 call bump%geom(1)%c0_to_fieldset(bump%mpl,bump%nam,fld_c0a,fieldset)
-
-! Probe out
-@:probe_out()
 
 end subroutine bump_randomize
 
@@ -1542,12 +1358,6 @@ type(atlas_field) :: afield
 
 ! Set name
 @:set_name(bump_psichi_to_uv)
-
-! Get instance
-@:get_instance(bump)
-
-! Probe in
-@:probe_in()
 
 ! Get u/v variables in fieldset or create and add them
 if (fieldset%has_field('eastward_wind')) then
@@ -1586,9 +1396,6 @@ call bump%wind%psichi_to_uv(bump%mpl,bump%geom(1),fld_c0a(:,:,iv_psi),fld_c0a(:,
 ! Fortran array on subset Sc0 to fieldset
 call bump%geom(1)%c0_to_fieldset(bump%mpl,bump%nam,fld_c0a,fieldset)
 
-! Probe out
-@:probe_out()
-
 end subroutine bump_psichi_to_uv
 
 !----------------------------------------------------------------------
@@ -1610,12 +1417,6 @@ type(atlas_field) :: afield
 
 ! Set name
 @:set_name(bump_psichi_to_uv_ad)
-
-! Get instance
-@:get_instance(bump)
-
-! Probe in
-@:probe_in()
 
 ! Get psi/chi variables in fieldset or create and add them
 if (fieldset%has_field('air_horizontal_streamfunction')) then
@@ -1654,9 +1455,6 @@ call bump%wind%psichi_to_uv_ad(bump%mpl,bump%geom(1),fld_c0a(:,:,iv_ua),fld_c0a(
 ! Fortran array on subset Sc0 to fieldset
 call bump%geom(1)%c0_to_fieldset(bump%mpl,bump%nam,fld_c0a,fieldset)
 
-! Probe out
-@:probe_out()
-
 end subroutine bump_psichi_to_uv_ad
 
 !----------------------------------------------------------------------
@@ -1680,12 +1478,6 @@ logical :: found
 
 ! Set name
 @:set_name(bump_get_parameter)
-
-! Get instance
-@:get_instance(bump)
-
-! Probe in
-@:probe_in()
 
 write(bump%mpl%info,'(a7,a,a)') '','Get ',trim(param)
 call bump%mpl%flush
@@ -1981,9 +1773,6 @@ call fieldset%apply_mask(bump%mpl,bump%mpl%msv%valr)
 deallocate(fld_c0a)
 deallocate(fld_mga)
 
-! Probe out
-@:probe_out()
-
 end subroutine bump_get_parameter
 
 !----------------------------------------------------------------------
@@ -2004,12 +1793,6 @@ integer :: ig
 ! Set name
 @:set_name(bump_set_ncmp)
 
-! Get instance
-@:get_instance(bump)
-
-! Probe in
-@:probe_in()
-
 write(bump%mpl%info,'(a7,a,i1)') '','Set number of components: ',ncmp
 call bump%mpl%flush
 
@@ -2022,9 +1805,6 @@ do ig=1,bump%nam%ng
    bump%cmat(1)%blk(ig)%ncmp = ncmp
    bump%nicas(1)%blk(ig)%ncmp = ncmp
 end do
-
-! Probe out
-@:probe_out()
 
 end subroutine bump_set_ncmp
 
@@ -2050,12 +1830,6 @@ logical :: found
 
 ! Set name
 @:set_name(bump_set_parameter)
-
-! Get instance
-@:get_instance(bump)
-
-! Probe in
-@:probe_in()
 
 write(bump%mpl%info,'(a7,a,a)') '','Set ',trim(param)
 call bump%mpl%flush
@@ -2214,9 +1988,6 @@ do iv=1,bump%nam%nv
    if (.not.found) call bump%mpl%abort('${subr}$','parameter '//trim(param)//' not found')
 end do
 
-! Probe out
-@:probe_out()
-
 end subroutine bump_set_parameter
 
 !----------------------------------------------------------------------
@@ -2232,12 +2003,6 @@ class(bump_type),intent(inout) :: bump !< BUMP
 
 ! Set name
 @:set_name(bump_partial_dealloc)
-
-! Get instance
-@:get_instance(bump)
-
-! Probe in
-@:probe_in()
 
 ! Release memory
 if (allocated(bump%cmat)) then
@@ -2269,9 +2034,6 @@ end if
 call bump%var%partial_dealloc
 call bump%vbal%partial_dealloc
 
-! Probe out
-@:probe_out()
-
 end subroutine bump_partial_dealloc
 
 !----------------------------------------------------------------------
@@ -2287,12 +2049,6 @@ class(bump_type),intent(inout) :: bump !< BUMP
 
 ! Set name
 @:set_name(bump_dealloc)
-
-! Get instance
-@:get_instance(bump)
-
-! Execution stats
-@:execution_stats()
 
 ! Number of open NetCDF files
 call registry%report(bump%mpl)
@@ -2336,14 +2092,8 @@ end if
 call bump%var%dealloc
 call bump%vbal%dealloc
 
-! Execution stats
-@:execution_stats()
-
 ! Finalize MPL object
 call bump%mpl%final()
-
-! Release probe instance
-@:probe_dealloc()
 
 end subroutine bump_dealloc
 
@@ -2361,17 +2111,8 @@ type(bump_type),intent(inout) :: bump !< BUMP
 ! Set name
 @:set_name(bump_dummy_final)
 
-! Get instance
-@:get_instance(bump)
-
-! Probe in
-@:probe_in()
-
 ! Dummy action to avoid compiler warning
 bump%dummy_logical = .false.
-
-! Probe out
-@:probe_out()
 
 end subroutine bump_dummy_final
 

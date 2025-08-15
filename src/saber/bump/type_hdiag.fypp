@@ -1,4 +1,4 @@
-#:include 'instrumentation.fypp'
+#:include 'generics.fypp'
 !----------------------------------------------------------------------
 ! Module: type_hdiag
 !> Hybrid diagnostics derived type
@@ -20,7 +20,6 @@ use type_gsi, only: gsi_type
 use type_mom, only: mom_type
 use type_mpl, only: mpl_type
 use type_nam, only: nam_type
-@:use_probe()
 use type_samp, only: samp_type
 use type_tree, only: tree_type
 
@@ -60,9 +59,6 @@ class(hdiag_type),intent(inout) :: hdiag !< Hybrid diagnostics
 ! Set name
 @:set_name(hdiag_partial_dealloc)
 
-! Probe in
-@:probe_in()
-
 ! Release memory
 if (allocated(hdiag%avg)) then
    call hdiag%avg(1)%dealloc
@@ -82,9 +78,6 @@ if (allocated(hdiag%loc)) then
 end if
 if (allocated(hdiag%gsi_ref)) deallocate(hdiag%gsi_ref)
 
-! Probe out
-@:probe_out()
-
 end subroutine hdiag_partial_dealloc
 
 !----------------------------------------------------------------------
@@ -101,18 +94,12 @@ class(hdiag_type),intent(inout) :: hdiag !< Hybrid diagnostics
 ! Set name
 @:set_name(hdiag_dealloc)
 
-! Probe in
-@:probe_in()
-
 ! Release memory
 call hdiag%partial_dealloc
 if (allocated(hdiag%avg)) deallocate(hdiag%avg)
 if (allocated(hdiag%cov)) deallocate(hdiag%cov)
 if (allocated(hdiag%cor)) deallocate(hdiag%cor)
 if (allocated(hdiag%loc)) deallocate(hdiag%loc)
-
-! Probe out
-@:probe_out()
 
 end subroutine hdiag_dealloc
 
@@ -140,9 +127,6 @@ character(len=1024) :: grpname
 
 ! Set name
 @:set_name(hdiag_write)
-
-! Probe in
-@:probe_in()
 
 ! Initialization
 ic2a(0) = mpl%msv%vali
@@ -204,9 +188,6 @@ do ildwv=0,nam%nldwv
    end if
 end do
 
-! Probe out
-@:probe_out()
-
 end subroutine hdiag_write
 
 !----------------------------------------------------------------------
@@ -227,9 +208,6 @@ type(mom_type),intent(in) :: mom(2)      !< Moments
 
 ! Set name
 @:set_name(hdiag_run_hdiag)
-
-! Probe in
-@:probe_in()
 
 ! Allocation
 allocate(hdiag%avg(2))
@@ -342,9 +320,6 @@ if (nam%write_hdiag) then
    call hdiag%write(mpl,nam,geom,samp)
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine hdiag_run_hdiag
 
 !----------------------------------------------------------------------
@@ -371,9 +346,6 @@ type(diag_type) :: cor_tmp
 
 ! Set name
 @:set_name(hdiag_from_gsi)
-
-! Probe in
-@:probe_in()
 
 ! Allocation
 allocate(hdiag%cor(2))
@@ -535,9 +507,6 @@ if (nam%check_dirac.and.allocated(hdiag%gsi_ref)) then
    deallocate(mse_hor)
    deallocate(mse_ver)
 end if
-
-! Probe out
-@:probe_out()
 
 end subroutine hdiag_from_gsi
 

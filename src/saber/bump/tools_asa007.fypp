@@ -1,4 +1,4 @@
-#:include 'instrumentation.fypp'
+#:include 'generics.fypp'
 !----------------------------------------------------------------------
 ! Module: tools_asa007
 !> Inverse of symmetric positive definite matrix routines
@@ -17,7 +17,6 @@ use tools_const, only: zero,one
 use tools_kinds, only: kind_real
 use tools_repro, only: inf,infeq
 use type_mpl, only: mpl_type
-@:use_probe()
 
 implicit none
 
@@ -56,9 +55,6 @@ real(kind_real) :: w,x
 
 ! Set name
 @:set_name(asa007_cholesky)
-
-! Probe in
-@:probe_in()
 
 ! Initialization
 ii = 0
@@ -105,9 +101,6 @@ do icol=1,n
    j = j+icol
 end do
 
-! Probe out
-@:probe_out()
-
 end subroutine asa007_cholesky
 
 !----------------------------------------------------------------------
@@ -131,9 +124,6 @@ real(kind_real) :: w(n),x
 
 ! Set name
 @:set_name(asa007_syminv)
-
-! Probe in
-@:probe_in()
 
 ! Initialization
 nrow = n
@@ -192,9 +182,6 @@ do
    irow = irow-1
    if (irow<=0) exit
 end do
-
-! Probe out
-@:probe_out()
 
 end subroutine asa007_syminv
 

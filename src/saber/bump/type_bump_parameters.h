@@ -396,10 +396,6 @@ struct SamplingDef {
   std::pair<const char *, double> local_dlat =
     std::make_pair("averaging latitude width", 0.0);
 
-  // Diagnostic draw type ('random' or 'regular')
-  std::pair<const char *, std::string> draw_type =
-    std::make_pair("grid type", "random");
-
   // Maximum number of random number draws
   std::pair<const char *, int> irmax =
     std::make_pair("max number of draws", 10000);
@@ -547,9 +543,9 @@ struct NICASDef {
   std::pair<const char *, double> resol =
     std::make_pair("resolution", 0.0);
 
-  // NICAS draw type ('random' or 'regular')
+  // NICAS draw type ('regular' or 'random')
   std::pair<const char *, std::string> nicas_draw_type =
-    std::make_pair("grid type", "random");
+    std::make_pair("grid type", "regular");
 
   // Force specific support radii
   std::pair<const char *, bool> forced_radii =

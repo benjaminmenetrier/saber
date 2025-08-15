@@ -25,8 +25,7 @@ background error:
         compute nicas: true
         internal dirac test: true
       nicas:
-        resolution: 10.0
-        max horizontal grid size: 7000
+        resolution: 5
         explicit length-scales: true
         horizontal length-scale:
         - groups:

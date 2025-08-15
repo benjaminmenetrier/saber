@@ -2,7 +2,7 @@ geometry:
   function space: StructuredColumns
   grid:
     type: regular_lonlat
-    N: 10
+    N: 20
   groups:
   - variables:
     - air_horizontal_streamfunction
@@ -35,7 +35,7 @@ background error:
       ensemble sizes:
         total ensemble size: 50
       nicas:
-        resolution: 4.0
+        resolution: 5
         explicit length-scales: true
         horizontal length-scale:
         - groups:

@@ -1,4 +1,4 @@
-#:include 'instrumentation.fypp'
+#:include 'generics.fypp'
 !----------------------------------------------------------------------
 ! Module: type_vbal_blk
 !> Vertical balance block derived type
@@ -16,7 +16,6 @@ use type_ens, only: ens_type
 use type_geom, only: geom_type
 use type_mpl, only: mpl_type
 use type_nam, only: nam_type
-@:use_probe()
 use type_samp, only: samp_type
 
 implicit none
@@ -83,9 +82,6 @@ integer,intent(in) :: jv                       !< Second variable index
 ! Set name
 @:set_name(vbal_blk_alloc)
 
-! Probe in
-@:probe_in()
-
 ! Allocation
 if (nam%vbal_block(iv,jv)) allocate(vbal_blk%reg_c2b(geom%nl0,geom%nl0,samp%nc2b))
 if (nam%new_vbal) then
@@ -106,9 +102,6 @@ if (nam%iterative_algo) then
    allocate(vbal_blk%seq_cov_c1a(samp%nc1a,geom%nl0,geom%nl0))
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine vbal_blk_alloc
 
 !----------------------------------------------------------------------
@@ -125,9 +118,6 @@ class(vbal_blk_type),intent(inout) :: vbal_blk !< Vertical balance block
 ! Set name
 @:set_name(vbal_blk_partial_dealloc)
 
-! Probe in
-@:probe_in()
-
 ! Release memory
 if (allocated(vbal_blk%cov_c1a)) deallocate(vbal_blk%cov_c1a)
 if (allocated(vbal_blk%full_cov_c1a)) deallocate(vbal_blk%full_cov_c1a)
@@ -141,9 +131,6 @@ if (allocated(vbal_blk%cov_c2b)) deallocate(vbal_blk%cov_c2b)
 if (allocated(vbal_blk%reg_c2a)) deallocate(vbal_blk%reg_c2a)
 if (allocated(vbal_blk%explained_var_c2a)) deallocate(vbal_blk%explained_var_c2a)
 if (allocated(vbal_blk%explained_var_c2b)) deallocate(vbal_blk%explained_var_c2b)
-
-! Probe out
-@:probe_out()
 
 end subroutine vbal_blk_partial_dealloc
 
@@ -161,15 +148,9 @@ class(vbal_blk_type),intent(inout) :: vbal_blk !< Vertical balance block
 ! Set name
 @:set_name(vbal_blk_dealloc)
 
-! Probe in
-@:probe_in()
-
 ! Release memory
 call vbal_blk%partial_dealloc
 if (allocated(vbal_blk%reg_c2b)) deallocate(vbal_blk%reg_c2b)
-
-! Probe out
-@:probe_out()
 
 end subroutine vbal_blk_dealloc
 
@@ -198,9 +179,6 @@ real(kind_real) :: fld_c1a_1(samp%nc1a,geom%nl0),fld_c1a_2(samp%nc1a,geom%nl0)
 
 ! Set name
 @:set_name(vbal_blk_cov_update)
-
-! Probe in
-@:probe_in()
 
 ! Indices
 isub = (ie-1)/(nam%ens1_ne/nam%ens1_nsub)+1
@@ -271,9 +249,6 @@ if (ie==nam%ens1_ne) then
    !$omp end parallel do
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine vbal_blk_cov_update
 
 !----------------------------------------------------------------------
@@ -303,9 +278,6 @@ real(kind_real) :: cov(samp%nc1a,geom%nl0,geom%nl0,vbal_blk%nsub)
 
 ! Set name
 @:set_name(vbal_blk_compute_covariance)
-
-! Probe in
-@:probe_in()
 
 ! Initialization
 cov = zero
@@ -396,9 +368,6 @@ do il0=1,geom%nl0
    end do
 end do
 
-! Probe out
-@:probe_out()
-
 end subroutine vbal_blk_compute_covariance
 
 !----------------------------------------------------------------------
@@ -425,9 +394,6 @@ real(kind_real),allocatable :: list_cov(:),cov_c2a(:),cov_c2b(:)
 
 ! Set name
 @:set_name(vbal_blk_compute_spatial_average)
-
-! Probe in
-@:probe_in()
 
 ! Pack data in halo A
 do ic1a=1,samp%nc1a
@@ -519,9 +485,6 @@ if (nam%diag_rhflt>zero) then
    deallocate(cov_c2b)
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine vbal_blk_compute_spatial_average
 
 !----------------------------------------------------------------------
@@ -549,9 +512,6 @@ logical :: valid
 
 ! Set name
 @:set_name(vbal_blk_compute_regression)
-
-! Probe in
-@:probe_in()
 
 ! Initialization
 call mpl%prog_init(samp%nc2b)
@@ -633,9 +593,6 @@ if (nam%new_vbal_cov.or.nam%load_vbal_cov) then
    deallocate(fld_c2b)
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine vbal_blk_compute_regression
 
 !----------------------------------------------------------------------
@@ -662,9 +619,6 @@ real(kind_real) :: S,fld_tmp(geom%nc0a,geom%nl0)
 ! Set name
 @:set_name(vbal_blk_apply)
 
-! Probe in
-@:probe_in()
-
 ! Initialization
 fld_tmp = zero
 
@@ -689,9 +643,6 @@ end do
 
 ! Final copy
 fld = fld_tmp
-
-! Probe out
-@:probe_out()
 
 end subroutine vbal_blk_apply
 
@@ -719,9 +670,6 @@ real(kind_real) :: S,fld_tmp(geom%nc0a,geom%nl0)
 ! Set name
 @:set_name(vbal_blk_apply_ad)
 
-! Probe in
-@:probe_in()
-
 ! Initialization
 fld_tmp = zero
 
@@ -746,9 +694,6 @@ end do
 
 ! Final copy
 fld = fld_tmp
-
-! Probe out
-@:probe_out()
 
 end subroutine vbal_blk_apply_ad
 

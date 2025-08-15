@@ -1,4 +1,4 @@
-#:include 'instrumentation.fypp'
+#:include 'generics.fypp'
 !----------------------------------------------------------------------
 ! Module: type_hull
 !> Hull derived type
@@ -13,7 +13,6 @@ use tools_func, only: lonlat2xyz,xyz2lonlat,sphere_dist,vector_product,area
 use tools_kinds, only: kind_real,huge_real
 use tools_repro, only: infeq,sup,repro_th
 use type_mpl, only: mpl_type
-@:use_probe()
 
 implicit none
 
@@ -56,9 +55,6 @@ class(hull_type),intent(inout) :: hull  !< Hull
 ! Set name
 @:set_name(hull_init_empty)
 
-! Probe in
-@:probe_in()
-
 ! No hull vertices
 hull%nb = 0
 
@@ -67,9 +63,6 @@ allocate(hull%vbnd(3,hull%nb))
 
 ! Whole sphere
 hull%area = four*pi
-
-! Probe out
-@:probe_out()
 
 end subroutine hull_init_empty
 
@@ -94,9 +87,6 @@ real(kind_real) :: cd(3)
 
 ! Set name
 @:set_name(hull_init_from_vertices)
-
-! Probe in
-@:probe_in()
 
 ! Copy number of hull vertices
 hull%nb = n
@@ -131,9 +121,6 @@ else
    hull%area = four*pi
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine hull_init_from_vertices
 
 !----------------------------------------------------------------------
@@ -159,9 +146,6 @@ real(kind_real) :: cd(3),v(3)
 
 ! Set name
 @:set_name(hull_init_centroid_radius)
-
-! Probe in
-@:probe_in()
 
 if (n>0) then
    ! Compute centroid
@@ -200,9 +184,6 @@ else
    hull%radius = zero
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine hull_init_centroid_radius
 
 !----------------------------------------------------------------------
@@ -219,14 +200,8 @@ class(hull_type),intent(inout) :: hull !< Hull
 ! Set name
 @:set_name(hull_dealloc)
 
-! Probe in
-@:probe_in()
-
 ! Release memory
 if (allocated(hull%vbnd)) deallocate(hull%vbnd)
-
-! Probe out
-@:probe_out()
 
 end subroutine hull_dealloc
 
@@ -252,9 +227,6 @@ real(kind_real) :: vp(3),v1(3),v2(3),cp(3),cd(3)
 
 ! Set name
 @:set_name(hull_inside)
-
-! Probe in
-@:probe_in()
 
 if (allocated(hull%vbnd)) then
    ! Boundary points-based hull
@@ -311,9 +283,6 @@ else
    end if
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine hull_inside
 
 !----------------------------------------------------------------------
@@ -338,9 +307,6 @@ real(kind_real) :: vp(3),cp(3)
 
 ! Set name
 @:set_name(hull_distance)
-
-! Probe in
-@:probe_in()
 
 if (allocated(hull%vbnd)) then
    ! Transform to cartesian coordinates
@@ -377,9 +343,6 @@ else
    ! Missing value
    dist = mpl%msv%valr
 end if
-
-! Probe out
-@:probe_out()
 
 end subroutine hull_distance
 

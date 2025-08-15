@@ -1,4 +1,4 @@
-#:include 'instrumentation.fypp'
+#:include 'generics.fypp'
 !----------------------------------------------------------------------
 ! Module: type_var
 !> Variance derived type
@@ -20,7 +20,6 @@ use type_gsi, only: gsi_type
 use type_mpl, only: mpl_type
 use type_nam, only: nam_type
 use type_nicas_blk, only: nicas_blk_type
-@:use_probe()
 use type_rng, only: rng_type
 
 implicit none
@@ -81,9 +80,6 @@ type(geom_type),intent(in) :: geom   !< Geometry
 ! Set name
 @:set_name(var_alloc)
 
-! Probe in
-@:probe_in()
-
 ! Allocation
 allocate(var%m2(geom%nc0a,geom%nl0,nam%nv))
 allocate(var%m4(geom%nc0a,geom%nl0,nam%nv))
@@ -96,9 +92,6 @@ if (nam%iterative_algo) then
    allocate(var%seq_m4(geom%nc0a,geom%nl0,nam%nv))
 end if
 
-
-! Probe out
-@:probe_out()
 
 end subroutine var_alloc
 
@@ -116,15 +109,9 @@ class(var_type),intent(inout) :: var !< Variance
 ! Set name
 @:set_name(var_partial_bump_dealloc)
 
-! Probe in
-@:probe_in()
-
 ! Release memory
 if (allocated(var%bump_m2)) deallocate(var%bump_m2)
 if (allocated(var%bump_m4)) deallocate(var%bump_m4)
-
-! Probe out
-@:probe_out()
 
 end subroutine var_partial_bump_dealloc
 
@@ -142,9 +129,6 @@ class(var_type),intent(inout) :: var !< Variance
 ! Set name
 @:set_name(var_partial_dealloc)
 
-! Probe in
-@:probe_in()
-
 ! Release memory
 call var%partial_bump_dealloc
 if (allocated(var%m2flt)) deallocate(var%m2flt)
@@ -152,9 +136,6 @@ if (allocated(var%seq_m1)) deallocate(var%seq_m1)
 if (allocated(var%seq_m2)) deallocate(var%seq_m2)
 if (allocated(var%seq_m3)) deallocate(var%seq_m3)
 if (allocated(var%seq_m4)) deallocate(var%seq_m4)
-
-! Probe out
-@:probe_out()
 
 end subroutine var_partial_dealloc
 
@@ -172,17 +153,11 @@ class(var_type),intent(inout) :: var !< Variance
 ! Set name
 @:set_name(var_dealloc)
 
-! Probe in
-@:probe_in()
-
 ! Release memory
 call var%partial_dealloc
 if (allocated(var%m2)) deallocate(var%m2)
 if (allocated(var%m4)) deallocate(var%m4)
 if (allocated(var%m2sqrt)) deallocate(var%m2sqrt)
-
-! Probe out
-@:probe_out()
 
 end subroutine var_dealloc
 
@@ -210,9 +185,6 @@ real(kind_real) :: pert_c0a(geom%nc0a,geom%nl0,nam%nv)
 
 ! Set name
 @:set_name(var_update)
-
-! Probe in
-@:probe_in()
 
 ! Update variance
 write(mpl%info,'(a)') '-------------------------------------------------------------------'
@@ -324,9 +296,6 @@ end if
 ! Reset random seed if necessary
 call rng%reseed
 
-! Probe out
-@:probe_out()
-
 end subroutine var_update
 
 !----------------------------------------------------------------------
@@ -351,9 +320,6 @@ integer :: ic0a,il0,iv
 
 ! Set name
 @:set_name(var_run_var)
-
-! Probe in
-@:probe_in()
 
 ! Allocation
 if (.not.nam%iterative_algo) call var%alloc(nam,geom)
@@ -441,9 +407,6 @@ end if
 ! Reset random seed if necessary
 call rng%reseed
 
-! Probe out
-@:probe_out()
-
 end subroutine var_run_var
 
 !----------------------------------------------------------------------
@@ -467,9 +430,6 @@ real(kind_real) :: rlatm,rlatp
 
 ! Set name
 @:set_name(var_from_gsi)
-
-! Probe in
-@:probe_in()
 
 ! Interpolate
 do iv=1,nam%nv
@@ -498,9 +458,6 @@ do iv=1,nam%nv
    end if
 end do
 
-! Probe out
-@:probe_out()
-
 end subroutine var_from_gsi
 
 !----------------------------------------------------------------------
@@ -528,9 +485,6 @@ type(nicas_blk_type) :: nicas_blk
 
 ! Set name
 @:set_name(var_filter)
-
-! Probe in
-@:probe_in()
 
 ! Filter variance
 write(mpl%info,'(a7,a)') '','Filter variance'
@@ -760,9 +714,6 @@ do iv=1,nam%nv
    end do
 end do
 
-! Probe out
-@:probe_out()
-
 end subroutine var_filter
 
 !----------------------------------------------------------------------
@@ -786,9 +737,6 @@ integer :: ic0a,il0,iv
 ! Set name
 @:set_name(var_apply_sqrt)
 
-! Probe in
-@:probe_in()
-
 ! Apply variance square-root
 do il0=1,geom%nl0
    do ic0a=1,geom%nc0a
@@ -803,9 +751,6 @@ do il0=1,geom%nl0
       end if
    end do
 end do
-
-! Probe out
-@:probe_out()
 
 end subroutine var_apply_sqrt
 
@@ -830,9 +775,6 @@ integer :: ic0a,il0,iv
 ! Set name
 @:set_name(var_apply_sqrt_inv)
 
-! Probe in
-@:probe_in()
-
 ! Apply inverse variance square-root
 do il0=1,geom%nl0
    do ic0a=1,geom%nc0a
@@ -847,9 +789,6 @@ do il0=1,geom%nl0
       end if
    end do
 end do
-
-! Probe out
-@:probe_out()
 
 end subroutine var_apply_sqrt_inv
 

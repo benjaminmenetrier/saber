@@ -1,5 +1,4 @@
 #:include 'generics.fypp'
-#:include 'instrumentation.fypp'
 !----------------------------------------------------------------------
 ! Module: tools_netcdf
 !> NetCDF wrappers
@@ -16,7 +15,6 @@ use netcdf, only: nf90_clobber,nf90_create,nf90_close,nf90_def_dim,nf90_def_grp,
 use tools_func, only: convert_i2l,convert_l2i
 use tools_kinds, only: kind_signed_char,kind_int,kind_float,kind_double,kind_real,nc_kind_int,nc_kind_real
 use type_mpl, only: mpl_type
-@:use_probe()
 
 implicit none
 
@@ -130,9 +128,6 @@ type(mpl_type),intent(inout) :: mpl            !< MPI data
 ! Set name
 @:set_name(registry_report)
 
-! Probe in
-@:probe_in()
-
 write(mpl%info,'(a)') '-------------------------------------------------------------------'
 call mpl%flush
 write(mpl%info,'(a)') '--- NetCDF I/O report'
@@ -143,9 +138,6 @@ write(mpl%info,'(a7,a,i3)') '','Number of closed files: ',registry%nclosed
 call mpl%flush
 write(mpl%info,'(a7,a,i3)') '','Registry status: ',count(registry%id(:,1)/=-1)
 call mpl%flush
-
-! Probe out
-@:probe_out()
 
 end subroutine registry_report
 
@@ -169,9 +161,6 @@ integer :: i,rid
 
 ! Set name
 @:set_name(registry_save)
-
-! Probe in
-@:probe_in()
 
 ! Initialization
 rid = mpl%msv%vali
@@ -199,9 +188,6 @@ registry%name(rid) = child_name(1:min(len(child_name),ncharmax))
 ! Update archive
 if (parent_id==0) registry%nopened = registry%nopened+1
 
-! Probe out
-@:probe_out()
-
 end subroutine registry_save
 
 !----------------------------------------------------------------------
@@ -226,9 +212,6 @@ logical :: found
 
 ! Set name
 @:set_name(registry_get_root_id)
-
-! Probe in
-@:probe_in()
 
 if (mpl%msv%isnot(ncid)) then
    ! Initialization
@@ -267,9 +250,6 @@ else
    rid = mpl%msv%vali
 end if
 
-! Probe out
-@:probe_out()
-
 end function registry_get_root_id
 
 !----------------------------------------------------------------------
@@ -288,17 +268,11 @@ integer,intent(in) :: ncid                     !< Child ID
 ! Set name
 @:set_name(registry_free)
 
-! Probe in
-@:probe_in()
-
 ! Run recursive cleaning
 call registry%recursive_cleaning(mpl,ncid)
 
 ! Update archive
 registry%nclosed = registry%nclosed+1
-
-! Probe out
-@:probe_out()
 
 end subroutine registry_free
 
@@ -321,9 +295,6 @@ integer :: i,child_id
 ! Set name
 @:set_name(registry_recursive_cleaning)
 
-! Probe in
-@:probe_in()
-
 ! Call recursive cleaning for all the children
 do i=1,nidmax
    if (registry%id(i,1)==parent_id) then
@@ -339,9 +310,6 @@ do i=1,nidmax
       exit
    end if
 end do
-
-! Probe out
-@:probe_out()
 
 end subroutine registry_recursive_cleaning
 
@@ -368,9 +336,6 @@ character(len=1024) :: fullname
 
 ! Set name
 @:set_name(netcdf_create_file)
-
-! Probe in
-@:probe_in()
 
 ! Local I/O flag
 lio = mpl%pioproc(mpl%myproc)
@@ -414,9 +379,6 @@ if (lio) then
    call put_att(mpl,ncid,0,'_FillValue',mpl%msv%valr)
 end if
 
-! Probe out
-@:probe_out()
-
 end function netcdf_create_file
 
 !----------------------------------------------------------------------
@@ -445,9 +407,6 @@ character(len=1024) :: lext,fullname
 
 ! Set name
 @:set_name(netcdf_open_file)
-
-! Probe in
-@:probe_in()
 
 ! Local extension
 lext = '.nc'
@@ -498,9 +457,6 @@ if (lio) then
    if (mpl%msv%isnot(ncid)) call registry%save(mpl,0,ncid,filename)
 end if
 
-! Probe out
-@:probe_out()
-
 end function netcdf_open_file
 
 !----------------------------------------------------------------------
@@ -527,9 +483,6 @@ logical :: lio
 ! Set name
 @:set_name(netcdf_define_grp)
 
-! Probe in
-@:probe_in()
-
 ! Local I/O flag
 lio = mpl%pioproc(mpl%myproc)
 if (present(io_override)) lio = lio.or.io_override
@@ -549,9 +502,6 @@ if (lio) then
       if (mpl%msv%isnot(grpid)) call registry%save(mpl,ncid,grpid,grpname)
    end if
 end if
-
-! Probe out
-@:probe_out()
 
 end function netcdf_define_grp
 
@@ -579,9 +529,6 @@ logical :: lio
 
 ! Set name
 @:set_name(netcdf_inquire_grp)
-
-! Probe in
-@:probe_in()
 
 ! Local I/O flag
 lio = mpl%pioproc(mpl%myproc)
@@ -612,9 +559,6 @@ if (lio) then
    end if
 end if
 
-! Probe out
-@:probe_out()
-
 end function netcdf_inquire_grp
 
 #:for dtype in dtypes_irls
@@ -642,9 +586,6 @@ logical :: lio
 ! Set name
 @:set_name(netcdf_put_att_${dtype}$)
 
-! Probe in
-@:probe_in()
-
 ! Local I/O flag
 lio = mpl%pioproc(mpl%myproc)
 if (present(io_override)) lio = lio.or.io_override
@@ -670,9 +611,6 @@ if (lio) then
       #:endif
    end if
 end if
-
-! Probe out
-@:probe_out()
 
 end subroutine netcdf_put_att_${dtype}$
 #:endfor
@@ -702,9 +640,6 @@ logical :: lio
 
 ! Set name
 @:set_name(netcdf_get_att_${dtype}$)
-
-! Probe in
-@:probe_in()
 
 ! Local I/O flag
 lio = mpl%pioproc(mpl%myproc)
@@ -747,9 +682,6 @@ if (lio) then
    end if
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine netcdf_get_att_${dtype}$
 #:endfor
 
@@ -778,9 +710,6 @@ logical :: lio
 ! Set name
 @:set_name(netcdf_define_dim)
 
-! Probe in
-@:probe_in()
-
 ! Local I/O flag
 lio = mpl%pioproc(mpl%myproc)
 if (present(io_override)) lio = lio.or.io_override
@@ -795,9 +724,6 @@ if (lio) then
    ! Define dimension
    if (mpl%msv%isnot(rid)) call strerror(mpl,'${subr}$',ncid,nf90_def_dim(ncid,dimname,dimsize,dimid),'dimension '//trim(dimname))
 end if
-
-! Probe out
-@:probe_out()
 
 end function netcdf_define_dim
 
@@ -825,9 +751,6 @@ logical :: lio
 ! Set name
 @:set_name(netcdf_inquire_dim)
 
-! Probe in
-@:probe_in()
-
 ! Local I/O flag
 lio = mpl%pioproc(mpl%myproc)
 if (present(io_override)) lio = lio.or.io_override
@@ -850,9 +773,6 @@ if (lio) then
       end if
    end if
 end if
-
-! Probe out
-@:probe_out()
 
 end function netcdf_inquire_dim
 
@@ -881,9 +801,6 @@ logical :: lio
 ! Set name
 @:set_name(netcdf_inquire_dim_size)
 
-! Probe in
-@:probe_in()
-
 ! Initialization
 dimsize = mpl%msv%vali
 if (present(default)) dimsize = default
@@ -905,9 +822,6 @@ if (lio) then
     & 'dimension '//trim(dimname))
    end if
 end if
-
-! Probe out
-@:probe_out()
 
 end function netcdf_inquire_dim_size
 
@@ -936,9 +850,6 @@ logical :: lio
 ! Set name
 @:set_name(netcdf_check_dim_size)
 
-! Probe in
-@:probe_in()
-
 ! Local I/O flag
 lio = mpl%pioproc(mpl%myproc)
 if (present(io_override)) lio = lio.or.io_override
@@ -958,9 +869,6 @@ if (lio) then
       value = (dimsize_test==dimsize)
    end if
 end if
-
-! Probe out
-@:probe_out()
 
 end function netcdf_check_dim_size
 
@@ -990,9 +898,6 @@ logical :: lio
 
 ! Set name
 @:set_name(netcdf_define_var)
-
-! Probe in
-@:probe_in()
 
 ! Local I/O flag
 lio = mpl%pioproc(mpl%myproc)
@@ -1026,9 +931,6 @@ if (lio) then
       if (present(unitname)) call put_att(mpl,ncid,varid,'unit',unitname)
    end if
 end if
-
-! Probe out
-@:probe_out()
 
 end function netcdf_define_var
 
@@ -1065,9 +967,6 @@ logical :: lio
 ! Set name
 @:set_name(netcdf_inquire_var)
 
-! Probe in
-@:probe_in()
-
 ! Local I/O flag
 lio = mpl%pioproc(mpl%myproc)
 if (present(io_override)) lio = lio.or.io_override
@@ -1093,9 +992,6 @@ if (lio) then
       end if
    end if
 end if
-
-! Probe out
-@:probe_out()
 
 end function netcdf_inquire_var
 
@@ -1124,9 +1020,6 @@ logical :: lio
 ! Set name
 @:set_name(netcdf_put_var_${dtype}$_r0)
 
-! Probe in
-@:probe_in()
-
 ! Local I/O flag
 lio = mpl%pioproc(mpl%myproc)
 if (present(io_override)) lio = lio.or.io_override
@@ -1153,9 +1046,6 @@ if (lio) then
       #:endif
    end if
 end if
-
-! Probe out
-@:probe_out()
 
 end subroutine netcdf_put_var_${dtype}$_r0
 #:endfor
@@ -1189,9 +1079,6 @@ logical :: lio
 
 ! Set name
 @:set_name(netcdf_put_var_${dtype}$_r${rank}$)
-
-! Probe in
-@:probe_in()
 
 ! Local I/O flag
 lio = mpl%pioproc(mpl%myproc)
@@ -1230,9 +1117,6 @@ if (lio) then
    end if
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine netcdf_put_var_${dtype}$_r${rank}$
    #:endfor
 #:endfor
@@ -1262,9 +1146,6 @@ logical :: lio
 ! Set name
 @:set_name(netcdf_get_var_${dtype}$_r0)
 
-! Probe in
-@:probe_in()
-
 ! Local I/O flag
 lio = mpl%pioproc(mpl%myproc)
 if (present(io_override)) lio = lio.or.io_override
@@ -1291,9 +1172,6 @@ if (lio) then
       #:endif
    end if
 end if
-
-! Probe out
-@:probe_out()
 
 end subroutine netcdf_get_var_${dtype}$_r0
 #:endfor
@@ -1327,9 +1205,6 @@ logical :: lio
 
 ! Set name
 @:set_name(netcdf_get_var_${dtype}$_r${rank}$)
-
-! Probe in
-@:probe_in()
 
 ! Local I/O flag
 lio = mpl%pioproc(mpl%myproc)
@@ -1368,9 +1243,6 @@ if (lio) then
    end if
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine netcdf_get_var_${dtype}$_r${rank}$
    #:endfor
 #:endfor
@@ -1395,9 +1267,6 @@ logical :: lio
 ! Set name
 @:set_name(netcdf_close_file)
 
-! Probe in
-@:probe_in()
-
 ! Local I/O flag
 lio = mpl%pioproc(mpl%myproc)
 if (present(io_override)) lio = lio.or.io_override
@@ -1414,9 +1283,6 @@ if (lio) then
       call registry%free(mpl,ncid)
    end if
 end if
-
-! Probe out
-@:probe_out()
 
 end subroutine netcdf_close_file
 
@@ -1444,9 +1310,6 @@ character(len=1024) :: message
 
 ! Set name
 @:set_name(netcdf_strerror)
-
-! Probe in
-@:probe_in()
 
 ! Check status
 if (info/=nf90_noerr) then
@@ -1510,9 +1373,6 @@ if (info/=nf90_noerr) then
    ! Abort with proper MPI communicator
    call mpl%f_comm%abort(1)
 end if
-
-! Probe out
-@:probe_out()
 
 end subroutine netcdf_strerror
 

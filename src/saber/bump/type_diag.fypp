@@ -1,4 +1,4 @@
-#:include 'instrumentation.fypp'
+#:include 'generics.fypp'
 !----------------------------------------------------------------------
 ! Module: type_diag
 !> Diagnostic derived type
@@ -19,7 +19,6 @@ use type_diag_blk, only: diag_blk_type
 use type_geom, only: geom_type
 use type_mpl, only: mpl_type
 use type_nam, only: nam_type
-@:use_probe()
 use type_samp, only: samp_type
 
 implicit none
@@ -73,9 +72,6 @@ integer :: ig,ic2a
 ! Set name
 @:set_name(diag_alloc)
 
-! Probe in
-@:probe_in()
-
 ! Number of local points
 if (nam%local_diag) then
    diag%nc2a = samp%nc2a
@@ -97,9 +93,6 @@ if (.not.allocated(diag%blk)) then
    if (nam%check_dirac) allocate(diag%dirac(geom%nc0a,geom%nl0,nam%nv))
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine diag_alloc
 
 !----------------------------------------------------------------------
@@ -119,9 +112,6 @@ integer :: ig,ic2a
 ! Set name
 @:set_name(diag_partial_dealloc)
 
-! Probe in
-@:probe_in()
-
 ! Release memory
 if (allocated(diag%blk)) then
    do ig=1,size(diag%blk,2)
@@ -130,9 +120,6 @@ if (allocated(diag%blk)) then
      end do
    end do
 end if
-
-! Probe out
-@:probe_out()
 
 end subroutine diag_partial_dealloc
 
@@ -153,9 +140,6 @@ integer :: ig,ic2a
 ! Set name
 @:set_name(diag_dealloc)
 
-! Probe in
-@:probe_in()
-
 ! Release memory
 call diag%partial_dealloc
 if (allocated(diag%blk)) then
@@ -167,9 +151,6 @@ if (allocated(diag%blk)) then
    deallocate(diag%blk)
 end if
 if (allocated(diag%dirac)) deallocate(diag%dirac)
-
-! Probe out
-@:probe_out()
 
 end subroutine diag_dealloc
 
@@ -198,9 +179,6 @@ logical :: lhyb_coef_only
 
 ! Set name
 @:set_name(diag_filter)
-
-! Probe in
-@:probe_in()
 
 ! Local flag
 lhyb_coef_only = .false.
@@ -399,9 +377,6 @@ if (nam%diag_rvflt>zero) then
    end do
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine diag_filter
 
 !----------------------------------------------------------------------
@@ -425,9 +400,6 @@ real(kind_real),allocatable :: fit_iso(:,:,:)
 
 ! Set name
 @:set_name(diag_build_fit)
-
-! Probe in
-@:probe_in()
 
 write(mpl%info,'(a10,a)') '','Fit RMSE:'
 call mpl%flush
@@ -500,9 +472,6 @@ do ig=1,nam%ng
    if (nam%nc4==1) deallocate(fit_iso)
 end do
 
-! Probe out
-@:probe_out()
-
 end subroutine diag_build_fit
 
 !----------------------------------------------------------------------
@@ -528,9 +497,6 @@ logical :: lhyb_coef_only
 
 ! Set name
 @:set_name(diag_interp)
-
-! Probe in
-@:probe_in()
 
 ! Local flag
 lhyb_coef_only = .false.
@@ -684,9 +650,6 @@ do ig=1,nam%ng
    deallocate(fld_c0a)
 end do
 
-! Probe out
-@:probe_out()
-
 end subroutine diag_interp
 
 !----------------------------------------------------------------------
@@ -710,9 +673,6 @@ real(kind_real),allocatable :: a_dir(:,:),rh_dir(:,:),H11_dir(:,:),H22_dir(:,:),
 
 ! Set name
 @:set_name(diag_test_dirac)
-
-! Probe in
-@:probe_in()
 
 if (nam%check_dirac) then
    write(mpl%info,'(a10,a)') '','Compute diagnostics dirac test'
@@ -838,9 +798,6 @@ if (nam%check_dirac) then
    deallocate(rv_dir)
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine diag_test_dirac
 
 !----------------------------------------------------------------------
@@ -865,9 +822,6 @@ integer :: ig,ic2a,il0
 
 ! Set name
 @:set_name(diag_covariance)
-
-! Probe in
-@:probe_in()
 
 ! Allocation
 call diag%alloc(mpl,nam,geom,samp,prefix)
@@ -900,9 +854,6 @@ do ig=1,nam%ng
    end do
 end do
 
-! Probe out
-@:probe_out()
-
 end subroutine diag_covariance
 
 !----------------------------------------------------------------------
@@ -927,9 +878,6 @@ integer :: ig,ic2a,icmp,il0
 
 ! Set name
 @:set_name(diag_correlation)
-
-! Probe in
-@:probe_in()
 
 ! Allocation
 call diag%alloc(mpl,nam,geom,samp,prefix)
@@ -1003,9 +951,6 @@ do ig=1,nam%ng
    end if
 end do
 
-! Probe out
-@:probe_out()
-
 end subroutine diag_correlation
 
 !----------------------------------------------------------------------
@@ -1032,9 +977,6 @@ integer :: ig,ic2a,icmp,il0
 
 ! Set name
 @:set_name(diag_localization)
-
-! Probe in
-@:probe_in()
 
 ! Allocation
 call diag%alloc(mpl,nam,geom,samp,prefix)
@@ -1153,9 +1095,6 @@ do ig=1,nam%ng
    end if
 end do
 
-! Probe out
-@:probe_out()
-
 end subroutine diag_localization
 
 !----------------------------------------------------------------------
@@ -1181,9 +1120,6 @@ integer :: ig,ic2a,il0
 
 ! Set name
 @:set_name(diag_hybridization)
-
-! Probe in
-@:probe_in()
 
 ! Allocation
 call diag%alloc(mpl,nam,geom(2),samp,prefix)
@@ -1230,9 +1166,6 @@ do ig=1,nam%ng
       end if
    end do
 end do
-
-! Probe out
-@:probe_out()
 
 end subroutine diag_hybridization
 

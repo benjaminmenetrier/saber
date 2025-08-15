@@ -1,4 +1,4 @@
-#:include 'instrumentation.fypp'
+#:include 'generics.fypp'
 !----------------------------------------------------------------------
 ! Module: type_nicas_blk
 !> NICAS data block derived type
@@ -28,7 +28,6 @@ use type_linop, only: linop_type
 use type_mpl, only: mpl_type
 use type_nam, only: nam_type
 use type_nicas_cmp, only: nicas_cmp_type
-@:use_probe()
 use type_rng, only: rng_type
 use type_tree, only: tree_type
 
@@ -100,18 +99,12 @@ integer :: icmp
 ! Set name
 @:set_name(nicas_blk_partial_dealloc)
 
-! Probe in
-@:probe_in()
-
 ! Release memory
 if (allocated(nicas_blk%cmp)) then
    do icmp=1,nicas_blk%ncmp
       call nicas_blk%cmp(icmp)%partial_dealloc
    end do
 end if
-
-! Probe out
-@:probe_out()
 
 end subroutine nicas_blk_partial_dealloc
 
@@ -132,9 +125,6 @@ integer :: icmp
 ! Set name
 @:set_name(nicas_blk_dealloc)
 
-! Probe in
-@:probe_in()
-
 ! Release memory
 call nicas_blk%partial_dealloc
 if (allocated(nicas_blk%cmp)) then
@@ -144,9 +134,6 @@ if (allocated(nicas_blk%cmp)) then
    deallocate(nicas_blk%cmp)
 end if
 if (allocated(nicas_blk%l0_to_l0i)) deallocate(nicas_blk%l0_to_l0i)
-
-! Probe out
-@:probe_out()
 
 end subroutine nicas_blk_dealloc
 
@@ -171,9 +158,6 @@ character(len=1024) :: message
 
 ! Set name
 @:set_name(nicas_blk_read_local)
-
-! Probe in
-@:probe_in()
 
 ! Associate
 associate(ig=>nicas_blk%ig)
@@ -242,9 +226,6 @@ end do
 ! End associate
 end associate
 
-! Probe out
-@:probe_out()
-
 end subroutine nicas_blk_read_local
 
 !----------------------------------------------------------------------
@@ -267,9 +248,6 @@ character(len=1024) :: blkname,cmpname
 
 ! Set name
 @:set_name(nicas_blk_write_local_def)
-
-! Probe in
-@:probe_in()
 
 ! Associate
 associate(ig=>nicas_blk%ig)
@@ -314,9 +292,6 @@ end do
 ! End associate
 end associate
 
-! Probe out
-@:probe_out()
-
 end subroutine nicas_blk_write_local_def
 
 !----------------------------------------------------------------------
@@ -337,16 +312,10 @@ integer :: icmp
 ! Set name
 @:set_name(nicas_blk_write_local_data)
 
-! Probe in
-@:probe_in()
-
 do icmp=1,nicas_blk%ncmp
    ! Component work
    call nicas_blk%cmp(icmp)%write_local_data(mpl)
 end do
-
-! Probe out
-@:probe_out()
 
 end subroutine nicas_blk_write_local_data
 
@@ -371,9 +340,6 @@ integer :: icmp
 ! Set name
 @:set_name(nicas_blk_buffer_size)
 
-! Probe in
-@:probe_in()
-
 ! Initialization
 nbufi = 0
 nbufr = 0
@@ -389,9 +355,6 @@ do icmp=1,nicas_blk%ncmp
    ! Component work
    call nicas_blk%cmp(icmp)%buffer_size(mpl,nbufi,nbufr,nbufl)
 end do
-
-! Probe out
-@:probe_out()
 
 end subroutine nicas_blk_buffer_size
 
@@ -418,9 +381,6 @@ integer :: ibufi,ibufr,ibufl,icmp
 
 ! Set name
 @:set_name(nicas_blk_serialize)
-
-! Probe in
-@:probe_in()
 
 ! Initialization
 ibufi = 0
@@ -449,9 +409,6 @@ if (ibufi/=nbufi) call mpl%abort('${subr}$','inconsistent final offset/buffer si
 if (ibufr/=nbufr) call mpl%abort('${subr}$','inconsistent final offset/buffer size (real)')
 if (ibufl/=nbufl) call mpl%abort('${subr}$','inconsistent final offset/buffer size (logical)')
 
-! Probe out
-@:probe_out()
-
 end subroutine nicas_blk_serialize
 
 !----------------------------------------------------------------------
@@ -477,9 +434,6 @@ integer :: ibufi,ibufr,ibufl,icmp
 
 ! Set name
 @:set_name(nicas_blk_deserialize)
-
-! Probe in
-@:probe_in()
 
 ! Associate
 associate(ig=>nicas_blk%ig)
@@ -519,9 +473,6 @@ end do
 ! End associate
 end associate
 
-! Probe out
-@:probe_out()
-
 end subroutine nicas_blk_deserialize
 
 !----------------------------------------------------------------------
@@ -544,9 +495,6 @@ character(len=1024) :: blkname,cmpname
 
 ! Set name
 @:set_name(nicas_blk_read_global)
-
-! Probe in
-@:probe_in()
 
 ! Associate
 associate(ig=>nicas_blk%ig)
@@ -614,9 +562,6 @@ end do
 ! End associate
 end associate
 
-! Probe out
-@:probe_out()
-
 end subroutine nicas_blk_read_global
 
 !----------------------------------------------------------------------
@@ -639,9 +584,6 @@ character(len=1024) :: blkname,cmpname
 
 ! Set name
 @:set_name(nicas_blk_write_global_def)
-
-! Probe in
-@:probe_in()
 
 ! Associate
 associate(ig=>nicas_blk%ig)
@@ -687,9 +629,6 @@ end do
 ! End associate
 end associate
 
-! Probe out
-@:probe_out()
-
 end subroutine nicas_blk_write_global_def
 
 !----------------------------------------------------------------------
@@ -711,16 +650,10 @@ integer :: icmp
 ! Set name
 @:set_name(nicas_blk_write_global_data)
 
-! Probe in
-@:probe_in()
-
 do icmp=1,nicas_blk%ncmp
    ! Component work
    call nicas_blk%cmp(icmp)%write_global_data(mpl,geom)
 end do
-
-! Probe out
-@:probe_out()
 
 end subroutine nicas_blk_write_global_data
 
@@ -743,9 +676,6 @@ character(len=1024) :: blkname,cmpname
 
 ! Set name
 @:set_name(nicas_blk_write_grids_def)
-
-! Probe in
-@:probe_in()
 
 ! Associate
 associate(ig=>nicas_blk%ig)
@@ -778,9 +708,6 @@ end do
 ! End associate
 end associate
 
-! Probe out
-@:probe_out()
-
 end subroutine nicas_blk_write_grids_def
 
 !----------------------------------------------------------------------
@@ -801,16 +728,10 @@ integer :: icmp
 ! Set name
 @:set_name(nicas_blk_write_grids_data)
 
-! Probe in
-@:probe_in()
-
 do icmp=1,nicas_blk%ncmp
    ! Component work
    call nicas_blk%cmp(icmp)%write_grids_data(mpl)
 end do
-
-! Probe out
-@:probe_out()
 
 end subroutine nicas_blk_write_grids_data
 
@@ -833,9 +754,6 @@ character(len=1024) :: blkname,cmpname
 
 ! Set name
 @:set_name(nicas_blk_write_steps_def)
-
-! Probe in
-@:probe_in()
 
 ! Associate
 associate(ig=>nicas_blk%ig)
@@ -868,9 +786,6 @@ end do
 ! End associate
 end associate
 
-! Probe out
-@:probe_out()
-
 end subroutine nicas_blk_write_steps_def
 
 !----------------------------------------------------------------------
@@ -891,16 +806,10 @@ integer :: icmp
 ! Set name
 @:set_name(nicas_blk_write_steps_data)
 
-! Probe in
-@:probe_in()
-
 do icmp=1,nicas_blk%ncmp
    ! Component work
    call nicas_blk%cmp(icmp)%write_steps_data(mpl)
 end do
-
-! Probe out
-@:probe_out()
 
 end subroutine nicas_blk_write_steps_data
 
@@ -925,9 +834,6 @@ integer :: icmp
 
 ! Set name
 @:set_name(nicas_blk_compute_parameters)
-
-! Probe in
-@:probe_in()
 
 ! Associate
 associate(ig=>nicas_blk%ig)
@@ -967,9 +873,6 @@ end do
 ! End associate
 end associate
 
-! Probe out
-@:probe_out()
-
 end subroutine nicas_blk_compute_parameters
 
 !----------------------------------------------------------------------
@@ -998,9 +901,6 @@ logical :: gmask_c0a(geom%nc0a,geom%nl0),gmask_hor_c0a(geom%nc0a),gmask_c0u(geom
 
 ! Set name
 @:set_name(nicas_blk_compute_parameters_horizontal_smoother)
-
-! Probe in
-@:probe_in()
 
 ! Associate
 associate(ig=>nicas_blk%ig)
@@ -1123,9 +1023,6 @@ geom%gmask_c0u = gmask_c0u
 ! End associate
 end associate
 
-! Probe out
-@:probe_out()
-
 end subroutine nicas_blk_compute_parameters_horizontal_smoother
 
 !----------------------------------------------------------------------
@@ -1150,9 +1047,6 @@ character(len=1024) :: message
 
 ! Set name
 @:set_name(nicas_blk_copy_cmat)
-
-! Probe in
-@:probe_in()
 
 ! Associate
 associate(ig=>nicas_blk%ig)
@@ -1294,9 +1188,6 @@ end do
 ! End associate
 end associate
 
-! Probe out
-@:probe_out()
-
 end subroutine nicas_blk_copy_cmat
 
 !----------------------------------------------------------------------
@@ -1323,9 +1214,6 @@ logical :: lsteps
 ! Set name
 @:set_name(nicas_blk_apply_sqrt)
 
-! Probe in
-@:probe_in()
-
 ! Local flag
 lsteps = .false.
 if (present(steps)) lsteps = steps
@@ -1340,9 +1228,6 @@ do icmp=1,cv_blk%ncmp
    ! Add to field
    fld = fld+fld_tmp
 end do
-
-! Probe out
-@:probe_out()
 
 end subroutine nicas_blk_apply_sqrt
 
@@ -1369,9 +1254,6 @@ logical :: lsteps
 ! Set name
 @:set_name(nicas_blk_apply_sqrt_ad)
 
-! Probe in
-@:probe_in()
-
 ! Local flag
 lsteps = .false.
 if (present(steps)) lsteps = steps
@@ -1380,9 +1262,6 @@ do icmp=1,cv_blk%ncmp
    ! Component work
    call nicas_blk%cmp(icmp)%apply_sqrt_ad(mpl,geom,fld,cv_blk%cmp(icmp),lsteps)
 end do
-
-! Probe out
-@:probe_out()
 
 end subroutine nicas_blk_apply_sqrt_ad
 
@@ -1410,9 +1289,6 @@ type(cv_blk_type) :: cv_blk1,cv_blk2
 
 ! Set name
 @:set_name(nicas_blk_test_adjoint)
-
-! Probe in
-@:probe_in()
 
 ! Allocation
 cv_blk1%ncmp = nicas_blk%ncmp
@@ -1464,9 +1340,6 @@ deallocate(cv_blk2%cmp)
 ! Reset random seed if necessary
 call rng%reseed
 
-! Probe out
-@:probe_out()
-
 end subroutine nicas_blk_test_adjoint
 
 !----------------------------------------------------------------------
@@ -1492,9 +1365,6 @@ type(cv_blk_type) :: cv_blk
 
 ! Set name
 @:set_name(nicas_blk_test_normalization)
-
-! Probe in
-@:probe_in()
 
 ! Copy number of components
 cv_blk%ncmp = nicas_blk%ncmp
@@ -1552,9 +1422,6 @@ if (nicas_blk%verbosity) call mpl%flush
 ! Reset random seed if necessary
 call rng%reseed
 
-! Probe out
-@:probe_out()
-
 end subroutine nicas_blk_test_normalization
 
 !----------------------------------------------------------------------
@@ -1580,9 +1447,6 @@ type(cv_blk_type) :: cv_blk
 
 ! Set name
 @:set_name(nicas_blk_test_dirac)
-
-! Probe in
-@:probe_in()
 
 ! Associate
 associate(ig=>nicas_blk%ig)
@@ -1661,9 +1525,6 @@ end do
 
 ! End associate
 end associate
-
-! Probe out
-@:probe_out()
 
 end subroutine nicas_blk_test_dirac
 

@@ -1,3 +1,4 @@
+#:include 'generics.fypp'
 !----------------------------------------------------------------------
 ! Module: tools_kinds
 !> Kinds definition

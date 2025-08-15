@@ -37,7 +37,7 @@ background error:
       ensemble sizes:
         total ensemble size: 50
       nicas:
-        resolution: 4.0
+        resolution: 5
         explicit length-scales: true
         horizontal length-scale:
         - groups:

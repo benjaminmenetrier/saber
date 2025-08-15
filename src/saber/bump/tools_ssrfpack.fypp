@@ -1,4 +1,4 @@
-#:include 'instrumentation.fypp'
+#:include 'generics.fypp'
 !----------------------------------------------------------------------
 ! Module: tools_ssrfpack
 !> SSRFPACK routines
@@ -16,7 +16,6 @@ use tools_kinds, only: kind_real
 use tools_repro, only: infeq,supeq
 use tools_stripack, only: getnp
 use type_mpl, only: mpl_type
-@:use_probe()
 
 implicit none
 
@@ -95,9 +94,6 @@ real(kind_real) :: t
 ! Set name
 @:set_name(ssrfpack_aplyr)
 
-! Probe in
-@:probe_in()
-
 ! Apply rotation
 t = sx*y+cx*z
 xp = cy*x-sy*t
@@ -106,9 +102,6 @@ zp = sy*x+cy*t
 
 ! Check zp
 if (zp<zero) call mpl%abort('${subr}$','rotated point under the equator')
-
-! Probe out
-@:probe_out()
 
 end subroutine ssrfpack_aplyr
 
@@ -135,17 +128,11 @@ real(kind_real) :: t
 ! Set name
 @:set_name(ssrfpack_aplyrt)
 
-! Probe in
-@:probe_in()
-
 ! Apply inverse rotation
 t = sy*g1p
 g(1) = cy*g1p
 g(2) = cx*g2p-sx*t
 g(3) = -sx*g2p-cx*t
-
-! Probe out
-@:probe_out()
 
 end subroutine ssrfpack_aplyrt
 
@@ -174,9 +161,6 @@ real(kind_real) :: a,al,b1,b2,d1,d2,gn,gt,s,tau1,tau2,un(3),unorm
 
 ! Set name
 @:set_name(ssrfpack_arcint)
-
-! Probe in
-@:probe_in()
 
 ! Compute un
 un(1) = p1(2)*p2(3)-p1(3)*p2(2)
@@ -220,9 +204,6 @@ g(1) = gt*(un(2)*p(3)-un(3)*p(2))+gn*un(1)
 g(2) = gt*(un(3)*p(1)-un(1)*p(3))+gn*un(2)
 g(3) = gt*(un(1)*p(2)-un(2)*p(1))+gn*un(3)
 
-! Probe out
-@:probe_out()
-
 end subroutine ssrfpack_arcint
 
 !----------------------------------------------------------------------
@@ -247,9 +228,6 @@ real(kind_real) :: f1_mat(8),d1_mat(8),d2_mat(8),gn_mat(8),gt_mat(8),s_mat(8),ta
 
 ! Set name
 @:set_name(ssrfpack_arcint_op)
-
-! Probe in
-@:probe_in()
 
 ! Compute un
 un(1) = p1(2)*p2(3)-p1(3)*p2(2)
@@ -290,9 +268,6 @@ g_mat(:,1) = gt_mat*(un(2)*p(3)-un(3)*p(2))+gn_mat*un(1)
 g_mat(:,2) = gt_mat*(un(3)*p(1)-un(1)*p(3))+gn_mat*un(2)
 g_mat(:,3) = gt_mat*(un(1)*p(2)-un(2)*p(1))+gn_mat*un(3)
 
-! Probe out
-@:probe_out()
-
 end subroutine ssrfpack_arcint_op
 
 !----------------------------------------------------------------------
@@ -317,9 +292,6 @@ real(kind_real) :: d
 ! Set name
 @:set_name(ssrfpack_arclen)
 
-! Probe in
-@:probe_in()
-
 ! Initialization
 d = zero
 do i=1,3
@@ -334,9 +306,6 @@ elseif (supeq(d,four)) then
 else
    al = two*atan(sqrt((four-d)/d))
 end if
-
-! Probe out
-@:probe_out()
 
 end function ssrfpack_arclen
 
@@ -360,9 +329,6 @@ real(kind_real),intent(out) :: sy !< Element of the rotation matrix
 ! Set name
 @:set_name(ssrfpack_aplyr)
 
-! Probe in
-@:probe_in()
-
 ! Compute elements
 cy = sqrt(yk**2+zk**2)
 sy = xk
@@ -375,9 +341,6 @@ else
    cx = one
    sx = zero
 end if
-
-! Probe out
-@:probe_out()
 
 end subroutine ssrfpack_constr
 
@@ -413,9 +376,6 @@ real(kind_real) :: c1,c2,c3,csum,c1n,c2n,c3n,ds,dv,f,g(3),q1(3),q2(3),q3(3),s1,s
 
 ! Set name
 @:set_name(ssrfpack_fval)
-
-! Probe in
-@:probe_in()
 
 ! Compute c1, c2 and c3
 c1 = b2*b3
@@ -480,9 +440,6 @@ else
    v = v+c3n*hval(b3,f3,f,dv,ds)
 end if
 
-! Probe out
-@:probe_out()
-
 end function ssrfpack_fval
 
 !----------------------------------------------------------------------
@@ -512,9 +469,6 @@ real(kind_real) :: f1_mat(12),f2_mat(12),f3_mat(12),v1_mat(12),v2_mat(12),v3_mat
 
 ! Set name
 @:set_name(ssrfpack_fval_op)
-
-! Probe in
-@:probe_in()
 
 ! Compute c1, c2 and c3
 c1 = b2*b3
@@ -600,9 +554,6 @@ else
    v_mat = v_mat+c3n*v3_mat
 end if
 
-! Probe out
-@:probe_out()
-
 end subroutine ssrfpack_fval_op
 
 !----------------------------------------------------------------------
@@ -624,9 +575,6 @@ real(kind_real) :: aa,bb,r,u,v
 
 ! Set name
 @:set_name(ssrfpack_givens)
-
-! Probe in
-@:probe_in()
 
 ! Copy
 aa = a
@@ -656,9 +604,6 @@ else
    c = one
    s = zero
 end if
-
-! Probe out
-@:probe_out()
 
 end subroutine ssrfpack_givens
 
@@ -694,9 +639,6 @@ real(kind_real) :: a(6,6),av,avsq,c,cx,cy,df,dmin,dsum,dx,dy,rf,rin,s,sx,sy,wt,x
 
 ! Set name
 @:set_name(ssrfpack_gradl)
-
-! Probe in
-@:probe_in()
 
 ! Check for errors
 if ((n<7).or.(k<1).or.(k>n)) call mpl%abort('${subr}$','n or k is outside its valid range')
@@ -804,9 +746,6 @@ dy = dy/av
 ! Rotate the gradient (dx,dy,0) back into the original coordinate system
 call aplyrt(dx,dy,cx,sx,cy,sy,g)
 
-! Probe out
-@:probe_out()
-
 end subroutine ssrfpack_gradl
 
 !----------------------------------------------------------------------
@@ -833,9 +772,6 @@ real(kind_real) :: b1,b2,d1,d2,s
 ! Set name
 @:set_name(ssrfpack_hval)
 
-! Probe in
-@:probe_in()
-
 ! Factors
 b1 = b
 b2 = one-b1
@@ -847,9 +783,6 @@ d2 = hp2-s
 
 ! Hermite cubic interpolation
 v = h1+b2*(hp1+b2*(d1+b1*(d1-d2)))
-
-! Probe out
-@:probe_out()
 
 end function ssrfpack_hval
 
@@ -875,9 +808,6 @@ real(kind_real) ::  b1,b2,d1_mat(12),d2_mat(12),s_mat(12)
 ! Set name
 @:set_name(ssrfpack_hval_op)
 
-! Probe in
-@:probe_in()
-
 ! Factors
 b1 = b
 b2 = one-b1
@@ -889,9 +819,6 @@ d2_mat = hp2_mat-s_mat
 
 ! Hermite cubic interpolation
 v_mat = h1_mat+b2*(hp1_mat+b2*(d1_mat+b1*(d1_mat-d2_mat)))
-
-! Probe out
-@:probe_out()
 
 end subroutine ssrfpack_hval_op
 
@@ -917,18 +844,12 @@ real(kind_real) :: xi,yi
 ! Set name
 @:set_name(ssrfpack_rotate)
 
-! Probe in
-@:probe_in()
-
 do i=1,n
   xi = x(i)
   yi = y(i)
   x(i) = c*xi+s*yi
   y(i) = -s*xi+c*yi
 end do
-
-! Probe out
-@:probe_out()
 
 end subroutine ssrfpack_rotate
 
@@ -956,9 +877,6 @@ real(kind_real) :: w1,w2
 ! Set name
 @:set_name(ssrfpack_setup)
 
-! Probe in
-@:probe_in()
-
 ! Setup
 w1 = wt/s1
 w2 = wt/s2
@@ -968,9 +886,6 @@ row(3) = yi**2*w2
 row(4) = xi*w1
 row(5) = yi*w1
 row(6) = (wi-wk)*wt
-
-! Probe out
-@:probe_out()
 
 end subroutine ssrfpack_setup
 

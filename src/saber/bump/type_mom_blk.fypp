@@ -1,4 +1,4 @@
-#:include 'instrumentation.fypp'
+#:include 'generics.fypp'
 !----------------------------------------------------------------------
 ! Module: type_mom_blk
 !> Moments block derived type
@@ -13,7 +13,6 @@ use tools_kinds, only: kind_real
 use type_geom, only: geom_type
 use type_mpl, only: mpl_type
 use type_nam, only: nam_type
-@:use_probe()
 use type_samp, only: samp_type
 
 implicit none
@@ -62,9 +61,6 @@ logical,intent(in) :: iterative_algo         !< Iterative algorithm
 ! Set name
 @:set_name(mom_blk_alloc)
 
-! Probe in
-@:probe_in()
-
 ! Attributes
 mom_blk%ne = ne
 mom_blk%nsub = nsub
@@ -83,9 +79,6 @@ if (iterative_algo) then
 end if
 allocate(mom_blk%m22(nc1x,nam%nc3,nam%nc4,nam%nl0r,geom%nl0,nsub))
 
-! Probe out
-@:probe_out()
-
 end subroutine mom_blk_alloc
 
 !----------------------------------------------------------------------
@@ -103,9 +96,6 @@ logical,intent(in) :: iterative_algo         !< Iterative algorithm
 ! Set name
 @:set_name(mom_blk_init)
 
-! Probe in
-@:probe_in()
-
 ! Initialization
 if (iterative_algo) then
    mom_blk%m1_1 = zero
@@ -119,9 +109,6 @@ if (iterative_algo) then
    mom_blk%m21 = zero
 end if
 mom_blk%m22 = zero
-
-! Probe out
-@:probe_out()
 
 end subroutine mom_blk_init
 
@@ -139,9 +126,6 @@ class(mom_blk_type),intent(inout) :: mom_blk !< Moments block
 ! Set name
 @:set_name(mom_blk_dealloc)
 
-! Probe in
-@:probe_in()
-
 ! Release memory
 if (allocated(mom_blk%m1_1)) deallocate(mom_blk%m1_1)
 if (allocated(mom_blk%m1_2)) deallocate(mom_blk%m1_2)
@@ -151,9 +135,6 @@ if (allocated(mom_blk%m11)) deallocate(mom_blk%m11)
 if (allocated(mom_blk%m12)) deallocate(mom_blk%m12)
 if (allocated(mom_blk%m21)) deallocate(mom_blk%m21)
 if (allocated(mom_blk%m22)) deallocate(mom_blk%m22)
-
-! Probe out
-@:probe_out()
 
 end subroutine mom_blk_dealloc
 
@@ -179,9 +160,6 @@ real(kind_real),allocatable :: sbuf(:,:),rbuf(:,:)
 
 ! Set name
 @:set_name(mom_blk_ext)
-
-! Probe in
-@:probe_in()
 
 ! Allocation
 call mom_blk_out%alloc(nam,geom,samp%nc1d,mom_blk_in%ne,mom_blk_in%nsub,.false.)
@@ -237,9 +215,6 @@ end do
 ! Release memory
 deallocate(sbuf)
 deallocate(rbuf)
-
-! Probe out
-@:probe_out()
 
 end subroutine mom_blk_ext
 

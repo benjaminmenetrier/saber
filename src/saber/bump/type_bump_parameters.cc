@@ -224,8 +224,6 @@ void bump_config_init_f90(eckit::LocalConfiguration * config) {
   param(samplingDef.local_rad, samplingConf);
   // Local diagnostics calculation latitude band half-width [in degrees]
   param(samplingDef.local_dlat, samplingConf);
-  // Diagnostic draw type ('random' or 'regular')
-  param(samplingDef.draw_type, samplingConf);
   // Maximum number of random number draws
   param(samplingDef.irmax, samplingConf);
   // Vertical balance C2B to C0A interpolation type ('c0': C0 mesh-based, 'c1': C1 mesh-based

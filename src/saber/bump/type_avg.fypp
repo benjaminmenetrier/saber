@@ -1,4 +1,4 @@
-#:include 'instrumentation.fypp'
+#:include 'generics.fypp'
 !----------------------------------------------------------------------
 ! Module: type_avg
 !> Average routines
@@ -21,7 +21,6 @@ use type_mom, only: mom_type
 use type_mom_blk, only: mom_blk_type
 use type_mpl, only: mpl_type
 use type_nam, only: nam_type
-@:use_probe()
 use type_samp, only: samp_type
 
 implicit none
@@ -70,9 +69,6 @@ integer :: ic2a,iv,ig
 ! Set name
 @:set_name(avg_alloc)
 
-! Probe in
-@:probe_in()
-
 ! Set attributes
 avg%prefix = prefix
 avg%ne = ne
@@ -89,9 +85,6 @@ do ic2a=0,samp%nc2a
       call avg%grp(ic2a,ig)%alloc(nam,geom,ic2a)
    end do
 end do
-
-! Probe out
-@:probe_out()
 
 end subroutine avg_alloc
 
@@ -112,9 +105,6 @@ integer :: iv,ig,ic2a
 ! Set name
 @:set_name(avg_dealloc)
 
-! Probe in
-@:probe_in()
-
 ! Allocation
 if (allocated(avg%blk)) then
    do iv=1,size(avg%blk,2)
@@ -132,9 +122,6 @@ if (allocated(avg%blk)) then
     end do
    deallocate(avg%blk)
 end if
-
-! Probe out
-@:probe_out()
 
 end subroutine avg_dealloc
 
@@ -159,18 +146,12 @@ character(len=1024) :: filename
 ! Set name
 @:set_name(avg_write)
 
-! Probe in
-@:probe_in()
-
 if (mpl%main) then
    filename = trim(nam%prefix)//trim(avg%prefix)
    do iv=1,nam%nv
       call avg%blk(0,iv)%write(mpl,nam,geom,filename)
    end do
 end if
-
-! Probe out
-@:probe_out()
 
 end subroutine avg_write
 
@@ -203,9 +184,6 @@ type(mom_blk_type) :: mom_blk
 
 ! Set name
 @:set_name(avg_compute)
-
-! Probe in
-@:probe_in()
 
 ! Allocation
 call avg%alloc(nam,geom,samp,mom%ne,mom%nsub,prefix)
@@ -364,9 +342,6 @@ do ig=1,nam%ng
    end do
    call mpl%prog_final
 end do
-
-! Probe out
-@:probe_out()
 
 end subroutine avg_compute
 

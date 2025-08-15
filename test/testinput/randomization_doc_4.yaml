@@ -23,7 +23,7 @@ background error:
         multivariate strategy: univariate
         compute nicas: true
       nicas:
-        resolution: 8.0
+        resolution: 5
       input model files:
       - parameter: rh1
         file:

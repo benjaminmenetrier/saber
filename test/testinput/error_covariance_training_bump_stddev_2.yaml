@@ -47,7 +47,6 @@ background error:
       variance:
         objective filtering: true
         filtering passes: 3
-        smoother min effective resolution: 1.2
         initial length-scale:
         - variables:
           - air_horizontal_streamfunction

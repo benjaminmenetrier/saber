@@ -1,4 +1,4 @@
-#:include 'instrumentation.fypp'
+#:include 'generics.fypp'
 !----------------------------------------------------------------------
 ! Module: type_cv
 !> Control vector derived type
@@ -11,7 +11,6 @@ module type_cv
 use atlas_module, only: atlas_field
 use tools_kinds, only: kind_real
 use type_cv_blk, only: cv_blk_type
-@:use_probe()
 
 implicit none
 
@@ -49,9 +48,6 @@ real(kind_real),pointer :: ptr(:)
 ! Set name
 @:set_name(cv_pack)
 
-! Probe in
-@:probe_in()
-
 ! Initialization
 offset_tmp = offset
 call acv%data(ptr)
@@ -67,9 +63,6 @@ do ib=1,cv%nb
       end if
    end do
 end do
-
-! Probe out
-@:probe_out()
 
 end subroutine cv_pack
 
@@ -91,9 +84,6 @@ real(kind_real),pointer :: ptr(:)
 ! Set name
 @:set_name(cv_unpack)
 
-! Probe in
-@:probe_in()
-
 ! Initialization
 offset_tmp = offset
 call acv%data(ptr)
@@ -109,9 +99,6 @@ do ib=1,cv%nb
       end if
    end do
 end do
-
-! Probe out
-@:probe_out()
 
 end subroutine cv_unpack
 

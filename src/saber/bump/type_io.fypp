@@ -1,4 +1,3 @@
-#:include 'instrumentation.fypp'
 #:include 'generics.fypp'
 !----------------------------------------------------------------------
 ! Module: type_io
@@ -17,7 +16,6 @@ use tools_netcdf, only: put_att,define_dim,check_dim,define_var,inquire_var,put_
 use tools_qsort, only: qsort
 use type_com, only: com_type
 use type_mpl, only: mpl_type
-@:use_probe()
 
 implicit none
 
@@ -82,17 +80,11 @@ class(io_type),intent(inout) :: io !< I/O
 ! Set name
 @:set_name(io_dealloc)
 
-! Probe in
-@:probe_in()
-
 ! Release memory
 if (allocated(io%cxio_to_cx)) deallocate(io%cxio_to_cx)
 call io%com_AIO%dealloc
 if (allocated(io%lon_cxio)) deallocate(io%lon_cxio)
 if (allocated(io%lat_cxio)) deallocate(io%lat_cxio)
-
-! Probe out
-@:probe_out()
 
 end subroutine io_dealloc
 
@@ -129,9 +121,6 @@ type(fckit_mpi_status) :: status
 
 ! Set name
 @:set_name(io_init)
-
-! Probe in
-@:probe_in()
 
 ! Save parameters
 io%x = x(1:1)
@@ -334,9 +323,6 @@ deallocate(cxown_to_cx)
 ! Set initialization flag
 io%initialized = .true.
 
-! Probe out
-@:probe_out()
-
 end subroutine io_init
 
 #:for dtype in dtypes_irl
@@ -362,9 +348,6 @@ ${ftype[dtype]}$,allocatable :: fld_cxio(${dim[rank]}$)
 
 ! Set name
 @:set_name(io_fld_read_${dtype}$_r${rank}$)
-
-! Probe in
-@:probe_in()
 
 ! Check initialization
 if (.not.io%initialized) call mpl%abort('${subr}$','I/O not initialized')
@@ -397,9 +380,6 @@ deallocate(fld_cxio)
 ! Wait for everybody
 call mpl%f_comm%barrier()
 
-! Probe out
-@:probe_out()
-
 end subroutine io_fld_read_${dtype}$_r${rank}$
    #:endfor
 #:endfor
@@ -429,9 +409,6 @@ ${ftype[dtype]}$,allocatable :: fld_cxio(${dim[rank]}$),fld_cxa_masked(${dim[ran
 
 ! Set name
 @:set_name(io_fld_write_${dtype}$_r${rank}$)
-
-! Probe in
-@:probe_in()
 
 ! Check initialization
 if (.not.io%initialized) call mpl%abort('${subr}$','I/O not initialized')
@@ -497,9 +474,6 @@ deallocate(fld_cxio)
 
 ! Wait for everybody
 call mpl%f_comm%barrier()
-
-! Probe out
-@:probe_out()
 
 end subroutine io_fld_write_${dtype}$_r${rank}$
    #:endfor

@@ -75,12 +75,6 @@ if( ENABLE_BUMP )
     VerticalBalance.cc
     VerticalBalance.h
     )
-    
-    if( ENABLE_BUMP_INSTRUMENTATION )
-        list(APPEND bump_src_files_list
-        type_probe.fypp
-        )
-    endif()
 endif()
 
 set( bump_src_files ${bump_src_files_list} PARENT_SCOPE )
