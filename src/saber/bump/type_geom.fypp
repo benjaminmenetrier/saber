@@ -210,7 +210,7 @@ end type geom_type
 
 
 integer,parameter :: niter = 10                  !< Number of iterations to estimate the work grid inflation
-integer,parameter :: ntry = 30                   !< Number of random points generated for sampling selection
+integer,parameter :: nbridson = 30               !< Number of tests for the Bridson's method
 real(kind_real),parameter :: grid_factor = three !< Grid factor for the Bridson's method
 
 private
@@ -2206,18 +2206,21 @@ real(kind_real),allocatable,intent(inout) :: lat_s(:) !< Sampling latitudes (ful
 integer,allocatable,intent(inout) :: s_to_c0(:)       !< Sampling indices (full domain)
 
 ! Local variables
-integer :: ncr,icr,ix,iy
-integer :: active_list_size,ir_base,icr_base,nn_base,try_list_size,nn_int,itry,ir,ir_test,icr_test,nn_test,i,ic0,is,js,iproc,hash
+integer :: nreg,ireg,ix,iy,ns_nomask,is_nomask,is_base
+integer :: active_list_size,ir_base,ireg_base,nn_base,try_list_size,nn_int,itest,ir,ir_test,ireg_test,nn_test,i,ic0,is,js,iproc,hash
 integer :: nn_index(1),nn_index_check(2)
-integer,allocatable :: cr_to_c0(:),active_list(:),s_to_cr(:),grid_flag(:),nn_index_base(:),try_list(:),nn_index_test(:),order_s(:)
-real(kind_real) :: rh_min,rh_max,lgrid_factor,x_start,y_start,z_start,lon_start,lat_start,x,y,z,x_next,y_next,z_next
+integer,allocatable :: s_nomask_to_c0(:),active_list(:),s_nomask_to_reg(:),grid_flag(:),nn_index_base(:),nn_index_test(:),order_s(:)
+real(kind_real) :: rh_min,rh_max,lgrid_factor,x,y,z,x_next,y_next,z_next,x_test,y_test,z_test,lon_test,lat_test,rh_test
+real(kind_real) :: x_base,y_base,z_base,lon_base,lat_base,rh_base,cos_lon_base,sin_lon_base,cos_lat_base,sin_lat_base
+real(kind_real) :: dist,angle,cos_angle,sin_angle
 real(kind_real) :: lonlat(2),nn_dist_check(2)
-real(kind_real),allocatable :: rh_c0(:),lon_cr(:),lat_cr(:),rh_cr(:),rh_s(:),nn_dist_eff(:),resol_eff(:)
+real(kind_real),allocatable :: rh_c0(:),lon_reg(:),lat_reg(:),rh_reg(:),lon_s_nomask(:),lat_s_nomask(:),rh_s(:)
+real(kind_real),allocatable :: nn_dist_eff(:),resol_eff(:)
 logical :: found,valid
-logical,allocatable :: mask_c0(:),mask_cr(:),gmask_s(:)
+logical,allocatable :: mask_c0(:),mask_s(:),gmask_s(:)
 character(len=1024) :: ldraw_type,cfmt
 type(atlas_structuredgrid) :: agrid
-type(tree_type) :: tree_cr,tree_s
+type(tree_type) :: tree_reg,tree_s
 
 ! Set name
 @:set_name(geom_initialize_sampling_from_rad)
@@ -2264,69 +2267,69 @@ if (mpl%main) then
    ! Get grid based on minimum disk radius
    if (geom%global) then
       ! Global grid
-      call get_grid(mpl,rh_min,agrid,ncr)
+      call get_grid(mpl,rh_min,agrid,nreg)
    else
       ! Regional grid
-      call get_grid(mpl,rh_min,geom%aconfig_work_grid,agrid,ncr)
+      call get_grid(mpl,rh_min,geom%aconfig_work_grid,agrid,nreg)
    end if
 
    ! Reduce number of grid points for regional grids
    if (.not.geom%global) then
       do iy=1,int(agrid%ny(),kind_int)
          ! Remove one point for each even row
-         if (mod(iy,2)==0) ncr = ncr-1
+         if (mod(iy,2)==0) nreg = nreg-1
       end do
    end if
 
    ! Allocation
-   allocate(lon_cr(ncr))
-   allocate(lat_cr(ncr))
-   allocate(mask_cr(ncr))
-   allocate(rh_cr(ncr))
-   allocate(cr_to_c0(ncr))
-   allocate(s_to_cr(ncr))
+   allocate(lon_reg(nreg))
+   allocate(lat_reg(nreg))
+   allocate(rh_reg(nreg))
+   allocate(lon_s_nomask(nreg))
+   allocate(lat_s_nomask(nreg))
+   allocate(s_nomask_to_reg(nreg))
 
    ! Loop over grid points
-   icr = 0
+   ireg = 0
    do iy=1,int(agrid%ny(),kind_int)
       do ix=1,int(agrid%nx(iy),kind_int)
          if (geom%global.or.(mod(iy,2)==1).or.((mod(iy,2)==0).and.(ix<int(agrid%nx(iy),kind_int)))) then
             ! Full domain index
-            icr = icr+1
+            ireg = ireg+1
 
             ! Get longitude/latitude
             lonlat = agrid%lonlat(ix,iy)*deg2rad
             call lonlatmod(lonlat(1),lonlat(2))
-            lon_cr(icr) = lonlat(1)
-            lat_cr(icr) = lonlat(2)
+            lon_reg(ireg) = lonlat(1)
+            lat_reg(ireg) = lonlat(2)
 
             ! Shift points to get triangles
             if ((.not.geom%global).and.(mod(iy,2)==0).and.(ix<int(agrid%nx(iy),kind_int))) then
                ! Move towards the next point in the row
-               call lonlat2xyz(mpl,lon_cr(icr),lat_cr(icr),x,y,z)
+               call lonlat2xyz(mpl,lon_reg(ireg),lat_reg(ireg),x,y,z)
                lonlat = agrid%lonlat(ix+1,iy)*deg2rad
                call lonlat2xyz(mpl,lonlat(1),lonlat(2),x_next,y_next,z_next)
                x = half*(x+x_next)
                y = half*(y+y_next)
                z = half*(z+z_next)
-               lon_cr(icr) = lonlat(1)
-               lat_cr(icr) = lonlat(2)
-               call xyz2lonlat(mpl,x,y,z,lon_cr(icr),lat_cr(icr))
+               lon_reg(ireg) = lonlat(1)
+               lat_reg(ireg) = lonlat(2)
+               call xyz2lonlat(mpl,x,y,z,lon_reg(ireg),lat_reg(ireg))
             end if
 
             ! Find nearest neighbor
-            call geom%tree_c0%find_nearest_neighbors(mpl,lon_cr(icr),lat_cr(icr),1,nn_index)
+            call geom%tree_c0%find_nearest_neighbors(mpl,lon_reg(ireg),lat_reg(ireg),1,nn_index)
             ic0 = nn_index(1)
 
             ! Copy disk radius
-            rh_cr(icr) = rh_c0(ic0)
+            rh_reg(ireg) = rh_c0(ic0)
          end if
       end do
    end do
 
    ! Print result
    write(cfmt,'(a,i2.2,a)') '(a',ifmt+3,',a,i8,a)'
-   write(mpl%test,trim(cfmt)) '','Regular sampling grid size: ',ncr,' points'
+   write(mpl%test,trim(cfmt)) '','Regular sampling grid size: ',nreg,' points'
    if (ifmt>0) call mpl%flush
 
    ! Release memory
@@ -2334,86 +2337,93 @@ if (mpl%main) then
 
    if (ldraw_type=='regular') then
       ! Uniform support radius
-      ns = ncr
-      do is=1,ns
-         s_to_cr(is) = is
+      ns_nomask = nreg
+      lon_s_nomask = lon_reg
+      lat_s_nomask = lat_reg
+      do is_nomask=1,ns_nomask
+         s_nomask_to_reg(is_nomask) = is_nomask
       end do
    elseif (ldraw_type=='random') then
       ! Initialize tree
-      call tree_cr%init(mpl,ncr,lon_cr,lat_cr)
+      call tree_reg%init(mpl,nreg,lon_reg,lat_reg)
 
       ! Allocation
-      allocate(active_list(ncr))
-      allocate(grid_flag(ncr))
+      allocate(active_list(nreg))
+      allocate(grid_flag(nreg))
 
       ! Initialization
-      ns = 0
-      active_list_size = 0
+      ns_nomask = 1
+      active_list_size = 1
       active_list = 0
-      s_to_cr = 0
+      active_list(active_list_size) = ns_nomask
+      s_nomask_to_reg = 0
       grid_flag = 0
 
       ! Arbitrary starting point
       if (rng%reset_seed) then
          ! Deterministic run, use the domain center
-         x_start = geom%v_center(1)
-         y_start = geom%v_center(2)
-         z_start = geom%v_center(3)
+         x_test = geom%v_center(1)
+         y_test = geom%v_center(2)
+         z_test = geom%v_center(3)
       else
          ! Random run, use a random point
-         call rng%rand(-one,one,x_start)
-         call rng%rand(-one,one,y_start)
-         call rng%rand(-one,one,z_start)
+         call rng%rand(-one,one,x_test)
+         call rng%rand(-one,one,y_test)
+         call rng%rand(-one,one,z_test)
       end if
-      call xyz2lonlat(mpl,x_start,y_start,z_start,lon_start,lat_start)
-      call tree_cr%find_nearest_neighbors(mpl,lon_start,lat_start,1,nn_index)
-      icr_test = nn_index(1)
-
-      ! Update lists
-      ns = ns+1
-      active_list_size = active_list_size+1
-      active_list(active_list_size) = icr_test
-      s_to_cr(ns) = icr_test
-      grid_flag(icr_test) = ns
+      call xyz2lonlat(mpl,x_test,y_test,z_test,lon_test,lat_test)
+      call tree_reg%find_nearest_neighbors(mpl,lon_test,lat_test,1,nn_index)
+      ireg_test = nn_index(1)
+      lon_s_nomask(ns_nomask) = tree_reg%lon(ireg_test)
+      lat_s_nomask(ns_nomask) = tree_reg%lat(ireg_test)
+      s_nomask_to_reg(ns_nomask) = ireg_test
+      grid_flag(ireg_test) = ns_nomask
 
       ! Loop while active list is not empty
       do while (active_list_size>0)
          ! Base sample
          call rng%rand(1,active_list_size,ir_base)
-         icr_base = active_list(ir_base)
+         is_base = active_list(ir_base)
+         lon_base = lon_s_nomask(is_base)
+         lat_base = lat_s_nomask(is_base)
+         ireg_base = s_nomask_to_reg(is_base)
+         rh_base = rh_reg(ireg_base)
          found = .false.
 
-         ! List points in the annulus
-         call tree_cr%find_nearest_neighbors(mpl,tree_cr%lon(icr_base),tree_cr%lat(icr_base),two*rh_cr(icr_base), &
- & nn_base,nn_index_base)
-         call tree_cr%count_nearest_neighbors(mpl,tree_cr%lon(icr_base),tree_cr%lat(icr_base),rh_cr(icr_base),nn_int)
+         cos_lon_base = cos(lon_base)
+         sin_lon_base = sin(lon_base)
+         cos_lat_base = cos(lat_base)
+         sin_lat_base = sin(lat_base)
+         call lonlat2xyz(mpl,lon_base,lat_base,x_base,y_base,z_base)
 
-         ! Allocation
-         try_list_size = nn_base-nn_int
-         allocate(try_list(try_list_size))
+         do itest=1,nbridson
+            ! Random distance in annulus
+            call rng%rand(rh_base,two*rh_base,dist)
 
-         ! Initialization
-         do i=1,try_list_size
-            try_list(i) = i
-         end do
+            ! Random angle
+            call rng%rand(zero,two*pi,angle)
+            cos_angle = cos(angle)
+            sin_angle = sin(angle)
 
-         do itry=1,min(ntry,nn_base-nn_int)
-            if (.false.) then
-               ! Random value in annulus (original Bridson's method)
-               call rng%rand(1,try_list_size,ir)
-            else
-               ! Smaller value of the annulus list (more accurate resolution)
-               call rng%rand(1,min(5,try_list_size),ir)
-            end if
-            ir_test = nn_int+try_list(ir)
-            icr_test = nn_index_base(ir_test) 
-            call tree_cr%find_nearest_neighbors(mpl,tree_cr%lon(icr_test),tree_cr%lat(icr_test),rh_cr(icr_test), &
+            ! Modification of Bridson's method for the sphere
+            x_test = x_base+dist*(-sin_lon_base*cos_angle-sin_lat_base*cos_lon_base*sin_angle)
+            y_test = y_base+dist*(cos_lon_base*cos_angle-sin_lat_base*sin_lon_base*sin_angle)
+            z_test = z_base+dist*cos_lat_base*sin_angle
+            call xyz2lonlat(mpl,x_test,y_test,z_test,lon_test,lat_test)
+            call tree_reg%find_nearest_neighbors(mpl,lon_test,lat_test,1,nn_index)
+
+            ! Test support radius
+            ireg_test = nn_index(1)
+            rh_test = rh_reg(ireg_test)
+
+
+            call tree_reg%find_nearest_neighbors(mpl,lon_test,lat_test,rh_test, &
  & nn_test,nn_index_test)
 
             valid = .true.
             do i=1,nn_test
-               icr = nn_index_test(i)
-               if (grid_flag(icr)>0) then
+               ireg = nn_index_test(i)
+               if (grid_flag(ireg)>0) then
                  valid = .false.
                  exit
                end if
@@ -2421,18 +2431,16 @@ if (mpl%main) then
             deallocate(nn_index_test)
 
             if (valid) then
-               ns = ns+1
+               ns_nomask = ns_nomask+1
                active_list_size = active_list_size+1
-               active_list(active_list_size) = icr_test
-               s_to_cr(ns) = icr_test
-               grid_flag(icr_test) = ns
+               active_list(active_list_size) = ns_nomask
+               lon_s_nomask(ns_nomask) = lon_test
+               lat_s_nomask(ns_nomask) = lat_test
+               s_nomask_to_reg(ns_nomask) = ireg_test
+               grid_flag(ireg_test) = ns_nomask
                found = .true.
                exit
             end if
-
-            ! Update list
-            if (ir<try_list_size) try_list(ir:try_list_size-1) = try_list(ir+1:try_list_size)
-            try_list_size = try_list_size-1
          end do
 
          if (.not.found) then
@@ -2440,38 +2448,37 @@ if (mpl%main) then
             active_list(ir_base:active_list_size-1) = active_list(ir_base+1:active_list_size)
             active_list_size = active_list_size-1
          end if
-
-         ! Release memory
-         deallocate(nn_index_base)
-         deallocate(try_list)
       end do
 
       ! Release memory
       deallocate(active_list)
       deallocate(grid_flag)
-      call tree_cr%dealloc
+      call tree_reg%dealloc
    else
       ! Error message
       call mpl%abort('${subr}$','wrong sampling method')
    end if
 
+   ! Allocation
+   allocate(mask_s(ns_nomask))
+   allocate(s_nomask_to_c0(ns_nomask))
+
    ! Detect masked points
-   mask_cr = .false.
-   do is=1,ns
+   mask_s = .false.
+   do is_nomask=1,ns_nomask
       ! Find nearest neighbor
-      icr = s_to_cr(is)
-      call geom%tree_c0%find_nearest_neighbors(mpl,lon_cr(icr),lat_cr(icr),1,nn_index)
+      call geom%tree_c0%find_nearest_neighbors(mpl,lon_s_nomask(is_nomask),lat_s_nomask(is_nomask),1,nn_index)
       ic0 = nn_index(1)
 
       ! Copy index
-      cr_to_c0(icr) = ic0
+      s_nomask_to_c0(is_nomask) = ic0
 
       ! Set mask
-      mask_cr(icr) = mask_c0(ic0)
+      mask_s(is_nomask) = mask_c0(ic0)
    end do
 
    ! Final sampling size
-   ns = count(mask_cr)
+   ns = count(mask_s)
 
    ! Allocation
    allocate(lon_s(ns))
@@ -2483,13 +2490,14 @@ if (mpl%main) then
 
    ! Copy sample
    is = 0
-   do icr=1,ncr
-      if (mask_cr(icr)) then
+   do is_nomask=1,ns_nomask
+      if (mask_s(is_nomask)) then
          is = is+1
-         lon_s(is) = lon_cr(icr)
-         lat_s(is) = lat_cr(icr)
-         rh_s(is) = rh_cr(icr)
-         s_to_c0(is) = cr_to_c0(icr)
+         lon_s(is) = lon_s_nomask(is_nomask)
+         lat_s(is) = lat_s_nomask(is_nomask)
+         s_to_c0(is) = s_nomask_to_c0(is_nomask)
+         ireg = s_nomask_to_reg(is_nomask)
+         rh_s(is) = rh_reg(ireg)
       end if
    end do
 
@@ -2522,13 +2530,15 @@ if (mpl%main) then
    deallocate(resol_eff)
 
    ! Release memory
-   deallocate(lon_cr)
-   deallocate(lat_cr)
-   deallocate(mask_cr)
-   deallocate(rh_cr)
-   deallocate(cr_to_c0)
+   deallocate(lon_reg)
+   deallocate(lat_reg)
+   deallocate(lon_s_nomask)
+   deallocate(lat_s_nomask)
+   deallocate(mask_s)
+   deallocate(rh_reg)
    deallocate(rh_s)
-   deallocate(s_to_cr)
+   deallocate(s_nomask_to_reg)
+   deallocate(s_nomask_to_c0)
 end if
 
 ! Reorder points
