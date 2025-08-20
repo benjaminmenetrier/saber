@@ -464,13 +464,13 @@ do ig=1,nam%ng
          end if
       end do
       if (mpl%msv%is(cmat%blk(ig)%scaling)) call mpl%abort('${subr}$','cannot find smooth interpolation scaling')
+
+      write(mpl%info,'(a10,a,f5.3,a,f5.3)') '','Factor: ',nam%nicas_si_factor,' - scaling: ',cmat%blk(ig)%scaling
+      call mpl%flush
    else
       ! No scaling
       cmat%blk(ig)%scaling = one
    end if
-
-   write(mpl%info,'(a10,a,f5.3,a,f5.3)') '','Factor: ',nam%nicas_si_factor,' - scaling: ',cmat%blk(ig)%scaling
-   call mpl%flush
 end do
 
 end subroutine cmat_setup_sampling

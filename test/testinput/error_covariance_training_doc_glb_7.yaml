@@ -1,0 +1,41 @@
+geometry:
+  function space: StructuredColumns
+  grid:
+    type: regular_lonlat
+    N: 50
+  groups:
+  - variables:
+    - air_horizontal_streamfunction
+    levels: 1
+  halo: 1
+background:
+  date: 2010-01-01T12:00:00Z
+  state variables:
+  - air_horizontal_streamfunction
+background error:
+  covariance model: SABER
+  saber central block:
+    saber block name: BUMP_NICAS
+    fields metadata:
+      air_horizontal_streamfunction:
+        vert_coord: vert_coord_0
+    calibration:
+      io:
+        data directory: testdata
+        files prefix: error_covariance_training_doc_glb_7/_MPI_-_OMP_
+      drivers:
+        compute nicas: true
+        multivariate strategy: univariate
+        write nicas grids: true
+      nicas:
+        resolution: 7
+        grid type: regular
+        explicit length-scales: true
+        horizontal length-scale:
+        - groups:
+          - air_horizontal_streamfunction
+          value: 3000.0e3
+        vertical length-scale:
+        - groups:
+          - air_horizontal_streamfunction
+          value: 3.0

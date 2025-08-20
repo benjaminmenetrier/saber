@@ -2761,8 +2761,10 @@ do il1=1,nicas_cmp%nl1
             ! Compute sampling
             write(mpl%info,'(a16,a)') '','Compute horizontal subset Sc1:'
             call mpl%flush(flush=nicas_cmp%verbosity)
-            call geom%initialize_sampling(mpl,rng,nicas_cmp%draw_type,geom%nc0a,geom%gmask_hor_c0a,nicas_cmp%rhs(:,il0s), &
- & nicas_cmp%resol,geom%nc0,geom%tree_c0,geom%c0a_to_c0,ifmt,nicas_cmp%hor(il1s)%nc1,c1_to_c0)
+
+            ! Initialize sampling
+            call geom%initialize_sampling(mpl,rng,nicas_cmp%draw_type,nicas_cmp%rhs(:,il0s),nicas_cmp%resol*nicas_cmp%scaling, &
+ & ifmt,nicas_cmp%hor(il1s)%nc1,lon_c1,lat_c1,c1_to_c0)
 
             ! Count Sc1 point in halo A
             nicas_cmp%hor(il1s)%nc1a = 0
@@ -2787,8 +2789,8 @@ do il1=1,nicas_cmp%nl1
                if (iproc==mpl%myproc) then
                   ic1a = ic1a+1
                   ic0a = geom%c0_to_c0a(ic0)
-                  nicas_cmp%hor(il1s)%lon_c1a(ic1a) = geom%lon_c0a(ic0a)
-                  nicas_cmp%hor(il1s)%lat_c1a(ic1a) = geom%lat_c0a(ic0a)
+                  nicas_cmp%hor(il1s)%lon_c1a(ic1a) = lon_c1(ic1)
+                  nicas_cmp%hor(il1s)%lat_c1a(ic1a) = lat_c1(ic1)
                   do jl1=1,nicas_cmp%nl1
                      if (il1s==nicas_cmp%hor(jl1)%il1s) then
                         jl0 = nicas_cmp%l1_to_l0(jl1)
@@ -2850,7 +2852,6 @@ do il1=1,nicas_cmp%nl1
    end if
 end do
 
-
 ! Interpolation
 do il1=1,nicas_cmp%nl1
    ! Base sublevel
@@ -2891,16 +2892,6 @@ do il1=1,nicas_cmp%nl1
          ! Get global lon/lat
          write(mpl%info,'(a16,a)') '','Get global lon/lat'
          call mpl%flush(flush=nicas_cmp%verbosity)
-
-         ! Allocation
-         allocate(lon_c1(nicas_cmp%hor(il1s)%nc1))
-         allocate(lat_c1(nicas_cmp%hor(il1s)%nc1))
-
-         ! Communication
-         call mpl%loc_to_glb(nicas_cmp%hor(il1s)%nc1a,nicas_cmp%hor(il1s)%nc1,nicas_cmp%hor(il1s)%c1a_to_c1, &
- & nicas_cmp%hor(il1s)%lon_c1a,lon_c1,.true.)
-         call mpl%loc_to_glb(nicas_cmp%hor(il1s)%nc1a,nicas_cmp%hor(il1s)%nc1,nicas_cmp%hor(il1s)%c1a_to_c1, &
- & nicas_cmp%hor(il1s)%lat_c1a,lat_c1,.true.)
 
          if (compute_interp) then
             ! Allocation
@@ -2973,11 +2964,9 @@ do il1=1,nicas_cmp%nl1
       end if
 
       ! Release memory
-      if (compute_interp.or.nam%write_nicas_global) then
-         deallocate(lon_c1)
-         deallocate(lat_c1)
-         if (compute_interp) deallocate(gmask_c1)
-      end if
+      deallocate(lon_c1)
+      deallocate(lat_c1)
+      if (compute_interp) deallocate(gmask_c1)
 
       if (.not.nam%load_nicas_global) then
          ! Compute interpolation from subset Sc0 to subset Sc1

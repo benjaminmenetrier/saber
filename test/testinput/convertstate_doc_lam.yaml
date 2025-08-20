@@ -1,0 +1,50 @@
+input geometry: &geom
+  function space: StructuredColumns
+  grid:
+    type : regional
+    nx : 150
+    ny : 150
+    dx : 40e3
+    dy : 40e3
+    lonlat(centre) : [-78.0, 11.6]
+    projection :  
+      type : lambert_conformal_conic
+      latitude0  : 11.6
+      longitude0 : -78.0
+    y_numbering: 1
+  partitioner: checkerboard
+  groups:
+  - variables:
+    - air_horizontal_streamfunction
+    levels: 1
+  halo: 1
+  latitude south to north: false
+output geometry: *geom
+states:
+- input:
+    date: 2010-01-01T12:00:00Z
+    state variables:
+    - air_horizontal_streamfunction
+    constant value: 1500.0e3
+  output:
+    filepath: testdata/convertstate_doc_lam/rh1
+- input:
+    date: 2010-01-01T12:00:00Z
+    state variables:
+    - air_horizontal_streamfunction
+    constant value: 1500.0e3
+  output:
+    filepath: testdata/convertstate_doc_lam/rh2
+- input:
+    date: 2010-01-01T12:00:00Z
+    state variables:
+    - air_horizontal_streamfunction
+    constant value: 0.8
+  output:
+    filepath: testdata/convertstate_doc_lam/rhc
+- input:
+    date: 2010-01-01T12:00:00Z
+    state variables:
+    - air_horizontal_streamfunction
+  output:
+    filepath: testdata/convertstate_doc_lam/rv

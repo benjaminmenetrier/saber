@@ -1,0 +1,44 @@
+geometry:
+  function space: StructuredColumns
+  grid:
+    type: regular_lonlat
+    N: 50
+  groups:
+  - variables:
+    - air_horizontal_streamfunction
+    levels: 1
+background:
+  date: 2010-01-01T12:00:00Z
+  state variables:
+  - air_horizontal_streamfunction
+  filepath: testdata/convertstate_doc_glb/rh1_avg
+background error:
+  covariance model: SABER
+  saber central block:
+    saber block name: BUMP_NICAS
+    calibration:
+      io:
+        data directory: testdata
+        files prefix: randomization_doc_glb_1/_MPI_-_OMP_
+      drivers:
+        multivariate strategy: univariate
+        compute nicas: true
+      nicas:
+        resolution: 5
+        explicit length-scales: true
+        horizontal length-scale:
+        - groups:
+          - air_horizontal_streamfunction
+          value: 5000.0e3
+        vertical length-scale:
+        - groups:
+          - air_horizontal_streamfunction
+          value: 0.0
+  saber outer blocks:
+  - saber block name: StdDev
+    read:
+      model file:
+        filepath: testdata/convertstate_doc_glb/rh1_pert
+  randomization size: 1
+output states:
+  filepath: testdata/randomization_doc_glb_1/_MPI_-_OMP__rh1
