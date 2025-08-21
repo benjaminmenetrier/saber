@@ -10,7 +10,7 @@
                    Regular sampling grid size:     1288 points
                    Nearest neighbor distance (min/max/avg):  0.168E+03 km /  0.633E+03 km /  0.564E+03 km
                    Effective resolution (min/max/avg):  6.32 / 23.81 /  7.61
-                   Subgrid hash:    532022502
+                   Subgrid hash:   -680262426
                 Subgrid size:     1288
              nc1(  1) =                       1288
              nc1(  2) =                       1288
@@ -21,17 +21,17 @@ Member 0:
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: unstructured.a3ac36d [173]
   Fields:
-    air_horizontal_streamfunction: 1.8957835882880520e+01
+    air_horizontal_streamfunction: 1.8957835882880524e+01
 Member 1: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: unstructured.a3ac36d [173]
   Fields:
-    air_horizontal_streamfunction: 2.0300590021342586e+01
+    air_horizontal_streamfunction: 2.0300590021342583e+01
 Member 2: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: unstructured.a3ac36d [173]
   Fields:
-    air_horizontal_streamfunction: 1.7743917152945269e+01
+    air_horizontal_streamfunction: 1.7743917152945265e+01
 Member 3: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: unstructured.a3ac36d [173]
@@ -46,7 +46,7 @@ Member 5:
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: unstructured.a3ac36d [173]
   Fields:
-    air_horizontal_streamfunction: 1.9705687652928624e+01
+    air_horizontal_streamfunction: 1.9705687652928621e+01
 Member 6: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: unstructured.a3ac36d [173]
@@ -71,12 +71,12 @@ Member 10:
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: unstructured.a3ac36d [173]
   Fields:
-    air_horizontal_streamfunction: 1.9060526011828184e+01
+    air_horizontal_streamfunction: 1.9060526011828188e+01
 Member 11: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: unstructured.a3ac36d [173]
   Fields:
-    air_horizontal_streamfunction: 1.8740846817493953e+01
+    air_horizontal_streamfunction: 1.8740846817493949e+01
 Member 12: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: unstructured.a3ac36d [173]
@@ -106,7 +106,7 @@ Member 17:
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: unstructured.a3ac36d [173]
   Fields:
-    air_horizontal_streamfunction: 1.8312770588795399e+01
+    air_horizontal_streamfunction: 1.8312770588795395e+01
 Member 18: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: unstructured.a3ac36d [173]
@@ -126,12 +126,12 @@ Member 21:
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: unstructured.a3ac36d [173]
   Fields:
-    air_horizontal_streamfunction: 1.9076310329643615e+01
+    air_horizontal_streamfunction: 1.9076310329643619e+01
 Member 22: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: unstructured.a3ac36d [173]
   Fields:
-    air_horizontal_streamfunction: 2.0447169360343260e+01
+    air_horizontal_streamfunction: 2.0447169360343263e+01
 Member 23: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: unstructured.a3ac36d [173]
@@ -141,4 +141,4 @@ Member 24:
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: unstructured.a3ac36d [173]
   Fields:
-    air_horizontal_streamfunction: 1.8294657076967784e+01
+    air_horizontal_streamfunction: 1.8294657076967781e+01

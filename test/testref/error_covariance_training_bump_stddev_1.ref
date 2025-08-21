@@ -5,30 +5,30 @@
              Level   2 ~> 100.0%
              Level   1 ~>  0.100E+01 vert. coord.
              Level   2 ~>  0.200E+01 vert. coord.
-          Norm of air_horizontal_streamfunction:  0.34588449E+02
-          Norm of air_horizontal_streamfunction:  0.38480279E+02
-          Norm of air_horizontal_streamfunction:  0.40307232E+02
-          Norm of air_horizontal_streamfunction:  0.36303975E+02
-          Norm of air_horizontal_streamfunction:  0.41755387E+02
-          Norm of air_horizontal_streamfunction:  0.39718819E+02
-          Norm of air_horizontal_streamfunction:  0.36224969E+02
-          Norm of air_horizontal_streamfunction:  0.37669628E+02
-          Norm of air_horizontal_streamfunction:  0.39173419E+02
-          Norm of air_horizontal_streamfunction:  0.42066923E+02
-          Norm of air_horizontal_streamfunction:  0.36083988E+02
-          Norm of air_horizontal_streamfunction:  0.38876060E+02
-          Norm of air_horizontal_streamfunction:  0.41309295E+02
-          Norm of air_horizontal_streamfunction:  0.36456482E+02
-          Norm of air_horizontal_streamfunction:  0.38961976E+02
-          Norm of air_horizontal_streamfunction:  0.34022314E+02
-          Norm of air_horizontal_streamfunction:  0.38022274E+02
-          Norm of air_horizontal_streamfunction:  0.38789543E+02
-          Norm of air_horizontal_streamfunction:  0.40459495E+02
-          Norm of air_horizontal_streamfunction:  0.38712001E+02
-                Level   1: rhflt =   40000.00 km, rel. diff. =  0.31326E-02
-                Level   2: rhflt =   40000.00 km, rel. diff. =  0.13881E-01
-             Level   1 ~>  0.10260E+01 /  0.10260E+01
-             Level   2 ~>  0.10176E+01 /  0.10176E+01
-Norm of output parameter stddev - 1: 4.1431764132508441e+01
-Norm of output parameter var - 1: 4.3647126090373845e+01
-Norm of output parameter m4 - 1: 1.4624786490317160e+02
+          Norm of air_horizontal_streamfunction:  0.38015199E+02
+          Norm of air_horizontal_streamfunction:  0.36880321E+02
+          Norm of air_horizontal_streamfunction:  0.39141576E+02
+          Norm of air_horizontal_streamfunction:  0.37536646E+02
+          Norm of air_horizontal_streamfunction:  0.39699785E+02
+          Norm of air_horizontal_streamfunction:  0.36647404E+02
+          Norm of air_horizontal_streamfunction:  0.37466973E+02
+          Norm of air_horizontal_streamfunction:  0.33893249E+02
+          Norm of air_horizontal_streamfunction:  0.37112131E+02
+          Norm of air_horizontal_streamfunction:  0.37614160E+02
+          Norm of air_horizontal_streamfunction:  0.37747468E+02
+          Norm of air_horizontal_streamfunction:  0.39710563E+02
+          Norm of air_horizontal_streamfunction:  0.35842891E+02
+          Norm of air_horizontal_streamfunction:  0.35392167E+02
+          Norm of air_horizontal_streamfunction:  0.38487398E+02
+          Norm of air_horizontal_streamfunction:  0.38402473E+02
+          Norm of air_horizontal_streamfunction:  0.36821010E+02
+          Norm of air_horizontal_streamfunction:  0.38452180E+02
+          Norm of air_horizontal_streamfunction:  0.41825791E+02
+          Norm of air_horizontal_streamfunction:  0.38583630E+02
+                Level   1: rhflt =   40000.00 km, rel. diff. =  0.19932E-01
+                Level   2: rhflt =   40000.00 km, rel. diff. = -0.47000E-03
+             Level   1 ~>  0.10035E+01 /  0.10035E+01
+             Level   2 ~>  0.97036E+00 /  0.97036E+00
+Norm of output parameter stddev - 1: 4.0719207028045275e+01
+Norm of output parameter var - 1: 4.2422526946934795e+01
+Norm of output parameter m4 - 1: 1.3233574099825736e+02

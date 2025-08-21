@@ -32,16 +32,15 @@
           Norm of air_horizontal_streamfunction:  0.18294657E+02
           Level   1 ~> 100.0%
           Level   2 ~> 100.0%
-          Subgrid hash:   -493349532
-             -90.00 deg.  ~>100- 0-55-56-75-83-94-96-97-96 
-             -45.00 deg.  ~>100- 0-81-40-96-74-97-82-99-99 
-               0.00 deg.  ~>100- 0-71-35-91-81-97-93-100-95 
-              45.00 deg.  ~>100- 0-83-39-95-76-98-90-98-98 
-             -90.00 deg.  ~>100- 0-55-56-75-83-94-96-97-96 
-             -45.00 deg.  ~>100- 0-81-40-96-74-97-82-99-99 
-               0.00 deg.  ~>100- 0-71-35-91-81-97-93-100-95 
-              45.00 deg.  ~>100- 0-83-39-95-76-98-90-98-98 
-          nc1 =      137
+             -90.00 deg.  ~>100- 0-56-58-75-80-94-89-97-93 
+             -45.00 deg.  ~>100- 0-80-41-94-75-98-83-98-97 
+               0.00 deg.  ~>100- 0-64-43-83-84-96-94-100-95 
+              45.00 deg.  ~>100- 0-82-38-94-75-98-89-95-96 
+             -90.00 deg.  ~>100- 0-56-58-75-80-94-89-97-93 
+             -45.00 deg.  ~>100- 0-80-41-94-75-98-83-98-97 
+               0.00 deg.  ~>100- 0-64-43-83-84-96-94-100-95 
+              45.00 deg.  ~>100- 0-82-38-94-75-98-89-95-96 
+          nc1 =      173
           Independent levels:  1[2]
           Independent levels for angular sector   1 / class   1:  1[2]
           Independent levels for angular sector   1 / class   2:  1[2]
@@ -85,25 +84,89 @@
           Independent levels for angular sector   4 / class  10:  1[2]
                 Level:   1 ~> cov. at class zero:  0.10E+01
                 Level:   2 ~> cov. at class zero:  0.10E+01
-             Block air_horizontal_streamfunction:  0.14895086E+00 for      144 diagnostic points
-                   Level:   1 ~> amplitude:        0.82
-                                 cor. hor. support:      4016.60 km
-                                 cor. ver. support:         4.17 vertical units
-                   Level:   2 ~> amplitude:        0.80
-                                 cor. hor. support:      4038.18 km
-                                 cor. ver. support:         4.44 vertical units
-                   Level:   1 ~> amplitude:        0.18
-                                 cor. hor. support:      2258.70 km
-                                 cor. ver. support:         0.42 vertical units
-                   Level:   2 ~> amplitude:        0.20
-                                 cor. hor. support:      2270.84 km
+             Block air_horizontal_streamfunction:  0.14201023E+00 for      144 diagnostic points
+                   Level:   1 ~> amplitude:        0.79
+                                 cor. hor. support:      4086.12 km
+                                 cor. ver. support:         4.43 vertical units
+                   Level:   2 ~> amplitude:        0.76
+                                 cor. hor. support:      4161.42 km
+                                 cor. ver. support:         4.89 vertical units
+                   Level:   1 ~> amplitude:        0.21
+                                 cor. hor. support:      2297.79 km
                                  cor. ver. support:         0.44 vertical units
+                   Level:   2 ~> amplitude:        0.24
+                                 cor. hor. support:      2340.14 km
+                                 cor. ver. support:         0.49 vertical units
              Effective levels:   1   2 
-                   Requested distance between points (min/max/avg):  0.557E+03 km /  0.557E+03 km /  0.557E+03 km
+                   Requested distance between points (min/max/avg):  0.566E+03 km /  0.566E+03 km /  0.566E+03 km
                    Regular sampling grid size:     1144 points
                    Nearest neighbor distance (min/max/avg):  0.181E+03 km /  0.663E+03 km /  0.590E+03 km
-                   Effective resolution (min/max/avg):  6.06 / 22.24 /  7.32
-                   Subgrid hash:  -1543240615
+                   Effective resolution (min/max/avg):  6.16 / 22.62 /  7.45
+                   Subgrid hash:    -80346023
                 Subgrid size:     1144
-                   Requested distance between points (min/max/avg):  0.560E+03 km /  0.560E+03 km /  0.560E+03 km
+                   Requested distance between points (min/max/avg):  0.577E+03 km /  0.577E+03 km /  0.577E+03 km
                    Regular sampling grid size:     1144 points
+                   Nearest neighbor distance (min/max/avg):  0.181E+03 km /  0.663E+03 km /  0.590E+03 km
+                   Effective resolution (min/max/avg):  6.28 / 23.04 /  7.59
+                   Subgrid hash:    -80346023
+                Subgrid size:     1144
+             nc1(  1) =                       1144
+             nc1(  2) =                       1144
+             ns =                             2288
+             v%n_s =                             2
+             c%n_s[global] =                 63576
+             Effective levels:   1   2 
+                   Requested distance between points (min/max/avg):  0.318E+03 km /  0.318E+03 km /  0.318E+03 km
+                   Regular sampling grid size:     3888 points
+                   Nearest neighbor distance (min/max/avg):  0.879E+02 km /  0.396E+03 km /  0.353E+03 km
+                   Effective resolution (min/max/avg):  5.80 / 26.13 /  6.77
+                   Subgrid hash:  -1629810923
+                Subgrid size:     3888
+                   Requested distance between points (min/max/avg):  0.324E+03 km /  0.324E+03 km /  0.324E+03 km
+                   Regular sampling grid size:     3640 points
+                   Nearest neighbor distance (min/max/avg):  0.913E+02 km /  0.408E+03 km /  0.364E+03 km
+                   Effective resolution (min/max/avg):  5.74 / 25.64 /  6.69
+                   Subgrid hash:  -1114632716
+                Subgrid size:     3640
+             nc1(  1) =                       3888
+             nc1(  2) =                       3640
+             ns =                             7528
+             v%n_s =                             2
+             c%n_s[global] =                119352
+    Full NICAS adjoint test result:                        T
+       Block NICAS adjoint test result:                    T
+          Interpolation adjoint test (horizontal) result:  T
+          Interpolation adjoint test (vertical) result:    T
+          Interpolation adjoint test (total) result:       T
+          Communication AB adjoint test result:            T
+          Communication AC adjoint test result:            T
+          Convolution / communication adjoint test result: T
+          Component NICAS adjoint test result:             T
+          Interpolation adjoint test (horizontal) result:  T
+          Interpolation adjoint test (vertical) result:    T
+          Interpolation adjoint test (total) result:       T
+          Communication AB adjoint test result:            T
+          Communication AC adjoint test result:            T
+          Convolution / communication adjoint test result: T
+          Component NICAS adjoint test result:             T
+             Min / max: 1.0000000 /  1.0000000 over     10 tests
+             Min / max: 1.0000000 /  1.0000000 over     10 tests
+             Min / max: 1.0000000 /  1.0000000 over     10 tests
+             0.0 /    0.0:  1.0000000
+          Level   1:  0.0000000 -  1.0000000
+          Level   2:  0.0000000 -  0.6688579
+Norm of output parameter dirac_mom - 1: 4.3280132911225424e+00
+Norm of output parameter dirac_diag_cor - 1: 1.3688409399090784e+00
+Norm of output parameter cor_a - 1: 1.4485432687452745e+01
+Norm of output parameter cor_a - 2: 4.1291031654488819e+00
+Norm of output parameter cor_rh1 - 1: 7.6875214640951291e+07
+Norm of output parameter cor_rh1 - 2: 4.3230110075527951e+07
+Norm of output parameter cor_rh2 - 1: 7.6629855953620195e+07
+Norm of output parameter cor_rh2 - 2: 4.3092134746147119e+07
+Norm of output parameter cor_rhc - 1: 8.6824338405642354e-01
+Norm of output parameter cor_rhc - 2: 8.6824338405642354e-01
+Norm of output parameter cor_rh - 1: 7.6709727338565350e+07
+Norm of output parameter cor_rh - 2: 4.3137049726601914e+07
+Norm of output parameter cor_rv - 1: 8.6831840001057898e+01
+Norm of output parameter cor_rv - 2: 8.6831840001402085e+00
+Norm of output parameter nicas_norm - 1: 2.7710238315382679e+01

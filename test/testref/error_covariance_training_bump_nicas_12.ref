@@ -22,178 +22,178 @@
              Level   9 ~>  0.900E+01 vert. coord.
              Level  10 ~>  0.100E+02 vert. coord.
              Effective levels:   1   3   5   7   9  10 
-                Horizontal support radius:    4000.00 km (   4000.00 km -    4000.00 km)
-                Estimated nc1 from horizontal support radius:      589
-                   Decimate full grid, at least      589 points required,     762 valid points found
-                   Subgrid hash:   1676590011
-                Final nc1:      589
-                Effective horizontal resolution:  4.00
-             nc1(  1) =                        589
-             nc1(  2) =                        589
-             nc1(  3) =                        589
-             nc1(  4) =                        589
-             nc1(  5) =                        589
-             nc1(  6) =                        589
-             ns =                             3534
+                   Requested distance between points (min/max/avg):  0.554E+03 km /  0.554E+03 km /  0.554E+03 km
+                   Regular sampling grid size:     1288 points
+                   Nearest neighbor distance (min/max/avg):  0.168E+03 km /  0.633E+03 km /  0.564E+03 km
+                   Effective resolution (min/max/avg):  6.32 / 23.81 /  7.61
+                   Subgrid hash:   -680262426
+                Subgrid size:     1288
+             nc1(  1) =                       1288
+             nc1(  2) =                       1288
+             nc1(  3) =                       1288
+             nc1(  4) =                       1288
+             nc1(  5) =                       1288
+             nc1(  6) =                       1288
+             ns =                             7728
              v%n_s =                            14
-             c%n_s[global] =                112784
+             c%n_s[global] =                291776
              Effective levels:   1   3   5   7   9  10 
-                Horizontal support radius:    4000.00 km (   4000.00 km -    4000.00 km)
-                Estimated nc1 from horizontal support radius:      589
-                   Decimate full grid, at least      589 points required,     762 valid points found
-                   Subgrid hash:   1676590011
-                Final nc1:      589
-                Effective horizontal resolution:  4.00
-             nc1(  1) =                        589
-             nc1(  2) =                        589
-             nc1(  3) =                        589
-             nc1(  4) =                        589
-             nc1(  5) =                        589
-             nc1(  6) =                        589
-             ns =                             3534
+                   Requested distance between points (min/max/avg):  0.554E+03 km /  0.554E+03 km /  0.554E+03 km
+                   Regular sampling grid size:     1288 points
+                   Nearest neighbor distance (min/max/avg):  0.168E+03 km /  0.633E+03 km /  0.564E+03 km
+                   Effective resolution (min/max/avg):  6.32 / 23.81 /  7.61
+                   Subgrid hash:   -680262426
+                Subgrid size:     1288
+             nc1(  1) =                       1288
+             nc1(  2) =                       1288
+             nc1(  3) =                       1288
+             nc1(  4) =                       1288
+             nc1(  5) =                       1288
+             nc1(  6) =                       1288
+             ns =                             7728
              v%n_s =                            14
-             c%n_s[global] =                112784
+             c%n_s[global] =                291776
              Effective levels:   1   3   5   7   9  10 
-                Horizontal support radius:    4000.00 km (   4000.00 km -    4000.00 km)
-                Estimated nc1 from horizontal support radius:      589
-                   Decimate full grid, at least      589 points required,     762 valid points found
-                   Subgrid hash:   1676590011
-                Final nc1:      589
-                Effective horizontal resolution:  4.00
-             nc1(  1) =                        589
-             nc1(  2) =                        589
-             nc1(  3) =                        589
-             nc1(  4) =                        589
-             nc1(  5) =                        589
-             nc1(  6) =                        589
-             ns =                             3534
+                   Requested distance between points (min/max/avg):  0.554E+03 km /  0.554E+03 km /  0.554E+03 km
+                   Regular sampling grid size:     1288 points
+                   Nearest neighbor distance (min/max/avg):  0.168E+03 km /  0.633E+03 km /  0.564E+03 km
+                   Effective resolution (min/max/avg):  6.32 / 23.81 /  7.61
+                   Subgrid hash:   -680262426
+                Subgrid size:     1288
+             nc1(  1) =                       1288
+             nc1(  2) =                       1288
+             nc1(  3) =                       1288
+             nc1(  4) =                       1288
+             nc1(  5) =                       1288
+             nc1(  6) =                       1288
+             ns =                             7728
              v%n_s =                            14
-             c%n_s[global] =                112784
+             c%n_s[global] =                291776
              Effective levels:   1   3   5   7   9  10 
-                Horizontal support radius:    4000.00 km (   4000.00 km -    4000.00 km)
-                Estimated nc1 from horizontal support radius:      589
-                   Decimate full grid, at least      589 points required,     762 valid points found
-                   Subgrid hash:   1676590011
-                Final nc1:      589
-                Effective horizontal resolution:  4.00
-             nc1(  1) =                        589
-             nc1(  2) =                        589
-             nc1(  3) =                        589
-             nc1(  4) =                        589
-             nc1(  5) =                        589
-             nc1(  6) =                        589
-             ns =                             3534
+                   Requested distance between points (min/max/avg):  0.554E+03 km /  0.554E+03 km /  0.554E+03 km
+                   Regular sampling grid size:     1288 points
+                   Nearest neighbor distance (min/max/avg):  0.168E+03 km /  0.633E+03 km /  0.564E+03 km
+                   Effective resolution (min/max/avg):  6.32 / 23.81 /  7.61
+                   Subgrid hash:   -680262426
+                Subgrid size:     1288
+             nc1(  1) =                       1288
+             nc1(  2) =                       1288
+             nc1(  3) =                       1288
+             nc1(  4) =                       1288
+             nc1(  5) =                       1288
+             nc1(  6) =                       1288
+             ns =                             7728
              v%n_s =                            14
-             c%n_s[global] =                112784
+             c%n_s[global] =                291776
              Effective levels:   1   3   5   7   9  10 
-                Horizontal support radius:    4000.00 km (   4000.00 km -    4000.00 km)
-                Estimated nc1 from horizontal support radius:      589
-                   Decimate full grid, at least      589 points required,     762 valid points found
-                   Subgrid hash:   1676590011
-                Final nc1:      589
-                Effective horizontal resolution:  4.00
-             nc1(  1) =                        589
-             nc1(  2) =                        589
-             nc1(  3) =                        589
-             nc1(  4) =                        589
-             nc1(  5) =                        589
-             nc1(  6) =                        589
-             ns =                             3534
+                   Requested distance between points (min/max/avg):  0.554E+03 km /  0.554E+03 km /  0.554E+03 km
+                   Regular sampling grid size:     1288 points
+                   Nearest neighbor distance (min/max/avg):  0.168E+03 km /  0.633E+03 km /  0.564E+03 km
+                   Effective resolution (min/max/avg):  6.32 / 23.81 /  7.61
+                   Subgrid hash:   -680262426
+                Subgrid size:     1288
+             nc1(  1) =                       1288
+             nc1(  2) =                       1288
+             nc1(  3) =                       1288
+             nc1(  4) =                       1288
+             nc1(  5) =                       1288
+             nc1(  6) =                       1288
+             ns =                             7728
              v%n_s =                            14
-             c%n_s[global] =                112784
+             c%n_s[global] =                291776
              Effective levels:   1   3   5   7   9  10 
-                Horizontal support radius:    4000.00 km (   4000.00 km -    4000.00 km)
-                Estimated nc1 from horizontal support radius:      589
-                   Decimate full grid, at least      589 points required,     762 valid points found
-                   Subgrid hash:   1676590011
-                Final nc1:      589
-                Effective horizontal resolution:  4.00
-             nc1(  1) =                        589
-             nc1(  2) =                        589
-             nc1(  3) =                        589
-             nc1(  4) =                        589
-             nc1(  5) =                        589
-             nc1(  6) =                        589
-             ns =                             3534
+                   Requested distance between points (min/max/avg):  0.554E+03 km /  0.554E+03 km /  0.554E+03 km
+                   Regular sampling grid size:     1288 points
+                   Nearest neighbor distance (min/max/avg):  0.168E+03 km /  0.633E+03 km /  0.564E+03 km
+                   Effective resolution (min/max/avg):  6.32 / 23.81 /  7.61
+                   Subgrid hash:   -680262426
+                Subgrid size:     1288
+             nc1(  1) =                       1288
+             nc1(  2) =                       1288
+             nc1(  3) =                       1288
+             nc1(  4) =                       1288
+             nc1(  5) =                       1288
+             nc1(  6) =                       1288
+             ns =                             7728
              v%n_s =                            14
-             c%n_s[global] =                112784
+             c%n_s[global] =                291776
              Effective levels:   1   3   5   7   9  10 
-                Horizontal support radius:    4000.00 km (   4000.00 km -    4000.00 km)
-                Estimated nc1 from horizontal support radius:      589
-                   Decimate full grid, at least      589 points required,     762 valid points found
-                   Subgrid hash:   1676590011
-                Final nc1:      589
-                Effective horizontal resolution:  4.00
-             nc1(  1) =                        589
-             nc1(  2) =                        589
-             nc1(  3) =                        589
-             nc1(  4) =                        589
-             nc1(  5) =                        589
-             nc1(  6) =                        589
-             ns =                             3534
+                   Requested distance between points (min/max/avg):  0.554E+03 km /  0.554E+03 km /  0.554E+03 km
+                   Regular sampling grid size:     1288 points
+                   Nearest neighbor distance (min/max/avg):  0.168E+03 km /  0.633E+03 km /  0.564E+03 km
+                   Effective resolution (min/max/avg):  6.32 / 23.81 /  7.61
+                   Subgrid hash:   -680262426
+                Subgrid size:     1288
+             nc1(  1) =                       1288
+             nc1(  2) =                       1288
+             nc1(  3) =                       1288
+             nc1(  4) =                       1288
+             nc1(  5) =                       1288
+             nc1(  6) =                       1288
+             ns =                             7728
              v%n_s =                            14
-             c%n_s[global] =                112784
+             c%n_s[global] =                291776
              Effective levels:   1   3   5   7   9  10 
-                Horizontal support radius:    4000.00 km (   4000.00 km -    4000.00 km)
-                Estimated nc1 from horizontal support radius:      589
-                   Decimate full grid, at least      589 points required,     762 valid points found
-                   Subgrid hash:   1676590011
-                Final nc1:      589
-                Effective horizontal resolution:  4.00
-             nc1(  1) =                        589
-             nc1(  2) =                        589
-             nc1(  3) =                        589
-             nc1(  4) =                        589
-             nc1(  5) =                        589
-             nc1(  6) =                        589
-             ns =                             3534
+                   Requested distance between points (min/max/avg):  0.554E+03 km /  0.554E+03 km /  0.554E+03 km
+                   Regular sampling grid size:     1288 points
+                   Nearest neighbor distance (min/max/avg):  0.168E+03 km /  0.633E+03 km /  0.564E+03 km
+                   Effective resolution (min/max/avg):  6.32 / 23.81 /  7.61
+                   Subgrid hash:   -680262426
+                Subgrid size:     1288
+             nc1(  1) =                       1288
+             nc1(  2) =                       1288
+             nc1(  3) =                       1288
+             nc1(  4) =                       1288
+             nc1(  5) =                       1288
+             nc1(  6) =                       1288
+             ns =                             7728
              v%n_s =                            14
-             c%n_s[global] =                112784
+             c%n_s[global] =                291776
              Effective levels:   1   3   5   7   9  10 
-                Horizontal support radius:    4000.00 km (   4000.00 km -    4000.00 km)
-                Estimated nc1 from horizontal support radius:      589
-                   Decimate full grid, at least      589 points required,     762 valid points found
-                   Subgrid hash:   1676590011
-                Final nc1:      589
-                Effective horizontal resolution:  4.00
-             nc1(  1) =                        589
-             nc1(  2) =                        589
-             nc1(  3) =                        589
-             nc1(  4) =                        589
-             nc1(  5) =                        589
-             nc1(  6) =                        589
-             ns =                             3534
+                   Requested distance between points (min/max/avg):  0.554E+03 km /  0.554E+03 km /  0.554E+03 km
+                   Regular sampling grid size:     1288 points
+                   Nearest neighbor distance (min/max/avg):  0.168E+03 km /  0.633E+03 km /  0.564E+03 km
+                   Effective resolution (min/max/avg):  6.32 / 23.81 /  7.61
+                   Subgrid hash:   -680262426
+                Subgrid size:     1288
+             nc1(  1) =                       1288
+             nc1(  2) =                       1288
+             nc1(  3) =                       1288
+             nc1(  4) =                       1288
+             nc1(  5) =                       1288
+             nc1(  6) =                       1288
+             ns =                             7728
              v%n_s =                            14
-             c%n_s[global] =                112784
+             c%n_s[global] =                291776
              Effective levels:   1   3   5   7   9  10 
-                Horizontal support radius:    4000.00 km (   4000.00 km -    4000.00 km)
-                Estimated nc1 from horizontal support radius:      589
-                   Decimate full grid, at least      589 points required,     762 valid points found
-                   Subgrid hash:   1676590011
-                Final nc1:      589
-                Effective horizontal resolution:  4.00
-             nc1(  1) =                        589
-             nc1(  2) =                        589
-             nc1(  3) =                        589
-             nc1(  4) =                        589
-             nc1(  5) =                        589
-             nc1(  6) =                        589
-             ns =                             3534
+                   Requested distance between points (min/max/avg):  0.554E+03 km /  0.554E+03 km /  0.554E+03 km
+                   Regular sampling grid size:     1288 points
+                   Nearest neighbor distance (min/max/avg):  0.168E+03 km /  0.633E+03 km /  0.564E+03 km
+                   Effective resolution (min/max/avg):  6.32 / 23.81 /  7.61
+                   Subgrid hash:   -680262426
+                Subgrid size:     1288
+             nc1(  1) =                       1288
+             nc1(  2) =                       1288
+             nc1(  3) =                       1288
+             nc1(  4) =                       1288
+             nc1(  5) =                       1288
+             nc1(  6) =                       1288
+             ns =                             7728
              v%n_s =                            14
-             c%n_s[global] =                112784
+             c%n_s[global] =                291776
              Effective levels:   1   3   5   7   9  10 
-                Horizontal support radius:    4000.00 km (   4000.00 km -    4000.00 km)
-                Estimated nc1 from horizontal support radius:      589
-                   Decimate full grid, at least      589 points required,     762 valid points found
-                   Subgrid hash:   1676590011
-                Final nc1:      589
-                Effective horizontal resolution:  4.00
-             nc1(  1) =                        589
-             nc1(  2) =                        589
-             nc1(  3) =                        589
-             nc1(  4) =                        589
-             nc1(  5) =                        589
-             nc1(  6) =                        589
-             ns =                             3534
+                   Requested distance between points (min/max/avg):  0.554E+03 km /  0.554E+03 km /  0.554E+03 km
+                   Regular sampling grid size:     1288 points
+                   Nearest neighbor distance (min/max/avg):  0.168E+03 km /  0.633E+03 km /  0.564E+03 km
+                   Effective resolution (min/max/avg):  6.32 / 23.81 /  7.61
+                   Subgrid hash:   -680262426
+                Subgrid size:     1288
+             nc1(  1) =                       1288
+             nc1(  2) =                       1288
+             nc1(  3) =                       1288
+             nc1(  4) =                       1288
+             nc1(  5) =                       1288
+             nc1(  6) =                       1288
+             ns =                             7728
              v%n_s =                            14
-             c%n_s[global] =                112784
+             c%n_s[global] =                291776

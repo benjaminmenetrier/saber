@@ -1,0 +1,24 @@
+Member 0: 
+- Valid time: 2010-01-01T16:00:00Z
+  Geometry: F12 [1152]
+  Fields:
+    air_potential_temperature: 1.2501263546943128e+03
+    cloud_ice_mixing_ratio_wrt_moist_air_and_condensed_water: 3.8074209897071752e-04
+    cloud_liquid_water_mixing_ratio_wrt_moist_air_and_condensed_water: 6.2980783070540336e-04
+    dimensionless_exner_function_levels_minus_one: 2.6908287048016850e-02
+    dry_air_density_levels_minus_one: 2.9201428988613187e-01
+    eastward_wind: 3.1124947973002895e+02
+    northward_wind: 3.0958259605739158e+02
+    water_vapor_mixing_ratio_wrt_moist_air_and_condensed_water: 3.6448182098825818e-02
+Member 1: 
+- Valid time: 2010-01-01T16:00:00Z
+  Geometry: F12 [1152]
+  Fields:
+    air_potential_temperature: 1.2168846924393793e+03
+    cloud_ice_mixing_ratio_wrt_moist_air_and_condensed_water: 4.0227808625857971e-04
+    cloud_liquid_water_mixing_ratio_wrt_moist_air_and_condensed_water: 7.7820233659288342e-04
+    dimensionless_exner_function_levels_minus_one: 3.0819376798147499e-02
+    dry_air_density_levels_minus_one: 3.0089454593377535e-01
+    eastward_wind: 3.1203305902229255e+02
+    northward_wind: 3.1944574919483506e+02
+    water_vapor_mixing_ratio_wrt_moist_air_and_condensed_water: 3.7725051929939926e-02

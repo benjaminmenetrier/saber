@@ -26,7 +26,7 @@
                    Regular sampling grid size:     1288 points
                    Nearest neighbor distance (min/max/avg):  0.168E+03 km /  0.633E+03 km /  0.564E+03 km
                    Effective resolution (min/max/avg):  6.32 / 23.81 /  7.61
-                   Subgrid hash:    532022502
+                   Subgrid hash:   -680262426
                 Subgrid size:     1288
              nc1(  1) =                       1288
              nc1(  2) =                       1288
@@ -46,7 +46,7 @@ Member 1:
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    air_horizontal_streamfunction: 8.0586156664024074e+01
+    air_horizontal_streamfunction: 8.0586156664024088e+01
 Member 2: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
@@ -66,7 +66,7 @@ Member 5:
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    air_horizontal_streamfunction: 8.4285557553373664e+01
+    air_horizontal_streamfunction: 8.4285557553373650e+01
 Member 6: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
@@ -76,7 +76,7 @@ Member 7:
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    air_horizontal_streamfunction: 8.4532641516060579e+01
+    air_horizontal_streamfunction: 8.4532641516060565e+01
 Member 8: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
@@ -86,12 +86,12 @@ Member 9:
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    air_horizontal_streamfunction: 9.1826995427165159e+01
+    air_horizontal_streamfunction: 9.1826995427165173e+01
 Member 10: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    air_horizontal_streamfunction: 8.3173273790149864e+01
+    air_horizontal_streamfunction: 8.3173273790149850e+01
 Member 11: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
@@ -111,7 +111,7 @@ Member 14:
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    air_horizontal_streamfunction: 8.5975650389203196e+01
+    air_horizontal_streamfunction: 8.5975650389203210e+01
 Member 15: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
@@ -131,12 +131,12 @@ Member 18:
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    air_horizontal_streamfunction: 8.2326531425241967e+01
+    air_horizontal_streamfunction: 8.2326531425241981e+01
 Member 19: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    air_horizontal_streamfunction: 8.4550132377453338e+01
+    air_horizontal_streamfunction: 8.4550132377453309e+01
 Member 20: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
@@ -151,7 +151,7 @@ Member 22:
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    air_horizontal_streamfunction: 7.9846443771014549e+01
+    air_horizontal_streamfunction: 7.9846443771014535e+01
 Member 23: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
@@ -161,4 +161,4 @@ Member 24:
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    air_horizontal_streamfunction: 8.5981169529323182e+01
+    air_horizontal_streamfunction: 8.5981169529323168e+01

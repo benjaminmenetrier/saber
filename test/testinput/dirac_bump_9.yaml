@@ -46,6 +46,11 @@ background error:
           - air_horizontal_streamfunction
           - air_horizontal_velocity_potential
           value: 0.0
+        interpolation type:
+        - groups:
+          - air_horizontal_streamfunction
+          - air_horizontal_velocity_potential
+          type: si
         smooth interpolation factor: 1.0
   saber outer blocks:
   - saber block name: BUMP_PsiChiToUV

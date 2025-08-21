@@ -87,7 +87,7 @@ real(kind_real),intent(in) :: lat(n)      !< Latitudes
 
 ! Local variables
 integer :: i,j,k,hash
-integer,allocatable :: jtab(:),near(:),next(:),nodes(:)
+integer,allocatable :: shuffle(:),near(:),next(:),nodes(:)
 integer(kind_short) :: lon_short,lat_short
 integer(kind_long) :: hash_long
 real(kind_real),allocatable :: lon_pert(:),lat_pert(:),dist(:)
@@ -100,7 +100,7 @@ logical :: init
 mesh%n = n
 
 ! Allocation
-allocate(jtab(mesh%n))
+allocate(shuffle(mesh%n))
 allocate(lon_pert(mesh%n))
 allocate(lat_pert(mesh%n))
 allocate(mesh%order(mesh%n))
@@ -122,10 +122,15 @@ allocate(dist(mesh%n))
 mesh%lon = lon
 mesh%lat = lat
 
-! Genereate shuffled order (more efficient to compute the Delaunay triangulation)
+! Reorder points
+call qsort(mesh%n,mesh%lon,mesh%lat,mesh%order,.false.)
+
+! Resynchronize random number generator
 call rng%resync(mpl)
-call rng%shuffle(mesh%n,mesh%order)
-call rng%desync(mpl)
+
+! Genereate shuffled order (more efficient to compute the Delaunay triangulation)
+call rng%shuffle(mesh%n,shuffle)
+mesh%order = mesh%order(shuffle)
 
 ! Inverse order
 do i=1,mesh%n
@@ -221,16 +226,17 @@ if (mesh%nb>0) then
    mesh%bnodes = nodes(1:mesh%nb)
 end if
 
-! Release memory
-deallocate(nodes)
+! Desynchronize random number generator
+call rng%desync(mpl)
 
 ! Release memory
-deallocate(jtab)
+deallocate(shuffle)
 deallocate(lon_pert)
 deallocate(lat_pert)
 deallocate(near)
 deallocate(next)
 deallocate(dist)
+deallocate(nodes)
 
 end subroutine mesh_init
 

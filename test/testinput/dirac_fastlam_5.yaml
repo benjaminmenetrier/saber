@@ -31,6 +31,7 @@ background error:
   covariance model: SABER
   adjoint test: true
   square-root test: true
+  square-root tolerance: 3.0e-12
   saber central block:
     saber block name: FastLAM
     read:

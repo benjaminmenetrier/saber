@@ -2494,7 +2494,7 @@ if (mpl%main) then
       call tree_reg%dealloc
    else
       ! Error message
-      call mpl%abort('${subr}$','wrong sampling method')
+      call mpl%abort('${subr}$','wrong sampling method: '//trim(ldraw_type))
    end if
 
    ! Allocation
@@ -2605,8 +2605,6 @@ call mpl%f_comm%broadcast(s_to_c0,mpl%rootproc-1)
 call qsort(ns,lon_s,lat_s,order_s)
 
 ! Reorder sampling
-lon_s = lon_s(order_s)
-lat_s = lat_s(order_s)
 s_to_c0 = s_to_c0(order_s)
 
 ! Grid hash

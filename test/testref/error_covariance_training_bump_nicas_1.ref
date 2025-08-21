@@ -10,10 +10,53 @@
                    Regular sampling grid size:      544 points
                    Nearest neighbor distance (min/max/avg):  0.289E+03 km /  0.889E+03 km /  0.774E+03 km
                    Effective resolution (min/max/avg):  4.50 / 13.82 /  5.67
-                   Subgrid hash:    376898060
+                   Subgrid hash:   -474283508
                 Subgrid size:      544
              nc1(  1) =                        544
              nc1(  2) =                        544
              ns =                             1088
              v%n_s =                             2
              c%n_s[global] =                 30688
+             nc1(  1) =                        544
+             nc1(  2) =                        544
+             ns =                             1088
+             v%n_s =                             2
+             c%n_s[global] =                 14848
+    Full NICAS adjoint test result:                        T
+       Block NICAS adjoint test result:                    T
+          Interpolation adjoint test (horizontal) result:  T
+          Interpolation adjoint test (vertical) result:    T
+          Interpolation adjoint test (total) result:       T
+          Communication AB adjoint test result:            T
+          Communication AC adjoint test result:            T
+          Convolution / communication adjoint test result: T
+          Component NICAS adjoint test result:             T
+       Block NICAS adjoint test result:                    T
+          Interpolation adjoint test (horizontal) result:  T
+          Interpolation adjoint test (vertical) result:    T
+          Interpolation adjoint test (total) result:       T
+          Communication AB adjoint test result:            T
+          Communication AC adjoint test result:            T
+          Convolution / communication adjoint test result: T
+          Component NICAS adjoint test result:             T
+             Min / max: 1.0000000 /  1.0000000 over     50 tests
+             Min / max: 1.0000000 /  1.0000000 over     50 tests
+             Min / max: 1.0000000 /  1.0000000 over     50 tests
+             Min / max: 1.0000000 /  1.0000000 over     50 tests
+             0.0 /    0.0:  1.0000000
+          Level   1:  0.0000000 -  1.0000000
+          Level   2:  0.0000000 -  0.6000000
+             0.0 /    0.0:  0.0000000
+          Level   1:  0.0000000 -  0.0000000
+          Level   2:  0.0000000 -  0.0000000
+          MSE (exp. / th. / ratio):  0.30691820E+04 /  0.31417879E+04 / 0.977
+          MSE (exp. / th. / ratio):  0.12272092E+04 /  0.12567152E+04 / 0.977
+          MSE (exp. / th. / ratio):  0.82643692E+03 /  0.83781012E+03 / 0.986
+          MSE (exp. / th. / ratio):  0.58974658E+03 /  0.59843580E+03 / 0.985
+          MSE (exp. / th. / ratio):  0.47387319E+03 /  0.48335199E+03 / 0.980
+          MSE (exp. / th. / ratio):  0.38086123E+03 /  0.39272349E+03 / 0.970
+          MSE (exp. / th. / ratio):  0.33226499E+03 /  0.33965275E+03 / 0.978
+          MSE (exp. / th. / ratio):  0.28703948E+03 /  0.29225934E+03 / 0.982
+          MSE (exp. / th. / ratio):  0.24945517E+03 /  0.25647248E+03 / 0.973
+Norm of output parameter cor_rh - 1: 4.5817027402484328e+08
+Norm of output parameter cor_rv - 1: 3.4362770551863247e+02

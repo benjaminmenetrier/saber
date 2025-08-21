@@ -2199,19 +2199,31 @@ else
       ncx = samp%nc0_smask(0)
 
       ! Allocation
+      allocate(fmask_c0a(geom%nc0a))
+      if (mpl%main) then
+         allocate(smask_hor_c0(geom%nc0))
+      else
+         allocate(smask_hor_c0(0))
+      end if
       allocate(cx_to_c0(ncx))
 
+      ! Communication
+      call mpl%loc_to_glb(geom%nc0a,geom%nc0,geom%c0a_to_c0,samp%smask_hor_c0a,smask_hor_c0)
+
       ! Initialization
-      icx = 0
-      cx_to_c0 = 0
-      do ic0a=1,geom%nc0a
-         if (samp%smask_hor_c0a(ic0a)) then
-            icx = icx+1
-            ic0 = geom%c0a_to_c0(ic0a)
-            cx_to_c0(icx) = ic0
-         end if
-      end do
-      call mpl%f_comm%allreduce(cx_to_c0,fckit_mpi_sum())
+      if (mpl%main) then
+         icx = 0
+         cx_to_c0 = 0
+         do ic0=1,geom%nc0
+            if (smask_hor_c0(ic0)) then
+               icx = icx+1
+               cx_to_c0(icx) = ic0
+            end if
+         end do
+      end if
+
+      ! Broadcast
+      call mpl%f_comm%broadcast(cx_to_c0,mpl%rootproc-1)
    else
       ! Allocation
       allocate(fmask_c0a(geom%nc0a))
@@ -2767,8 +2779,8 @@ call mpl%loc_to_glb(samp%nc2a,samp%nc2,samp%c2a_to_c2,smask_c2a,smask_c2,.true.)
 do ic2=1,samp%nc2
    smask_hor_c2(ic2) = any(smask_c2(ic2,:))
 end do
-if (.not.samp%lat_bands) then
-   call mesh_c2%init(mpl,rng,samp%nc2,lon_c2,lat_c2)
+if ((.not.samp%lat_bands)) then
+   if ((nam%samp_interp_type=='c0').or.(nam%samp_interp_type=='c1')) call mesh_c2%init(mpl,rng,samp%nc2,lon_c2,lat_c2)
    call tree_c2%init(mpl,samp%nc2,lon_c2,lat_c2)
 end if
 if (samp%compute_c2b_to_c1a) smask_hor_c1a = .true.

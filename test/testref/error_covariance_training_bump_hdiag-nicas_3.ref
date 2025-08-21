@@ -89,13 +89,13 @@
                    Regular sampling grid size:      760 points
                    Nearest neighbor distance (min/max/avg):  0.233E+03 km /  0.782E+03 km /  0.688E+03 km
                    Effective resolution (min/max/avg):  6.37 / 21.35 /  7.89
-                   Subgrid hash:   1637352162
+                   Subgrid hash:   1497432802
                 Subgrid size:      760
                    Requested distance between points (min/max/avg):  0.654E+03 km /  0.654E+03 km /  0.654E+03 km
                    Regular sampling grid size:      880 points
                    Nearest neighbor distance (min/max/avg):  0.213E+03 km /  0.736E+03 km /  0.652E+03 km
                    Effective resolution (min/max/avg):  6.40 / 22.17 /  7.85
-                   Subgrid hash:  -1460272297
+                   Subgrid hash:   -419298473
                 Subgrid size:      880
              nc1(  1) =                        760
              nc1(  2) =                        880
@@ -107,13 +107,13 @@
                    Regular sampling grid size:      544 points
                    Nearest neighbor distance (min/max/avg):  0.289E+03 km /  0.889E+03 km /  0.774E+03 km
                    Effective resolution (min/max/avg):  6.76 / 20.79 /  8.53
-                   Subgrid hash:    376898060
+                   Subgrid hash:   -474283508
                 Subgrid size:      544
                    Requested distance between points (min/max/avg):  0.834E+03 km /  0.834E+03 km /  0.834E+03 km
                    Regular sampling grid size:      448 points
                    Nearest neighbor distance (min/max/avg):  0.329E+03 km /  0.953E+03 km /  0.826E+03 km
                    Effective resolution (min/max/avg):  6.32 / 18.29 /  8.02
-                   Subgrid hash:   1715929519
+                   Subgrid hash:   -823721553
                 Subgrid size:      448
              nc1(  1) =                        544
              nc1(  2) =                        448
@@ -133,7 +133,7 @@
              Min / max: 1.0000000 /  1.0000000 over     10 tests
              0.0 /    0.0:  1.0000000
           Level   1:  0.0000000 -  1.0000000
-          Level   2:  0.0000000 -  0.7833063
+          Level   2:  0.0000000 -  0.7841465
     Full NICAS adjoint test result:                        T
        Block NICAS adjoint test result:                    T
           Interpolation adjoint test (horizontal) result:  T
@@ -147,10 +147,10 @@
              Min / max: 1.0000000 /  1.0000000 over     10 tests
              0.0 /    0.0:  1.0000000
           Level   1:  0.0000000 -  1.0000000
-          Level   2:  0.0000000 -  0.9217751
+          Level   2:  0.0000000 -  0.9217741
 Norm of output parameter loc_rh - 1: 2.3760945804755172e+08
 Norm of output parameter loc_rv - 1: 1.9094323113039604e+02
 Norm of output parameter hyb_coef_ens - 1: 2.4900083429246830e+01
 Norm of output parameter hyb_coef_ens_lr - 1: 2.4824227913120588e+01
 Norm of output parameter loc_rh_lr - 1: 2.4667456322463140e+08
-Norm of output parameter loc_rv_lr - 1: 2.5128659590070544e+02
+Norm of output parameter loc_rv_lr - 1: 2.5128659590070541e+02

@@ -10,22 +10,136 @@
           Domain area (% of Earth area): 0.100E+03%
              Level   1 ~> 100.0%
              Level   1 ~>  0.100E+01 vert. coord.
-Norm of input parameter a - 1: 5.3212894058845947e+01
-Norm of input parameter a - 2: 1.1820109620518078e+01
-Norm of input parameter rh1 - 1: 2.6938107048422796e+08
-Norm of input parameter rh1 - 2: 2.3934345250177974e+08
-Norm of input parameter rh2 - 1: 2.9546928374575239e+08
-Norm of input parameter rh2 - 2: 2.6308426304117459e+08
-Norm of input parameter rhc - 1: 4.7462815846096529e+00
-Norm of input parameter rhc - 2: 4.7462815846096529e+00
-Norm of input parameter rv - 1: 2.0646211598785553e+02
-Norm of input parameter rv - 2: 5.1435210976241244e+01
+Norm of input parameter a - 1: 5.3191735636310781e+01
+Norm of input parameter a - 2: 1.1829758293622191e+01
+Norm of input parameter rh1 - 1: 2.6933589224220598e+08
+Norm of input parameter rh1 - 2: 2.3937709446207070e+08
+Norm of input parameter rh2 - 1: 2.9553517103929007e+08
+Norm of input parameter rh2 - 2: 2.6313400741486916e+08
+Norm of input parameter rhc - 1: 4.6383778271747982e+00
+Norm of input parameter rhc - 2: 4.6383778271747982e+00
+Norm of input parameter rv - 1: 2.0606389886749307e+02
+Norm of input parameter rv - 2: 5.1338870962788079e+01
              Effective levels:   1   2 
-                   Requested distance between points (min/max/avg):  0.518E+03 km /  0.624E+03 km /  0.561E+03 km
+                   Requested distance between points (min/max/avg):  0.518E+03 km /  0.635E+03 km /  0.563E+03 km
                    Regular sampling grid size:    13608 points
-                   Nearest neighbor distance (min/max/avg):  0.449E+03 km /  0.730E+03 km /  0.566E+03 km
-                   Effective resolution (min/max/avg):  5.72 /  8.94 /  7.13
-                   Subgrid hash:   2130102971
-                Subgrid size:     1133
+                   Nearest neighbor distance (min/max/avg):  0.439E+03 km /  0.835E+03 km /  0.566E+03 km
+                   Effective resolution (min/max/avg):  4.84 /  8.72 /  7.16
+                   Subgrid hash:    369891403
+                Subgrid size:     1119
                    Requested distance between points (min/max/avg):  0.491E+03 km /  0.635E+03 km /  0.557E+03 km
                    Regular sampling grid size:    15048 points
+                   Nearest neighbor distance (min/max/avg):  0.438E+03 km /  0.756E+03 km /  0.569E+03 km
+                   Effective resolution (min/max/avg):  5.24 /  8.71 /  7.12
+                   Subgrid hash:   -434583045
+                Subgrid size:     1120
+             nc1(  1) =                       1119
+             nc1(  2) =                       1120
+             ns =                             2239
+             v%n_s =                             2
+             c%n_s[global] =                 64097
+             Effective levels:   1   2 
+                   Requested distance between points (min/max/avg):  0.418E+03 km /  0.571E+03 km /  0.499E+03 km
+                   Regular sampling grid size:    20368 points
+                   Nearest neighbor distance (min/max/avg):  0.374E+03 km /  0.741E+03 km /  0.505E+03 km
+                   Effective resolution (min/max/avg):  4.93 /  8.59 /  7.11
+                   Subgrid hash:  -1095849995
+                Subgrid size:     1416
+                   Requested distance between points (min/max/avg):  0.418E+03 km /  0.559E+03 km /  0.495E+03 km
+                   Regular sampling grid size:    20368 points
+                   Nearest neighbor distance (min/max/avg):  0.387E+03 km /  0.705E+03 km /  0.499E+03 km
+                   Effective resolution (min/max/avg):  5.04 /  9.05 /  7.13
+                   Subgrid hash:    510537079
+                Subgrid size:     1463
+             nc1(  1) =                       1416
+             nc1(  2) =                       1463
+             ns =                             2879
+             v%n_s =                             2
+             c%n_s[global] =                 39935
+             nc1(  1) =                       1119
+             nc1(  2) =                       1120
+             ns =                             2239
+             v%n_s =                             2
+             c%n_s[global] =                 65993
+             nc1(  1) =                       1416
+             nc1(  2) =                       1463
+             ns =                             2879
+             v%n_s =                             2
+             c%n_s[global] =                 43399
+    Full NICAS adjoint test result:                        T
+       Block NICAS adjoint test result:                    T
+          Interpolation adjoint test (horizontal) result:  T
+          Interpolation adjoint test (vertical) result:    T
+          Interpolation adjoint test (total) result:       T
+          Communication AB adjoint test result:            T
+          Communication AC adjoint test result:            T
+          Convolution / communication adjoint test result: T
+          Component NICAS adjoint test result:             T
+          Interpolation adjoint test (horizontal) result:  T
+          Interpolation adjoint test (vertical) result:    T
+          Interpolation adjoint test (total) result:       T
+          Communication AB adjoint test result:            T
+          Communication AC adjoint test result:            T
+          Convolution / communication adjoint test result: T
+          Component NICAS adjoint test result:             T
+       Block NICAS adjoint test result:                    T
+          Interpolation adjoint test (horizontal) result:  T
+          Interpolation adjoint test (vertical) result:    T
+          Interpolation adjoint test (total) result:       T
+          Communication AB adjoint test result:            T
+          Communication AC adjoint test result:            T
+          Convolution / communication adjoint test result: T
+          Component NICAS adjoint test result:             T
+          Interpolation adjoint test (horizontal) result:  T
+          Interpolation adjoint test (vertical) result:    T
+          Interpolation adjoint test (total) result:       T
+          Communication AB adjoint test result:            T
+          Communication AC adjoint test result:            T
+          Convolution / communication adjoint test result: T
+          Component NICAS adjoint test result:             T
+             0.0 /    0.0:  1.0000000
+          Level   1:  0.0000000 -  1.0000000
+          Level   2:  0.0000000 -  0.6180313
+             0.0 /    0.0:  0.0000000
+          Level   1:  0.0000000 -  0.0000000
+          Level   2:  0.0000000 -  0.0000000
+             Effective levels:   1 
+                   Requested distance between points (min/max/avg):  0.538E+03 km /  0.699E+03 km /  0.615E+03 km
+                   Regular sampling grid size:    12240 points
+                   Nearest neighbor distance (min/max/avg):  0.439E+03 km /  0.858E+03 km /  0.618E+03 km
+                   Effective resolution (min/max/avg):  5.16 /  9.15 /  7.11
+                   Subgrid hash:   -524195470
+                Subgrid size:      943
+             nc1(  1) =                        943
+             ns =                              943
+             v%n_s =                             1
+             c%n_s[global] =                 12383
+             Effective levels:   1 
+                   Requested distance between points (min/max/avg):  0.500E+03 km /  0.640E+03 km /  0.576E+03 km
+                   Regular sampling grid size:    14560 points
+                   Nearest neighbor distance (min/max/avg):  0.431E+03 km /  0.825E+03 km /  0.573E+03 km
+                   Effective resolution (min/max/avg):  4.83 /  9.17 /  7.14
+                   Subgrid hash:   -451043527
+                Subgrid size:     1108
+             nc1(  1) =                       1108
+             ns =                             1108
+             v%n_s =                             1
+             c%n_s[global] =                 14825
+    Full NICAS adjoint test result:                        T
+       Block NICAS adjoint test result:                    T
+          Interpolation adjoint test (horizontal) result:  T
+          Interpolation adjoint test (vertical) result:    T
+          Interpolation adjoint test (total) result:       T
+          Communication AB adjoint test result:            T
+          Communication AC adjoint test result:            T
+          Convolution / communication adjoint test result: T
+          Component NICAS adjoint test result:             T
+          Interpolation adjoint test (horizontal) result:  T
+          Interpolation adjoint test (vertical) result:    T
+          Interpolation adjoint test (total) result:       T
+          Communication AB adjoint test result:            T
+          Communication AC adjoint test result:            T
+          Convolution / communication adjoint test result: T
+          Component NICAS adjoint test result:             T
+             0.0 /    0.0:  1.0000000
+          Level   1:  0.0000000 -  1.0000000

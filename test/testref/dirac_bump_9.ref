@@ -18,7 +18,7 @@ Input Dirac increment:
              Level   2 ~>  0.200E+01 vert. coord.
        Accuracy tests:
           Wavenumber:  1
-             - psi/chi to u:  89.76376%
+             - psi/chi to u:  89.76377%
              - psi/chi to v:  89.76376%
           Wavenumber:  2
              - psi/chi to u:  75.59054%
@@ -36,10 +36,10 @@ Covariance(SABER) * Increment:
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    eastward_wind: 1.1090895070752702e-06
-    northward_wind: 1.1135691197637208e-06
+    eastward_wind: 9.1521716747796932e-07
+    northward_wind: 8.7701939311350556e-07
 - Valid time: 2010-01-01T18:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    eastward_wind: 1.1090895070752702e-06
-    northward_wind: 1.1135691197637208e-06
+    eastward_wind: 9.1521716747796932e-07
+    northward_wind: 8.7701939311350556e-07

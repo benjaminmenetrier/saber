@@ -31,26 +31,26 @@ Norm of output parameter weight: 8.5556998544817148e+01
              Level  10 ~>  0.100E+02 vert. coord.
              Level  11 ~>  0.110E+02 vert. coord.
              Effective levels:   1   2   3   4   5   6   7   8   9  10  11 
-                Horizontal support radius:    6000.00 km (   6000.00 km -    6000.00 km)
-                Estimated nc1 from horizontal support radius:      261
-                   Decimate full grid, at least      261 points required,    2128 valid points found
-                   Subgrid hash:   1106927872
-                Final nc1:      261
-                Effective horizontal resolution:  3.99
-             nc1(  1) =                        261
-             nc1(  2) =                        261
-             nc1(  3) =                        261
-             nc1(  4) =                        261
-             nc1(  5) =                        261
-             nc1(  6) =                        261
-             nc1(  7) =                        261
-             nc1(  8) =                        261
-             nc1(  9) =                        261
-             nc1( 10) =                        261
-             nc1( 11) =                        261
-             ns =                             2871
+                   Requested distance between points (min/max/avg):  0.832E+03 km /  0.832E+03 km /  0.832E+03 km
+                   Regular sampling grid size:      544 points
+                   Nearest neighbor distance (min/max/avg):  0.289E+03 km /  0.889E+03 km /  0.774E+03 km
+                   Effective resolution (min/max/avg):  6.75 / 20.73 /  8.51
+                   Subgrid hash:   -474283508
+                Subgrid size:      544
+             nc1(  1) =                        544
+             nc1(  2) =                        544
+             nc1(  3) =                        544
+             nc1(  4) =                        544
+             nc1(  5) =                        544
+             nc1(  6) =                        544
+             nc1(  7) =                        544
+             nc1(  8) =                        544
+             nc1(  9) =                        544
+             nc1( 10) =                        544
+             nc1( 11) =                        544
+             ns =                             5984
              v%n_s =                            11
-             c%n_s[global] =                 39259
+             c%n_s[global] =                 88088
     Full NICAS adjoint test result:                        T
        Block NICAS adjoint test result:                    T
           Interpolation adjoint test (horizontal) result:  T
@@ -64,4 +64,4 @@ Covariance(SABER) * Increment:
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L120x61 [7320]
   Fields:
-    snow_depth: 6.2551576320167506e+00
+    snow_depth: 6.3661941205115768e+00

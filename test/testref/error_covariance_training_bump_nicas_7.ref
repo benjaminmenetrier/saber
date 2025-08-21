@@ -26,7 +26,7 @@
                    Regular sampling grid size:     5248 points
                    Nearest neighbor distance (min/max/avg):  0.743E+02 km /  0.347E+03 km /  0.305E+03 km
                    Effective resolution (min/max/avg):  5.76 / 26.92 /  6.76
-                   Subgrid hash:   -781183906
+                   Subgrid hash:  -1132063650
                 Subgrid size:     5248
              nc1(  1) =                       5248
              nc1(  2) =                       5248
@@ -41,3 +41,151 @@
              ns =                            52480
              v%n_s =                            10
              c%n_s[global] =               8977792
+             nc1(  1) =                       5248
+             nc1(  2) =                       5248
+             nc1(  3) =                       5248
+             nc1(  4) =                       5248
+             nc1(  5) =                       5248
+             nc1(  6) =                       5248
+             nc1(  7) =                       5248
+             nc1(  8) =                       5248
+             nc1(  9) =                       5248
+             nc1( 10) =                       5248
+             ns =                            52480
+             v%n_s =                            10
+             c%n_s[global] =               2357152
+          Level   1 ~> 100.0%
+          Level   2 ~> 100.0%
+          Level   3 ~> 100.0%
+          Level   4 ~> 100.0%
+          Level   5 ~> 100.0%
+          Level   6 ~> 100.0%
+          Level   7 ~> 100.0%
+          Level   8 ~> 100.0%
+          Level   9 ~> 100.0%
+          Level  10 ~> 100.0%
+          Subgrid hash:   1534185147
+             -90.00 deg.  ~>100-100-100-100-100-100-100-100-100-100 
+             -90.00 deg.  ~>100-100-100-100-100-100-100-100-100-100 
+             -90.00 deg.  ~>100-100-100-100-100-100-100-100-100-100 
+             -90.00 deg.  ~>100-100-100-100-100-100-100-100-100-100 
+             -90.00 deg.  ~>100-100-100-100-100-100-100-100-100-100 
+             -90.00 deg.  ~>100-100-100-100-100-100-100-100-100-100 
+             -90.00 deg.  ~>100-100-100-100-100-100-100-100-100-100 
+             -90.00 deg.  ~>100-100-100-100-100-100-100-100-100-100 
+             -90.00 deg.  ~>100-100-100-100-100-100-100-100-100-100 
+             -90.00 deg.  ~>100-100-100-100-100-100-100-100-100-100 
+          nc1 =      520
+          Independent levels:  1[10]
+          Independent levels for angular sector   1 / class   1:  1[10]
+          Independent levels for angular sector   1 / class   2:  1[10]
+          Independent levels for angular sector   1 / class   3:  1[10]
+          Independent levels for angular sector   1 / class   4:  1[10]
+          Independent levels for angular sector   1 / class   5:  1[10]
+          Independent levels for angular sector   1 / class   6:  1[10]
+          Independent levels for angular sector   1 / class   7:  1[10]
+          Independent levels for angular sector   1 / class   8:  1[10]
+          Independent levels for angular sector   1 / class   9:  1[10]
+          Independent levels for angular sector   1 / class  10:  1[10]
+                Level:   1 ~> cov. at class zero:  0.10E+01
+                Level:   2 ~> cov. at class zero:  0.10E+01
+                Level:   3 ~> cov. at class zero:  0.10E+01
+                Level:   4 ~> cov. at class zero:  0.10E+01
+                Level:   5 ~> cov. at class zero:  0.10E+01
+                Level:   6 ~> cov. at class zero:  0.10E+01
+                Level:   7 ~> cov. at class zero:  0.10E+01
+                Level:   8 ~> cov. at class zero:  0.10E+01
+                Level:   9 ~> cov. at class zero:  0.10E+01
+                Level:  10 ~> cov. at class zero:  0.10E+01
+                Level:   1 ~> cov. at class zero:  0.10E+01
+                Level:   2 ~> cov. at class zero:  0.10E+01
+                Level:   3 ~> cov. at class zero:  0.10E+01
+                Level:   4 ~> cov. at class zero:  0.10E+01
+                Level:   5 ~> cov. at class zero:  0.10E+01
+                Level:   6 ~> cov. at class zero:  0.10E+01
+                Level:   7 ~> cov. at class zero:  0.10E+01
+                Level:   8 ~> cov. at class zero:  0.10E+01
+                Level:   9 ~> cov. at class zero:  0.10E+01
+                Level:  10 ~> cov. at class zero:  0.10E+01
+             Block air_horizontal_streamfunction:  0.10464229E+00 for      700 diagnostic points
+             Block air_horizontal_velocity_potential:  0.82913989E-01 for      700 diagnostic points
+                   Level:   1 ~> amplitude:        1.00
+                                 cor. hor. support:      2895.26 km
+                                 cor. ver. support:         3.08 vertical units
+                   Level:   2 ~> amplitude:        1.00
+                                 cor. hor. support:      2946.92 km
+                                 cor. ver. support:         2.99 vertical units
+                   Level:   3 ~> amplitude:        1.00
+                                 cor. hor. support:      2907.04 km
+                                 cor. ver. support:         2.96 vertical units
+                   Level:   4 ~> amplitude:        1.00
+                                 cor. hor. support:      3014.93 km
+                                 cor. ver. support:         2.95 vertical units
+                   Level:   5 ~> amplitude:        1.00
+                                 cor. hor. support:      3059.67 km
+                                 cor. ver. support:         2.94 vertical units
+                   Level:   6 ~> amplitude:        1.00
+                                 cor. hor. support:      2905.08 km
+                                 cor. ver. support:         2.93 vertical units
+                   Level:   7 ~> amplitude:        1.00
+                                 cor. hor. support:      2887.35 km
+                                 cor. ver. support:         2.96 vertical units
+                   Level:   8 ~> amplitude:        1.00
+                                 cor. hor. support:      2986.27 km
+                                 cor. ver. support:         2.99 vertical units
+                   Level:   9 ~> amplitude:        1.00
+                                 cor. hor. support:      2949.25 km
+                                 cor. ver. support:         3.02 vertical units
+                   Level:  10 ~> amplitude:        1.00
+                                 cor. hor. support:      2979.60 km
+                                 cor. ver. support:         3.18 vertical units
+                   Level:   1 ~> amplitude:        1.00
+                                 cor. hor. support:      1686.72 km
+                                 cor. ver. support:         3.08 vertical units
+                   Level:   2 ~> amplitude:        1.00
+                                 cor. hor. support:      1671.83 km
+                                 cor. ver. support:         3.00 vertical units
+                   Level:   3 ~> amplitude:        1.00
+                                 cor. hor. support:      1667.15 km
+                                 cor. ver. support:         2.98 vertical units
+                   Level:   4 ~> amplitude:        1.00
+                                 cor. hor. support:      1687.81 km
+                                 cor. ver. support:         2.96 vertical units
+                   Level:   5 ~> amplitude:        1.00
+                                 cor. hor. support:      1700.74 km
+                                 cor. ver. support:         2.97 vertical units
+                   Level:   6 ~> amplitude:        1.00
+                                 cor. hor. support:      1665.71 km
+                                 cor. ver. support:         2.95 vertical units
+                   Level:   7 ~> amplitude:        1.00
+                                 cor. hor. support:      1675.86 km
+                                 cor. ver. support:         2.97 vertical units
+                   Level:   8 ~> amplitude:        1.00
+                                 cor. hor. support:      1672.25 km
+                                 cor. ver. support:         2.98 vertical units
+                   Level:   9 ~> amplitude:        1.00
+                                 cor. hor. support:      1698.59 km
+                                 cor. ver. support:         3.02 vertical units
+                   Level:  10 ~> amplitude:        1.00
+                                 cor. hor. support:      1686.82 km
+                                 cor. ver. support:         3.14 vertical units
+          Level   1 ~>  0.724 /  1.025
+          Level   2 ~>  0.737 /  0.997
+          Level   3 ~>  0.727 /  0.988
+          Level   4 ~>  0.754 /  0.983
+          Level   5 ~>  0.765 /  0.980
+          Level   6 ~>  0.726 /  0.978
+          Level   7 ~>  0.722 /  0.988
+          Level   8 ~>  0.747 /  0.995
+          Level   9 ~>  0.737 /  1.007
+          Level  10 ~>  0.745 /  1.060
+          Level   1 ~>  0.843 /  1.026
+          Level   2 ~>  0.836 /  1.001
+          Level   3 ~>  0.834 /  0.992
+          Level   4 ~>  0.844 /  0.988
+          Level   5 ~>  0.850 /  0.988
+          Level   6 ~>  0.833 /  0.983
+          Level   7 ~>  0.838 /  0.990
+          Level   8 ~>  0.836 /  0.993
+          Level   9 ~>  0.849 /  1.006
+          Level  10 ~>  0.843 /  1.046

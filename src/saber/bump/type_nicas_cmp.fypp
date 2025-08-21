@@ -2458,6 +2458,7 @@ if (present(nicas_cmp_ref)) then
    end if
 
    ! Copy vertical interpolation
+   nicas_cmp%v%prefix = nicas_cmp_ref%v%prefix
    call nicas_cmp%v%copy(nicas_cmp_ref%v)
 else
    if (.not.nam%load_nicas_global) then
@@ -2800,6 +2801,8 @@ do il1=1,nicas_cmp%nl1
             end do
 
             ! Release memory
+            deallocate(lon_c1)
+            deallocate(lat_c1)
             deallocate(c1_to_c0)
 
             ! Print subset Sc1 size
@@ -2848,7 +2851,15 @@ do il1=1,nicas_cmp%nl1
          ! Stop sampling timer
          call mpl%stop_timer('nicas_setup_sampling')
       end if
+   end if
+end do
 
+! Interpolation
+do il1=1,nicas_cmp%nl1
+   ! Base sublevel
+   il1s = nicas_cmp%hor(il1)%il1s
+
+   if (il1==il1s) then
       ! Start interpolation timer
       call mpl%start_timer('nicas_setup_interp')
 
@@ -2886,7 +2897,15 @@ do il1=1,nicas_cmp%nl1
 
          if (compute_interp) then
             ! Allocation
+            allocate(lon_c1(nicas_cmp%hor(il1s)%nc1))
+            allocate(lat_c1(nicas_cmp%hor(il1s)%nc1))
             allocate(gmask_c1(nicas_cmp%hor(il1s)%nc1))
+
+            ! Communication
+            call mpl%loc_to_glb(nicas_cmp%hor(il1s)%nc1a,nicas_cmp%hor(il1s)%nc1,nicas_cmp%hor(il1s)%c1a_to_c1, &
+ & nicas_cmp%hor(il1s)%lon_c1a,lon_c1,.true.)
+            call mpl%loc_to_glb(nicas_cmp%hor(il1s)%nc1a,nicas_cmp%hor(il1s)%nc1,nicas_cmp%hor(il1s)%c1a_to_c1, &
+ & nicas_cmp%hor(il1s)%lat_c1a,lat_c1,.true.)
 
             ! Setup mesh
             call nicas_cmp%hor(il1s)%mesh_c1%init(mpl,rng,nicas_cmp%hor(il1s)%nc1,lon_c1,lat_c1)
@@ -2955,8 +2974,8 @@ do il1=1,nicas_cmp%nl1
       end if
 
       ! Release memory
-      deallocate(lon_c1)
-      deallocate(lat_c1)
+      if (allocated(lon_c1)) deallocate(lon_c1)
+      if (allocated(lat_c1)) deallocate(lat_c1)
       if (compute_interp) deallocate(gmask_c1)
 
       if (.not.nam%load_nicas_global) then
@@ -3866,11 +3885,11 @@ do isb=1,nicas_cmp%nsb
                   end if
                end if
             end do
-         end if
 
-         ! Release memory
-         deallocate(nn_index)
-         deallocate(nn_dist)
+            ! Release memory
+            deallocate(nn_index)
+            deallocate(nn_dist)
+         end if
       end if
 
       ! Pack data

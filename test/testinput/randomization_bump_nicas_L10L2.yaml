@@ -35,6 +35,7 @@ background error:
       drivers:
         multivariate strategy: univariate
         compute nicas: true
+        write global nicas: true
       nicas:
         resolution: 5
         explicit length-scales: true

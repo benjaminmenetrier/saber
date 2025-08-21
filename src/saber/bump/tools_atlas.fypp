@@ -11,7 +11,7 @@ module tools_atlas
 use atlas_module, only: atlas_structuredgrid,atlas_regionalgrid,atlas_field,atlas_integer,atlas_real,atlas_functionspace, &
  & atlas_functionspace_nodecolumns,atlas_functionspace_pointcloud,atlas_functionspace_structuredcolumns, &
  & atlas_projection,atlas_config,atlas_json
-use tools_const, only: zero,quarter,half,two,three,eight,rad2deg,pi,req
+use tools_const, only: zero,quarter,half,two,three,eight,deg2rad,rad2deg,pi,req
 use tools_kinds, only: kind_int,kind_real
 use tools_func, only: sphere_dist,convert_i2l,convert_l2i
 use type_mpl, only: mpl_type
@@ -72,7 +72,7 @@ character(len=6) :: gridid
 if (nmin<40) call mpl%abort('${subr}$','minimum number of points is too small')
 
 ! Get truncation
-trunc = floor(-4.5_kind_real+sqrt(20.25_kind_real+quarter*real(nmin,kind_real)))+1
+trunc = max(floor(-4.5_kind_real+sqrt(20.25_kind_real+quarter*real(nmin,kind_real)))+1,2)
 
 ! Define ID
 write(gridid,'(a,i5.5)') 'O',trunc
@@ -110,7 +110,7 @@ character(len=6) :: gridid
 if (.not.(gamma>zero)) call mpl%abort('${subr}$','maximum cell size should be positive')
 
 ! Get truncation
-trunc = floor(half*pi/gamma)-4
+trunc = max(floor(half*pi/gamma)-4,2)
 
 ! Set maximum truncation
 if (trunc>9999) call mpl%abort('${subr}$','octahedral truncation is too large')
@@ -143,7 +143,7 @@ integer,intent(out),optional :: n                 !< Grid size
 
 ! Local variables
 integer :: nx,ny
-real(kind_real) :: xmin,xmax,ymin,ymax,Lx,Ly,dx,dy,xy_min(2),xy_max(2)
+real(kind_real) :: xmin,xmax,ymin,ymax,Lx,Ly,dx,dy,xy_min(2),xy_max(2),ymean
 type(atlas_config) :: aconfig_proj
 type(atlas_projection) :: aproj
 character(len=:),allocatable :: units
@@ -155,7 +155,7 @@ character(len=:),allocatable :: units
 if (nmin<9) call mpl%abort('${subr}$','minimum number of points is too small')
 
 ! Input grid specifications
-if (.not.aconfig_grid%get('domain.xmin',xmin)) call mpl%abort('${subr}$','missing domain.xmint')
+if (.not.aconfig_grid%get('domain.xmin',xmin)) call mpl%abort('${subr}$','missing domain.xmin')
 if (.not.aconfig_grid%get('domain.xmax',xmax)) call mpl%abort('${subr}$','missing domain.xmax')
 if (.not.aconfig_grid%get('domain.ymin',ymin)) call mpl%abort('${subr}$','missing domain.ymin')
 if (.not.aconfig_grid%get('domain.ymax',ymax)) call mpl%abort('${subr}$','missing domain.ymax')
@@ -170,12 +170,11 @@ if (units=='meters') then
    if (nx<2) call mpl%abort('${subr}$','nx is too small')
    if (ny<2) call mpl%abort('${subr}$','ny is too small')
 
-print*, nmin,nx,ny,nx*ny
-   ! Set new regional grid
+   ! Define corners
    xy_min = (/xmin,ymin/)
    xy_max = (/xmax,ymax/)
 
-   ! Get grid projection
+   ! Set new regional grid
    if (aconfig_grid%get('projection',aconfig_proj)) then
       ! Get projection
       aproj = atlas_projection(aconfig_proj)
@@ -187,8 +186,26 @@ print*, nmin,nx,ny,nx*ny
      agrid = atlas_regionalgrid(nx,ny,xy_min,xy_max)
    end if
 else if (units=='degrees') then
-   print*, aconfig_grid%json()
-   call mpl%abort('ok','todo')
+   ! Grid parameters
+   ymean = half*(ymin+ymax)
+   Lx = (xmax-xmin)*deg2rad*cos(ymean)
+   Ly = (ymax-ymin)*deg2rad
+   nx = floor(sqrt(two*sqrt(three)*Lx/Ly*real(nmin,kind_real)))+1
+   ny = floor(sqrt(eight/sqrt(three)*Ly/Lx*real(nmin,kind_real)))+1
+   if (nx<2) call mpl%abort('${subr}$','nx is too small')
+   if (ny<2) call mpl%abort('${subr}$','ny is too small')
+
+   ! Set new regional grid
+   if (aconfig_grid%get('projection',aconfig_proj)) then
+      ! Get projection
+      aproj = atlas_projection(aconfig_proj)
+
+      ! Build grid
+      agrid = atlas_regionalgrid(nx,ny,ymax,xmin,ymin,xmax,aproj)
+   else
+      ! Build grid without projection
+     agrid = atlas_regionalgrid(nx,ny,ymax,xmin,ymin,xmax)
+   end if
 else
    call mpl%abort('${subr}$','unexpected domain units')
 end if
@@ -215,7 +232,7 @@ integer,intent(out),optional :: n                 !< Grid size
 
 ! Local variables
 integer :: nx,ny
-real(kind_real) :: xmin,xmax,ymin,ymax,Lx,Ly,dx,dy,xy_min(2),xy_max(2)
+real(kind_real) :: xmin,xmax,ymin,ymax,Lx,Ly,dx,dy,xy_min(2),xy_max(2),ymean
 type(atlas_config) :: aconfig_proj
 type(atlas_projection) :: aproj
 character(len=:),allocatable :: units
@@ -244,11 +261,11 @@ if (units=='meters') then
    if (nx<2) call mpl%abort('${subr}$','nx is too small')
    if (ny<2) call mpl%abort('${subr}$','ny is too small')
 
-   ! Set new regional grid
+   ! Define corners
    xy_min = (/xmin,ymin/)
    xy_max = (/xmax,ymax/)
 
-   ! Get grid projection
+   ! Set new regional grid
    if (aconfig_grid%get('projection',aconfig_proj)) then
       ! Get projection
       aproj = atlas_projection(aconfig_proj)
@@ -260,8 +277,28 @@ if (units=='meters') then
      agrid = atlas_regionalgrid(nx,ny,xy_min,xy_max)
    end if
 else if (units=='degrees') then
-   print*, aconfig_grid%json()
-   call mpl%abort('ok','todo')
+   ! Grid parameters
+   ymean = half*(ymin+ymax)
+   Lx = (xmax-xmin)*deg2rad*cos(ymean)
+   Ly = (ymax-ymin)*deg2rad
+   dx = gamma
+   dy = sqrt(three)/two*gamma
+   nx = floor(Lx/dx)+1
+   ny = floor(Ly/dy)+1
+   if (nx<2) call mpl%abort('${subr}$','nx is too small')
+   if (ny<2) call mpl%abort('${subr}$','ny is too small')
+
+   ! Set new regional grid
+   if (aconfig_grid%get('projection',aconfig_proj)) then
+      ! Get projection
+      aproj = atlas_projection(aconfig_proj)
+
+      ! Build grid
+      agrid = atlas_regionalgrid(nx,ny,ymax,xmin,ymin,xmax,aproj)
+   else
+      ! Build grid without projection
+     agrid = atlas_regionalgrid(nx,ny,ymax,xmin,ymin,xmax)
+   end if
 else
    call mpl%abort('${subr}$','unexpected domain units')
 end if

@@ -7,12 +7,10 @@
              Level   2 ~>  0.200E+01 vert. coord.
           Level   1 ~> 100.0%
           Level   2 ~> 100.0%
-          Decimate full grid, at least      500 points required,     762 valid points found
-          Subgrid hash:   -130003308
-          Decimate full grid, at least      250 points required,     762 valid points found
-          Subgrid hash:   1599275237
-          nc1 =      500
-          nc2 =      250
+          Subgrid hash:   1534185147
+          Subgrid hash:  -1087386156
+          nc1 =      520
+          nc2 =      280
           Independent levels:  1[2]
        Vertical balance block air_horizontal_streamfunction-air_horizontal_velocity_potential adjoint test result:  T
        Vertical balance direct adjoint test results:  T

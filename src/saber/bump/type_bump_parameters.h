@@ -403,7 +403,7 @@ struct SamplingDef {
   // Vertical balance C2B to C0A interpolation type ('c0': C0 mesh-based, 'c1': C1 mesh-based
   // or 'si': smooth interpolation)
   std::pair<const char *, std::string> interp_type =
-    std::make_pair("interpolation type", "si");
+    std::make_pair("interpolation type", "c0");
 
   // Threshold on vertically contiguous points for the mask (0 to skip the test)
   std::pair<const char *, int> ncontig_th =

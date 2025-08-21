@@ -9,16 +9,16 @@ Input Dirac increment:
              Level   1 ~> 100.0%
              Level   1 ~>  0.444E-01 vert. coord.
              Effective levels:   1 
-                Horizontal support radius:    6000.00 km (   6000.00 km -    6000.00 km)
-                Estimated nc1 from horizontal support radius:     1636
-                   Decimate full grid, at least     1636 points required,    6162 valid points found
-                   Subgrid hash:   1182181474
-                Final nc1:     1636
-                Effective horizontal resolution: 10.00
-             nc1(  1) =                       1636
-             ns =                             1636
+                   Requested distance between points (min/max/avg):  0.832E+03 km /  0.832E+03 km /  0.832E+03 km
+                   Regular sampling grid size:      544 points
+                   Nearest neighbor distance (min/max/avg):  0.289E+03 km /  0.889E+03 km /  0.774E+03 km
+                   Effective resolution (min/max/avg):  6.75 / 20.73 /  8.51
+                   Subgrid hash:   -474283508
+                Subgrid size:      544
+             nc1(  1) =                        544
+             ns =                              544
              v%n_s =                             1
-             c%n_s[global] =                132856
+             c%n_s[global] =                  7772
     Full NICAS adjoint test result:                        T
        Block NICAS adjoint test result:                    T
           Interpolation adjoint test (horizontal) result:  T
@@ -33,4 +33,4 @@ Covariance(SABER) * Increment:
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L120x61 [7320]
   Fields:
-    snow_depth: 7.5991033784244966e+00
+    snow_depth: 8.8001315545517045e+00

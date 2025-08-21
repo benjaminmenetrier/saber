@@ -150,7 +150,7 @@ integer,intent(in),optional :: n_s           !< Number of operations to copy
 ! Release memory
 call linop_out%dealloc
 
-! Copy attributes
+! Copy attributes (except the prefix)
 linop_out%n_src = linop_in%n_src
 linop_out%n_dst = linop_in%n_dst
 if (present(n_s)) then
@@ -689,7 +689,7 @@ end if
 
 end subroutine linop_apply_ad
 
-!----------------------------------------------------------------------
+!----------------------------------------------------------------------%prefix
 ! Subroutine: linop_add_op
 !> Add operation
 !----------------------------------------------------------------------

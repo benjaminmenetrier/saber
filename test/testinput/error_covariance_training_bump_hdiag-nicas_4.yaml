@@ -55,6 +55,8 @@ background error:
         interpolate from gsi data: true
       sampling:
         diagnostic grid size: 89
+      diagnostics:
+        diagnosed lengths scaling: 10.0
       fit:
         number of components: 3
       nicas:

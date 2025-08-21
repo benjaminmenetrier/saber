@@ -5,12 +5,12 @@ Input Dirac increment:
     air_horizontal_streamfunction: 3.0000000000000000e+00
     air_horizontal_velocity_potential: 0.0000000000000000e+00
     air_pressure_at_surface: 3.0000000000000000e+00
-Norm of input parameter weight_0: 7.0534523743203863e+01
-Norm of input parameter weight_1: 1.1882725946428447e+02
-Norm of input parameter weight_2: 7.9055335232377644e+01
-Norm of input parameter normalization_0: 2.1686938380441964e+02
-Norm of input parameter normalization_1: 2.3174820039529641e+02
-Norm of input parameter normalization_2: 2.3239282707644466e+02
+Norm of input parameter weight_0: 5.2770262891860703e+01
+Norm of input parameter weight_1: 1.3012952669586116e+02
+Norm of input parameter weight_2: 6.2883749800878725e+01
+Norm of input parameter normalization_0: 2.1128360322691822e+02
+Norm of input parameter normalization_1: 2.2306016332155082e+02
+Norm of input parameter normalization_2: 2.2453320495034356e+02
     FastLAM interpolation accuracy test passed
     FastLAM interpolation adjoint test passed
     FastLAM interpolation accuracy test passed
@@ -29,6 +29,6 @@ Covariance(SABER) * Increment:
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: structured [3763]
   Fields:
-    air_horizontal_streamfunction: 9.6577194062369642e+00
-    air_horizontal_velocity_potential: 9.6577194062369642e+00
-    air_pressure_at_surface: 1.0547936953683188e+01
+    air_horizontal_streamfunction: 1.6540816246290149e+01
+    air_horizontal_velocity_potential: 1.6540816246290149e+01
+    air_pressure_at_surface: 1.4488120851509430e+01

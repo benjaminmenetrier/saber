@@ -5,31 +5,30 @@
              Level   2 ~> 100.0%
              Level   1 ~>  0.100E+01 vert. coord.
              Level   2 ~>  0.200E+01 vert. coord.
-          Norm of air_horizontal_streamfunction:  0.36019587E+02
-          Norm of air_horizontal_velocity_potential:  0.32995213E+02
-          Norm of air_horizontal_streamfunction:  0.35653057E+02
-          Norm of air_horizontal_velocity_potential:  0.37767787E+02
-          Norm of air_horizontal_streamfunction:  0.34120105E+02
-          Norm of air_horizontal_velocity_potential:  0.37140573E+02
-          Norm of air_horizontal_streamfunction:  0.36547301E+02
-          Norm of air_horizontal_velocity_potential:  0.35979079E+02
-          Norm of air_horizontal_streamfunction:  0.35446582E+02
-          Norm of air_horizontal_velocity_potential:  0.33979814E+02
-          Norm of air_horizontal_streamfunction:  0.39635390E+02
-          Norm of air_horizontal_velocity_potential:  0.36816500E+02
-          Norm of air_horizontal_streamfunction:  0.35894653E+02
-          Norm of air_horizontal_velocity_potential:  0.35085268E+02
-          Norm of air_horizontal_streamfunction:  0.41359376E+02
-          Norm of air_horizontal_velocity_potential:  0.37190966E+02
-          Norm of air_horizontal_streamfunction:  0.39339144E+02
-          Norm of air_horizontal_velocity_potential:  0.41225052E+02
-          Norm of air_horizontal_streamfunction:  0.35120427E+02
-          Norm of air_horizontal_velocity_potential:  0.38402113E+02
+          Norm of air_horizontal_streamfunction:  0.38240483E+02
+          Norm of air_horizontal_velocity_potential:  0.38907460E+02
+          Norm of air_horizontal_streamfunction:  0.34194720E+02
+          Norm of air_horizontal_velocity_potential:  0.41516429E+02
+          Norm of air_horizontal_streamfunction:  0.37173298E+02
+          Norm of air_horizontal_velocity_potential:  0.41501025E+02
+          Norm of air_horizontal_streamfunction:  0.35631593E+02
+          Norm of air_horizontal_velocity_potential:  0.36152785E+02
+          Norm of air_horizontal_streamfunction:  0.38056264E+02
+          Norm of air_horizontal_velocity_potential:  0.36216900E+02
+          Norm of air_horizontal_streamfunction:  0.37926711E+02
+          Norm of air_horizontal_velocity_potential:  0.39772836E+02
+          Norm of air_horizontal_streamfunction:  0.38927577E+02
+          Norm of air_horizontal_velocity_potential:  0.36285497E+02
+          Norm of air_horizontal_streamfunction:  0.38596615E+02
+          Norm of air_horizontal_velocity_potential:  0.35612117E+02
+          Norm of air_horizontal_streamfunction:  0.33902222E+02
+          Norm of air_horizontal_velocity_potential:  0.34108020E+02
+          Norm of air_horizontal_streamfunction:  0.36461772E+02
+          Norm of air_horizontal_velocity_potential:  0.32434755E+02
           Level   1 ~> 100.0%
           Level   2 ~> 100.0%
-          Decimate full grid, at least      500 points required,     762 valid points found
-          Subgrid hash:   -130003308
-          nc1 =      500
+          Subgrid hash:   1534185147
+          nc1 =      520
           nc2 =      250
           Independent levels:  1[2]
        Vertical balance block air_horizontal_streamfunction-air_horizontal_velocity_potential adjoint test result:  T

@@ -7,3 +7,25 @@
              Level   2 ~>  0.200E+01 vert. coord.
              Effective levels:   1   2 
                    Requested distance between points (min/max/avg):  0.139E+03 km /  0.139E+03 km /  0.139E+03 km
+                   Regular sampling grid size:      323 points
+                   Nearest neighbor distance (min/max/avg):  0.240E+03 km /  0.241E+03 km /  0.241E+03 km
+                   Effective resolution (min/max/avg):  4.15 /  4.16 /  4.16
+                   Subgrid hash:       731090
+                Subgrid size:      323
+             nc1(  1) =                        323
+             nc1(  2) =                        323
+             ns =                              646
+             v%n_s =                             2
+             c%n_s[global] =                  3868
+    Full NICAS adjoint test result:                        T
+       Block NICAS adjoint test result:                    T
+          Interpolation adjoint test (horizontal) result:  T
+          Interpolation adjoint test (vertical) result:    T
+          Interpolation adjoint test (total) result:       T
+          Communication AB adjoint test result:            T
+          Communication AC adjoint test result:            T
+          Convolution / communication adjoint test result: T
+          Component NICAS adjoint test result:             T
+           149.4 /  -30.0:  1.0000000
+          Level   1:  0.0000000 -  1.0000000
+          Level   2:  0.0000000 -  0.6000000

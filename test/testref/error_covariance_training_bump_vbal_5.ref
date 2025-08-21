@@ -5,8 +5,8 @@
              Level   2 ~> 100.0%
              Level   1 ~>  0.100E+01 vert. coord.
              Level   2 ~>  0.200E+01 vert. coord.
-          nc1 =      500
-          nc2 =      250
+          nc1 =      520
+          nc2 =      280
           Independent levels:  1[2]
        Vertical balance block air_horizontal_streamfunction-air_horizontal_velocity_potential adjoint test result:  T
        Vertical balance direct adjoint test results:  T

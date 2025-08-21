@@ -13,7 +13,7 @@ Input Dirac increment:
              Level   2 ~>  0.200E+01 vert. coord.
        Accuracy tests:
           Wavenumber:  1
-             - psi/chi to u:  89.76376%
+             - psi/chi to u:  89.76377%
              - psi/chi to v:  89.76376%
           Wavenumber:  2
              - psi/chi to u:  75.59054%
@@ -35,11 +35,11 @@ Adjoint test for block BUMP_PsiChiToUV passed
              Level   2 ~> 100.0%
              Level   1 ~>  0.100E+01 vert. coord.
              Level   2 ~>  0.200E+01 vert. coord.
-          nc1 =      500
-          nc2 =      250
+          nc1 =      520
+          nc2 =      280
           Independent levels:  1[2]
 Adjoint test for block BUMP_VerticalBalance passed
-Norm of input parameter StdDev: 5.7680980822377037e+01
+Norm of input parameter StdDev: 5.8157693747128690e+01
 Adjoint test for block StdDev passed
        Independent levels:  1[2]
           Subset Sc0 size:              762
@@ -64,5 +64,5 @@ Covariance(SABER) * Increment:
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    eastward_wind: 8.6849238475919806e-13
-    northward_wind: 2.8991823978138880e-13
+    eastward_wind: 1.4333166890307929e-12
+    northward_wind: 3.6709144717319915e-13

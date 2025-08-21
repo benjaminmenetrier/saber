@@ -31,16 +31,16 @@ Norm of output parameter weight: 8.5556998544817148e+01
              Level  10 ~>  0.100E+02 vert. coord.
              Level  11 ~>  0.110E+02 vert. coord.
              Effective levels:   1 
-                Horizontal support radius:    6000.00 km (   6000.00 km -    6000.00 km)
-                Estimated nc1 from horizontal support radius:      261
-                   Decimate full grid, at least      261 points required,    2128 valid points found
-                   Subgrid hash:   1106927872
-                Final nc1:      261
-                Effective horizontal resolution:  3.99
-             nc1(  1) =                        261
-             ns =                              261
+                   Requested distance between points (min/max/avg):  0.832E+03 km /  0.832E+03 km /  0.832E+03 km
+                   Regular sampling grid size:      544 points
+                   Nearest neighbor distance (min/max/avg):  0.289E+03 km /  0.889E+03 km /  0.774E+03 km
+                   Effective resolution (min/max/avg):  6.75 / 20.73 /  8.51
+                   Subgrid hash:   -474283508
+                Subgrid size:      544
+             nc1(  1) =                        544
+             ns =                              544
              v%n_s =                             1
-             c%n_s[global] =                  3569
+             c%n_s[global] =                  8008
     Full NICAS adjoint test result:                        T
        Block NICAS adjoint test result:                    T
           Interpolation adjoint test (horizontal) result:  T
@@ -54,4 +54,4 @@ Covariance(SABER) * Increment:
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L120x61 [7320]
   Fields:
-    snow_depth: 6.2551576320167506e+00
+    snow_depth: 6.3661941205115768e+00
