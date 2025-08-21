@@ -210,7 +210,8 @@ end type geom_type
 
 
 integer,parameter :: niter = 10                  !< Number of iterations to estimate the work grid inflation
-integer,parameter :: nbridson = 30               !< Number of tests for the Bridson's method
+integer,parameter :: na_bridson = 6              !< Number of angles for the Bridson's method
+integer,parameter :: nd_bridson = 5              !< Number of distances for the Bridson's method
 real(kind_real),parameter :: grid_factor = three !< Grid factor for the Bridson's method
 
 private
@@ -2206,16 +2207,16 @@ real(kind_real),allocatable,intent(inout) :: lat_s(:) !< Sampling latitudes (ful
 integer,allocatable,intent(inout) :: s_to_c0(:)       !< Sampling indices (full domain)
 
 ! Local variables
-integer :: nreg,ireg,ix,iy,ns_nomask,is_nomask,is_base
-integer :: active_list_size,ir_base,ireg_base,nn_base,try_list_size,nn_int,itest,ir,ir_test,ireg_test,nn_test,i,ic0,is,js,iproc,hash
-integer :: nn_index(1),nn_index_check(2)
+integer :: nreg,ireg,ix,iy,ns_nomask,is_nomask,is_base,iangle,idist
+integer :: active_list_size,ir_base,ireg_base,nn_base,try_list_size,nn_int,id,ia,ir,ir_test,ireg_test,nn_test,i,ic0,is,js,iproc,hash
+integer :: nn_index(1),nn_index_check(2),order_a(na_bridson)
 integer,allocatable :: s_nomask_to_c0(:),active_list(:),s_nomask_to_reg(:),grid_flag(:),nn_index_base(:),nn_index_test(:),order_s(:)
-real(kind_real) :: rh_min,rh_max,lgrid_factor,x,y,z,x_next,y_next,z_next,x_test,y_test,z_test,lon_test,lat_test,rh_test
+real(kind_real) :: rh_min,rh_max,lgrid_factor,x,y,z,x_next,y_next,z_next,x_test,y_test,z_test,lon_test,lat_test,rh_test,rh
 real(kind_real) :: x_base,y_base,z_base,lon_base,lat_base,rh_base,cos_lon_base,sin_lon_base,cos_lat_base,sin_lat_base
 real(kind_real) :: dist,angle,cos_angle,sin_angle
-real(kind_real) :: lonlat(2),nn_dist_check(2)
+real(kind_real) :: lonlat(2),nn_dist_check(2),angles(na_bridson),dists(nd_bridson)
 real(kind_real),allocatable :: rh_c0(:),lon_reg(:),lat_reg(:),rh_reg(:),lon_s_nomask(:),lat_s_nomask(:),rh_s(:)
-real(kind_real),allocatable :: nn_dist_eff(:),resol_eff(:)
+real(kind_real),allocatable :: nn_dist_test(:),nn_dist_eff(:),resol_eff(:)
 logical :: found,valid
 logical,allocatable :: mask_c0(:),mask_s(:),gmask_s(:)
 character(len=1024) :: ldraw_type,cfmt
@@ -2248,6 +2249,14 @@ end if
 ! Communication
 call mpl%loc_to_glb(geom%nc0a,geom%nc0,geom%c0a_to_c0,geom%gmask_hor_c0a,mask_c0)
 call mpl%loc_to_glb(geom%nc0a,geom%nc0,geom%c0a_to_c0,rh_c0a,rh_c0)
+
+! Print support radius stats
+write(cfmt,'(a,i2.2,a)') '(a',ifmt+3,',a,e10.3,a,e10.3,a,e10.3,a)'
+write(mpl%test,trim(cfmt)) '','Requested distance between points (min/max/avg): ', &
+ & minval(rh_c0,mask=mpl%msv%isnot(rh_c0))/resol*reqkm,' km / ', &
+ & maxval(rh_c0,mask=mpl%msv%isnot(rh_c0))/resol*reqkm,' km / ', &
+ & (sum(rh_c0,mask=mpl%msv%isnot(rh_c0))/real(count(mpl%msv%isnot(rh_c0)),kind_real))/resol*reqkm,' km'
+if (ifmt>0) call mpl%flush
 
 if (mpl%main) then
    ! Fill masked points with minimum support radius
@@ -2379,6 +2388,16 @@ if (mpl%main) then
       s_nomask_to_reg(ns_nomask) = ireg_test
       grid_flag(ireg_test) = ns_nomask
 
+      ! Distances list
+      do id=1,nd_bridson
+         dists(id) = one+real(id-1,kind_real)/real(nd_bridson-1,kind_real)+repro_th
+      end do
+
+      ! Angles list
+      do ia=1,na_bridson
+         angles(ia) = two*pi*real(ia-1,kind_real)/real(na_bridson,kind_real)
+      end do
+
       ! Loop while active list is not empty
       do while (active_list_size>0)
          ! Base sample
@@ -2390,57 +2409,76 @@ if (mpl%main) then
          rh_base = rh_reg(ireg_base)
          found = .false.
 
+         ! Base sample coordinates
          cos_lon_base = cos(lon_base)
          sin_lon_base = sin(lon_base)
          cos_lat_base = cos(lat_base)
          sin_lat_base = sin(lat_base)
          call lonlat2xyz(mpl,lon_base,lat_base,x_base,y_base,z_base)
 
-         do itest=1,nbridson
-            ! Random distance in annulus
-            call rng%rand(rh_base,two*rh_base,dist)
+         ! Random shuffle for angles
+         call rng%shuffle(na_bridson,order_a)
 
-            ! Random angle
-            call rng%rand(zero,two*pi,angle)
-            cos_angle = cos(angle)
-            sin_angle = sin(angle)
-
-            ! Modification of Bridson's method for the sphere
-            x_test = x_base+dist*(-sin_lon_base*cos_angle-sin_lat_base*cos_lon_base*sin_angle)
-            y_test = y_base+dist*(cos_lon_base*cos_angle-sin_lat_base*sin_lon_base*sin_angle)
-            z_test = z_base+dist*cos_lat_base*sin_angle
-            call xyz2lonlat(mpl,x_test,y_test,z_test,lon_test,lat_test)
-            call tree_reg%find_nearest_neighbors(mpl,lon_test,lat_test,1,nn_index)
-
-            ! Test support radius
-            ireg_test = nn_index(1)
-            rh_test = rh_reg(ireg_test)
-
-
-            call tree_reg%find_nearest_neighbors(mpl,lon_test,lat_test,rh_test, &
- & nn_test,nn_index_test)
-
-            valid = .true.
-            do i=1,nn_test
-               ireg = nn_index_test(i)
-               if (grid_flag(ireg)>0) then
-                 valid = .false.
-                 exit
+         ! Loop over distances/angles
+         do id=1,nd_bridson
+            do ia=1,na_bridson
+               if (.not.found) then
+                  ! Angle / distance
+                  if (.false.) then
+                     ! Really random (original Bridson's paper)
+                     call rng%rand(zero,two*pi,angle)
+                     call rng%rand(rh_base,two*rh_base,dist)
+                  elseif (.false.) then
+                     ! Shuffled positions (more accurate, but geometrical structures)
+                     angle = angles(order_a(ia))
+                     dist = dists(id)*rh_base
+                  else
+                     ! Hybrid solution (almost as accurate, no geometrical structures)
+                     call rng%rand(zero,two*pi,angle)
+                     dist = dists(id)*rh_base
+                  end if
+   
+                  ! Modification of Bridson's method for the sphere
+                  cos_angle = cos(angle)
+                  sin_angle = sin(angle)
+                  x_test = x_base+dist*(-sin_lon_base*cos_angle-sin_lat_base*cos_lon_base*sin_angle)
+                  y_test = y_base+dist*(cos_lon_base*cos_angle-sin_lat_base*sin_lon_base*sin_angle)
+                  z_test = z_base+dist*cos_lat_base*sin_angle
+                  call xyz2lonlat(mpl,x_test,y_test,z_test,lon_test,lat_test)
+                  call tree_reg%find_nearest_neighbors(mpl,lon_test,lat_test,1,nn_index)
+      
+                  ! Test support radius
+                  ireg_test = nn_index(1)
+                  rh_test = rh_reg(ireg_test)
+      
+                  ! Find nearest neighbors
+                  call tree_reg%find_nearest_neighbors(mpl,lon_test,lat_test,rh_test, &
+ & nn_test,nn_index_test,nn_dist_test)
+      
+                  ! Check nearest neighbors
+                  valid = .true.
+                  do i=1,nn_test
+                     ireg = nn_index_test(i)
+                     rh = sqrt(rh_reg(ireg)*rh_test)
+                     if ((grid_flag(ireg)>0).and.inf(nn_dist_test(i),rh)) then
+                       valid = .false.
+                       exit
+                     end if
+                  end do
+                  deallocate(nn_index_test)
+      
+                  if (valid) then
+                     ns_nomask = ns_nomask+1
+                     active_list_size = active_list_size+1
+                     active_list(active_list_size) = ns_nomask
+                     lon_s_nomask(ns_nomask) = lon_test
+                     lat_s_nomask(ns_nomask) = lat_test
+                     s_nomask_to_reg(ns_nomask) = ireg_test
+                     grid_flag(ireg_test) = ns_nomask
+                     found = .true.
+                  end if
                end if
             end do
-            deallocate(nn_index_test)
-
-            if (valid) then
-               ns_nomask = ns_nomask+1
-               active_list_size = active_list_size+1
-               active_list(active_list_size) = ns_nomask
-               lon_s_nomask(ns_nomask) = lon_test
-               lat_s_nomask(ns_nomask) = lat_test
-               s_nomask_to_reg(ns_nomask) = ireg_test
-               grid_flag(ireg_test) = ns_nomask
-               found = .true.
-               exit
-            end if
          end do
 
          if (.not.found) then
@@ -2481,6 +2519,8 @@ if (mpl%main) then
    ns = count(mask_s)
 
    ! Allocation
+   if (allocated(lon_s)) deallocate(lon_s)
+   if (allocated(lat_s)) deallocate(lat_s)
    allocate(lon_s(ns))
    allocate(lat_s(ns))
    allocate(rh_s(ns))
@@ -2501,35 +2541,36 @@ if (mpl%main) then
       end if
    end do
 
-   ! Build sampling tree
-   call tree_s%init(mpl,ns,lon_s,lat_s)
+   if (ifmt>0) then
+      ! Build sampling tree
+      call tree_s%init(mpl,ns,lon_s,lat_s)
 
-   ! Find nearest neighbor for each sampling point
-   do is=1,ns
-      ! Get distance to the nearest neighbor
-      call tree_s%find_nearest_neighbors(mpl,lon_s(is),lat_s(is),2,nn_index_check,nn_dist_check)
-      if (nn_dist_check(1)>zero) call mpl%abort('{subr}','error in sampling')
+      ! Find nearest neighbor for each sampling point
+       do is=1,ns
+         ! Get distance to the nearest neighbor
+         call tree_s%find_nearest_neighbors(mpl,lon_s(is),lat_s(is),2,nn_index_check,nn_dist_check)
+         if (nn_dist_check(1)>zero) call mpl%abort('{subr}','error in sampling')
 
-      ! Get theoretical distance to the nearest neighbor
-      nn_dist_eff(is) = nn_dist_check(2)*reqkm
-      resol_eff(is) = resol*sqrt(rh_s(is)*rh_s(nn_index_check(2)))/nn_dist_check(2)
-   end do
+         ! Get theoretical distance to the nearest neighbor
+         nn_dist_eff(is) = nn_dist_check(2)*reqkm
+         resol_eff(is) = resol*sqrt(rh_s(is)*rh_s(nn_index_check(2)))/nn_dist_check(2)
+      end do
 
-   ! Print results
-   write(cfmt,'(a,i2.2,a)') '(a',ifmt+3,',a,e10.3,a,e10.3,a,e10.3,a)'
-   write(mpl%test,trim(cfmt)) '','Nearest neighbor distance (min/max/avg): ',minval(nn_dist_eff),' km / ', &
+      ! Print results
+      write(cfmt,'(a,i2.2,a)') '(a',ifmt+3,',a,e10.3,a,e10.3,a,e10.3,a)'
+      write(mpl%test,trim(cfmt)) '','Nearest neighbor distance (min/max/avg): ',minval(nn_dist_eff),' km / ', &
  & maxval(nn_dist_eff),' km / ',sum(nn_dist_eff)/real(ns,kind_real),' km'
-   if (ifmt>0) call mpl%flush
-   write(cfmt,'(a,i2.2,a)') '(a',ifmt+3,',a,f5.2,a,f5.2,a,f5.2)'
-   write(mpl%test,trim(cfmt)) '','Effective resolution (min/max/avg): ',minval(resol_eff),' / ', &
+      call mpl%flush
+      write(cfmt,'(a,i2.2,a)') '(a',ifmt+3,',a,f5.2,a,f5.2,a,f5.2)'
+      write(mpl%test,trim(cfmt)) '','Effective resolution (min/max/avg): ',minval(resol_eff),' / ', &
  & maxval(resol_eff),' / ',sum(resol_eff)/real(ns,kind_real)
-   if (ifmt>0) call mpl%flush
+      call mpl%flush
+
+   end if
 
    ! Release memory
    deallocate(nn_dist_eff)
    deallocate(resol_eff)
-
-   ! Release memory
    deallocate(lon_reg)
    deallocate(lat_reg)
    deallocate(lon_s_nomask)

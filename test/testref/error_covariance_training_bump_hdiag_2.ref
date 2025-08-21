@@ -5,8 +5,8 @@
              Level   2 ~> 100.0%
              Level   1 ~>  0.100E+01 vert. coord.
              Level   2 ~>  0.200E+01 vert. coord.
-          nc1 =      500
-          nc2 =      250
+          nc1 =      520
+          nc2 =      283
           Independent levels:  1[2]
           Independent levels for angular sector   1 / class   1:  1[2]
           Independent levels for angular sector   1 / class   2:  1[2]
@@ -49,37 +49,37 @@
           Independent levels for angular sector   4 / class   9:  1[2]
           Independent levels for angular sector   4 / class  10:  1[2]
                 Level:   1 ~> cov. at class zero:  0.99E+00
-                Level:   2 ~> cov. at class zero:  0.10E+01
-                Level:   1 ~> cov. at class zero:  0.97E+00
-             Block air_horizontal_streamfunction:  0.34331194E+00 for    37356 diagnostic points
-             Block air_pressure_at_surface:  0.33754527E+00 for     9339 diagnostic points
-                   Level:   1 ~> amplitude:        0.78
-                                 cor. hor. support:      3843.71 km
-                                 cor. ver. support:         4.42 vertical units
-                   Level:   2 ~> amplitude:        0.76
-                                 cor. hor. support:      4069.30 km
-                                 cor. ver. support:         4.74 vertical units
-                   Level:   1 ~> amplitude:        0.22
-                                 cor. hor. support:      2161.48 km
-                                 cor. ver. support:         0.44 vertical units
-                   Level:   2 ~> amplitude:        0.24
-                                 cor. hor. support:      2288.34 km
-                                 cor. ver. support:         0.47 vertical units
-                   Level:   1 ~> amplitude:        0.78
-                                 cor. hor. support:      3648.91 km
+                Level:   2 ~> cov. at class zero:  0.98E+00
+                Level:   1 ~> cov. at class zero:  0.10E+01
+             Block air_horizontal_streamfunction:  0.31768358E+00 for    43080 diagnostic points
+             Block air_pressure_at_surface:  0.31495616E+00 for    10770 diagnostic points
+                   Level:   1 ~> amplitude:        0.82
+                                 cor. hor. support:      4332.42 km
+                                 cor. ver. support:         3.95 vertical units
+                   Level:   2 ~> amplitude:        0.81
+                                 cor. hor. support:      4089.07 km
+                                 cor. ver. support:         4.05 vertical units
+                   Level:   1 ~> amplitude:        0.18
+                                 cor. hor. support:      2436.30 km
+                                 cor. ver. support:         0.40 vertical units
+                   Level:   2 ~> amplitude:        0.19
+                                 cor. hor. support:      2299.45 km
+                                 cor. ver. support:         0.41 vertical units
+                   Level:   1 ~> amplitude:        0.80
+                                 cor. hor. support:      4506.71 km
                                  cor. ver. support:         0.00 vertical units
-                   Level:   1 ~> amplitude:        0.22
-                                 cor. hor. support:      2051.93 km
+                   Level:   1 ~> amplitude:        0.20
+                                 cor. hor. support:      2534.31 km
                                  cor. ver. support:         0.00 vertical units
-Norm of output parameter cor_a - 1: 4.0573138420656143e+01
-Norm of output parameter cor_a - 2: 1.0016349918835825e+01
-Norm of output parameter cor_rh1 - 1: 2.0262608044981116e+08
-Norm of output parameter cor_rh1 - 2: 1.8185631191836616e+08
-Norm of output parameter cor_rh2 - 1: 2.0514396612299821e+08
-Norm of output parameter cor_rh2 - 2: 1.7070189713099051e+08
-Norm of output parameter cor_rhc - 1: 5.3117324292301582e+00
-Norm of output parameter cor_rhc - 2: 5.3117324292301582e+00
-Norm of output parameter cor_rh - 1: 2.0233196534932756e+08
-Norm of output parameter cor_rh - 2: 1.7509058427340767e+08
-Norm of output parameter cor_rv - 1: 1.4378490992067410e+02
-Norm of output parameter cor_rv - 2: 4.0571190128920470e+01
+Norm of output parameter cor_a - 1: 4.1011693644533111e+01
+Norm of output parameter cor_a - 2: 9.3801150902391299e+00
+Norm of output parameter cor_rh1 - 1: 2.1261779916539508e+08
+Norm of output parameter cor_rh1 - 2: 1.8584797893294612e+08
+Norm of output parameter cor_rh2 - 1: 2.3150281605035678e+08
+Norm of output parameter cor_rh2 - 2: 2.0535933684500384e+08
+Norm of output parameter cor_rhc - 1: 3.7094734640345668e+00
+Norm of output parameter cor_rhc - 2: 3.7094734640345668e+00
+Norm of output parameter cor_rh - 1: 2.2076489563177001e+08
+Norm of output parameter cor_rh - 2: 1.9434676096335697e+08
+Norm of output parameter cor_rv - 1: 1.4608520411367473e+02
+Norm of output parameter cor_rv - 2: 2.9586888420341069e+01

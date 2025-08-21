@@ -10,6 +10,7 @@ module type_rng
 
 use tools_const, only: zero,one,two
 use tools_kinds, only: kind_int,kind_long,kind_real
+use tools_qsort, only: qsort
 use type_mpl, only: mpl_type
 use type_nam, only: nam_type
 
@@ -57,6 +58,7 @@ contains
    #:for rank in ranks_123456
 @:add_procedure(rng_rand_gau_r${rank}$)
    #:endfor
+   procedure :: shuffle => rng_shuffle
 end type rng_type
 
 private
@@ -375,5 +377,32 @@ end do
 
 end subroutine rng_rand_gau_r${rank}$
 #:endfor
+
+!----------------------------------------------------------------------
+! Subroutine: rng_shuffle
+!> Generate a shuffling array
+!----------------------------------------------------------------------
+subroutine rng_shuffle(rng,n,array)
+
+implicit none
+
+! Passed variables
+class(rng_type),intent(inout) :: rng !< Random number generator
+integer,intent(in) :: n              !< Vector size
+integer,intent(out) :: array(n)      !< Shuffling array
+
+! Local variables
+real(kind_real) :: x(n)
+
+! Set name
+@:set_name(rng_shuffle)
+
+! Generate random vector
+call rng%rand(zero,one,x)
+
+! Reorder array
+call qsort(n,x,array)
+
+end subroutine rng_shuffle
 
 end module type_rng

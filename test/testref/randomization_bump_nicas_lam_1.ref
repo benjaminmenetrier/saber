@@ -3,6 +3,6 @@ Member 0:
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: structured [3763]
   Fields:
-    air_horizontal_streamfunction: 8.8057793928215944e+05
-    air_horizontal_velocity_potential: 1.3592611621509623e+06
-    air_pressure_at_surface: 3.1826571426676854e+05
+    air_horizontal_streamfunction: 7.7710952662846399e+05
+    air_horizontal_velocity_potential: 1.1382309553997824e+06
+    air_pressure_at_surface: 3.0330338536115247e+05

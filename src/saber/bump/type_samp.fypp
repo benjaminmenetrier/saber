@@ -11,7 +11,6 @@ module type_samp
 use atlas_module, only: atlas_structuredgrid
 use fckit_mpi_module, only: fckit_mpi_sum,fckit_mpi_min,fckit_mpi_max,fckit_mpi_status
 !$ use omp_lib
-use tools_atlas, only: get_grid
 use tools_const, only: zero,quarter,half,one,four,hundred,pi,req,reqkm,deg2rad,rad2deg
 use tools_func, only: lonlatmod,independent_levels,sphere_bearing,sphere_dist,cx_to_cxa,cx_to_proc,cx_to_cxu, &
  & convert_i2l,convert_l2i,zss_maxval,zss_minval,zss_sum,zss_count
@@ -2198,39 +2197,59 @@ else
       ! Not enough points remaining in the sampling mask
       call mpl%warning('${subr}$','not enough points remaining in sampling mask, resetting ncx to the largest possible value')
       ncx = samp%nc0_smask(0)
-   end if
 
-   ! Allocation
-   allocate(fmask_c0a(geom%nc0a))
-   if (mpl%main) then
-      allocate(fmask_c0(geom%nc0))
-      allocate(smask_hor_c0(geom%nc0))
-   else
-      allocate(fmask_c0(0))
-      allocate(smask_hor_c0(0))
-   end if
+      ! Allocation
+      allocate(cx_to_c0(ncx))
 
-   ! Initialization
-   fmask_c0a = .false.
-   if (subset==2) then
-      ! Forced points mask with local diagnostic points
-      do ildwv=1,nam%nldwv
-         iproc = samp%ldwv_to_proc(ildwv)
-         if (iproc==mpl%myproc) then
-            ic0a = samp%ldwv_to_c0a(ildwv)
-            fmask_c0a(ic0a) = .true.
+      ! Initialization
+      icx = 0
+      cx_to_c0 = 0
+      do ic0a=1,geom%nc0a
+         if (samp%smask_hor_c0a(ic0a)) then
+            icx = icx+1
+            ic0 = geom%c0a_to_c0(ic0a)
+            cx_to_c0(icx) = ic0
          end if
       end do
+      call mpl%f_comm%allreduce(cx_to_c0,fckit_mpi_sum())
+   else
+      ! Allocation
+      allocate(fmask_c0a(geom%nc0a))
+      if (mpl%main) then
+         allocate(fmask_c0(geom%nc0))
+         allocate(smask_hor_c0(geom%nc0))
+      else
+         allocate(fmask_c0(0))
+         allocate(smask_hor_c0(0))
+      end if
+   
+      ! Initialization
+      fmask_c0a = .false.
+      if (subset==2) then
+         ! Forced points mask with local diagnostic points
+         do ildwv=1,nam%nldwv
+            iproc = samp%ldwv_to_proc(ildwv)
+            if (iproc==mpl%myproc) then
+               ic0a = samp%ldwv_to_c0a(ildwv)
+               fmask_c0a(ic0a) = .true.
+            end if
+         end do
+      end if
+   
+      ! Communication
+      call mpl%loc_to_glb(geom%nc0a,geom%nc0,geom%c0a_to_c0,fmask_c0a,fmask_c0)
+      call mpl%loc_to_glb(geom%nc0a,geom%nc0,geom%c0a_to_c0,samp%smask_hor_c0a,smask_hor_c0)
+   
+      ! Compte subsampling
+      write(mpl%info,'(a7,a,i1,a)') '','Compute horizontal subset Sc',subset,':'
+      call mpl%flush
+      call geom%initialize_sampling(mpl,geom%nc0,geom%tree_c0,smask_hor_c0,fmask_c0,7,ncx,cx_to_c0)
+
+      ! Release memory
+      deallocate(fmask_c0a)
+      deallocate(fmask_c0)
+      deallocate(smask_hor_c0)
    end if
-
-   ! Communication
-   call mpl%loc_to_glb(geom%nc0a,geom%nc0,geom%c0a_to_c0,fmask_c0a,fmask_c0)
-   call mpl%loc_to_glb(geom%nc0a,geom%nc0,geom%c0a_to_c0,samp%smask_hor_c0a,smask_hor_c0)
-
-   ! Compte subsampling
-   write(mpl%info,'(a7,a,i1,a)') '','Compute horizontal subset Sc',subset,':'
-   call mpl%flush
-   call geom%initialize_sampling(mpl,geom%nc0,geom%tree_c0,smask_hor_c0,fmask_c0,7,ncx,cx_to_c0)
 
    ! Count Scx point in halo A
    ncxa = 0
@@ -2258,9 +2277,6 @@ else
    end do
 
    ! Release memory
-   deallocate(fmask_c0a)
-   deallocate(fmask_c0)
-   deallocate(smask_hor_c0)
    deallocate(cx_to_c0)
 end if
 

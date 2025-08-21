@@ -11,286 +11,286 @@
              Level   1 ~> 100.0%
              Level   1 ~>  0.100E+01 vert. coord.
              Effective levels:   1   2 
-                Horizontal support radius:    4000.00 km (   4000.00 km -    4000.00 km)
-                Estimated nc1 from horizontal support radius:      589
-                   Decimate full grid, at least      589 points required,     762 valid points found
-                   Subgrid hash:   1676590011
-                Final nc1:      589
-                Effective horizontal resolution:  4.00
-             nc1(  1) =                        589
-             nc1(  2) =                        589
-             ns =                             1178
+                   Requested distance between points (min/max/avg):  0.554E+03 km /  0.554E+03 km /  0.554E+03 km
+                   Regular sampling grid size:     1288 points
+                   Nearest neighbor distance (min/max/avg):  0.168E+03 km /  0.633E+03 km /  0.564E+03 km
+                   Effective resolution (min/max/avg):  6.32 / 23.81 /  7.61
+                   Subgrid hash:    532022502
+                Subgrid size:     1288
+             nc1(  1) =                       1288
+             nc1(  2) =                       1288
+             ns =                             2576
              v%n_s =                             2
-             c%n_s[global] =                 28804
+             c%n_s[global] =                 73536
              Effective levels:   1   2 
-                Horizontal support radius:    4000.00 km (   4000.00 km -    4000.00 km)
-                Estimated nc1 from horizontal support radius:      589
-                   Decimate full grid, at least      589 points required,     762 valid points found
-                   Subgrid hash:   1676590011
-                Final nc1:      589
-                Effective horizontal resolution:  4.00
-             nc1(  1) =                        589
-             nc1(  2) =                        589
-             ns =                             1178
+                   Requested distance between points (min/max/avg):  0.554E+03 km /  0.554E+03 km /  0.554E+03 km
+                   Regular sampling grid size:     1288 points
+                   Nearest neighbor distance (min/max/avg):  0.168E+03 km /  0.633E+03 km /  0.564E+03 km
+                   Effective resolution (min/max/avg):  6.32 / 23.81 /  7.61
+                   Subgrid hash:    532022502
+                Subgrid size:     1288
+             nc1(  1) =                       1288
+             nc1(  2) =                       1288
+             ns =                             2576
              v%n_s =                             2
-             c%n_s[global] =                 28804
+             c%n_s[global] =                 73536
              Effective levels:   1   2 
-                Horizontal support radius:    4000.00 km (   4000.00 km -    4000.00 km)
-                Estimated nc1 from horizontal support radius:      589
-                   Decimate full grid, at least      589 points required,     762 valid points found
-                   Subgrid hash:   1676590011
-                Final nc1:      589
-                Effective horizontal resolution:  4.00
-             nc1(  1) =                        589
-             nc1(  2) =                        589
-             ns =                             1178
+                   Requested distance between points (min/max/avg):  0.554E+03 km /  0.554E+03 km /  0.554E+03 km
+                   Regular sampling grid size:     1288 points
+                   Nearest neighbor distance (min/max/avg):  0.168E+03 km /  0.633E+03 km /  0.564E+03 km
+                   Effective resolution (min/max/avg):  6.32 / 23.81 /  7.61
+                   Subgrid hash:    532022502
+                Subgrid size:     1288
+             nc1(  1) =                       1288
+             nc1(  2) =                       1288
+             ns =                             2576
              v%n_s =                             2
-             c%n_s[global] =                 28804
+             c%n_s[global] =                 73536
              Effective levels:   1   2 
-                Horizontal support radius:    4000.00 km (   4000.00 km -    4000.00 km)
-                Estimated nc1 from horizontal support radius:      589
-                   Decimate full grid, at least      589 points required,     762 valid points found
-                   Subgrid hash:   1676590011
-                Final nc1:      589
-                Effective horizontal resolution:  4.00
-             nc1(  1) =                        589
-             nc1(  2) =                        589
-             ns =                             1178
+                   Requested distance between points (min/max/avg):  0.554E+03 km /  0.554E+03 km /  0.554E+03 km
+                   Regular sampling grid size:     1288 points
+                   Nearest neighbor distance (min/max/avg):  0.168E+03 km /  0.633E+03 km /  0.564E+03 km
+                   Effective resolution (min/max/avg):  6.32 / 23.81 /  7.61
+                   Subgrid hash:    532022502
+                Subgrid size:     1288
+             nc1(  1) =                       1288
+             nc1(  2) =                       1288
+             ns =                             2576
              v%n_s =                             2
-             c%n_s[global] =                 28804
+             c%n_s[global] =                 73536
              Effective levels:   1 
-                Horizontal support radius:    4000.00 km (   4000.00 km -    4000.00 km)
-                Estimated nc1 from horizontal support radius:      589
-                   Decimate full grid, at least      589 points required,     762 valid points found
-                   Subgrid hash:   1676590011
-                Final nc1:      589
-                Effective horizontal resolution:  4.00
-             nc1(  1) =                        589
-             ns =                              589
+                   Requested distance between points (min/max/avg):  0.554E+03 km /  0.554E+03 km /  0.554E+03 km
+                   Regular sampling grid size:     1288 points
+                   Nearest neighbor distance (min/max/avg):  0.168E+03 km /  0.633E+03 km /  0.564E+03 km
+                   Effective resolution (min/max/avg):  6.32 / 23.81 /  7.61
+                   Subgrid hash:    532022502
+                Subgrid size:     1288
+             nc1(  1) =                       1288
+             ns =                             1288
              v%n_s =                             1
-             c%n_s[global] =                  7447
+             c%n_s[global] =                 18576
 Member 0: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    air_horizontal_streamfunction: 4.0935605238832274e+01
-    air_horizontal_velocity_potential: 3.7019808536559559e+01
-    eastward_wind: 3.7001470447290252e+01
-    northward_wind: 4.2092918030881293e+01
-    air_pressure_at_surface: 2.7723769286419724e+01
+    air_horizontal_streamfunction: 4.1126009992552824e+01
+    air_horizontal_velocity_potential: 4.1091489485695590e+01
+    eastward_wind: 4.1111770163261745e+01
+    northward_wind: 4.7609814134723834e+01
+    air_pressure_at_surface: 3.6313882343565211e+01
 Member 1: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    air_horizontal_streamfunction: 3.9829188770501609e+01
-    air_horizontal_velocity_potential: 4.2219931937087239e+01
-    eastward_wind: 3.7036391742027391e+01
-    northward_wind: 3.6706667612025093e+01
-    air_pressure_at_surface: 2.8028497865455698e+01
+    air_horizontal_streamfunction: 3.7787683404885641e+01
+    air_horizontal_velocity_potential: 4.6075018055480243e+01
+    eastward_wind: 3.3958635838471700e+01
+    northward_wind: 4.1889905542520417e+01
+    air_pressure_at_surface: 2.7893400325674261e+01
 Member 2: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    air_horizontal_streamfunction: 3.6156582536983855e+01
-    air_horizontal_velocity_potential: 3.8357516637983288e+01
-    eastward_wind: 4.1188353281094095e+01
-    northward_wind: 4.2473321424609757e+01
-    air_pressure_at_surface: 2.7125865552673158e+01
+    air_horizontal_streamfunction: 4.1548949516941661e+01
+    air_horizontal_velocity_potential: 4.8508852403340477e+01
+    eastward_wind: 4.2392414218988421e+01
+    northward_wind: 3.9073487012697392e+01
+    air_pressure_at_surface: 2.3646843966588317e+01
 Member 3: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    air_horizontal_streamfunction: 4.1560556628506497e+01
-    air_horizontal_velocity_potential: 4.0424737390146213e+01
-    eastward_wind: 4.1606341526713152e+01
-    northward_wind: 4.1625645992174356e+01
-    air_pressure_at_surface: 2.9559620111723028e+01
+    air_horizontal_streamfunction: 3.9685127291749865e+01
+    air_horizontal_velocity_potential: 4.4910163077653699e+01
+    eastward_wind: 3.6865429863473921e+01
+    northward_wind: 4.0268031999116829e+01
+    air_pressure_at_surface: 2.6802899318068238e+01
 Member 4: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    air_horizontal_streamfunction: 4.1266530166109561e+01
-    air_horizontal_velocity_potential: 3.7706680289489753e+01
-    eastward_wind: 4.4131371084202868e+01
-    northward_wind: 3.7902517768111025e+01
-    air_pressure_at_surface: 2.4828056222196874e+01
+    air_horizontal_streamfunction: 3.9738822091260637e+01
+    air_horizontal_velocity_potential: 4.6299970941421897e+01
+    eastward_wind: 4.7418368068445290e+01
+    northward_wind: 3.7230319283509303e+01
+    air_pressure_at_surface: 2.4591266652589916e+01
 Member 5: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    air_horizontal_streamfunction: 4.5543083336056249e+01
-    air_horizontal_velocity_potential: 4.1699769268446261e+01
-    eastward_wind: 4.6428461788248200e+01
-    northward_wind: 4.0047542938767762e+01
-    air_pressure_at_surface: 2.5428975935997403e+01
+    air_horizontal_streamfunction: 4.1594111225393483e+01
+    air_horizontal_velocity_potential: 4.0965307669781090e+01
+    eastward_wind: 4.3828081954547784e+01
+    northward_wind: 4.2112013044137278e+01
+    air_pressure_at_surface: 3.0691063486749023e+01
 Member 6: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    air_horizontal_streamfunction: 3.8437409151369557e+01
-    air_horizontal_velocity_potential: 3.9484242111963674e+01
-    eastward_wind: 4.3207206833781761e+01
-    northward_wind: 4.4685063595469764e+01
-    air_pressure_at_surface: 3.0941343204551032e+01
+    air_horizontal_streamfunction: 4.2764663834547832e+01
+    air_horizontal_velocity_potential: 4.1169629977231779e+01
+    eastward_wind: 4.1614227037862925e+01
+    northward_wind: 4.5164018973211718e+01
+    air_pressure_at_surface: 2.5605374452872660e+01
 Member 7: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    air_horizontal_streamfunction: 4.2445097782437614e+01
-    air_horizontal_velocity_potential: 4.0716136782011176e+01
-    eastward_wind: 4.0780749558162555e+01
-    northward_wind: 3.4768401609195053e+01
-    air_pressure_at_surface: 3.2614866449325476e+01
+    air_horizontal_streamfunction: 4.0700459260996901e+01
+    air_horizontal_velocity_potential: 4.1984033783926520e+01
+    eastward_wind: 5.0458379180025773e+01
+    northward_wind: 3.8921947239840129e+01
+    air_pressure_at_surface: 2.7916001189895457e+01
 Member 8: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    air_horizontal_streamfunction: 4.1548146360828760e+01
-    air_horizontal_velocity_potential: 4.7764350583031685e+01
-    eastward_wind: 4.0098899537025375e+01
-    northward_wind: 4.2354912958745146e+01
-    air_pressure_at_surface: 2.7230413488653305e+01
+    air_horizontal_streamfunction: 3.9950225967193468e+01
+    air_horizontal_velocity_potential: 3.7278537751175143e+01
+    eastward_wind: 4.0424465375011373e+01
+    northward_wind: 4.5346115657261493e+01
+    air_pressure_at_surface: 2.7079447418399035e+01
 Member 9: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    air_horizontal_streamfunction: 3.8353231867926326e+01
-    air_horizontal_velocity_potential: 3.9535258525081687e+01
-    eastward_wind: 3.9286934724114197e+01
-    northward_wind: 4.2323127624491839e+01
-    air_pressure_at_surface: 2.9527906857359394e+01
+    air_horizontal_streamfunction: 4.2878670917080967e+01
+    air_horizontal_velocity_potential: 3.5789017834809677e+01
+    eastward_wind: 4.0970988225812818e+01
+    northward_wind: 4.2944145212236585e+01
+    air_pressure_at_surface: 2.6582052206621444e+01
 Member 10: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    air_horizontal_streamfunction: 3.9707896936601038e+01
-    air_horizontal_velocity_potential: 3.9677164814671649e+01
-    eastward_wind: 4.6058737342972456e+01
-    northward_wind: 4.5159406689265239e+01
-    air_pressure_at_surface: 2.9114148085957098e+01
+    air_horizontal_streamfunction: 3.6627735239872855e+01
+    air_horizontal_velocity_potential: 4.0487225633072342e+01
+    eastward_wind: 4.0282321043436852e+01
+    northward_wind: 4.1486273527876982e+01
+    air_pressure_at_surface: 3.6437260585736752e+01
 Member 11: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    air_horizontal_streamfunction: 4.0186163707604223e+01
-    air_horizontal_velocity_potential: 4.4972170583264081e+01
-    eastward_wind: 4.4130343037077431e+01
-    northward_wind: 4.4463741578238896e+01
-    air_pressure_at_surface: 2.6240927574655867e+01
+    air_horizontal_streamfunction: 3.7809426298887338e+01
+    air_horizontal_velocity_potential: 3.6633758800866637e+01
+    eastward_wind: 3.7131205723982703e+01
+    northward_wind: 4.5433393073481163e+01
+    air_pressure_at_surface: 2.7731388227319421e+01
 Member 12: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    air_horizontal_streamfunction: 4.1404803367476447e+01
-    air_horizontal_velocity_potential: 4.3806445858059000e+01
-    eastward_wind: 4.8450864004479456e+01
-    northward_wind: 4.2034749300735605e+01
-    air_pressure_at_surface: 2.8220803434809646e+01
+    air_horizontal_streamfunction: 3.9936961197952087e+01
+    air_horizontal_velocity_potential: 3.6722528439171256e+01
+    eastward_wind: 4.2916546547663735e+01
+    northward_wind: 3.5528317168377050e+01
+    air_pressure_at_surface: 3.6368560048454718e+01
 Member 13: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    air_horizontal_streamfunction: 4.7908785314417251e+01
-    air_horizontal_velocity_potential: 3.6411047081478024e+01
-    eastward_wind: 3.9593201708047573e+01
-    northward_wind: 3.9511120250116328e+01
-    air_pressure_at_surface: 2.4609724214308020e+01
+    air_horizontal_streamfunction: 4.1226341964335944e+01
+    air_horizontal_velocity_potential: 3.9442216937871692e+01
+    eastward_wind: 3.5385015537835571e+01
+    northward_wind: 3.7143236581634355e+01
+    air_pressure_at_surface: 2.9488983969885428e+01
 Member 14: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    air_horizontal_streamfunction: 4.4566876658360535e+01
-    air_horizontal_velocity_potential: 4.1442601109683388e+01
-    eastward_wind: 4.8371911542522199e+01
-    northward_wind: 4.4900204458068821e+01
-    air_pressure_at_surface: 2.7422044555536171e+01
+    air_horizontal_streamfunction: 3.9798545901734762e+01
+    air_horizontal_velocity_potential: 3.7430873074025079e+01
+    eastward_wind: 4.2423620277473134e+01
+    northward_wind: 3.8690967537329307e+01
+    air_pressure_at_surface: 2.9507574248594615e+01
 Member 15: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    air_horizontal_streamfunction: 4.0933137508814511e+01
-    air_horizontal_velocity_potential: 4.2299633441726705e+01
-    eastward_wind: 4.4831361713644270e+01
-    northward_wind: 3.7872131224567958e+01
-    air_pressure_at_surface: 2.6528198445817033e+01
+    air_horizontal_streamfunction: 4.5765867625567743e+01
+    air_horizontal_velocity_potential: 3.9418313278740278e+01
+    eastward_wind: 4.0494783620178190e+01
+    northward_wind: 3.8187643929625054e+01
+    air_pressure_at_surface: 3.2809713427941027e+01
 Member 16: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    air_horizontal_streamfunction: 4.4616382130563622e+01
-    air_horizontal_velocity_potential: 4.2700835919968561e+01
-    eastward_wind: 3.7561177823145634e+01
-    northward_wind: 4.1547670340962839e+01
-    air_pressure_at_surface: 2.5012716392809043e+01
+    air_horizontal_streamfunction: 3.8738709793954150e+01
+    air_horizontal_velocity_potential: 4.5398765802488505e+01
+    eastward_wind: 3.7307907737600942e+01
+    northward_wind: 3.8729824612836346e+01
+    air_pressure_at_surface: 2.8908446034731980e+01
 Member 17: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    air_horizontal_streamfunction: 4.2821244232055363e+01
-    air_horizontal_velocity_potential: 3.9314800706127478e+01
-    eastward_wind: 4.7919790184150337e+01
-    northward_wind: 4.1384173326341859e+01
-    air_pressure_at_surface: 3.0186418052835712e+01
+    air_horizontal_streamfunction: 3.8247387515887290e+01
+    air_horizontal_velocity_potential: 4.8334318793997674e+01
+    eastward_wind: 4.1677699267173367e+01
+    northward_wind: 4.9905506403913968e+01
+    air_pressure_at_surface: 2.7092043102144807e+01
 Member 18: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    air_horizontal_streamfunction: 3.7450635047870698e+01
-    air_horizontal_velocity_potential: 3.5487009602896762e+01
-    eastward_wind: 3.9383450363376447e+01
-    northward_wind: 3.8507170290686545e+01
-    air_pressure_at_surface: 2.8129947852974777e+01
+    air_horizontal_streamfunction: 3.6968274347143321e+01
+    air_horizontal_velocity_potential: 4.0602478027465729e+01
+    eastward_wind: 4.9161951916426794e+01
+    northward_wind: 3.8169854349470910e+01
+    air_pressure_at_surface: 2.8247342893845737e+01
 Member 19: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    air_horizontal_streamfunction: 3.9139318261258069e+01
-    air_horizontal_velocity_potential: 3.5331749126585102e+01
-    eastward_wind: 4.1293463331648724e+01
-    northward_wind: 4.2778236445723977e+01
-    air_pressure_at_surface: 2.4185513890627099e+01
+    air_horizontal_streamfunction: 4.0992945340468168e+01
+    air_horizontal_velocity_potential: 3.8836100083011516e+01
+    eastward_wind: 3.7822378486349784e+01
+    northward_wind: 3.7887285877918984e+01
+    air_pressure_at_surface: 2.7344438041666155e+01
 Member 20: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    air_horizontal_streamfunction: 3.4454919668885751e+01
-    air_horizontal_velocity_potential: 3.9397843181364316e+01
-    eastward_wind: 4.0300033727155281e+01
-    northward_wind: 4.1582162732549655e+01
-    air_pressure_at_surface: 2.7678151169910162e+01
+    air_horizontal_streamfunction: 4.3443479292367265e+01
+    air_horizontal_velocity_potential: 4.0937548477922881e+01
+    eastward_wind: 3.9425207428433417e+01
+    northward_wind: 3.9434997800791635e+01
+    air_pressure_at_surface: 2.6617305625135472e+01
 Member 21: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    air_horizontal_streamfunction: 4.1472904620210201e+01
-    air_horizontal_velocity_potential: 4.0013815619733847e+01
-    eastward_wind: 3.8620599638359302e+01
-    northward_wind: 4.2973910810089613e+01
-    air_pressure_at_surface: 2.7147584418973032e+01
+    air_horizontal_streamfunction: 3.8117969406553577e+01
+    air_horizontal_velocity_potential: 3.5190405139101316e+01
+    eastward_wind: 3.7848036218209835e+01
+    northward_wind: 4.0264997916897975e+01
+    air_pressure_at_surface: 2.8667757466624153e+01
 Member 22: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    air_horizontal_streamfunction: 4.3261536604178744e+01
-    air_horizontal_velocity_potential: 4.3444542329793677e+01
-    eastward_wind: 4.0914111145276379e+01
-    northward_wind: 4.6360496054905894e+01
-    air_pressure_at_surface: 3.0669789824106306e+01
+    air_horizontal_streamfunction: 3.9884877081655027e+01
+    air_horizontal_velocity_potential: 3.8417084711732777e+01
+    eastward_wind: 3.4974880939892081e+01
+    northward_wind: 4.4629157812957146e+01
+    air_pressure_at_surface: 2.8011741432415548e+01
 Member 23: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    air_horizontal_streamfunction: 4.1765139264267646e+01
-    air_horizontal_velocity_potential: 3.7565945286128091e+01
-    eastward_wind: 4.1735224334195962e+01
-    northward_wind: 4.8964663450330754e+01
-    air_pressure_at_surface: 2.8561101228932369e+01
+    air_horizontal_streamfunction: 4.5356804754066012e+01
+    air_horizontal_velocity_potential: 3.6177152963306170e+01
+    eastward_wind: 4.0836332967245603e+01
+    northward_wind: 4.4676641520248516e+01
+    air_pressure_at_surface: 3.5298204845860745e+01
 Member 24: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    air_horizontal_streamfunction: 4.1084230243844161e+01
-    air_horizontal_velocity_potential: 4.0006897954090107e+01
-    eastward_wind: 3.8578532807899101e+01
-    northward_wind: 4.4239388378536937e+01
-    air_pressure_at_surface: 3.1703440836430566e+01
+    air_horizontal_streamfunction: 4.0174592622738288e+01
+    air_horizontal_velocity_potential: 4.6132493418322220e+01
+    eastward_wind: 3.7401376945464740e+01
+    northward_wind: 3.7914821282110125e+01
+    air_pressure_at_surface: 3.1905407470067360e+01

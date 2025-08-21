@@ -11,175 +11,175 @@
              Level   1 ~> 100.0%
              Level   1 ~>  0.100E+01 vert. coord.
              Effective levels:   1   2 
-                Horizontal support radius:    4000.00 km (   4000.00 km -    4000.00 km)
-                Estimated nc1 from horizontal support radius:      589
-                   Decimate full grid, at least      589 points required,    1098 valid points found
-                   Subgrid hash:   -791070867
-                Final nc1:      589
-                Effective horizontal resolution:  4.00
-             nc1(  1) =                        589
-             nc1(  2) =                        589
-             ns =                             1178
+                   Requested distance between points (min/max/avg):  0.554E+03 km /  0.554E+03 km /  0.554E+03 km
+                   Regular sampling grid size:     1288 points
+                   Nearest neighbor distance (min/max/avg):  0.168E+03 km /  0.633E+03 km /  0.564E+03 km
+                   Effective resolution (min/max/avg):  6.32 / 23.81 /  7.61
+                   Subgrid hash:    532022502
+                Subgrid size:     1288
+             nc1(  1) =                       1288
+             nc1(  2) =                       1288
+             ns =                             2576
              v%n_s =                             2
-             c%n_s[global] =                 35196
+             c%n_s[global] =                 73536
              Effective levels:   1 
-                Horizontal support radius:    4000.00 km (   4000.00 km -    4000.00 km)
-                Estimated nc1 from horizontal support radius:      589
-                   Decimate full grid, at least      589 points required,    1098 valid points found
-                   Subgrid hash:   -791070867
-                Final nc1:      589
-                Effective horizontal resolution:  4.00
-             nc1(  1) =                        589
-             ns =                              589
+                   Requested distance between points (min/max/avg):  0.554E+03 km /  0.554E+03 km /  0.554E+03 km
+                   Regular sampling grid size:     1288 points
+                   Nearest neighbor distance (min/max/avg):  0.168E+03 km /  0.633E+03 km /  0.564E+03 km
+                   Effective resolution (min/max/avg):  6.32 / 23.81 /  7.61
+                   Subgrid hash:    532022502
+                Subgrid size:     1288
+             nc1(  1) =                       1288
+             ns =                             1288
              v%n_s =                             1
-             c%n_s[global] =                  8851
+             c%n_s[global] =                 18576
 Member 0: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L48x25 [1200]
   Fields:
-    air_horizontal_streamfunction: 5.2732106972202658e+01
-    air_pressure_at_surface: 3.6782497388491187e+01
+    air_horizontal_streamfunction: 4.9198530057566849e+01
+    air_pressure_at_surface: 4.3273787097269384e+01
 Member 1: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L48x25 [1200]
   Fields:
-    air_horizontal_streamfunction: 6.1156113935859750e+01
-    air_pressure_at_surface: 3.0508133373343661e+01
+    air_horizontal_streamfunction: 4.9269960579119406e+01
+    air_pressure_at_surface: 3.3315617731055411e+01
 Member 2: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L48x25 [1200]
   Fields:
-    air_horizontal_streamfunction: 5.4263238689101726e+01
-    air_pressure_at_surface: 3.6618177769857184e+01
+    air_horizontal_streamfunction: 4.8997219254239191e+01
+    air_pressure_at_surface: 2.8310357249775521e+01
 Member 3: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L48x25 [1200]
   Fields:
-    air_horizontal_streamfunction: 4.6498618390841969e+01
-    air_pressure_at_surface: 3.4432656334357965e+01
+    air_horizontal_streamfunction: 5.6511074529437209e+01
+    air_pressure_at_surface: 3.2146798014809640e+01
 Member 4: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L48x25 [1200]
   Fields:
-    air_horizontal_streamfunction: 4.5469585261214064e+01
-    air_pressure_at_surface: 3.5678230262433843e+01
+    air_horizontal_streamfunction: 4.5239228397026189e+01
+    air_pressure_at_surface: 2.9491937161578257e+01
 Member 5: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L48x25 [1200]
   Fields:
-    air_horizontal_streamfunction: 4.6401289135014338e+01
-    air_pressure_at_surface: 3.0992106797722911e+01
+    air_horizontal_streamfunction: 5.4840988526831339e+01
+    air_pressure_at_surface: 3.6493716594772422e+01
 Member 6: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L48x25 [1200]
   Fields:
-    air_horizontal_streamfunction: 4.6468174606602318e+01
-    air_pressure_at_surface: 4.2035229467974062e+01
+    air_horizontal_streamfunction: 4.0707189670599448e+01
+    air_pressure_at_surface: 3.0631141070833404e+01
 Member 7: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L48x25 [1200]
   Fields:
-    air_horizontal_streamfunction: 4.6579419728808524e+01
-    air_pressure_at_surface: 3.0290321755751915e+01
+    air_horizontal_streamfunction: 5.0004652502146705e+01
+    air_pressure_at_surface: 3.3478585753785929e+01
 Member 8: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L48x25 [1200]
   Fields:
-    air_horizontal_streamfunction: 5.1548102826273258e+01
-    air_pressure_at_surface: 3.2358309524194297e+01
+    air_horizontal_streamfunction: 4.9671364009201632e+01
+    air_pressure_at_surface: 3.2460481381162801e+01
 Member 9: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L48x25 [1200]
   Fields:
-    air_horizontal_streamfunction: 4.2517425313655117e+01
-    air_pressure_at_surface: 3.4370368607904624e+01
+    air_horizontal_streamfunction: 5.8077475444069457e+01
+    air_pressure_at_surface: 3.1880044065931102e+01
 Member 10: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L48x25 [1200]
   Fields:
-    air_horizontal_streamfunction: 4.4863985270133639e+01
-    air_pressure_at_surface: 2.8804851780943558e+01
+    air_horizontal_streamfunction: 5.0628518070304438e+01
+    air_pressure_at_surface: 4.3178946145715749e+01
 Member 11: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L48x25 [1200]
   Fields:
-    air_horizontal_streamfunction: 4.9208850317806238e+01
-    air_pressure_at_surface: 3.1634361048147465e+01
+    air_horizontal_streamfunction: 4.6843594873734276e+01
+    air_pressure_at_surface: 3.3183132705164645e+01
 Member 12: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L48x25 [1200]
   Fields:
-    air_horizontal_streamfunction: 4.5615833764318033e+01
-    air_pressure_at_surface: 3.7824655016192068e+01
+    air_horizontal_streamfunction: 4.7536442599890037e+01
+    air_pressure_at_surface: 4.3172752102420354e+01
 Member 13: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L48x25 [1200]
   Fields:
-    air_horizontal_streamfunction: 4.4932202123731791e+01
-    air_pressure_at_surface: 2.8525108672573264e+01
+    air_horizontal_streamfunction: 5.3378906760082280e+01
+    air_pressure_at_surface: 3.5345989310298130e+01
 Member 14: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L48x25 [1200]
   Fields:
-    air_horizontal_streamfunction: 4.7445590080224349e+01
-    air_pressure_at_surface: 3.2509558296920794e+01
+    air_horizontal_streamfunction: 4.4197570540387503e+01
+    air_pressure_at_surface: 3.5391475990915431e+01
 Member 15: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L48x25 [1200]
   Fields:
-    air_horizontal_streamfunction: 5.0300132680018585e+01
-    air_pressure_at_surface: 3.4651546020559501e+01
+    air_horizontal_streamfunction: 4.8222944739416008e+01
+    air_pressure_at_surface: 3.9064062717997359e+01
 Member 16: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L48x25 [1200]
   Fields:
-    air_horizontal_streamfunction: 4.2848708822658388e+01
-    air_pressure_at_surface: 3.3541816311684713e+01
+    air_horizontal_streamfunction: 4.7630994734581002e+01
+    air_pressure_at_surface: 3.4608601383346929e+01
 Member 17: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L48x25 [1200]
   Fields:
-    air_horizontal_streamfunction: 4.4797827805076658e+01
-    air_pressure_at_surface: 3.5274123987708812e+01
+    air_horizontal_streamfunction: 5.5045918054276854e+01
+    air_pressure_at_surface: 3.2348970213698102e+01
 Member 18: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L48x25 [1200]
   Fields:
-    air_horizontal_streamfunction: 4.0938251078474522e+01
-    air_pressure_at_surface: 3.2212486865173588e+01
+    air_horizontal_streamfunction: 5.6541417025344487e+01
+    air_pressure_at_surface: 3.3880799840835536e+01
 Member 19: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L48x25 [1200]
   Fields:
-    air_horizontal_streamfunction: 4.2040472392839412e+01
-    air_pressure_at_surface: 3.2608394715067405e+01
+    air_horizontal_streamfunction: 4.4354478488431369e+01
+    air_pressure_at_surface: 3.2768545323896248e+01
 Member 20: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L48x25 [1200]
   Fields:
-    air_horizontal_streamfunction: 4.4412106897358711e+01
-    air_pressure_at_surface: 2.8980613289745200e+01
+    air_horizontal_streamfunction: 4.9689134355982688e+01
+    air_pressure_at_surface: 3.1875926295242863e+01
 Member 21: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L48x25 [1200]
   Fields:
-    air_horizontal_streamfunction: 4.0331775509866716e+01
-    air_pressure_at_surface: 3.4151871276727327e+01
+    air_horizontal_streamfunction: 4.9056941615475246e+01
+    air_pressure_at_surface: 3.4177272875106688e+01
 Member 22: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L48x25 [1200]
   Fields:
-    air_horizontal_streamfunction: 4.6372310267623199e+01
-    air_pressure_at_surface: 3.5388291037700363e+01
+    air_horizontal_streamfunction: 5.2472894898598902e+01
+    air_pressure_at_surface: 3.3487737699576783e+01
 Member 23: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L48x25 [1200]
   Fields:
-    air_horizontal_streamfunction: 4.6018079384598025e+01
-    air_pressure_at_surface: 3.6015535272059637e+01
+    air_horizontal_streamfunction: 5.0435079105197836e+01
+    air_pressure_at_surface: 4.1938249332422963e+01
 Member 24: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L48x25 [1200]
   Fields:
-    air_horizontal_streamfunction: 4.4987954557707873e+01
-    air_pressure_at_surface: 3.2877627577263837e+01
+    air_horizontal_streamfunction: 5.0943409965148000e+01
+    air_pressure_at_surface: 3.8049992268874917e+01

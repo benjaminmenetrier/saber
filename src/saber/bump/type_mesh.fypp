@@ -122,18 +122,10 @@ allocate(dist(mesh%n))
 mesh%lon = lon
 mesh%lat = lat
 
-! Reorder points
-call qsort(mesh%n,mesh%lon,mesh%lat,mesh%order,.false.)
-
-! Shuffle order (more efficient to compute the Delaunay triangulation)
+! Genereate shuffled order (more efficient to compute the Delaunay triangulation)
 call rng%resync(mpl)
-call rng%rand(1,mesh%n,jtab)
+call rng%shuffle(mesh%n,mesh%order)
 call rng%desync(mpl)
-do i=mesh%n,2,-1
-   k = mesh%order(jtab(i))
-   mesh%order(jtab(i)) = mesh%order(i)
-   mesh%order(i) = k
-end do
 
 ! Inverse order
 do i=1,mesh%n
@@ -143,12 +135,6 @@ end do
 ! Reorder lon/lat
 mesh%lon = mesh%lon(mesh%order)
 mesh%lat = mesh%lat(mesh%order)
-
-! Transform to cartesian coordinates
-! TODO(Benjamin): this is wrong!
-do i=1,mesh%n
-   call lonlat2xyz(mpl,mesh%lon(i),mesh%lat(i),mesh%x(i),mesh%y(i),mesh%z(i))
-end do
 
 ! Perturb grid coordinates to avoid colinear points
 do i=1,mesh%n
@@ -173,10 +159,9 @@ do i=1,mesh%n
 end do
 
 ! Transform to cartesian coordinates
-! TODO(Benjamin): this should be uncommented
-!do i=1,mesh%n
-!   call lonlat2xyz(mpl,mesh%lon(i),mesh%lat(i),mesh%x(i),mesh%y(i),mesh%z(i))
-!end do
+do i=1,mesh%n
+   call lonlat2xyz(mpl,mesh%lon(i),mesh%lat(i),mesh%x(i),mesh%y(i),mesh%z(i))
+end do
 
 ! Create mesh
 mesh%list = 0

@@ -11,7 +11,7 @@ module tools_atlas
 use atlas_module, only: atlas_structuredgrid,atlas_regionalgrid,atlas_field,atlas_integer,atlas_real,atlas_functionspace, &
  & atlas_functionspace_nodecolumns,atlas_functionspace_pointcloud,atlas_functionspace_structuredcolumns, &
  & atlas_projection,atlas_config,atlas_json
-use tools_const, only: zero,quarter,half,two,three,rad2deg,pi,req
+use tools_const, only: zero,quarter,half,two,three,eight,rad2deg,pi,req
 use tools_kinds, only: kind_int,kind_real
 use tools_func, only: sphere_dist,convert_i2l,convert_l2i
 use type_mpl, only: mpl_type
@@ -100,7 +100,7 @@ type(atlas_structuredgrid),intent(inout) :: agrid !< ATLAS grid
 integer,intent(out),optional :: n                 !< Grid size
 
 ! Local variables
-integer :: trunc,ln
+integer :: trunc
 character(len=6) :: gridid
 
 ! Set name
@@ -142,8 +142,8 @@ type(atlas_structuredgrid),intent(inout) :: agrid !< ATLAS grid
 integer,intent(out),optional :: n                 !< Grid size
 
 ! Local variables
-integer :: nx_work,ny_work,n_work,nx,ny
-real(kind_real) :: xmin,xmax,ymin,ymax,alpha,xy_min(2),xy_max(2)
+integer :: nx,ny
+real(kind_real) :: xmin,xmax,ymin,ymax,Lx,Ly,dx,dy,xy_min(2),xy_max(2)
 type(atlas_config) :: aconfig_proj
 type(atlas_projection) :: aproj
 character(len=:),allocatable :: units
@@ -155,8 +155,6 @@ character(len=:),allocatable :: units
 if (nmin<9) call mpl%abort('${subr}$','minimum number of points is too small')
 
 ! Input grid specifications
-if (.not.aconfig_grid%get('xspace.N',nx_work)) call mpl%abort('${subr}$','missing xspace.N')
-if (.not.aconfig_grid%get('yspace.N',ny_work)) call mpl%abort('${subr}$','missing yspace.N')
 if (.not.aconfig_grid%get('domain.xmin',xmin)) call mpl%abort('${subr}$','missing domain.xmint')
 if (.not.aconfig_grid%get('domain.xmax',xmax)) call mpl%abort('${subr}$','missing domain.xmax')
 if (.not.aconfig_grid%get('domain.ymin',ymin)) call mpl%abort('${subr}$','missing domain.ymin')
@@ -164,17 +162,15 @@ if (.not.aconfig_grid%get('domain.ymax',ymax)) call mpl%abort('${subr}$','missin
 if (.not.aconfig_grid%get('domain.units',units)) call mpl%abort('${subr}$','missing domain.units')
 
 if (units=='meters') then
-   ! TODO: grille triangulaire
-   ! Grid size
-   n_work = nx_work*ny_work
-
-   ! Reduction factor
-   alpha = sqrt(real(nmin,kind_real)/real(n_work,kind_real))
-   nx = floor(real(nx_work,kind_real)*alpha)+1
-   ny = floor(real(nx_work,kind_real)*alpha)+1
+   ! Grid parameters
+   Lx = (xmax-xmin)/req
+   Ly = (ymax-ymin)/req
+   nx = floor(sqrt(two*sqrt(three)*Lx/Ly*real(nmin,kind_real)))+1
+   ny = floor(sqrt(eight/sqrt(three)*Ly/Lx*real(nmin,kind_real)))+1
    if (nx<2) call mpl%abort('${subr}$','nx is too small')
    if (ny<2) call mpl%abort('${subr}$','ny is too small')
 
+print*, nmin,nx,ny,nx*ny
    ! Set new regional grid
    xy_min = (/xmin,ymin/)
    xy_max = (/xmax,ymax/)
@@ -218,7 +214,7 @@ type(atlas_structuredgrid),intent(inout) :: agrid !< ATLAS grid
 integer,intent(out),optional :: n                 !< Grid size
 
 ! Local variables
-integer :: nx_work,ny_work,nx,ny,ln
+integer :: nx,ny
 real(kind_real) :: xmin,xmax,ymin,ymax,Lx,Ly,dx,dy,xy_min(2),xy_max(2)
 type(atlas_config) :: aconfig_proj
 type(atlas_projection) :: aproj
@@ -231,8 +227,6 @@ character(len=:),allocatable :: units
 if (.not.(gamma>zero)) call mpl%abort('${subr}$','maximum cell size should be positive')
 
 ! Input grid specifications
-if (.not.aconfig_grid%get('xspace.N',nx_work)) call mpl%abort('${subr}$','missing xspace.N')
-if (.not.aconfig_grid%get('yspace.N',ny_work)) call mpl%abort('${subr}$','missing yspace.N')
 if (.not.aconfig_grid%get('domain.xmin',xmin)) call mpl%abort('${subr}$','missing domain.xmint')
 if (.not.aconfig_grid%get('domain.xmax',xmax)) call mpl%abort('${subr}$','missing domain.xmax')
 if (.not.aconfig_grid%get('domain.ymin',ymin)) call mpl%abort('${subr}$','missing domain.ymin')

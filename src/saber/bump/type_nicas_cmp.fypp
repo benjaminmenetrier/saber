@@ -11,7 +11,6 @@ module type_nicas_cmp
 use atlas_module, only: atlas_structuredgrid
 use fckit_mpi_module, only: fckit_mpi_sum,fckit_mpi_min,fckit_mpi_max
 !$ use omp_lib
-use tools_atlas, only: get_grid
 use tools_const, only: zero,quarter,half,tenth,one,two,three,four,five,hundred,pi,req,reqkm,deg2rad,rad2deg
 use tools_fit, only: tensor_d2h
 use tools_func, only: lonlatmod,sphere_dist,convert_i2l,convert_l2i,zss_maxval,zss_minval,zss_sum,zss_count
@@ -2849,15 +2848,7 @@ do il1=1,nicas_cmp%nl1
          ! Stop sampling timer
          call mpl%stop_timer('nicas_setup_sampling')
       end if
-   end if
-end do
 
-! Interpolation
-do il1=1,nicas_cmp%nl1
-   ! Base sublevel
-   il1s = nicas_cmp%hor(il1)%il1s
-
-   if (il1==il1s) then
       ! Start interpolation timer
       call mpl%start_timer('nicas_setup_interp')
 

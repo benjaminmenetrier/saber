@@ -5,69 +5,68 @@
              Level   2 ~> 100.0%
              Level   1 ~>  0.100E+01 vert. coord.
              Level   2 ~>  0.200E+01 vert. coord.
-          Norm of air_horizontal_streamfunction:  0.38871137E+02
-          Norm of air_horizontal_velocity_potential:  0.35380089E+02
-          Norm of air_horizontal_streamfunction:  0.37636924E+02
-          Norm of air_horizontal_velocity_potential:  0.38742395E+02
-          Norm of air_horizontal_streamfunction:  0.35339835E+02
-          Norm of air_horizontal_velocity_potential:  0.37400956E+02
-          Norm of air_horizontal_streamfunction:  0.39814341E+02
-          Norm of air_horizontal_velocity_potential:  0.38776466E+02
-          Norm of air_horizontal_streamfunction:  0.37840753E+02
-          Norm of air_horizontal_velocity_potential:  0.36593686E+02
-          Norm of air_horizontal_streamfunction:  0.41168643E+02
-          Norm of air_horizontal_velocity_potential:  0.40532483E+02
-          Norm of air_horizontal_streamfunction:  0.37042175E+02
-          Norm of air_horizontal_velocity_potential:  0.37964236E+02
-          Norm of air_horizontal_streamfunction:  0.40929248E+02
-          Norm of air_horizontal_velocity_potential:  0.39272020E+02
-          Norm of air_horizontal_streamfunction:  0.41207085E+02
-          Norm of air_horizontal_velocity_potential:  0.43079363E+02
-          Norm of air_horizontal_streamfunction:  0.37204564E+02
-          Norm of air_horizontal_velocity_potential:  0.39153912E+02
-          Norm of air_horizontal_streamfunction:  0.39481281E+02
-          Norm of air_horizontal_velocity_potential:  0.38377142E+02
-          Norm of air_horizontal_streamfunction:  0.39550989E+02
-          Norm of air_horizontal_velocity_potential:  0.43691285E+02
-          Norm of air_horizontal_streamfunction:  0.39291395E+02
-          Norm of air_horizontal_velocity_potential:  0.42447805E+02
-          Norm of air_horizontal_streamfunction:  0.43607954E+02
-          Norm of air_horizontal_velocity_potential:  0.35508978E+02
-          Norm of air_horizontal_streamfunction:  0.37924706E+02
-          Norm of air_horizontal_velocity_potential:  0.39703443E+02
-          Norm of air_horizontal_streamfunction:  0.39696480E+02
-          Norm of air_horizontal_velocity_potential:  0.38942068E+02
-          Norm of air_horizontal_streamfunction:  0.42508098E+02
-          Norm of air_horizontal_velocity_potential:  0.40987040E+02
-          Norm of air_horizontal_streamfunction:  0.40253808E+02
-          Norm of air_horizontal_velocity_potential:  0.36904896E+02
-          Norm of air_horizontal_streamfunction:  0.36994505E+02
-          Norm of air_horizontal_velocity_potential:  0.34751960E+02
-          Norm of air_horizontal_streamfunction:  0.38945795E+02
-          Norm of air_horizontal_velocity_potential:  0.34290553E+02
-          Norm of air_horizontal_streamfunction:  0.34085361E+02
-          Norm of air_horizontal_velocity_potential:  0.38099621E+02
-          Norm of air_horizontal_streamfunction:  0.40077995E+02
-          Norm of air_horizontal_velocity_potential:  0.39074927E+02
-          Norm of air_horizontal_streamfunction:  0.40515517E+02
-          Norm of air_horizontal_velocity_potential:  0.40254090E+02
-          Norm of air_horizontal_streamfunction:  0.40585994E+02
-          Norm of air_horizontal_velocity_potential:  0.36737345E+02
-          Norm of air_horizontal_streamfunction:  0.38552511E+02
-          Norm of air_horizontal_velocity_potential:  0.37169283E+02
+          Norm of air_horizontal_streamfunction:  0.39688019E+02
+          Norm of air_horizontal_velocity_potential:  0.40762649E+02
+          Norm of air_horizontal_streamfunction:  0.36664365E+02
+          Norm of air_horizontal_velocity_potential:  0.41713724E+02
+          Norm of air_horizontal_streamfunction:  0.39596704E+02
+          Norm of air_horizontal_velocity_potential:  0.46894632E+02
+          Norm of air_horizontal_streamfunction:  0.38911670E+02
+          Norm of air_horizontal_velocity_potential:  0.40219826E+02
+          Norm of air_horizontal_streamfunction:  0.39332428E+02
+          Norm of air_horizontal_velocity_potential:  0.41268702E+02
+          Norm of air_horizontal_streamfunction:  0.39453248E+02
+          Norm of air_horizontal_velocity_potential:  0.39722925E+02
+          Norm of air_horizontal_streamfunction:  0.39290060E+02
+          Norm of air_horizontal_velocity_potential:  0.37484565E+02
+          Norm of air_horizontal_streamfunction:  0.39503689E+02
+          Norm of air_horizontal_velocity_potential:  0.39199048E+02
+          Norm of air_horizontal_streamfunction:  0.38117721E+02
+          Norm of air_horizontal_velocity_potential:  0.35887327E+02
+          Norm of air_horizontal_streamfunction:  0.38960144E+02
+          Norm of air_horizontal_velocity_potential:  0.35175548E+02
+          Norm of air_horizontal_streamfunction:  0.34461991E+02
+          Norm of air_horizontal_velocity_potential:  0.39110957E+02
+          Norm of air_horizontal_streamfunction:  0.37407334E+02
+          Norm of air_horizontal_velocity_potential:  0.35824724E+02
+          Norm of air_horizontal_streamfunction:  0.38998863E+02
+          Norm of air_horizontal_velocity_potential:  0.35117657E+02
+          Norm of air_horizontal_streamfunction:  0.38341055E+02
+          Norm of air_horizontal_velocity_potential:  0.38527180E+02
+          Norm of air_horizontal_streamfunction:  0.38771998E+02
+          Norm of air_horizontal_velocity_potential:  0.36430426E+02
+          Norm of air_horizontal_streamfunction:  0.41991676E+02
+          Norm of air_horizontal_velocity_potential:  0.37606916E+02
+          Norm of air_horizontal_streamfunction:  0.36690524E+02
+          Norm of air_horizontal_velocity_potential:  0.41465920E+02
+          Norm of air_horizontal_streamfunction:  0.37219140E+02
+          Norm of air_horizontal_velocity_potential:  0.44348253E+02
+          Norm of air_horizontal_streamfunction:  0.36111804E+02
+          Norm of air_horizontal_velocity_potential:  0.39789354E+02
+          Norm of air_horizontal_streamfunction:  0.39612956E+02
+          Norm of air_horizontal_velocity_potential:  0.38152251E+02
+          Norm of air_horizontal_streamfunction:  0.39603819E+02
+          Norm of air_horizontal_velocity_potential:  0.39257272E+02
+          Norm of air_horizontal_streamfunction:  0.37251160E+02
+          Norm of air_horizontal_velocity_potential:  0.34450846E+02
+          Norm of air_horizontal_streamfunction:  0.39292249E+02
+          Norm of air_horizontal_velocity_potential:  0.35694984E+02
+          Norm of air_horizontal_streamfunction:  0.42183284E+02
+          Norm of air_horizontal_velocity_potential:  0.35767206E+02
+          Norm of air_horizontal_streamfunction:  0.39591246E+02
+          Norm of air_horizontal_velocity_potential:  0.42488662E+02
           Level   1 ~> 100.0%
           Level   2 ~> 100.0%
-          Decimate full grid, at least      500 points required,     762 valid points found
-          Subgrid hash:   -130003308
-             -90.00 deg.  ~>100-100- 2-100-100-100-100-99-100-100 
-             -45.00 deg.  ~>100-33-99-100-100-100-100-99-100-100 
-               0.00 deg.  ~>100-100-91-68-100-100-100-91-100-100 
-              45.00 deg.  ~>100-33-99-100-100-100-100-99-100-100 
-             -90.00 deg.  ~>100-100- 2-100-100-100-100-99-100-100 
-             -45.00 deg.  ~>100-33-99-100-100-100-100-99-100-100 
-               0.00 deg.  ~>100-100-91-68-100-100-100-91-100-100 
-              45.00 deg.  ~>100-33-99-100-100-100-100-99-100-100 
-          nc1 =      500
+          Subgrid hash:   1534185147
+             -90.00 deg.  ~>100-100- 7-100-100-100-100-100-100-100 
+             -45.00 deg.  ~>100-40-100-100-100-100-100-100-100-100 
+               0.00 deg.  ~>100-100-100-69-100-100-100-100-100-100 
+              45.00 deg.  ~>100-40-100-100-100-100-100-100-100-100 
+             -90.00 deg.  ~>100-100- 7-100-100-100-100-100-100-100 
+             -45.00 deg.  ~>100-40-100-100-100-100-100-100-100-100 
+               0.00 deg.  ~>100-100-100-69-100-100-100-100-100-100 
+              45.00 deg.  ~>100-40-100-100-100-100-100-100-100-100 
+          nc1 =      520
           Independent levels:  1[2]
           Independent levels for angular sector   1 / class   1:  1[2]
           Independent levels for angular sector   1 / class   2:  1[2]
@@ -110,107 +109,107 @@
           Independent levels for angular sector   4 / class   9:  1[2]
           Independent levels for angular sector   4 / class  10:  1[2]
                 Level:   1 ~> cov. at class zero:  0.99E+00
+                Level:   2 ~> cov. at class zero:  0.98E+00
+                Level:   1 ~> cov. at class zero:  0.99E+00
                 Level:   2 ~> cov. at class zero:  0.10E+01
-                Level:   1 ~> cov. at class zero:  0.97E+00
-                Level:   2 ~> cov. at class zero:  0.10E+01
-             Block air_horizontal_streamfunction:  0.16504421E+00 for      160 diagnostic points
-             Block air_horizontal_velocity_potential:  0.18155341E+00 for      160 diagnostic points
-                   Level:   1 ~> amplitude:        0.78
-                                 cor. hor. support:      3843.71 km
-                                 cor. ver. support:         4.42 vertical units
-                   Level:   2 ~> amplitude:        0.76
-                                 cor. hor. support:      4069.30 km
-                                 cor. ver. support:         4.74 vertical units
-                   Level:   1 ~> amplitude:        0.22
-                                 cor. hor. support:      2161.48 km
-                                 cor. ver. support:         0.44 vertical units
-                   Level:   2 ~> amplitude:        0.24
-                                 cor. hor. support:      2288.34 km
-                                 cor. ver. support:         0.47 vertical units
+             Block air_horizontal_streamfunction:  0.17144628E+00 for      160 diagnostic points
+             Block air_horizontal_velocity_potential:  0.17267276E+00 for      160 diagnostic points
+                   Level:   1 ~> amplitude:        0.82
+                                 cor. hor. support:      4332.42 km
+                                 cor. ver. support:         3.95 vertical units
+                   Level:   2 ~> amplitude:        0.81
+                                 cor. hor. support:      4089.07 km
+                                 cor. ver. support:         4.05 vertical units
+                   Level:   1 ~> amplitude:        0.18
+                                 cor. hor. support:      2436.30 km
+                                 cor. ver. support:         0.40 vertical units
+                   Level:   2 ~> amplitude:        0.19
+                                 cor. hor. support:      2299.45 km
+                                 cor. ver. support:         0.41 vertical units
                    Level:   1 ~> amplitude:        0.77
-                                 cor. hor. support:      4179.25 km
-                                 cor. ver. support:         4.50 vertical units
-                   Level:   2 ~> amplitude:        0.78
-                                 cor. hor. support:      3837.05 km
-                                 cor. ver. support:         4.29 vertical units
+                                 cor. hor. support:      4300.27 km
+                                 cor. ver. support:         4.77 vertical units
+                   Level:   2 ~> amplitude:        0.77
+                                 cor. hor. support:      4433.97 km
+                                 cor. ver. support:         4.77 vertical units
                    Level:   1 ~> amplitude:        0.23
-                                 cor. hor. support:      2350.17 km
-                                 cor. ver. support:         0.45 vertical units
-                   Level:   2 ~> amplitude:        0.22
-                                 cor. hor. support:      2157.73 km
-                                 cor. ver. support:         0.43 vertical units
+                                 cor. hor. support:      2418.22 km
+                                 cor. ver. support:         0.48 vertical units
+                   Level:   2 ~> amplitude:        0.23
+                                 cor. hor. support:      2493.41 km
+                                 cor. ver. support:         0.48 vertical units
              Effective levels:   1   2 
-                Horizontal support radius:    3843.71 km (   3843.71 km -    3843.71 km)
-                Estimated nc1 from horizontal support radius:      637
-                   Decimate full grid, at least      637 points required,     762 valid points found
-                   Subgrid hash:   1324779704
-                Final nc1:      637
-                Effective horizontal resolution:  4.00
-                Horizontal support radius:    4069.30 km (   4069.30 km -    4069.30 km)
-                Estimated nc1 from horizontal support radius:      569
-                   Decimate full grid, at least      569 points required,     762 valid points found
-                   Subgrid hash:   1209028309
-                Final nc1:      569
-                Effective horizontal resolution:  4.00
-             nc1(  1) =                        637
-             nc1(  2) =                        569
-             ns =                             1206
+                   Requested distance between points (min/max/avg):  0.600E+03 km /  0.600E+03 km /  0.600E+03 km
+                   Regular sampling grid size:     1008 points
+                   Nearest neighbor distance (min/max/avg):  0.195E+03 km /  0.699E+03 km /  0.620E+03 km
+                   Effective resolution (min/max/avg):  6.20 / 22.18 /  7.56
+                   Subgrid hash:    112657364
+                Subgrid size:     1008
+                   Requested distance between points (min/max/avg):  0.567E+03 km /  0.567E+03 km /  0.567E+03 km
+                   Regular sampling grid size:     1144 points
+                   Nearest neighbor distance (min/max/avg):  0.181E+03 km /  0.663E+03 km /  0.590E+03 km
+                   Effective resolution (min/max/avg):  6.17 / 22.64 /  7.46
+                   Subgrid hash:  -1543240615
+                Subgrid size:     1144
+             nc1(  1) =                       1008
+             nc1(  2) =                       1144
+             ns =                             2152
              v%n_s =                             2
-             c%n_s[global] =                 31732
+             c%n_s[global] =                 57104
              Effective levels:   1   2 
-                Horizontal support radius:    2161.48 km (   2161.48 km -    2161.48 km)
-                Estimated nc1 from horizontal support radius:     2017
-                   Decimate full grid, at least      762 points required,     762 valid points found
-                   Subgrid hash:   1550418632
-                Final nc1:      762
-                Effective horizontal resolution:  2.46
-                Horizontal support radius:    2288.34 km (   2288.34 km -    2288.34 km)
-                Estimated nc1 from horizontal support radius:     1799
-                   Decimate full grid, at least      762 points required,     762 valid points found
-                   Subgrid hash:   1550418632
-                Final nc1:      762
-                Effective horizontal resolution:  2.60
-             nc1(  1) =                        762
-             nc1(  2) =                        762
-             ns =                             1524
+                   Requested distance between points (min/max/avg):  0.338E+03 km /  0.338E+03 km /  0.338E+03 km
+                   Regular sampling grid size:     3400 points
+                   Nearest neighbor distance (min/max/avg):  0.949E+02 km /  0.420E+03 km /  0.376E+03 km
+                   Effective resolution (min/max/avg):  5.81 / 25.68 /  6.76
+                   Subgrid hash:   1422331143
+                Subgrid size:     3400
+                   Requested distance between points (min/max/avg):  0.319E+03 km /  0.319E+03 km /  0.319E+03 km
+                   Regular sampling grid size:     3888 points
+                   Nearest neighbor distance (min/max/avg):  0.879E+02 km /  0.396E+03 km /  0.353E+03 km
+                   Effective resolution (min/max/avg):  5.81 / 26.15 /  6.77
+                   Subgrid hash:    932384533
+                Subgrid size:     3888
+             nc1(  1) =                       3400
+             nc1(  2) =                       3888
+             ns =                             7288
              v%n_s =                             2
-             c%n_s[global] =                 12186
+             c%n_s[global] =                115160
              Effective levels:   1   2 
-                Horizontal support radius:    4179.25 km (   4179.25 km -    4179.25 km)
-                Estimated nc1 from horizontal support radius:      539
-                   Decimate full grid, at least      539 points required,     762 valid points found
-                   Subgrid hash:  -1393709384
-                Final nc1:      539
-                Effective horizontal resolution:  4.00
-                Horizontal support radius:    3837.05 km (   3837.05 km -    3837.05 km)
-                Estimated nc1 from horizontal support radius:      640
-                   Decimate full grid, at least      640 points required,     762 valid points found
-                   Subgrid hash:   1613205282
-                Final nc1:      640
-                Effective horizontal resolution:  4.00
-             nc1(  1) =                        539
-             nc1(  2) =                        640
-             ns =                             1179
+                   Requested distance between points (min/max/avg):  0.596E+03 km /  0.596E+03 km /  0.596E+03 km
+                   Regular sampling grid size:     1008 points
+                   Nearest neighbor distance (min/max/avg):  0.195E+03 km /  0.699E+03 km /  0.620E+03 km
+                   Effective resolution (min/max/avg):  6.15 / 22.01 /  7.50
+                   Subgrid hash:    112657364
+                Subgrid size:     1008
+                   Requested distance between points (min/max/avg):  0.615E+03 km /  0.615E+03 km /  0.615E+03 km
+                   Regular sampling grid size:     1008 points
+                   Nearest neighbor distance (min/max/avg):  0.195E+03 km /  0.699E+03 km /  0.620E+03 km
+                   Effective resolution (min/max/avg):  6.34 / 22.70 /  7.73
+                   Subgrid hash:    112657364
+                Subgrid size:     1008
+             nc1(  1) =                       1008
+             nc1(  2) =                       1008
+             ns =                             2016
              v%n_s =                             2
-             c%n_s[global] =                 32297
+             c%n_s[global] =                 53736
              Effective levels:   1   2 
-                Horizontal support radius:    2350.17 km (   2350.17 km -    2350.17 km)
-                Estimated nc1 from horizontal support radius:     1706
-                   Decimate full grid, at least      762 points required,     762 valid points found
-                   Subgrid hash:   1550418632
-                Final nc1:      762
-                Effective horizontal resolution:  2.67
-                Horizontal support radius:    2157.73 km (   2157.73 km -    2157.73 km)
-                Estimated nc1 from horizontal support radius:     2024
-                   Decimate full grid, at least      762 points required,     762 valid points found
-                   Subgrid hash:   1550418632
-                Final nc1:      762
-                Effective horizontal resolution:  2.45
-             nc1(  1) =                        762
-             nc1(  2) =                        762
-             ns =                             1524
+                   Requested distance between points (min/max/avg):  0.335E+03 km /  0.335E+03 km /  0.335E+03 km
+                   Regular sampling grid size:     3400 points
+                   Nearest neighbor distance (min/max/avg):  0.949E+02 km /  0.420E+03 km /  0.376E+03 km
+                   Effective resolution (min/max/avg):  5.76 / 25.49 /  6.71
+                   Subgrid hash:   1422331143
+                Subgrid size:     3400
+                   Requested distance between points (min/max/avg):  0.346E+03 km /  0.346E+03 km /  0.346E+03 km
+                   Regular sampling grid size:     3168 points
+                   Nearest neighbor distance (min/max/avg):  0.988E+02 km /  0.433E+03 km /  0.388E+03 km
+                   Effective resolution (min/max/avg):  5.76 / 25.24 /  6.71
+                   Subgrid hash:     45091874
+                Subgrid size:     3168
+             nc1(  1) =                       3400
+             nc1(  2) =                       3168
+             ns =                             6568
              v%n_s =                             2
-             c%n_s[global] =                 10418
+             c%n_s[global] =                 99968
     Full NICAS adjoint test result:                        T
        Block NICAS adjoint test result:                    T
           Interpolation adjoint test (horizontal) result:  T
@@ -250,24 +249,24 @@
              Min / max: 1.0000000 /  1.0000000 over     10 tests
              0.0 /    0.0:  1.0000000
           Level   1:  0.0000000 -  1.0000000
-          Level   2:  0.0000000 -  0.6575939
+          Level   2:  0.0000000 -  0.6488954
              0.0 /    0.0:  0.0000000
           Level   1:  0.0000000 -  0.0000000
           Level   2:  0.0000000 -  0.0000000
-Norm of output parameter dirac_mom_cov - 1: 1.2500158242011171e+01
-Norm of output parameter dirac_mom_single_obs - 1: 9.8635151567205952e+00
-Norm of output parameter dirac_mom - 1: 1.1140868819766622e+01
-Norm of output parameter dirac_diag_cor - 1: 2.1631777803087768e+00
-Norm of output parameter cor_a - 1: 4.4765456876087761e+01
-Norm of output parameter cor_a - 2: 1.3215106980456639e+01
-Norm of output parameter cor_rh1 - 1: 2.3577885766145498e+08
-Norm of output parameter cor_rh1 - 2: 1.3258819526933894e+08
-Norm of output parameter cor_rh2 - 1: 2.2702047447591832e+08
-Norm of output parameter cor_rh2 - 2: 1.2766299446225467e+08
-Norm of output parameter cor_rhc - 1: 2.3598403716974987e+00
-Norm of output parameter cor_rhc - 2: 2.3598403716974987e+00
-Norm of output parameter cor_rh - 1: 2.3099540741414040e+08
-Norm of output parameter cor_rh - 2: 1.2989826351828027e+08
-Norm of output parameter cor_rv - 1: 2.6030254068196069e+02
-Norm of output parameter cor_rv - 2: 2.6030254068299271e+01
-Norm of output parameter nicas_norm - 1: 5.8796855749647662e+01
+Norm of output parameter dirac_mom_cov - 1: 1.5700480327050354e+01
+Norm of output parameter dirac_mom_single_obs - 1: 8.6620520202308384e+00
+Norm of output parameter dirac_mom - 1: 1.1550761731674596e+01
+Norm of output parameter dirac_diag_cor - 1: 2.4581412814759092e+00
+Norm of output parameter cor_a - 1: 4.5934667796822829e+01
+Norm of output parameter cor_a - 2: 1.2117709782637888e+01
+Norm of output parameter cor_rh1 - 1: 2.2996712056289124e+08
+Norm of output parameter cor_rh1 - 2: 1.2932001532767479e+08
+Norm of output parameter cor_rh2 - 1: 2.6924156616363424e+08
+Norm of output parameter cor_rh2 - 2: 1.5140565911293253e+08
+Norm of output parameter cor_rhc - 1: 8.6372756215476920e-01
+Norm of output parameter cor_rhc - 2: 8.6372756215476920e-01
+Norm of output parameter cor_rh - 1: 2.4871661437751865e+08
+Norm of output parameter cor_rh - 2: 1.3986363052604875e+08
+Norm of output parameter cor_rv - 1: 2.5513112186794493e+02
+Norm of output parameter cor_rv - 2: 2.5513112186895917e+01
+Norm of output parameter nicas_norm - 1: 8.6799772221814095e+01
