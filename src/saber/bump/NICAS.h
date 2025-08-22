@@ -75,7 +75,7 @@ class NICAS : public SaberCentralBlockBase {
   std::vector<std::pair<eckit::LocalConfiguration, oops::FieldSet3D>> fieldsToWrite() const
     override;
 
-  size_t ctlVecSize() const override;
+  size_t ctlVecSize() const override {return bump_->getCvSize();}
   void multiplySqrt(const atlas::Field &, oops::FieldSet3D &, const size_t &) const override;
   void multiplySqrtAD(const oops::FieldSet3D &, atlas::Field &, const size_t &) const override;
 
@@ -83,8 +83,8 @@ class NICAS : public SaberCentralBlockBase {
   void print(std::ostream &) const override;
   oops::Variables activeVars_;
   BUMPParameters bumpParams_;
+  std::unique_ptr<BUMP> bump_;
   size_t memberIndex_;
-  std::string bumpUid_;
 };
 
 // -----------------------------------------------------------------------------
