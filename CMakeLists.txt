@@ -25,7 +25,6 @@ option( ENABLE_OFFLINE_CODECOV "Enable SABER offline code coverage" OFF )
 option( ENABLE_SABER_DOC "Enable SABER documentation" OFF )
 option( ENABLE_MKL "Use MKL for LAPACK implementation (if available)" ON )
 option( ENABLE_BUMP "Compile BUMP and run BUMP-based tests" ON )
-option( ENABLE_BUMP_INSTRUMENTATION "Enable BUMP instrumentation" OFF )
 option( ENABLE_QUENCH "Compile QUENCH and run QUENCH-based tests" ON )
 include( ${PROJECT_NAME}_compiler_flags )
 
@@ -92,17 +91,6 @@ if( atlas_TRANS_FOUND OR atlas_ECTRANS_FOUND )
     message( STATUS "SABER block SPECTRALB is enabled" )
 else()
     message( STATUS "SABER block SPECTRALB is NOT enabled" )
-endif()
-
-## BUMP instrumentation
-if( ENABLE_BUMP )
-    if( ENABLE_BUMP_INSTRUMENTATION )
-        message( STATUS "BUMP instrumentation is enabled" )
-        add_definitions(-DENABLE_BUMP_INSTRUMENTATION=1)
-    else()
-        message( STATUS "BUMP instrumentation is not enabled" )
-        add_definitions(-DENABLE_BUMP_INSTRUMENTATION=0)
-    endif()
 endif()
 
 ## Code coverage

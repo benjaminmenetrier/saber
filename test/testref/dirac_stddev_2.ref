@@ -2,19 +2,31 @@ Input Dirac increment:
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    air_horizontal_streamfunction_alias: 1.0000000000000000e+00
-    air_horizontal_velocity_potential: 0.0000000000000000e+00
-Norm of input parameter StdDev: 5.8343105807280587e+01
+  - air_horizontal_streamfunction_alias (2 levels):
+    + min    = 0.0000000000000000e+00
+    + max    = 1.0000000000000000e+00
+    + mean   = 5.9523809523809529e-04
+    + stddev = 2.4397501823713856e-02
+  - air_horizontal_velocity_potential (2 levels):
+    + min    = 0.0000000000000000e+00
+    + max    = 0.0000000000000000e+00
+Norm of input parameter StdDev: 5.8768978555347566e+01
 Adjoint test for block StdDev passed
 Adjoint test for block ID passed
 Covariance(SABER) diagnostics:
 - Variances at Dirac points:
-  + Value for variable air_horizontal_streamfunction_alias, subwindow 0, at (longitude, latitude, vertical index) point (0.00000, 0.00000, 1): 1.3090650532860790e+00
+  + Value for variable air_horizontal_streamfunction_alias, subwindow 0, at (longitude, latitude, vertical index) point (0.00000, 0.00000, 1): 1.0284926943086958e+00
 - Covariances at diagnostic points:
-  + Value for variable air_horizontal_streamfunction_alias, subwindow 0, at (longitude, latitude, vertical index) point (0.00000, 0.00000, 1): 1.3090650532860790e+00
+  + Value for variable air_horizontal_streamfunction_alias, subwindow 0, at (longitude, latitude, vertical index) point (0.00000, 0.00000, 1): 1.0284926943086958e+00
 Covariance(SABER) * Increment:
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    air_horizontal_streamfunction_alias: 1.3090650532860790e+00
-    air_horizontal_velocity_potential: 0.0000000000000000e+00
+  - air_horizontal_streamfunction_alias (2 levels):
+    + min    = 0.0000000000000000e+00
+    + max    = 1.0284926943086958e+00
+    + mean   = 6.1219803232660471e-04
+    + stddev = 2.5092652385072186e-02
+  - air_horizontal_velocity_potential (2 levels):
+    + min    = 0.0000000000000000e+00
+    + max    = 0.0000000000000000e+00

@@ -2,11 +2,21 @@ Input Dirac increment:
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: structured [3763]
   Fields:
-    air_horizontal_streamfunction: 3.0000000000000000e+00
-    air_horizontal_velocity_potential: 0.0000000000000000e+00
-    air_pressure_at_surface: 3.0000000000000000e+00
-Norm of input parameter rh: 5.2481760842569582e+06
-Norm of input parameter rv: 1.2496808547540459e+03
+  - air_horizontal_streamfunction (10 levels):
+    + min    = 0.0000000000000000e+00
+    + max    = 1.0000000000000000e+00
+    + mean   = 2.3917087430241828e-04
+    + stddev = 1.5463506268000035e-02
+  - air_horizontal_velocity_potential (10 levels):
+    + min    = 0.0000000000000000e+00
+    + max    = 0.0000000000000000e+00
+  - air_pressure_at_surface (1 levels):
+    + min    = 0.0000000000000000e+00
+    + max    = 1.0000000000000000e+00
+    + mean   = 2.3917087430241827e-03
+    + stddev = 4.8853072639868877e-02
+Norm of input parameter rh: 5.8527710193263218e+06
+Norm of input parameter rv: 9.4522084858699782e+02
     FastLAM interpolation accuracy test passed
     FastLAM interpolation adjoint test passed
     FastLAM interpolation accuracy test passed
@@ -19,19 +29,29 @@ Norm of input parameter rv: 1.2496808547540459e+03
     FastLAM interpolation adjoint test passed
     FastLAM interpolation accuracy test passed
     FastLAM interpolation adjoint test passed
-Norm of output parameter normalized horizontal length-scale: 1.6462574527641520e+03
-Norm of output parameter weight - 0: 5.2770262891860703e+01
-Norm of output parameter weight - 1: 1.3012952669586116e+02
-Norm of output parameter weight - 2: 6.2883749800878725e+01
-Norm of output parameter normalization - 0: 2.1127146276636623e+02
-Norm of output parameter normalization - 1: 2.2287509255032842e+02
-Norm of output parameter normalization - 2: 2.2423924948443025e+02
+Norm of output parameter normalized horizontal length-scale: 1.6553641489728636e+03
+Norm of output parameter weight - 0: 6.5417987010223953e+01
+Norm of output parameter weight - 1: 1.2449635175136821e+02
+Norm of output parameter weight - 2: 5.8505939145572903e+01
+Norm of output parameter normalization - 0: 2.1621771424848495e+02
+Norm of output parameter normalization - 1: 2.2404458519331988e+02
+Norm of output parameter normalization - 2: 2.1895312294994417e+02
 Adjoint test for block FastLAM passed
 Square-root test for block FastLAM passed
 Covariance(SABER) * Increment:
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: structured [3763]
   Fields:
-    air_horizontal_streamfunction: 1.6390605188971389e+01
-    air_horizontal_velocity_potential: 0.0000000000000000e+00
-    air_pressure_at_surface: 1.4385379594802705e+01
+  - air_horizontal_streamfunction (10 levels):
+    + min    = 0.0000000000000000e+00
+    + max    = 1.0000000000000002e+00
+    + mean   = 1.6604351213600658e-02
+    + stddev = 7.8219394511330698e-02
+  - air_horizontal_velocity_potential (10 levels):
+    + min    = 0.0000000000000000e+00
+    + max    = 0.0000000000000000e+00
+  - air_pressure_at_surface (1 levels):
+    + min    = 0.0000000000000000e+00
+    + max    = 1.0000000000000004e+00
+    + mean   = 1.1455661663851643e-01
+    + stddev = 2.2347694826081707e-01

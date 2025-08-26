@@ -46,80 +46,80 @@
           Independent levels for angular sector   1 / class  13:  1[2]
           Independent levels for angular sector   1 / class  14:  1[2]
           Independent levels for angular sector   1 / class  15:  1[2]
+                Level:   1 ~> cov. at class zero:  0.96E+00
+                Level:   2 ~> cov. at class zero:  0.95E+00
                 Level:   1 ~> cov. at class zero:  0.10E+01
-                Level:   2 ~> cov. at class zero:  0.98E+00
-                Level:   1 ~> cov. at class zero:  0.98E+00
-                Level:   2 ~> cov. at class zero:  0.96E+00
-             Block air_horizontal_streamfunction:  0.16699575E+00 for       60 diagnostic points
+                Level:   2 ~> cov. at class zero:  0.10E+01
+             Block air_horizontal_streamfunction:  0.14906461E+00 for       60 diagnostic points
                    Level:   1 ~> amplitude:        1.00
-                                 cor. hor. support:      3963.52 km
-                                 cor. ver. support:         3.20 vertical units
+                                 cor. hor. support:      4212.64 km
+                                 cor. ver. support:         3.12 vertical units
                    Level:   2 ~> amplitude:        1.00
-                                 cor. hor. support:      3789.65 km
-                                 cor. ver. support:         3.20 vertical units
-             Block air_horizontal_streamfunction:  0.16495954E+00 for       60 diagnostic points
+                                 cor. hor. support:      4020.74 km
+                                 cor. ver. support:         3.12 vertical units
+             Block air_horizontal_streamfunction:  0.16076712E+00 for       60 diagnostic points
                    Level:   1 ~> amplitude:        1.00
-                                 cor. hor. support:      3939.26 km
-                                 cor. ver. support:         3.13 vertical units
+                                 cor. hor. support:      4284.19 km
+                                 cor. ver. support:         3.23 vertical units
                    Level:   2 ~> amplitude:        1.00
-                                 cor. hor. support:      3742.35 km
-                                 cor. ver. support:         3.13 vertical units
-             Block air_horizontal_streamfunction:  0.24442844E+00 for       36 diagnostic points
-                Level:   1 ~> loc. at class zero:       0.81
-                Level:   2 ~> loc. at class zero:       0.82
+                                 cor. hor. support:      4358.77 km
+                                 cor. ver. support:         3.23 vertical units
+             Block air_horizontal_streamfunction:  0.23827684E+00 for       34 diagnostic points
+                Level:   1 ~> loc. at class zero:       0.83
+                Level:   2 ~> loc. at class zero:       0.83
                    Level:   1 ~> amplitude:        1.00
-                                 loc. hor. support:      4981.61 km
-                                 loc. ver. support:         3.90 vertical units
+                                 loc. hor. support:      5569.20 km
+                                 loc. ver. support:         4.17 vertical units
                    Level:   2 ~> amplitude:        1.00
-                                 loc. hor. support:      4715.10 km
-                                 loc. ver. support:         3.90 vertical units
-             Block air_horizontal_streamfunction:  0.27091458E+00 for       43 diagnostic points
-                Level:   1 ~> loc. at class zero:       0.92
+                                 loc. hor. support:      4610.25 km
+                                 loc. ver. support:         4.17 vertical units
+             Block air_horizontal_streamfunction:  0.26895286E+00 for       42 diagnostic points
+                Level:   1 ~> loc. at class zero:       0.93
                 Level:   2 ~> loc. at class zero:       0.93
                    Level:   1 ~> amplitude:        1.00
-                                 loc. hor. support:      6016.84 km
-                                 loc. ver. support:         6.13 vertical units
+                                 loc. hor. support:      6072.87 km
+                                 loc. ver. support:         6.04 vertical units
                    Level:   2 ~> amplitude:        1.00
-                                 loc. hor. support:      6019.64 km
-                                 loc. ver. support:         6.13 vertical units
-                Level:   1 ~> hybrid coefficients: 0.52 / 0.50
-                Level:   2 ~> hybrid coefficients: 0.50 / 0.51
+                                 loc. hor. support:      6399.51 km
+                                 loc. ver. support:         6.03 vertical units
+                Level:   1 ~> hybrid coefficients: 0.55 / 0.42
+                Level:   2 ~> hybrid coefficients: 0.51 / 0.46
              Effective levels:   1   2 
-                   Requested distance between points (min/max/avg):  0.690E+03 km /  0.690E+03 km /  0.690E+03 km
-                   Regular sampling grid size:      760 points
-                   Nearest neighbor distance (min/max/avg):  0.233E+03 km /  0.782E+03 km /  0.688E+03 km
-                   Effective resolution (min/max/avg):  6.37 / 21.35 /  7.89
-                   Subgrid hash:   1497432802
-                Subgrid size:      760
-                   Requested distance between points (min/max/avg):  0.654E+03 km /  0.654E+03 km /  0.654E+03 km
-                   Regular sampling grid size:      880 points
-                   Nearest neighbor distance (min/max/avg):  0.213E+03 km /  0.736E+03 km /  0.652E+03 km
-                   Effective resolution (min/max/avg):  6.40 / 22.17 /  7.85
-                   Subgrid hash:   -419298473
-                Subgrid size:      880
-             nc1(  1) =                        760
-             nc1(  2) =                        880
-             ns =                             1640
+                   Requested distance between points (min/max/avg):  0.111E+04 km /  0.111E+04 km /  0.111E+04 km
+                   Regular sampling grid size:      208 points
+                   Nearest neighbor distance (min/max/avg):  0.556E+03 km /  0.123E+04 km /  0.104E+04 km
+                   Effective resolution (min/max/avg):  4.53 / 10.01 /  5.83
+                   Subgrid hash:  -2117861176
+                Subgrid size:      208
+                   Requested distance between points (min/max/avg):  0.922E+03 km /  0.922E+03 km /  0.922E+03 km
+                   Regular sampling grid size:      360 points
+                   Nearest neighbor distance (min/max/avg):  0.381E+03 km /  0.103E+04 km /  0.886E+03 km
+                   Effective resolution (min/max/avg):  4.46 / 12.10 /  5.73
+                   Subgrid hash:   -435093158
+                Subgrid size:      360
+             nc1(  1) =                        208
+             nc1(  2) =                        360
+             ns =                              568
              v%n_s =                             2
-             c%n_s[global] =                 47576
+             c%n_s[global] =                 13224
              Effective levels:   1   2 
-                   Requested distance between points (min/max/avg):  0.834E+03 km /  0.834E+03 km /  0.834E+03 km
-                   Regular sampling grid size:      544 points
-                   Nearest neighbor distance (min/max/avg):  0.289E+03 km /  0.889E+03 km /  0.774E+03 km
-                   Effective resolution (min/max/avg):  6.76 / 20.79 /  8.53
-                   Subgrid hash:   -474283508
-                Subgrid size:      544
-                   Requested distance between points (min/max/avg):  0.834E+03 km /  0.834E+03 km /  0.834E+03 km
-                   Regular sampling grid size:      448 points
-                   Nearest neighbor distance (min/max/avg):  0.329E+03 km /  0.953E+03 km /  0.826E+03 km
-                   Effective resolution (min/max/avg):  6.32 / 18.29 /  8.02
-                   Subgrid hash:   -823721553
-                Subgrid size:      448
-             nc1(  1) =                        544
-             nc1(  2) =                        448
-             ns =                              992
+                   Requested distance between points (min/max/avg):  0.121E+04 km /  0.121E+04 km /  0.121E+04 km
+                   Regular sampling grid size:      208 points
+                   Nearest neighbor distance (min/max/avg):  0.556E+03 km /  0.123E+04 km /  0.104E+04 km
+                   Effective resolution (min/max/avg):  4.94 / 10.92 /  6.36
+                   Subgrid hash:  -2117861176
+                Subgrid size:      208
+                   Requested distance between points (min/max/avg):  0.128E+04 km /  0.128E+04 km /  0.128E+04 km
+                   Regular sampling grid size:      144 points
+                   Nearest neighbor distance (min/max/avg):  0.720E+03 km /  0.139E+04 km /  0.116E+04 km
+                   Effective resolution (min/max/avg):  4.61 /  8.88 /  5.97
+                   Subgrid hash:    761790603
+                Subgrid size:      144
+             nc1(  1) =                        208
+             nc1(  2) =                        144
+             ns =                              352
              v%n_s =                             2
-             c%n_s[global] =                 27776
+             c%n_s[global] =                  7512
     Full NICAS adjoint test result:                        T
        Block NICAS adjoint test result:                    T
           Interpolation adjoint test (horizontal) result:  T
@@ -133,7 +133,7 @@
              Min / max: 1.0000000 /  1.0000000 over     10 tests
              0.0 /    0.0:  1.0000000
           Level   1:  0.0000000 -  1.0000000
-          Level   2:  0.0000000 -  0.7841465
+          Level   2:  0.0000000 -  0.7736816
     Full NICAS adjoint test result:                        T
        Block NICAS adjoint test result:                    T
           Interpolation adjoint test (horizontal) result:  T
@@ -147,10 +147,10 @@
              Min / max: 1.0000000 /  1.0000000 over     10 tests
              0.0 /    0.0:  1.0000000
           Level   1:  0.0000000 -  1.0000000
-          Level   2:  0.0000000 -  0.9217741
-Norm of output parameter loc_rh - 1: 2.3760945804755172e+08
-Norm of output parameter loc_rv - 1: 1.9094323113039604e+02
-Norm of output parameter hyb_coef_ens - 1: 2.4900083429246830e+01
-Norm of output parameter hyb_coef_ens_lr - 1: 2.4824227913120588e+01
-Norm of output parameter loc_rh_lr - 1: 2.4667456322463140e+08
-Norm of output parameter loc_rv_lr - 1: 2.5128659590070541e+02
+          Level   2:  0.0000000 -  0.8919673
+Norm of output parameter loc_rh - 1: 2.5044852026197919e+08
+Norm of output parameter loc_rv - 1: 2.0421631328255006e+02
+Norm of output parameter hyb_coef_ens - 1: 2.5995548090778549e+01
+Norm of output parameter hyb_coef_ens_lr - 1: 2.1712379150962320e+01
+Norm of output parameter loc_rh_lr - 1: 2.5569536443181193e+08
+Norm of output parameter loc_rv_lr - 1: 2.4733995645437614e+02

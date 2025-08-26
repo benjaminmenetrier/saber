@@ -11,175 +11,725 @@
              Level   1 ~> 100.0%
              Level   1 ~>  0.100E+01 vert. coord.
              Effective levels:   1   2 
-                   Requested distance between points (min/max/avg):  0.554E+03 km /  0.554E+03 km /  0.554E+03 km
-                   Regular sampling grid size:     1288 points
-                   Nearest neighbor distance (min/max/avg):  0.168E+03 km /  0.633E+03 km /  0.564E+03 km
-                   Effective resolution (min/max/avg):  6.32 / 23.81 /  7.61
-                   Subgrid hash:   -680262426
-                Subgrid size:     1288
-             nc1(  1) =                       1288
-             nc1(  2) =                       1288
-             ns =                             2576
+                   Requested distance between points (min/max/avg):  0.800E+03 km /  0.800E+03 km /  0.800E+03 km
+                   Regular sampling grid size:      544 points
+                   Nearest neighbor distance (min/max/avg):  0.289E+03 km /  0.889E+03 km /  0.774E+03 km
+                   Effective resolution (min/max/avg):  4.50 / 13.82 /  5.67
+                   Subgrid hash:   -474283508
+                Subgrid size:      544
+             nc1(  1) =                        544
+             nc1(  2) =                        544
+             ns =                             1088
              v%n_s =                             2
-             c%n_s[global] =                 73536
+             c%n_s[global] =                 30688
              Effective levels:   1 
-                   Requested distance between points (min/max/avg):  0.554E+03 km /  0.554E+03 km /  0.554E+03 km
-                   Regular sampling grid size:     1288 points
-                   Nearest neighbor distance (min/max/avg):  0.168E+03 km /  0.633E+03 km /  0.564E+03 km
-                   Effective resolution (min/max/avg):  6.32 / 23.81 /  7.61
-                   Subgrid hash:   -680262426
-                Subgrid size:     1288
-             nc1(  1) =                       1288
-             ns =                             1288
+                   Requested distance between points (min/max/avg):  0.800E+03 km /  0.800E+03 km /  0.800E+03 km
+                   Regular sampling grid size:      544 points
+                   Nearest neighbor distance (min/max/avg):  0.289E+03 km /  0.889E+03 km /  0.774E+03 km
+                   Effective resolution (min/max/avg):  4.50 / 13.82 /  5.67
+                   Subgrid hash:   -474283508
+                Subgrid size:      544
+             nc1(  1) =                        544
+             ns =                              544
              v%n_s =                             1
-             c%n_s[global] =                 18576
-Member 0: 
+             c%n_s[global] =                  7752
+Write perturbation: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L48x25 [1200]
   Fields:
-    air_horizontal_streamfunction: 4.9198530057566842e+01
-    air_pressure_at_surface: 4.3273787097269384e+01
-Member 1: 
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -2.8572372005036835e+00
+    + max    = 2.7831960216271923e+00
+    + mean   = -2.1317419673311508e-01
+    + stddev = 9.6243524678109205e-01
+  - air_pressure_at_surface (1 levels):
+    + min    = -2.7428385191208648e+00
+    + max    = 2.5632958502012695e+00
+    + mean   = -8.1984854594266729e-02
+    + stddev = 8.7672293931395850e-01
+Write state: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L48x25 [1200]
   Fields:
-    air_horizontal_streamfunction: 4.9269960579119406e+01
-    air_pressure_at_surface: 3.3315617731055404e+01
-Member 2: 
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -2.8572372005036835e+00
+    + max    = 2.7831960216271923e+00
+    + mean   = -2.1317419673311508e-01
+    + stddev = 9.6243524678109205e-01
+  - air_pressure_at_surface (1 levels):
+    + min    = -2.7428385191208648e+00
+    + max    = 2.5632958502012695e+00
+    + mean   = -8.1984854594266729e-02
+    + stddev = 8.7672293931395850e-01
+Write perturbation: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L48x25 [1200]
   Fields:
-    air_horizontal_streamfunction: 4.8997219254239191e+01
-    air_pressure_at_surface: 2.8310357249775521e+01
-Member 3: 
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -2.6857052459518522e+00
+    + max    = 3.4790119996207807e+00
+    + mean   = 3.0365475475032244e-01
+    + stddev = 1.0864378366465133e+00
+  - air_pressure_at_surface (1 levels):
+    + min    = -3.0426884403142269e+00
+    + max    = 2.3355787527984266e+00
+    + mean   = -7.4583369293994908e-02
+    + stddev = 1.0051600139472843e+00
+Write state: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L48x25 [1200]
   Fields:
-    air_horizontal_streamfunction: 5.6511074529437209e+01
-    air_pressure_at_surface: 3.2146798014809640e+01
-Member 4: 
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -2.6857052459518522e+00
+    + max    = 3.4790119996207807e+00
+    + mean   = 3.0365475475032244e-01
+    + stddev = 1.0864378366465133e+00
+  - air_pressure_at_surface (1 levels):
+    + min    = -3.0426884403142269e+00
+    + max    = 2.3355787527984266e+00
+    + mean   = -7.4583369293994908e-02
+    + stddev = 1.0051600139472843e+00
+Write perturbation: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L48x25 [1200]
   Fields:
-    air_horizontal_streamfunction: 4.5239228397026189e+01
-    air_pressure_at_surface: 2.9491937161578257e+01
-Member 5: 
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -3.5687232666531674e+00
+    + max    = 3.7160670925479855e+00
+    + mean   = 1.4104206503681319e-01
+    + stddev = 1.0623296355517180e+00
+  - air_pressure_at_surface (1 levels):
+    + min    = -2.1384449224551854e+00
+    + max    = 2.9112219314995165e+00
+    + mean   = 1.1403016960164244e-01
+    + stddev = 9.0194893924200137e-01
+Write state: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L48x25 [1200]
   Fields:
-    air_horizontal_streamfunction: 5.4840988526831339e+01
-    air_pressure_at_surface: 3.6493716594772437e+01
-Member 6: 
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -3.5687232666531674e+00
+    + max    = 3.7160670925479855e+00
+    + mean   = 1.4104206503681319e-01
+    + stddev = 1.0623296355517180e+00
+  - air_pressure_at_surface (1 levels):
+    + min    = -2.1384449224551854e+00
+    + max    = 2.9112219314995165e+00
+    + mean   = 1.1403016960164244e-01
+    + stddev = 9.0194893924200137e-01
+Write perturbation: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L48x25 [1200]
   Fields:
-    air_horizontal_streamfunction: 4.0707189670599440e+01
-    air_pressure_at_surface: 3.0631141070833404e+01
-Member 7: 
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -2.7385015175147687e+00
+    + max    = 4.0686364741978469e+00
+    + mean   = 1.5268290812250071e-01
+    + stddev = 1.0250803231883419e+00
+  - air_pressure_at_surface (1 levels):
+    + min    = -2.7196962975081767e+00
+    + max    = 3.0710222363685253e+00
+    + mean   = 1.3007391205677724e-01
+    + stddev = 9.2211786654555761e-01
+Write state: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L48x25 [1200]
   Fields:
-    air_horizontal_streamfunction: 5.0004652502146705e+01
-    air_pressure_at_surface: 3.3478585753785929e+01
-Member 8: 
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -2.7385015175147687e+00
+    + max    = 4.0686364741978469e+00
+    + mean   = 1.5268290812250071e-01
+    + stddev = 1.0250803231883419e+00
+  - air_pressure_at_surface (1 levels):
+    + min    = -2.7196962975081767e+00
+    + max    = 3.0710222363685253e+00
+    + mean   = 1.3007391205677724e-01
+    + stddev = 9.2211786654555761e-01
+Write perturbation: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L48x25 [1200]
   Fields:
-    air_horizontal_streamfunction: 4.9671364009201632e+01
-    air_pressure_at_surface: 3.2460481381162801e+01
-Member 9: 
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -2.8554630613892140e+00
+    + max    = 2.9899550170910012e+00
+    + mean   = -2.3074413574083938e-01
+    + stddev = 9.0757617848151972e-01
+  - air_pressure_at_surface (1 levels):
+    + min    = -2.8665051850576626e+00
+    + max    = 3.1720488990132929e+00
+    + mean   = 2.0607303344192610e-01
+    + stddev = 1.0096578729634027e+00
+Write state: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L48x25 [1200]
   Fields:
-    air_horizontal_streamfunction: 5.8077475444069457e+01
-    air_pressure_at_surface: 3.1880044065931099e+01
-Member 10: 
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -2.8554630613892140e+00
+    + max    = 2.9899550170910012e+00
+    + mean   = -2.3074413574083938e-01
+    + stddev = 9.0757617848151972e-01
+  - air_pressure_at_surface (1 levels):
+    + min    = -2.8665051850576626e+00
+    + max    = 3.1720488990132929e+00
+    + mean   = 2.0607303344192610e-01
+    + stddev = 1.0096578729634027e+00
+Write perturbation: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L48x25 [1200]
   Fields:
-    air_horizontal_streamfunction: 5.0628518070304438e+01
-    air_pressure_at_surface: 4.3178946145715749e+01
-Member 11: 
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -2.4376783390567245e+00
+    + max    = 2.5887147061124649e+00
+    + mean   = 6.4028929181299307e-02
+    + stddev = 8.0850702543099107e-01
+  - air_pressure_at_surface (1 levels):
+    + min    = -2.6756303230405538e+00
+    + max    = 3.6434867748293240e+00
+    + mean   = 3.7129136693899401e-01
+    + stddev = 1.0223256326689127e+00
+Write state: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L48x25 [1200]
   Fields:
-    air_horizontal_streamfunction: 4.6843594873734268e+01
-    air_pressure_at_surface: 3.3183132705164653e+01
-Member 12: 
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -2.4376783390567245e+00
+    + max    = 2.5887147061124649e+00
+    + mean   = 6.4028929181299307e-02
+    + stddev = 8.0850702543099107e-01
+  - air_pressure_at_surface (1 levels):
+    + min    = -2.6756303230405538e+00
+    + max    = 3.6434867748293240e+00
+    + mean   = 3.7129136693899401e-01
+    + stddev = 1.0223256326689127e+00
+Write perturbation: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L48x25 [1200]
   Fields:
-    air_horizontal_streamfunction: 4.7536442599890037e+01
-    air_pressure_at_surface: 4.3172752102420354e+01
-Member 13: 
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -2.7543187676256218e+00
+    + max    = 2.6481674107913138e+00
+    + mean   = -1.0380559078238277e-01
+    + stddev = 9.1946479829565331e-01
+  - air_pressure_at_surface (1 levels):
+    + min    = -3.2562424237108392e+00
+    + max    = 3.8704083971422691e+00
+    + mean   = 1.2707907742004984e-01
+    + stddev = 1.3247759308857538e+00
+Write state: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L48x25 [1200]
   Fields:
-    air_horizontal_streamfunction: 5.3378906760082288e+01
-    air_pressure_at_surface: 3.5345989310298130e+01
-Member 14: 
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -2.7543187676256218e+00
+    + max    = 2.6481674107913138e+00
+    + mean   = -1.0380559078238277e-01
+    + stddev = 9.1946479829565331e-01
+  - air_pressure_at_surface (1 levels):
+    + min    = -3.2562424237108392e+00
+    + max    = 3.8704083971422691e+00
+    + mean   = 1.2707907742004984e-01
+    + stddev = 1.3247759308857538e+00
+Write perturbation: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L48x25 [1200]
   Fields:
-    air_horizontal_streamfunction: 4.4197570540387503e+01
-    air_pressure_at_surface: 3.5391475990915424e+01
-Member 15: 
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -3.6588577925485297e+00
+    + max    = 2.9227364774656803e+00
+    + mean   = 1.0722388560277833e-01
+    + stddev = 9.7324481038820398e-01
+  - air_pressure_at_surface (1 levels):
+    + min    = -3.8902637910183375e+00
+    + max    = 3.1133695364884453e+00
+    + mean   = 1.6426660909654743e-02
+    + stddev = 9.3447421288766708e-01
+Write state: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L48x25 [1200]
   Fields:
-    air_horizontal_streamfunction: 4.8222944739416000e+01
-    air_pressure_at_surface: 3.9064062717997359e+01
-Member 16: 
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -3.6588577925485297e+00
+    + max    = 2.9227364774656803e+00
+    + mean   = 1.0722388560277833e-01
+    + stddev = 9.7324481038820398e-01
+  - air_pressure_at_surface (1 levels):
+    + min    = -3.8902637910183375e+00
+    + max    = 3.1133695364884453e+00
+    + mean   = 1.6426660909654743e-02
+    + stddev = 9.3447421288766708e-01
+Write perturbation: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L48x25 [1200]
   Fields:
-    air_horizontal_streamfunction: 4.7630994734581009e+01
-    air_pressure_at_surface: 3.4608601383346922e+01
-Member 17: 
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -3.1032269335764959e+00
+    + max    = 2.8164032351723867e+00
+    + mean   = 1.3395151186138810e-02
+    + stddev = 9.1932910952891689e-01
+  - air_pressure_at_surface (1 levels):
+    + min    = -3.1351179085859906e+00
+    + max    = 2.3119430170890110e+00
+    + mean   = -2.4979987370037415e-01
+    + stddev = 9.3704225490865534e-01
+Write state: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L48x25 [1200]
   Fields:
-    air_horizontal_streamfunction: 5.5045918054276846e+01
-    air_pressure_at_surface: 3.2348970213698102e+01
-Member 18: 
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -3.1032269335764959e+00
+    + max    = 2.8164032351723867e+00
+    + mean   = 1.3395151186138810e-02
+    + stddev = 9.1932910952891689e-01
+  - air_pressure_at_surface (1 levels):
+    + min    = -3.1351179085859906e+00
+    + max    = 2.3119430170890110e+00
+    + mean   = -2.4979987370037415e-01
+    + stddev = 9.3704225490865534e-01
+Write perturbation: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L48x25 [1200]
   Fields:
-    air_horizontal_streamfunction: 5.6541417025344494e+01
-    air_pressure_at_surface: 3.3880799840835543e+01
-Member 19: 
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -2.2930553999932273e+00
+    + max    = 3.6334093647340091e+00
+    + mean   = 3.6640772867963217e-01
+    + stddev = 1.1811834255136799e+00
+  - air_pressure_at_surface (1 levels):
+    + min    = -2.5630908007320286e+00
+    + max    = 2.9277502578728538e+00
+    + mean   = -1.3897502928686401e-02
+    + stddev = 9.1170148946297780e-01
+Write state: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L48x25 [1200]
   Fields:
-    air_horizontal_streamfunction: 4.4354478488431369e+01
-    air_pressure_at_surface: 3.2768545323896255e+01
-Member 20: 
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -2.2930553999932273e+00
+    + max    = 3.6334093647340091e+00
+    + mean   = 3.6640772867963217e-01
+    + stddev = 1.1811834255136799e+00
+  - air_pressure_at_surface (1 levels):
+    + min    = -2.5630908007320286e+00
+    + max    = 2.9277502578728538e+00
+    + mean   = -1.3897502928686401e-02
+    + stddev = 9.1170148946297780e-01
+Write perturbation: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L48x25 [1200]
   Fields:
-    air_horizontal_streamfunction: 4.9689134355982688e+01
-    air_pressure_at_surface: 3.1875926295242859e+01
-Member 21: 
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -3.0684646668817850e+00
+    + max    = 2.7798517469193875e+00
+    + mean   = 9.1271288137498061e-02
+    + stddev = 8.8701209658104896e-01
+  - air_pressure_at_surface (1 levels):
+    + min    = -3.1787729784467165e+00
+    + max    = 3.1772386740165395e+00
+    + mean   = 1.0816203498608094e-01
+    + stddev = 9.3043783164586880e-01
+Write state: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L48x25 [1200]
   Fields:
-    air_horizontal_streamfunction: 4.9056941615475246e+01
-    air_pressure_at_surface: 3.4177272875106688e+01
-Member 22: 
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -3.0684646668817850e+00
+    + max    = 2.7798517469193875e+00
+    + mean   = 9.1271288137498061e-02
+    + stddev = 8.8701209658104896e-01
+  - air_pressure_at_surface (1 levels):
+    + min    = -3.1787729784467165e+00
+    + max    = 3.1772386740165395e+00
+    + mean   = 1.0816203498608094e-01
+    + stddev = 9.3043783164586880e-01
+Write perturbation: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L48x25 [1200]
   Fields:
-    air_horizontal_streamfunction: 5.2472894898598902e+01
-    air_pressure_at_surface: 3.3487737699576776e+01
-Member 23: 
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -2.9106922519243774e+00
+    + max    = 3.8706288757835265e+00
+    + mean   = -1.5815531272025483e-02
+    + stddev = 9.7895045800503788e-01
+  - air_pressure_at_surface (1 levels):
+    + min    = -2.3613737942565884e+00
+    + max    = 3.1852721884775401e+00
+    + mean   = 1.5347228673123367e-01
+    + stddev = 8.8070786164138892e-01
+Write state: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L48x25 [1200]
   Fields:
-    air_horizontal_streamfunction: 5.0435079105197829e+01
-    air_pressure_at_surface: 4.1938249332422963e+01
-Member 24: 
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -2.9106922519243774e+00
+    + max    = 3.8706288757835265e+00
+    + mean   = -1.5815531272025483e-02
+    + stddev = 9.7895045800503788e-01
+  - air_pressure_at_surface (1 levels):
+    + min    = -2.3613737942565884e+00
+    + max    = 3.1852721884775401e+00
+    + mean   = 1.5347228673123367e-01
+    + stddev = 8.8070786164138892e-01
+Write perturbation: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L48x25 [1200]
   Fields:
-    air_horizontal_streamfunction: 5.0943409965148000e+01
-    air_pressure_at_surface: 3.8049992268874917e+01
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -3.3468189322984609e+00
+    + max    = 3.0585486478050403e+00
+    + mean   = 1.7918836289646875e-01
+    + stddev = 1.0398317082887967e+00
+  - air_pressure_at_surface (1 levels):
+    + min    = -2.5717390538672391e+00
+    + max    = 3.2040127813811332e+00
+    + mean   = 6.5653374622871935e-02
+    + stddev = 8.0413262010986464e-01
+Write state: 
+- Valid time: 2010-01-01T12:00:00Z
+  Geometry: L48x25 [1200]
+  Fields:
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -3.3468189322984609e+00
+    + max    = 3.0585486478050403e+00
+    + mean   = 1.7918836289646875e-01
+    + stddev = 1.0398317082887967e+00
+  - air_pressure_at_surface (1 levels):
+    + min    = -2.5717390538672391e+00
+    + max    = 3.2040127813811332e+00
+    + mean   = 6.5653374622871935e-02
+    + stddev = 8.0413262010986464e-01
+Write perturbation: 
+- Valid time: 2010-01-01T12:00:00Z
+  Geometry: L48x25 [1200]
+  Fields:
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -3.2483465024150222e+00
+    + max    = 3.3088544799342858e+00
+    + mean   = -8.8758358913212196e-02
+    + stddev = 9.1133867274485336e-01
+  - air_pressure_at_surface (1 levels):
+    + min    = -2.7356404047093217e+00
+    + max    = 1.9595608625220646e+00
+    + mean   = 1.2134674675498246e-01
+    + stddev = 8.6762664514295473e-01
+Write state: 
+- Valid time: 2010-01-01T12:00:00Z
+  Geometry: L48x25 [1200]
+  Fields:
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -3.2483465024150222e+00
+    + max    = 3.3088544799342858e+00
+    + mean   = -8.8758358913212196e-02
+    + stddev = 9.1133867274485336e-01
+  - air_pressure_at_surface (1 levels):
+    + min    = -2.7356404047093217e+00
+    + max    = 1.9595608625220646e+00
+    + mean   = 1.2134674675498246e-01
+    + stddev = 8.6762664514295473e-01
+Write perturbation: 
+- Valid time: 2010-01-01T12:00:00Z
+  Geometry: L48x25 [1200]
+  Fields:
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -2.7806592070137515e+00
+    + max    = 3.2697599545212621e+00
+    + mean   = -7.6756270852302091e-02
+    + stddev = 8.9738568255755313e-01
+  - air_pressure_at_surface (1 levels):
+    + min    = -3.9253783381764147e+00
+    + max    = 2.4807768697451134e+00
+    + mean   = -7.9671892415172224e-03
+    + stddev = 8.6481190325329282e-01
+Write state: 
+- Valid time: 2010-01-01T12:00:00Z
+  Geometry: L48x25 [1200]
+  Fields:
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -2.7806592070137515e+00
+    + max    = 3.2697599545212621e+00
+    + mean   = -7.6756270852302091e-02
+    + stddev = 8.9738568255755313e-01
+  - air_pressure_at_surface (1 levels):
+    + min    = -3.9253783381764147e+00
+    + max    = 2.4807768697451134e+00
+    + mean   = -7.9671892415172224e-03
+    + stddev = 8.6481190325329282e-01
+Write perturbation: 
+- Valid time: 2010-01-01T12:00:00Z
+  Geometry: L48x25 [1200]
+  Fields:
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -2.6412749775943749e+00
+    + max    = 3.0154639064966218e+00
+    + mean   = -1.2108314114761166e-02
+    + stddev = 8.9873636355612208e-01
+  - air_pressure_at_surface (1 levels):
+    + min    = -2.3372349130200631e+00
+    + max    = 2.8908244318522711e+00
+    + mean   = -1.4670873385716013e-01
+    + stddev = 9.4426225282051568e-01
+Write state: 
+- Valid time: 2010-01-01T12:00:00Z
+  Geometry: L48x25 [1200]
+  Fields:
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -2.6412749775943749e+00
+    + max    = 3.0154639064966218e+00
+    + mean   = -1.2108314114761166e-02
+    + stddev = 8.9873636355612208e-01
+  - air_pressure_at_surface (1 levels):
+    + min    = -2.3372349130200631e+00
+    + max    = 2.8908244318522711e+00
+    + mean   = -1.4670873385716013e-01
+    + stddev = 9.4426225282051568e-01
+Write perturbation: 
+- Valid time: 2010-01-01T12:00:00Z
+  Geometry: L48x25 [1200]
+  Fields:
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -3.1952242751004789e+00
+    + max    = 3.5620788716381546e+00
+    + mean   = -3.7802383547392501e-02
+    + stddev = 9.5165693746628388e-01
+  - air_pressure_at_surface (1 levels):
+    + min    = -2.8200895272423967e+00
+    + max    = 3.0365075603740515e+00
+    + mean   = -2.7218321412757138e-02
+    + stddev = 9.3502499588841193e-01
+Write state: 
+- Valid time: 2010-01-01T12:00:00Z
+  Geometry: L48x25 [1200]
+  Fields:
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -3.1952242751004789e+00
+    + max    = 3.5620788716381546e+00
+    + mean   = -3.7802383547392501e-02
+    + stddev = 9.5165693746628388e-01
+  - air_pressure_at_surface (1 levels):
+    + min    = -2.8200895272423967e+00
+    + max    = 3.0365075603740515e+00
+    + mean   = -2.7218321412757138e-02
+    + stddev = 9.3502499588841193e-01
+Write perturbation: 
+- Valid time: 2010-01-01T12:00:00Z
+  Geometry: L48x25 [1200]
+  Fields:
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -3.3126521429290956e+00
+    + max    = 2.4132243666603079e+00
+    + mean   = -1.8113905387596668e-01
+    + stddev = 1.0280416809376915e+00
+  - air_pressure_at_surface (1 levels):
+    + min    = -3.2367646980278324e+00
+    + max    = 2.7222254796791314e+00
+    + mean   = -1.3952312131799247e-01
+    + stddev = 9.1717447962377341e-01
+Write state: 
+- Valid time: 2010-01-01T12:00:00Z
+  Geometry: L48x25 [1200]
+  Fields:
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -3.3126521429290956e+00
+    + max    = 2.4132243666603079e+00
+    + mean   = -1.8113905387596668e-01
+    + stddev = 1.0280416809376915e+00
+  - air_pressure_at_surface (1 levels):
+    + min    = -3.2367646980278324e+00
+    + max    = 2.7222254796791314e+00
+    + mean   = -1.3952312131799247e-01
+    + stddev = 9.1717447962377341e-01
+Write perturbation: 
+- Valid time: 2010-01-01T12:00:00Z
+  Geometry: L48x25 [1200]
+  Fields:
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -2.7412346317257428e+00
+    + max    = 3.7436542507377046e+00
+    + mean   = 8.5735995806027865e-02
+    + stddev = 8.8756533543961214e-01
+  - air_pressure_at_surface (1 levels):
+    + min    = -3.0491169388416055e+00
+    + max    = 3.1630817794188619e+00
+    + mean   = 1.5735758107570416e-01
+    + stddev = 9.1276476616598368e-01
+Write state: 
+- Valid time: 2010-01-01T12:00:00Z
+  Geometry: L48x25 [1200]
+  Fields:
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -2.7412346317257428e+00
+    + max    = 3.7436542507377046e+00
+    + mean   = 8.5735995806027865e-02
+    + stddev = 8.8756533543961214e-01
+  - air_pressure_at_surface (1 levels):
+    + min    = -3.0491169388416055e+00
+    + max    = 3.1630817794188619e+00
+    + mean   = 1.5735758107570416e-01
+    + stddev = 9.1276476616598368e-01
+Write perturbation: 
+- Valid time: 2010-01-01T12:00:00Z
+  Geometry: L48x25 [1200]
+  Fields:
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -3.9748197339227858e+00
+    + max    = 3.0020236411177135e+00
+    + mean   = -1.1636451023866236e-01
+    + stddev = 8.7564025675861723e-01
+  - air_pressure_at_surface (1 levels):
+    + min    = -2.5645374017834892e+00
+    + max    = 3.3648407073817777e+00
+    + mean   = 1.3223668649748249e-01
+    + stddev = 8.6549825183219720e-01
+Write state: 
+- Valid time: 2010-01-01T12:00:00Z
+  Geometry: L48x25 [1200]
+  Fields:
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -3.9748197339227858e+00
+    + max    = 3.0020236411177135e+00
+    + mean   = -1.1636451023866236e-01
+    + stddev = 8.7564025675861723e-01
+  - air_pressure_at_surface (1 levels):
+    + min    = -2.5645374017834892e+00
+    + max    = 3.3648407073817777e+00
+    + mean   = 1.3223668649748249e-01
+    + stddev = 8.6549825183219720e-01
+Write perturbation: 
+- Valid time: 2010-01-01T12:00:00Z
+  Geometry: L48x25 [1200]
+  Fields:
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -2.6835229257484290e+00
+    + max    = 3.2765346173773509e+00
+    + mean   = 2.2002610109082685e-01
+    + stddev = 9.1950403152540350e-01
+  - air_pressure_at_surface (1 levels):
+    + min    = -2.1840720323237925e+00
+    + max    = 2.5258448514235168e+00
+    + mean   = 2.6627124919539680e-01
+    + stddev = 7.9804801905590139e-01
+Write state: 
+- Valid time: 2010-01-01T12:00:00Z
+  Geometry: L48x25 [1200]
+  Fields:
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -2.6835229257484290e+00
+    + max    = 3.2765346173773509e+00
+    + mean   = 2.2002610109082685e-01
+    + stddev = 9.1950403152540350e-01
+  - air_pressure_at_surface (1 levels):
+    + min    = -2.1840720323237925e+00
+    + max    = 2.5258448514235168e+00
+    + mean   = 2.6627124919539680e-01
+    + stddev = 7.9804801905590139e-01
+Write perturbation: 
+- Valid time: 2010-01-01T12:00:00Z
+  Geometry: L48x25 [1200]
+  Fields:
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -3.0634078391463899e+00
+    + max    = 3.2100405804950980e+00
+    + mean   = -1.0946929872869622e-01
+    + stddev = 1.0909861191586316e+00
+  - air_pressure_at_surface (1 levels):
+    + min    = -2.9127257884599351e+00
+    + max    = 2.2965431878228499e+00
+    + mean   = -1.8183909782251159e-01
+    + stddev = 8.5030204347191951e-01
+Write state: 
+- Valid time: 2010-01-01T12:00:00Z
+  Geometry: L48x25 [1200]
+  Fields:
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -3.0634078391463899e+00
+    + max    = 3.2100405804950980e+00
+    + mean   = -1.0946929872869622e-01
+    + stddev = 1.0909861191586316e+00
+  - air_pressure_at_surface (1 levels):
+    + min    = -2.9127257884599351e+00
+    + max    = 2.2965431878228499e+00
+    + mean   = -1.8183909782251159e-01
+    + stddev = 8.5030204347191951e-01
+Write perturbation: 
+- Valid time: 2010-01-01T12:00:00Z
+  Geometry: L48x25 [1200]
+  Fields:
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -2.7046237722165110e+00
+    + max    = 2.7898498329045847e+00
+    + mean   = -1.6851178081986576e-01
+    + stddev = 8.9570271687835390e-01
+  - air_pressure_at_surface (1 levels):
+    + min    = -2.7495942684002865e+00
+    + max    = 2.8146364919102078e+00
+    + mean   = -2.7747305169718642e-02
+    + stddev = 8.2688480647877216e-01
+Write state: 
+- Valid time: 2010-01-01T12:00:00Z
+  Geometry: L48x25 [1200]
+  Fields:
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -2.7046237722165110e+00
+    + max    = 2.7898498329045847e+00
+    + mean   = -1.6851178081986576e-01
+    + stddev = 8.9570271687835390e-01
+  - air_pressure_at_surface (1 levels):
+    + min    = -2.7495942684002865e+00
+    + max    = 2.8146364919102078e+00
+    + mean   = -2.7747305169718642e-02
+    + stddev = 8.2688480647877216e-01
+Write perturbation: 
+- Valid time: 2010-01-01T12:00:00Z
+  Geometry: L48x25 [1200]
+  Fields:
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -2.3675817856368484e+00
+    + max    = 2.9673370335988527e+00
+    + mean   = 2.3232803343413130e-01
+    + stddev = 9.0859531275187011e-01
+  - air_pressure_at_surface (1 levels):
+    + min    = -2.3070348522824369e+00
+    + max    = 3.7150783147733564e+00
+    + mean   = 1.9278725087143495e-01
+    + stddev = 1.0326325569503909e+00
+Write state: 
+- Valid time: 2010-01-01T12:00:00Z
+  Geometry: L48x25 [1200]
+  Fields:
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -2.3675817856368484e+00
+    + max    = 2.9673370335988527e+00
+    + mean   = 2.3232803343413130e-01
+    + stddev = 9.0859531275187011e-01
+  - air_pressure_at_surface (1 levels):
+    + min    = -2.3070348522824369e+00
+    + max    = 3.7150783147733564e+00
+    + mean   = 1.9278725087143495e-01
+    + stddev = 1.0326325569503909e+00
+Write perturbation: 
+- Valid time: 2010-01-01T12:00:00Z
+  Geometry: L48x25 [1200]
+  Fields:
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -2.9133093932072369e+00
+    + max    = 3.2936718311806046e+00
+    + mean   = 1.7409974822824378e-01
+    + stddev = 1.1725371243998841e+00
+  - air_pressure_at_surface (1 levels):
+    + min    = -3.7926529593473779e+00
+    + max    = 2.8779172943955396e+00
+    + mean   = -2.1855627510562173e-01
+    + stddev = 9.6838695214162451e-01
+Write state: 
+- Valid time: 2010-01-01T12:00:00Z
+  Geometry: L48x25 [1200]
+  Fields:
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -2.9133093932072369e+00
+    + max    = 3.2936718311806046e+00
+    + mean   = 1.7409974822824378e-01
+    + stddev = 1.1725371243998841e+00
+  - air_pressure_at_surface (1 levels):
+    + min    = -3.7926529593473779e+00
+    + max    = 2.8779172943955396e+00
+    + mean   = -2.1855627510562173e-01
+    + stddev = 9.6838695214162451e-01

@@ -2,10 +2,20 @@ Input Dirac increment:
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L72x46 [3312]
   Fields:
-    air_horizontal_streamfunction: 1.0000000000000000e+00
-    air_horizontal_velocity_potential: 0.0000000000000000e+00
-    air_temperature: 0.0000000000000000e+00
-    air_pressure_at_surface: 0.0000000000000000e+00
+  - air_horizontal_streamfunction (4 levels):
+    + min    = 0.0000000000000000e+00
+    + max    = 1.0000000000000000e+00
+    + mean   = 7.5483091787439610e-05
+    + stddev = 8.6881005857098320e-03
+  - air_horizontal_velocity_potential (4 levels):
+    + min    = 0.0000000000000000e+00
+    + max    = 0.0000000000000000e+00
+  - air_temperature (4 levels):
+    + min    = 0.0000000000000000e+00
+    + max    = 0.0000000000000000e+00
+  - air_pressure_at_surface (1 levels):
+    + min    = 0.0000000000000000e+00
+    + max    = 0.0000000000000000e+00
        Independent levels:  1[4]
           Subset Sc0 size:             3170
           Domain area (% of Earth area): 0.100E+03%
@@ -43,7 +53,23 @@ Covariance(SABER) * Increment:
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L72x46 [3312]
   Fields:
-    air_horizontal_streamfunction: 2.5782437794430426e+13
-    air_horizontal_velocity_potential: 2.4391325002799590e+12
-    air_temperature: 1.4540205256576843e+06
-    air_pressure_at_surface: 1.2139009997140864e+05
+  - air_horizontal_streamfunction (4 levels):
+    + min    = 1.8306921637925160e+09
+    + max    = 1.1069083416105381e+12
+    + mean   = 1.3962268303855249e+11
+    + stddev = 1.7516851168381091e+11
+  - air_horizontal_velocity_potential (4 levels):
+    + min    = -1.1059575445416394e+11
+    + max    = 1.2635379261128952e+11
+    + mean   = 5.8227441021446776e+08
+    + stddev = 2.1184226991391411e+10
+  - air_temperature (4 levels):
+    + min    = -7.4418587299669176e+04
+    + max    = 6.1117643293249908e+04
+    + mean   = 1.2066392103162916e+03
+    + stddev = 1.2575391697212903e+04
+  - air_pressure_at_surface (1 levels):
+    + min    = -5.3350855049599159e+03
+    + max    = 4.8244570341741437e+03
+    + mean   = 1.7547595528857946e+02
+    + stddev = 2.1023044620531605e+03

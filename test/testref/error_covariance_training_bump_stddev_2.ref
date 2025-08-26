@@ -5,8 +5,8 @@
              Level   2 ~> 100.0%
              Level   1 ~>  0.100E+01 vert. coord.
              Level   2 ~>  0.200E+01 vert. coord.
-                Level   1:  0 x    1000.00km, rel. diff. =  0.10919E+00
-                Level   2:  3 x    1000.00km, rel. diff. =  0.90535E-01
-             Level   1 ~>  0.10035E+01 /  0.10035E+01
-             Level   2 ~>  0.97036E+00 /  0.97036E+00
-Norm of output parameter stddev - 1: 4.0610779036704663e+01
+                Level   1:  0 x    1000.00km, rel. diff. =  0.98993E-01
+                Level   2:  3 x    1000.00km, rel. diff. =  0.15612E-01
+             Level   1 ~>  0.10331E+01 /  0.10331E+01
+             Level   2 ~>  0.10294E+01 /  0.10294E+01
+Norm of output parameter stddev - 1: 4.1404908907252675e+01

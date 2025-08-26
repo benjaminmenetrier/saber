@@ -11,286 +11,1511 @@
              Level   1 ~> 100.0%
              Level   1 ~>  0.100E+01 vert. coord.
              Effective levels:   1   2 
-                   Requested distance between points (min/max/avg):  0.624E+03 km /  0.624E+03 km /  0.624E+03 km
-                   Regular sampling grid size:     1008 points
-                   Nearest neighbor distance (min/max/avg):  0.195E+03 km /  0.699E+03 km /  0.620E+03 km
-                   Effective resolution (min/max/avg):  6.44 / 23.04 /  7.85
-                   Subgrid hash:    682755028
-                Subgrid size:     1008
-             nc1(  1) =                       1008
-             nc1(  2) =                       1008
-             ns =                             2016
+                   Requested distance between points (min/max/avg):  0.900E+03 km /  0.900E+03 km /  0.900E+03 km
+                   Regular sampling grid size:      448 points
+                   Nearest neighbor distance (min/max/avg):  0.329E+03 km /  0.953E+03 km /  0.826E+03 km
+                   Effective resolution (min/max/avg):  4.72 / 13.68 /  5.99
+                   Subgrid hash:   -823721553
+                Subgrid size:      448
+             nc1(  1) =                        448
+             nc1(  2) =                        448
+             ns =                              896
              v%n_s =                             2
-             c%n_s[global] =                 57760
+             c%n_s[global] =                 26048
              Effective levels:   1   2 
-                   Requested distance between points (min/max/avg):  0.624E+03 km /  0.624E+03 km /  0.624E+03 km
-                   Regular sampling grid size:     1008 points
-                   Nearest neighbor distance (min/max/avg):  0.195E+03 km /  0.699E+03 km /  0.620E+03 km
-                   Effective resolution (min/max/avg):  6.44 / 23.04 /  7.85
-                   Subgrid hash:    682755028
-                Subgrid size:     1008
-             nc1(  1) =                       1008
-             nc1(  2) =                       1008
-             ns =                             2016
+                   Requested distance between points (min/max/avg):  0.900E+03 km /  0.900E+03 km /  0.900E+03 km
+                   Regular sampling grid size:      448 points
+                   Nearest neighbor distance (min/max/avg):  0.329E+03 km /  0.953E+03 km /  0.826E+03 km
+                   Effective resolution (min/max/avg):  4.72 / 13.68 /  5.99
+                   Subgrid hash:   -823721553
+                Subgrid size:      448
+             nc1(  1) =                        448
+             nc1(  2) =                        448
+             ns =                              896
              v%n_s =                             2
-             c%n_s[global] =                 57760
+             c%n_s[global] =                 26048
              Effective levels:   1   2 
-                   Requested distance between points (min/max/avg):  0.624E+03 km /  0.624E+03 km /  0.624E+03 km
-                   Regular sampling grid size:     1008 points
-                   Nearest neighbor distance (min/max/avg):  0.195E+03 km /  0.699E+03 km /  0.620E+03 km
-                   Effective resolution (min/max/avg):  6.44 / 23.04 /  7.85
-                   Subgrid hash:    682755028
-                Subgrid size:     1008
-             nc1(  1) =                       1008
-             nc1(  2) =                       1008
-             ns =                             2016
+                   Requested distance between points (min/max/avg):  0.900E+03 km /  0.900E+03 km /  0.900E+03 km
+                   Regular sampling grid size:      448 points
+                   Nearest neighbor distance (min/max/avg):  0.329E+03 km /  0.953E+03 km /  0.826E+03 km
+                   Effective resolution (min/max/avg):  4.72 / 13.68 /  5.99
+                   Subgrid hash:   -823721553
+                Subgrid size:      448
+             nc1(  1) =                        448
+             nc1(  2) =                        448
+             ns =                              896
              v%n_s =                             2
-             c%n_s[global] =                 57760
+             c%n_s[global] =                 26048
              Effective levels:   1   2 
-                   Requested distance between points (min/max/avg):  0.624E+03 km /  0.624E+03 km /  0.624E+03 km
-                   Regular sampling grid size:     1008 points
-                   Nearest neighbor distance (min/max/avg):  0.195E+03 km /  0.699E+03 km /  0.620E+03 km
-                   Effective resolution (min/max/avg):  6.44 / 23.04 /  7.85
-                   Subgrid hash:    682755028
-                Subgrid size:     1008
-             nc1(  1) =                       1008
-             nc1(  2) =                       1008
-             ns =                             2016
+                   Requested distance between points (min/max/avg):  0.900E+03 km /  0.900E+03 km /  0.900E+03 km
+                   Regular sampling grid size:      448 points
+                   Nearest neighbor distance (min/max/avg):  0.329E+03 km /  0.953E+03 km /  0.826E+03 km
+                   Effective resolution (min/max/avg):  4.72 / 13.68 /  5.99
+                   Subgrid hash:   -823721553
+                Subgrid size:      448
+             nc1(  1) =                        448
+             nc1(  2) =                        448
+             ns =                              896
              v%n_s =                             2
-             c%n_s[global] =                 57760
+             c%n_s[global] =                 26048
              Effective levels:   1 
-                   Requested distance between points (min/max/avg):  0.624E+03 km /  0.624E+03 km /  0.624E+03 km
-                   Regular sampling grid size:     1008 points
-                   Nearest neighbor distance (min/max/avg):  0.195E+03 km /  0.699E+03 km /  0.620E+03 km
-                   Effective resolution (min/max/avg):  6.44 / 23.04 /  7.85
-                   Subgrid hash:    682755028
-                Subgrid size:     1008
-             nc1(  1) =                       1008
-             ns =                             1008
+                   Requested distance between points (min/max/avg):  0.900E+03 km /  0.900E+03 km /  0.900E+03 km
+                   Regular sampling grid size:      448 points
+                   Nearest neighbor distance (min/max/avg):  0.329E+03 km /  0.953E+03 km /  0.826E+03 km
+                   Effective resolution (min/max/avg):  4.72 / 13.68 /  5.99
+                   Subgrid hash:   -823721553
+                Subgrid size:      448
+             nc1(  1) =                        448
+             ns =                              448
              v%n_s =                             1
-             c%n_s[global] =                 14824
-Member 0: 
+             c%n_s[global] =                  6624
+Write perturbation: 
 - Valid time: 2010-01-01T18:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    air_horizontal_streamfunction: 4.3303245849081463e+01
-    air_horizontal_velocity_potential: 4.0426680228627525e+01
-    eastward_wind: 4.3227357737247253e+01
-    northward_wind: 3.7590726456324909e+01
-    air_pressure_at_surface: 3.0437116432298406e+01
-Member 1: 
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -3.0739512939729985e+00
+    + max    = 2.7897153280992288e+00
+    + mean   = -6.1418897051411757e-02
+    + stddev = 1.0403144824354047e+00
+  - air_horizontal_velocity_potential (2 levels):
+    + min    = -2.8921296700457790e+00
+    + max    = 2.9254543601512015e+00
+    + mean   = 4.0663472997423722e-01
+    + stddev = 9.2645539139703470e-01
+  - eastward_wind (2 levels):
+    + min    = -2.2300713086272199e+00
+    + max    = 2.7043689482766249e+00
+    + mean   = 1.8827704540763845e-01
+    + stddev = 9.7880858777737967e-01
+  - northward_wind (2 levels):
+    + min    = -2.8172546206733498e+00
+    + max    = 2.4940690120750006e+00
+    + mean   = 3.2593247646670170e-01
+    + stddev = 9.1885042189620747e-01
+  - air_pressure_at_surface (1 levels):
+    + min    = -3.0461500278950688e+00
+    + max    = 3.7967575529380557e+00
+    + mean   = 8.7926025545886285e-02
+    + stddev = 1.2716662341463072e+00
+Write state: 
 - Valid time: 2010-01-01T18:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    air_horizontal_streamfunction: 3.6282276632306093e+01
-    air_horizontal_velocity_potential: 3.5900483380950291e+01
-    eastward_wind: 5.0842914327595324e+01
-    northward_wind: 4.0297623164134208e+01
-    air_pressure_at_surface: 3.0871202162863430e+01
-Member 2: 
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -3.0739512939729985e+00
+    + max    = 2.7897153280992288e+00
+    + mean   = -6.1418897051411757e-02
+    + stddev = 1.0403144824354047e+00
+  - air_horizontal_velocity_potential (2 levels):
+    + min    = -2.8921296700457790e+00
+    + max    = 2.9254543601512015e+00
+    + mean   = 4.0663472997423722e-01
+    + stddev = 9.2645539139703470e-01
+  - eastward_wind (2 levels):
+    + min    = -2.2300713086272199e+00
+    + max    = 2.7043689482766249e+00
+    + mean   = 1.8827704540763845e-01
+    + stddev = 9.7880858777737967e-01
+  - northward_wind (2 levels):
+    + min    = -2.8172546206733498e+00
+    + max    = 2.4940690120750006e+00
+    + mean   = 3.2593247646670170e-01
+    + stddev = 9.1885042189620747e-01
+  - air_pressure_at_surface (1 levels):
+    + min    = -3.0461500278950688e+00
+    + max    = 3.7967575529380557e+00
+    + mean   = 8.7926025545886285e-02
+    + stddev = 1.2716662341463072e+00
+Write perturbation: 
 - Valid time: 2010-01-01T18:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    air_horizontal_streamfunction: 4.0716861003974699e+01
-    air_horizontal_velocity_potential: 4.6919820309811314e+01
-    eastward_wind: 3.9746563618398248e+01
-    northward_wind: 4.2118098330292845e+01
-    air_pressure_at_surface: 2.5627689668895023e+01
-Member 3: 
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -3.3647886859998541e+00
+    + max    = 3.2735595419077512e+00
+    + mean   = -1.1762721267716680e-01
+    + stddev = 9.3346840522399599e-01
+  - air_horizontal_velocity_potential (2 levels):
+    + min    = -3.4845839378065553e+00
+    + max    = 2.8452689677111009e+00
+    + mean   = -1.2148009272716617e-01
+    + stddev = 1.0599380787074593e+00
+  - eastward_wind (2 levels):
+    + min    = -2.5143991799477843e+00
+    + max    = 3.2314011028288512e+00
+    + mean   = -1.5218694390514133e-02
+    + stddev = 9.1935532046772872e-01
+  - northward_wind (2 levels):
+    + min    = -3.2113079700835461e+00
+    + max    = 3.1400407436803399e+00
+    + mean   = 8.4746785711119540e-03
+    + stddev = 1.0393826675430802e+00
+  - air_pressure_at_surface (1 levels):
+    + min    = -3.2491104870422656e+00
+    + max    = 2.1326462165523368e+00
+    + mean   = -5.2637775270059561e-01
+    + stddev = 7.8106133018937263e-01
+Write state: 
 - Valid time: 2010-01-01T18:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    air_horizontal_streamfunction: 3.8703254572595171e+01
-    air_horizontal_velocity_potential: 3.5189613175331480e+01
-    eastward_wind: 4.0574120931982876e+01
-    northward_wind: 3.6074116113239356e+01
-    air_pressure_at_surface: 3.2933754045482225e+01
-Member 4: 
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -3.3647886859998541e+00
+    + max    = 3.2735595419077512e+00
+    + mean   = -1.1762721267716680e-01
+    + stddev = 9.3346840522399599e-01
+  - air_horizontal_velocity_potential (2 levels):
+    + min    = -3.4845839378065553e+00
+    + max    = 2.8452689677111009e+00
+    + mean   = -1.2148009272716617e-01
+    + stddev = 1.0599380787074593e+00
+  - eastward_wind (2 levels):
+    + min    = -2.5143991799477843e+00
+    + max    = 3.2314011028288512e+00
+    + mean   = -1.5218694390514133e-02
+    + stddev = 9.1935532046772872e-01
+  - northward_wind (2 levels):
+    + min    = -3.2113079700835461e+00
+    + max    = 3.1400407436803399e+00
+    + mean   = 8.4746785711119540e-03
+    + stddev = 1.0393826675430802e+00
+  - air_pressure_at_surface (1 levels):
+    + min    = -3.2491104870422656e+00
+    + max    = 2.1326462165523368e+00
+    + mean   = -5.2637775270059561e-01
+    + stddev = 7.8106133018937263e-01
+Write perturbation: 
 - Valid time: 2010-01-01T18:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    air_horizontal_streamfunction: 4.2241406469216329e+01
-    air_horizontal_velocity_potential: 4.3269132691580943e+01
-    eastward_wind: 3.8712909971906768e+01
-    northward_wind: 5.3609773504023714e+01
-    air_pressure_at_surface: 3.1474755235753353e+01
-Member 5: 
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -3.2601396362494137e+00
+    + max    = 2.9560548138536080e+00
+    + mean   = 7.2184494135447627e-02
+    + stddev = 9.7925022757627656e-01
+  - air_horizontal_velocity_potential (2 levels):
+    + min    = -2.8341718123196094e+00
+    + max    = 2.7618199009605089e+00
+    + mean   = 6.1423064427240642e-03
+    + stddev = 1.0363094038850482e+00
+  - eastward_wind (2 levels):
+    + min    = -3.4057067466950430e+00
+    + max    = 3.9001452544579713e+00
+    + mean   = -4.1241794801942219e-02
+    + stddev = 1.0369375526488447e+00
+  - northward_wind (2 levels):
+    + min    = -3.3801786154540623e+00
+    + max    = 2.8165239481875832e+00
+    + mean   = 1.9972817324890027e-01
+    + stddev = 1.0585743298198591e+00
+  - air_pressure_at_surface (1 levels):
+    + min    = -2.7452375854310165e+00
+    + max    = 3.1020761759443585e+00
+    + mean   = 3.7571624414441102e-01
+    + stddev = 1.0165888773169591e+00
+Write state: 
 - Valid time: 2010-01-01T18:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    air_horizontal_streamfunction: 4.2148828776582057e+01
-    air_horizontal_velocity_potential: 4.3946832901449866e+01
-    eastward_wind: 4.0470394283399038e+01
-    northward_wind: 4.9081243127948589e+01
-    air_pressure_at_surface: 3.2660958259666408e+01
-Member 6: 
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -3.2601396362494137e+00
+    + max    = 2.9560548138536080e+00
+    + mean   = 7.2184494135447627e-02
+    + stddev = 9.7925022757627656e-01
+  - air_horizontal_velocity_potential (2 levels):
+    + min    = -2.8341718123196094e+00
+    + max    = 2.7618199009605089e+00
+    + mean   = 6.1423064427240642e-03
+    + stddev = 1.0363094038850482e+00
+  - eastward_wind (2 levels):
+    + min    = -3.4057067466950430e+00
+    + max    = 3.9001452544579713e+00
+    + mean   = -4.1241794801942219e-02
+    + stddev = 1.0369375526488447e+00
+  - northward_wind (2 levels):
+    + min    = -3.3801786154540623e+00
+    + max    = 2.8165239481875832e+00
+    + mean   = 1.9972817324890027e-01
+    + stddev = 1.0585743298198591e+00
+  - air_pressure_at_surface (1 levels):
+    + min    = -2.7452375854310165e+00
+    + max    = 3.1020761759443585e+00
+    + mean   = 3.7571624414441102e-01
+    + stddev = 1.0165888773169591e+00
+Write perturbation: 
 - Valid time: 2010-01-01T18:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    air_horizontal_streamfunction: 4.5229458489515906e+01
-    air_horizontal_velocity_potential: 3.2780057880986320e+01
-    eastward_wind: 3.7468543203022598e+01
-    northward_wind: 3.5988928384296962e+01
-    air_pressure_at_surface: 2.6088293361936287e+01
-Member 7: 
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -2.7711654294589456e+00
+    + max    = 3.5995636250410912e+00
+    + mean   = 3.1862093080922543e-01
+    + stddev = 1.0892682067379624e+00
+  - air_horizontal_velocity_potential (2 levels):
+    + min    = -2.9685502458149111e+00
+    + max    = 2.9273775958978212e+00
+    + mean   = -9.6155513391779954e-02
+    + stddev = 9.0066991663511509e-01
+  - eastward_wind (2 levels):
+    + min    = -2.9763473499815594e+00
+    + max    = 3.3917750215183795e+00
+    + mean   = 1.2706111623011422e-04
+    + stddev = 9.2203878384062832e-01
+  - northward_wind (2 levels):
+    + min    = -2.6712975464880611e+00
+    + max    = 2.9647660031201477e+00
+    + mean   = 1.7148791249242040e-01
+    + stddev = 9.2809382052437284e-01
+  - air_pressure_at_surface (1 levels):
+    + min    = -2.3555908352836616e+00
+    + max    = 2.4991311708174835e+00
+    + mean   = 3.0620320109367244e-01
+    + stddev = 7.8561963724222461e-01
+Write state: 
 - Valid time: 2010-01-01T18:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    air_horizontal_streamfunction: 4.2116687738414612e+01
-    air_horizontal_velocity_potential: 3.8359322011970626e+01
-    eastward_wind: 4.4441879813696218e+01
-    northward_wind: 4.4878984492004186e+01
-    air_pressure_at_surface: 2.4481254881929726e+01
-Member 8: 
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -2.7711654294589456e+00
+    + max    = 3.5995636250410912e+00
+    + mean   = 3.1862093080922543e-01
+    + stddev = 1.0892682067379624e+00
+  - air_horizontal_velocity_potential (2 levels):
+    + min    = -2.9685502458149111e+00
+    + max    = 2.9273775958978212e+00
+    + mean   = -9.6155513391779954e-02
+    + stddev = 9.0066991663511509e-01
+  - eastward_wind (2 levels):
+    + min    = -2.9763473499815594e+00
+    + max    = 3.3917750215183795e+00
+    + mean   = 1.2706111623011422e-04
+    + stddev = 9.2203878384062832e-01
+  - northward_wind (2 levels):
+    + min    = -2.6712975464880611e+00
+    + max    = 2.9647660031201477e+00
+    + mean   = 1.7148791249242040e-01
+    + stddev = 9.2809382052437284e-01
+  - air_pressure_at_surface (1 levels):
+    + min    = -2.3555908352836616e+00
+    + max    = 2.4991311708174835e+00
+    + mean   = 3.0620320109367244e-01
+    + stddev = 7.8561963724222461e-01
+Write perturbation: 
 - Valid time: 2010-01-01T18:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    air_horizontal_streamfunction: 4.2071426534839595e+01
-    air_horizontal_velocity_potential: 4.5675691164639609e+01
-    eastward_wind: 3.8196082496285889e+01
-    northward_wind: 3.8686649399931397e+01
-    air_pressure_at_surface: 2.4452851431620680e+01
-Member 9: 
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -3.0159791979376367e+00
+    + max    = 2.8632760361988518e+00
+    + mean   = -2.7380593378606272e-01
+    + stddev = 9.2904084553217758e-01
+  - air_horizontal_velocity_potential (2 levels):
+    + min    = -2.9765719583925501e+00
+    + max    = 2.8258637866029872e+00
+    + mean   = -9.4183902747433407e-02
+    + stddev = 9.6829216666336115e-01
+  - eastward_wind (2 levels):
+    + min    = -2.8961369160362556e+00
+    + max    = 2.8605153389816818e+00
+    + mean   = 4.6438354351349478e-02
+    + stddev = 9.0671679586017295e-01
+  - northward_wind (2 levels):
+    + min    = -3.4449599302875522e+00
+    + max    = 2.6990853768475422e+00
+    + mean   = -2.6646353698693537e-01
+    + stddev = 1.0203874984971317e+00
+  - air_pressure_at_surface (1 levels):
+    + min    = -3.2552212728070860e+00
+    + max    = 2.8056693642078616e+00
+    + mean   = 1.4367625436719680e-01
+    + stddev = 9.0256451998307641e-01
+Write state: 
 - Valid time: 2010-01-01T18:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    air_horizontal_streamfunction: 3.6070373530769366e+01
-    air_horizontal_velocity_potential: 3.9656862527351890e+01
-    eastward_wind: 3.9241253556892545e+01
-    northward_wind: 3.9244867721251723e+01
-    air_pressure_at_surface: 2.5778943563535936e+01
-Member 10: 
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -3.0159791979376367e+00
+    + max    = 2.8632760361988518e+00
+    + mean   = -2.7380593378606272e-01
+    + stddev = 9.2904084553217758e-01
+  - air_horizontal_velocity_potential (2 levels):
+    + min    = -2.9765719583925501e+00
+    + max    = 2.8258637866029872e+00
+    + mean   = -9.4183902747433407e-02
+    + stddev = 9.6829216666336115e-01
+  - eastward_wind (2 levels):
+    + min    = -2.8961369160362556e+00
+    + max    = 2.8605153389816818e+00
+    + mean   = 4.6438354351349478e-02
+    + stddev = 9.0671679586017295e-01
+  - northward_wind (2 levels):
+    + min    = -3.4449599302875522e+00
+    + max    = 2.6990853768475422e+00
+    + mean   = -2.6646353698693537e-01
+    + stddev = 1.0203874984971317e+00
+  - air_pressure_at_surface (1 levels):
+    + min    = -3.2552212728070860e+00
+    + max    = 2.8056693642078616e+00
+    + mean   = 1.4367625436719680e-01
+    + stddev = 9.0256451998307641e-01
+Write perturbation: 
 - Valid time: 2010-01-01T18:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    air_horizontal_streamfunction: 3.9871743294704231e+01
-    air_horizontal_velocity_potential: 4.0716632395811260e+01
-    eastward_wind: 4.4880113966762387e+01
-    northward_wind: 4.2308260624014835e+01
-    air_pressure_at_surface: 2.7539519898186892e+01
-Member 11: 
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -3.4068178443998436e+00
+    + max    = 3.0987346154945059e+00
+    + mean   = -5.0160761016513278e-01
+    + stddev = 1.1851532508537752e+00
+  - air_horizontal_velocity_potential (2 levels):
+    + min    = -2.8246968975305515e+00
+    + max    = 2.5873500477693088e+00
+    + mean   = -2.4183121430286666e-01
+    + stddev = 9.2678119655743341e-01
+  - eastward_wind (2 levels):
+    + min    = -2.4059701714145620e+00
+    + max    = 4.1291593111664540e+00
+    + mean   = 3.1592294973369828e-01
+    + stddev = 8.6349236838995003e-01
+  - northward_wind (2 levels):
+    + min    = -2.8087541785748318e+00
+    + max    = 2.6420514127032986e+00
+    + mean   = 6.2698418535820817e-03
+    + stddev = 9.1636196810715709e-01
+  - air_pressure_at_surface (1 levels):
+    + min    = -2.2757296776320159e+00
+    + max    = 2.6802795170150766e+00
+    + mean   = 3.7982139622415911e-01
+    + stddev = 8.1898764453003903e-01
+Write state: 
 - Valid time: 2010-01-01T18:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    air_horizontal_streamfunction: 3.9970725258025936e+01
-    air_horizontal_velocity_potential: 4.0027819972462417e+01
-    eastward_wind: 4.6405053088069387e+01
-    northward_wind: 3.5609956751363775e+01
-    air_pressure_at_surface: 2.8638598314605989e+01
-Member 12: 
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -3.4068178443998436e+00
+    + max    = 3.0987346154945059e+00
+    + mean   = -5.0160761016513278e-01
+    + stddev = 1.1851532508537752e+00
+  - air_horizontal_velocity_potential (2 levels):
+    + min    = -2.8246968975305515e+00
+    + max    = 2.5873500477693088e+00
+    + mean   = -2.4183121430286666e-01
+    + stddev = 9.2678119655743341e-01
+  - eastward_wind (2 levels):
+    + min    = -2.4059701714145620e+00
+    + max    = 4.1291593111664540e+00
+    + mean   = 3.1592294973369828e-01
+    + stddev = 8.6349236838995003e-01
+  - northward_wind (2 levels):
+    + min    = -2.8087541785748318e+00
+    + max    = 2.6420514127032986e+00
+    + mean   = 6.2698418535820817e-03
+    + stddev = 9.1636196810715709e-01
+  - air_pressure_at_surface (1 levels):
+    + min    = -2.2757296776320159e+00
+    + max    = 2.6802795170150766e+00
+    + mean   = 3.7982139622415911e-01
+    + stddev = 8.1898764453003903e-01
+Write perturbation: 
 - Valid time: 2010-01-01T18:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    air_horizontal_streamfunction: 4.2079934352984544e+01
-    air_horizontal_velocity_potential: 3.8864629076650822e+01
-    eastward_wind: 4.0376313133627789e+01
-    northward_wind: 3.9305499362872766e+01
-    air_pressure_at_surface: 2.7944352551922297e+01
-Member 13: 
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -2.9635603354605387e+00
+    + max    = 2.9134771211097052e+00
+    + mean   = 8.0937425407185265e-02
+    + stddev = 1.0277169261396857e+00
+  - air_horizontal_velocity_potential (2 levels):
+    + min    = -2.8815107955945534e+00
+    + max    = 3.3922319682566013e+00
+    + mean   = 2.1105546479561271e-01
+    + stddev = 1.0858620387160094e+00
+  - eastward_wind (2 levels):
+    + min    = -2.7100130517250629e+00
+    + max    = 3.0680193041503618e+00
+    + mean   = -1.7469898014827173e-01
+    + stddev = 1.0214666043670115e+00
+  - northward_wind (2 levels):
+    + min    = -3.4017864097621500e+00
+    + max    = 2.5362084813568999e+00
+    + mean   = -2.4824172007931120e-01
+    + stddev = 9.8885595014286909e-01
+  - air_pressure_at_surface (1 levels):
+    + min    = -2.3214665214896004e+00
+    + max    = 2.6822387620515036e+00
+    + mean   = -3.9694192440963380e-02
+    + stddev = 8.7040904832158628e-01
+Write state: 
 - Valid time: 2010-01-01T18:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    air_horizontal_streamfunction: 4.2610056038909832e+01
-    air_horizontal_velocity_potential: 3.8048056670789592e+01
-    eastward_wind: 4.0774338914194580e+01
-    northward_wind: 3.9255819126574060e+01
-    air_pressure_at_surface: 2.5804401761331025e+01
-Member 14: 
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -2.9635603354605387e+00
+    + max    = 2.9134771211097052e+00
+    + mean   = 8.0937425407185265e-02
+    + stddev = 1.0277169261396857e+00
+  - air_horizontal_velocity_potential (2 levels):
+    + min    = -2.8815107955945534e+00
+    + max    = 3.3922319682566013e+00
+    + mean   = 2.1105546479561271e-01
+    + stddev = 1.0858620387160094e+00
+  - eastward_wind (2 levels):
+    + min    = -2.7100130517250629e+00
+    + max    = 3.0680193041503618e+00
+    + mean   = -1.7469898014827173e-01
+    + stddev = 1.0214666043670115e+00
+  - northward_wind (2 levels):
+    + min    = -3.4017864097621500e+00
+    + max    = 2.5362084813568999e+00
+    + mean   = -2.4824172007931120e-01
+    + stddev = 9.8885595014286909e-01
+  - air_pressure_at_surface (1 levels):
+    + min    = -2.3214665214896004e+00
+    + max    = 2.6822387620515036e+00
+    + mean   = -3.9694192440963380e-02
+    + stddev = 8.7040904832158628e-01
+Write perturbation: 
 - Valid time: 2010-01-01T18:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    air_horizontal_streamfunction: 3.9103367002785383e+01
-    air_horizontal_velocity_potential: 4.0088669954312572e+01
-    eastward_wind: 3.9729551490719629e+01
-    northward_wind: 4.0445504243545081e+01
-    air_pressure_at_surface: 3.2179028491345250e+01
-Member 15: 
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -3.3447463437391116e+00
+    + max    = 3.2220839309757077e+00
+    + mean   = -1.0154679169466393e-01
+    + stddev = 1.0078219009760159e+00
+  - air_horizontal_velocity_potential (2 levels):
+    + min    = -2.9008812331822149e+00
+    + max    = 2.6205238828557693e+00
+    + mean   = 2.1555542267818978e-01
+    + stddev = 9.3321357407238559e-01
+  - eastward_wind (2 levels):
+    + min    = -2.7209399726509602e+00
+    + max    = 2.7965959585742928e+00
+    + mean   = 6.5478457181725250e-02
+    + stddev = 8.5784516344060691e-01
+  - northward_wind (2 levels):
+    + min    = -2.7088236729130877e+00
+    + max    = 3.2576249551633873e+00
+    + mean   = -1.1992547370683464e-01
+    + stddev = 9.2198406131707711e-01
+  - air_pressure_at_surface (1 levels):
+    + min    = -2.5431957685280477e+00
+    + max    = 3.3618168344968451e+00
+    + mean   = 3.0335769414012441e-02
+    + stddev = 9.3699951974975215e-01
+Write state: 
 - Valid time: 2010-01-01T18:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    air_horizontal_streamfunction: 4.1663782418984276e+01
-    air_horizontal_velocity_potential: 4.0584463727944872e+01
-    eastward_wind: 3.8276052024541464e+01
-    northward_wind: 3.5823892200310226e+01
-    air_pressure_at_surface: 2.4145124142841198e+01
-Member 16: 
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -3.3447463437391116e+00
+    + max    = 3.2220839309757077e+00
+    + mean   = -1.0154679169466393e-01
+    + stddev = 1.0078219009760159e+00
+  - air_horizontal_velocity_potential (2 levels):
+    + min    = -2.9008812331822149e+00
+    + max    = 2.6205238828557693e+00
+    + mean   = 2.1555542267818978e-01
+    + stddev = 9.3321357407238559e-01
+  - eastward_wind (2 levels):
+    + min    = -2.7209399726509602e+00
+    + max    = 2.7965959585742928e+00
+    + mean   = 6.5478457181725250e-02
+    + stddev = 8.5784516344060691e-01
+  - northward_wind (2 levels):
+    + min    = -2.7088236729130877e+00
+    + max    = 3.2576249551633873e+00
+    + mean   = -1.1992547370683464e-01
+    + stddev = 9.2198406131707711e-01
+  - air_pressure_at_surface (1 levels):
+    + min    = -2.5431957685280477e+00
+    + max    = 3.3618168344968451e+00
+    + mean   = 3.0335769414012441e-02
+    + stddev = 9.3699951974975215e-01
+Write perturbation: 
 - Valid time: 2010-01-01T18:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    air_horizontal_streamfunction: 3.8221654908975765e+01
-    air_horizontal_velocity_potential: 3.6878050891532808e+01
-    eastward_wind: 3.7795436007484724e+01
-    northward_wind: 3.9546220334770318e+01
-    air_pressure_at_surface: 2.9245247547517259e+01
-Member 17: 
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -3.0153582634977285e+00
+    + max    = 3.7793206125089336e+00
+    + mean   = 1.1479634508977586e-01
+    + stddev = 9.4076999570201414e-01
+  - air_horizontal_velocity_potential (2 levels):
+    + min    = -2.4784891855365330e+00
+    + max    = 3.1092175409519669e+00
+    + mean   = 2.6537624310576363e-01
+    + stddev = 9.3688771230220702e-01
+  - eastward_wind (2 levels):
+    + min    = -3.1060776438542117e+00
+    + max    = 3.7902734273995700e+00
+    + mean   = 1.8722622667048322e-01
+    + stddev = 1.1191028433574579e+00
+  - northward_wind (2 levels):
+    + min    = -2.7523373224630587e+00
+    + max    = 3.2242436519303399e+00
+    + mean   = 2.4464080283498189e-04
+    + stddev = 1.0631311875462977e+00
+  - air_pressure_at_surface (1 levels):
+    + min    = -2.8920831816568113e+00
+    + max    = 3.0935621212824400e+00
+    + mean   = -1.3285218782105856e-01
+    + stddev = 8.8041600592965963e-01
+Write state: 
 - Valid time: 2010-01-01T18:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    air_horizontal_streamfunction: 4.6784505280060728e+01
-    air_horizontal_velocity_potential: 4.0490594846582191e+01
-    eastward_wind: 3.6111733690217996e+01
-    northward_wind: 3.7262811468439033e+01
-    air_pressure_at_surface: 3.0409968690818733e+01
-Member 18: 
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -3.0153582634977285e+00
+    + max    = 3.7793206125089336e+00
+    + mean   = 1.1479634508977586e-01
+    + stddev = 9.4076999570201414e-01
+  - air_horizontal_velocity_potential (2 levels):
+    + min    = -2.4784891855365330e+00
+    + max    = 3.1092175409519669e+00
+    + mean   = 2.6537624310576363e-01
+    + stddev = 9.3688771230220702e-01
+  - eastward_wind (2 levels):
+    + min    = -3.1060776438542117e+00
+    + max    = 3.7902734273995700e+00
+    + mean   = 1.8722622667048322e-01
+    + stddev = 1.1191028433574579e+00
+  - northward_wind (2 levels):
+    + min    = -2.7523373224630587e+00
+    + max    = 3.2242436519303399e+00
+    + mean   = 2.4464080283498189e-04
+    + stddev = 1.0631311875462977e+00
+  - air_pressure_at_surface (1 levels):
+    + min    = -2.8920831816568113e+00
+    + max    = 3.0935621212824400e+00
+    + mean   = -1.3285218782105856e-01
+    + stddev = 8.8041600592965963e-01
+Write perturbation: 
 - Valid time: 2010-01-01T18:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    air_horizontal_streamfunction: 4.0926181299734331e+01
-    air_horizontal_velocity_potential: 3.9994584852861635e+01
-    eastward_wind: 4.2062035181236951e+01
-    northward_wind: 4.7504566038005237e+01
-    air_pressure_at_surface: 2.8228685117265748e+01
-Member 19: 
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -3.4351126140800625e+00
+    + max    = 3.3061969057216731e+00
+    + mean   = 3.1805237079158322e-01
+    + stddev = 1.0326427537132983e+00
+  - air_horizontal_velocity_potential (2 levels):
+    + min    = -3.5047417020304725e+00
+    + max    = 2.9076002479210814e+00
+    + mean   = -3.2387716616704121e-01
+    + stddev = 1.0954003280981381e+00
+  - eastward_wind (2 levels):
+    + min    = -3.6684719113187949e+00
+    + max    = 3.0062772027653120e+00
+    + mean   = 1.5705831752573943e-01
+    + stddev = 1.0382339618859355e+00
+  - northward_wind (2 levels):
+    + min    = -2.9287086508454228e+00
+    + max    = 3.9421852951192244e+00
+    + mean   = 2.5837242987638420e-01
+    + stddev = 9.8107409267867285e-01
+  - air_pressure_at_surface (1 levels):
+    + min    = -2.8056922495690082e+00
+    + max    = 3.0721604123314261e+00
+    + mean   = -1.8194082327133260e-01
+    + stddev = 9.2623305367987641e-01
+Write state: 
 - Valid time: 2010-01-01T18:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    air_horizontal_streamfunction: 3.8084106466689619e+01
-    air_horizontal_velocity_potential: 4.0906004634463542e+01
-    eastward_wind: 3.7058576294377929e+01
-    northward_wind: 3.7905504439578088e+01
-    air_pressure_at_surface: 3.1014859549295220e+01
-Member 20: 
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -3.4351126140800625e+00
+    + max    = 3.3061969057216731e+00
+    + mean   = 3.1805237079158322e-01
+    + stddev = 1.0326427537132983e+00
+  - air_horizontal_velocity_potential (2 levels):
+    + min    = -3.5047417020304725e+00
+    + max    = 2.9076002479210814e+00
+    + mean   = -3.2387716616704121e-01
+    + stddev = 1.0954003280981381e+00
+  - eastward_wind (2 levels):
+    + min    = -3.6684719113187949e+00
+    + max    = 3.0062772027653120e+00
+    + mean   = 1.5705831752573943e-01
+    + stddev = 1.0382339618859355e+00
+  - northward_wind (2 levels):
+    + min    = -2.9287086508454228e+00
+    + max    = 3.9421852951192244e+00
+    + mean   = 2.5837242987638420e-01
+    + stddev = 9.8107409267867285e-01
+  - air_pressure_at_surface (1 levels):
+    + min    = -2.8056922495690082e+00
+    + max    = 3.0721604123314261e+00
+    + mean   = -1.8194082327133260e-01
+    + stddev = 9.2623305367987641e-01
+Write perturbation: 
 - Valid time: 2010-01-01T18:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    air_horizontal_streamfunction: 4.2241140691068203e+01
-    air_horizontal_velocity_potential: 4.3291728610785157e+01
-    eastward_wind: 4.8598201477991722e+01
-    northward_wind: 4.1347399937968120e+01
-    air_pressure_at_surface: 2.9018934236450001e+01
-Member 21: 
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -2.7358401744070155e+00
+    + max    = 3.0122977276906502e+00
+    + mean   = 2.1084757765969692e-01
+    + stddev = 9.4499911446238571e-01
+  - air_horizontal_velocity_potential (2 levels):
+    + min    = -3.4634463391544004e+00
+    + max    = 2.8281988218767142e+00
+    + mean   = -1.5088955532066763e-02
+    + stddev = 8.8989479033128016e-01
+  - eastward_wind (2 levels):
+    + min    = -3.0650584495618949e+00
+    + max    = 3.1926272415516075e+00
+    + mean   = 3.3488867077263784e-01
+    + stddev = 1.1403173345381616e+00
+  - northward_wind (2 levels):
+    + min    = -2.9486381037051617e+00
+    + max    = 3.4925390360916260e+00
+    + mean   = 2.7626615953325512e-01
+    + stddev = 9.9748256123895018e-01
+  - air_pressure_at_surface (1 levels):
+    + min    = -3.1857314326534456e+00
+    + max    = 2.5969177225760238e+00
+    + mean   = -4.1632650521433517e-01
+    + stddev = 1.1566248251535030e+00
+Write state: 
 - Valid time: 2010-01-01T18:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    air_horizontal_streamfunction: 4.0185278783812237e+01
-    air_horizontal_velocity_potential: 3.9775234049158115e+01
-    eastward_wind: 4.0156382469119208e+01
-    northward_wind: 3.6174097357598669e+01
-    air_pressure_at_surface: 2.7759440082121490e+01
-Member 22: 
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -2.7358401744070155e+00
+    + max    = 3.0122977276906502e+00
+    + mean   = 2.1084757765969692e-01
+    + stddev = 9.4499911446238571e-01
+  - air_horizontal_velocity_potential (2 levels):
+    + min    = -3.4634463391544004e+00
+    + max    = 2.8281988218767142e+00
+    + mean   = -1.5088955532066763e-02
+    + stddev = 8.8989479033128016e-01
+  - eastward_wind (2 levels):
+    + min    = -3.0650584495618949e+00
+    + max    = 3.1926272415516075e+00
+    + mean   = 3.3488867077263784e-01
+    + stddev = 1.1403173345381616e+00
+  - northward_wind (2 levels):
+    + min    = -2.9486381037051617e+00
+    + max    = 3.4925390360916260e+00
+    + mean   = 2.7626615953325512e-01
+    + stddev = 9.9748256123895018e-01
+  - air_pressure_at_surface (1 levels):
+    + min    = -3.1857314326534456e+00
+    + max    = 2.5969177225760238e+00
+    + mean   = -4.1632650521433517e-01
+    + stddev = 1.1566248251535030e+00
+Write perturbation: 
 - Valid time: 2010-01-01T18:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    air_horizontal_streamfunction: 3.7281559614559704e+01
-    air_horizontal_velocity_potential: 4.5670185340489695e+01
-    eastward_wind: 4.2657308730754153e+01
-    northward_wind: 4.7849007867722818e+01
-    air_pressure_at_surface: 2.9889902094837662e+01
-Member 23: 
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -3.0989446626591390e+00
+    + max    = 3.1736654955123185e+00
+    + mean   = -6.2343837705707138e-02
+    + stddev = 9.5909291299133581e-01
+  - air_horizontal_velocity_potential (2 levels):
+    + min    = -3.1606111181078442e+00
+    + max    = 2.9498709359231432e+00
+    + mean   = -1.8191760149004627e-01
+    + stddev = 1.0648635726487006e+00
+  - eastward_wind (2 levels):
+    + min    = -3.6279012383995206e+00
+    + max    = 3.3287872288959326e+00
+    + mean   = -1.0171058663197759e-01
+    + stddev = 1.0285514878557085e+00
+  - northward_wind (2 levels):
+    + min    = -2.8727571985028879e+00
+    + max    = 2.6096350227617262e+00
+    + mean   = -1.4354220432829901e-01
+    + stddev = 9.5128483751949999e-01
+  - air_pressure_at_surface (1 levels):
+    + min    = -2.3741521113508774e+00
+    + max    = 2.9513215005338926e+00
+    + mean   = 3.2644509982338515e-01
+    + stddev = 1.0680002589378812e+00
+Write state: 
 - Valid time: 2010-01-01T18:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    air_horizontal_streamfunction: 4.0743339117965952e+01
-    air_horizontal_velocity_potential: 3.7161522124185502e+01
-    eastward_wind: 4.4935653372093320e+01
-    northward_wind: 4.3043883745669369e+01
-    air_pressure_at_surface: 2.6672875735517557e+01
-Member 24: 
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -3.0989446626591390e+00
+    + max    = 3.1736654955123185e+00
+    + mean   = -6.2343837705707138e-02
+    + stddev = 9.5909291299133581e-01
+  - air_horizontal_velocity_potential (2 levels):
+    + min    = -3.1606111181078442e+00
+    + max    = 2.9498709359231432e+00
+    + mean   = -1.8191760149004627e-01
+    + stddev = 1.0648635726487006e+00
+  - eastward_wind (2 levels):
+    + min    = -3.6279012383995206e+00
+    + max    = 3.3287872288959326e+00
+    + mean   = -1.0171058663197759e-01
+    + stddev = 1.0285514878557085e+00
+  - northward_wind (2 levels):
+    + min    = -2.8727571985028879e+00
+    + max    = 2.6096350227617262e+00
+    + mean   = -1.4354220432829901e-01
+    + stddev = 9.5128483751949999e-01
+  - air_pressure_at_surface (1 levels):
+    + min    = -2.3741521113508774e+00
+    + max    = 2.9513215005338926e+00
+    + mean   = 3.2644509982338515e-01
+    + stddev = 1.0680002589378812e+00
+Write perturbation: 
 - Valid time: 2010-01-01T18:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    air_horizontal_streamfunction: 4.1689081833351558e+01
-    air_horizontal_velocity_potential: 4.2935751771578190e+01
-    eastward_wind: 3.4670648806847240e+01
-    northward_wind: 4.4597066875491215e+01
-    air_pressure_at_surface: 2.7071737559076659e+01
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -2.6778060105874339e+00
+    + max    = 2.4151673527553275e+00
+    + mean   = -8.5895613082397723e-02
+    + stddev = 9.3440364363236950e-01
+  - air_horizontal_velocity_potential (2 levels):
+    + min    = -2.8360025675679652e+00
+    + max    = 3.2481384512064500e+00
+    + mean   = 1.7378579254210810e-01
+    + stddev = 1.0704146547768798e+00
+  - eastward_wind (2 levels):
+    + min    = -3.6041417819704198e+00
+    + max    = 2.7660873692745516e+00
+    + mean   = 1.9002458225710603e-02
+    + stddev = 9.6875883103462468e-01
+  - northward_wind (2 levels):
+    + min    = -3.0950109152925700e+00
+    + max    = 2.4918036939955845e+00
+    + mean   = 2.1508621141900757e-02
+    + stddev = 9.2771173141187380e-01
+  - air_pressure_at_surface (1 levels):
+    + min    = -3.2946614868335176e+00
+    + max    = 2.5238917501049571e+00
+    + mean   = -4.5885819903195790e-02
+    + stddev = 8.2784107646154859e-01
+Write state: 
+- Valid time: 2010-01-01T18:00:00Z
+  Geometry: L40x21 [840]
+  Fields:
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -2.6778060105874339e+00
+    + max    = 2.4151673527553275e+00
+    + mean   = -8.5895613082397723e-02
+    + stddev = 9.3440364363236950e-01
+  - air_horizontal_velocity_potential (2 levels):
+    + min    = -2.8360025675679652e+00
+    + max    = 3.2481384512064500e+00
+    + mean   = 1.7378579254210810e-01
+    + stddev = 1.0704146547768798e+00
+  - eastward_wind (2 levels):
+    + min    = -3.6041417819704198e+00
+    + max    = 2.7660873692745516e+00
+    + mean   = 1.9002458225710603e-02
+    + stddev = 9.6875883103462468e-01
+  - northward_wind (2 levels):
+    + min    = -3.0950109152925700e+00
+    + max    = 2.4918036939955845e+00
+    + mean   = 2.1508621141900757e-02
+    + stddev = 9.2771173141187380e-01
+  - air_pressure_at_surface (1 levels):
+    + min    = -3.2946614868335176e+00
+    + max    = 2.5238917501049571e+00
+    + mean   = -4.5885819903195790e-02
+    + stddev = 8.2784107646154859e-01
+Write perturbation: 
+- Valid time: 2010-01-01T18:00:00Z
+  Geometry: L40x21 [840]
+  Fields:
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -2.5924199634139145e+00
+    + max    = 3.3673519263790301e+00
+    + mean   = -1.5096328142111193e-02
+    + stddev = 9.6701926109720093e-01
+  - air_horizontal_velocity_potential (2 levels):
+    + min    = -2.7236979606921126e+00
+    + max    = 3.8542878090871855e+00
+    + mean   = 4.0848917080784092e-01
+    + stddev = 1.1349980095552519e+00
+  - eastward_wind (2 levels):
+    + min    = -3.7521552385816732e+00
+    + max    = 2.3339094405463117e+00
+    + mean   = -1.9158365607457056e-01
+    + stddev = 8.9133027283860033e-01
+  - northward_wind (2 levels):
+    + min    = -2.6804651909426882e+00
+    + max    = 2.9598295544939539e+00
+    + mean   = 2.4147122520326020e-01
+    + stddev = 1.0443599453520178e+00
+  - air_pressure_at_surface (1 levels):
+    + min    = -2.6359474394552458e+00
+    + max    = 2.9280979282423969e+00
+    + mean   = -1.0762338858893479e-02
+    + stddev = 9.7821759101610495e-01
+Write state: 
+- Valid time: 2010-01-01T18:00:00Z
+  Geometry: L40x21 [840]
+  Fields:
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -2.5924199634139145e+00
+    + max    = 3.3673519263790301e+00
+    + mean   = -1.5096328142111193e-02
+    + stddev = 9.6701926109720093e-01
+  - air_horizontal_velocity_potential (2 levels):
+    + min    = -2.7236979606921126e+00
+    + max    = 3.8542878090871855e+00
+    + mean   = 4.0848917080784092e-01
+    + stddev = 1.1349980095552519e+00
+  - eastward_wind (2 levels):
+    + min    = -3.7521552385816732e+00
+    + max    = 2.3339094405463117e+00
+    + mean   = -1.9158365607457056e-01
+    + stddev = 8.9133027283860033e-01
+  - northward_wind (2 levels):
+    + min    = -2.6804651909426882e+00
+    + max    = 2.9598295544939539e+00
+    + mean   = 2.4147122520326020e-01
+    + stddev = 1.0443599453520178e+00
+  - air_pressure_at_surface (1 levels):
+    + min    = -2.6359474394552458e+00
+    + max    = 2.9280979282423969e+00
+    + mean   = -1.0762338858893479e-02
+    + stddev = 9.7821759101610495e-01
+Write perturbation: 
+- Valid time: 2010-01-01T18:00:00Z
+  Geometry: L40x21 [840]
+  Fields:
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -2.9264213424520573e+00
+    + max    = 2.6431103105799916e+00
+    + mean   = -1.4798795092748387e-01
+    + stddev = 9.1894976269775874e-01
+  - air_horizontal_velocity_potential (2 levels):
+    + min    = -3.2061509092996068e+00
+    + max    = 3.1633618503948995e+00
+    + mean   = 7.8886897883202522e-02
+    + stddev = 8.2677246605833765e-01
+  - eastward_wind (2 levels):
+    + min    = -2.3622241093690701e+00
+    + max    = 2.9491525015198312e+00
+    + mean   = 8.8375776162567518e-02
+    + stddev = 8.9445922445736670e-01
+  - northward_wind (2 levels):
+    + min    = -3.2620157371529226e+00
+    + max    = 3.5893478387949762e+00
+    + mean   = -2.3275912841991886e-01
+    + stddev = 9.0062806267997386e-01
+  - air_pressure_at_surface (1 levels):
+    + min    = -1.8625821209009024e+00
+    + max    = 3.1669285558912228e+00
+    + mean   = 4.5910432301398196e-01
+    + stddev = 9.0689751625367576e-01
+Write state: 
+- Valid time: 2010-01-01T18:00:00Z
+  Geometry: L40x21 [840]
+  Fields:
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -2.9264213424520573e+00
+    + max    = 2.6431103105799916e+00
+    + mean   = -1.4798795092748387e-01
+    + stddev = 9.1894976269775874e-01
+  - air_horizontal_velocity_potential (2 levels):
+    + min    = -3.2061509092996068e+00
+    + max    = 3.1633618503948995e+00
+    + mean   = 7.8886897883202522e-02
+    + stddev = 8.2677246605833765e-01
+  - eastward_wind (2 levels):
+    + min    = -2.3622241093690701e+00
+    + max    = 2.9491525015198312e+00
+    + mean   = 8.8375776162567518e-02
+    + stddev = 8.9445922445736670e-01
+  - northward_wind (2 levels):
+    + min    = -3.2620157371529226e+00
+    + max    = 3.5893478387949762e+00
+    + mean   = -2.3275912841991886e-01
+    + stddev = 9.0062806267997386e-01
+  - air_pressure_at_surface (1 levels):
+    + min    = -1.8625821209009024e+00
+    + max    = 3.1669285558912228e+00
+    + mean   = 4.5910432301398196e-01
+    + stddev = 9.0689751625367576e-01
+Write perturbation: 
+- Valid time: 2010-01-01T18:00:00Z
+  Geometry: L40x21 [840]
+  Fields:
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -3.0182336125075864e+00
+    + max    = 2.4562521168334066e+00
+    + mean   = -1.0263918558897347e-03
+    + stddev = 9.2523458313886375e-01
+  - air_horizontal_velocity_potential (2 levels):
+    + min    = -2.7811435135472284e+00
+    + max    = 3.1739329615923508e+00
+    + mean   = 1.0267482413266865e-01
+    + stddev = 1.1009081031989310e+00
+  - eastward_wind (2 levels):
+    + min    = -3.0244818600248315e+00
+    + max    = 3.0706780400624556e+00
+    + mean   = -2.2464006598581465e-01
+    + stddev = 9.7618305380672155e-01
+  - northward_wind (2 levels):
+    + min    = -3.2744824632480696e+00
+    + max    = 3.2425278015624190e+00
+    + mean   = 1.6192444016697283e-01
+    + stddev = 9.8011064466269715e-01
+  - air_pressure_at_surface (1 levels):
+    + min    = -2.7592822439156475e+00
+    + max    = 3.1418793310114155e+00
+    + mean   = 2.3476889612223720e-01
+    + stddev = 9.9524261941447323e-01
+Write state: 
+- Valid time: 2010-01-01T18:00:00Z
+  Geometry: L40x21 [840]
+  Fields:
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -3.0182336125075864e+00
+    + max    = 2.4562521168334066e+00
+    + mean   = -1.0263918558897347e-03
+    + stddev = 9.2523458313886375e-01
+  - air_horizontal_velocity_potential (2 levels):
+    + min    = -2.7811435135472284e+00
+    + max    = 3.1739329615923508e+00
+    + mean   = 1.0267482413266865e-01
+    + stddev = 1.1009081031989310e+00
+  - eastward_wind (2 levels):
+    + min    = -3.0244818600248315e+00
+    + max    = 3.0706780400624556e+00
+    + mean   = -2.2464006598581465e-01
+    + stddev = 9.7618305380672155e-01
+  - northward_wind (2 levels):
+    + min    = -3.2744824632480696e+00
+    + max    = 3.2425278015624190e+00
+    + mean   = 1.6192444016697283e-01
+    + stddev = 9.8011064466269715e-01
+  - air_pressure_at_surface (1 levels):
+    + min    = -2.7592822439156475e+00
+    + max    = 3.1418793310114155e+00
+    + mean   = 2.3476889612223720e-01
+    + stddev = 9.9524261941447323e-01
+Write perturbation: 
+- Valid time: 2010-01-01T18:00:00Z
+  Geometry: L40x21 [840]
+  Fields:
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -2.5477848389334103e+00
+    + max    = 2.8046021061257211e+00
+    + mean   = 1.9099213212737859e-01
+    + stddev = 9.0445142138120060e-01
+  - air_horizontal_velocity_potential (2 levels):
+    + min    = -3.5946450405365482e+00
+    + max    = 2.4169514177351816e+00
+    + mean   = -1.2021256105820206e-01
+    + stddev = 9.2657549979929266e-01
+  - eastward_wind (2 levels):
+    + min    = -3.0944522533060796e+00
+    + max    = 3.3723254113687671e+00
+    + mean   = 9.8960166965529645e-02
+    + stddev = 1.0359905568396810e+00
+  - northward_wind (2 levels):
+    + min    = -2.9181646567728268e+00
+    + max    = 3.2998145386031048e+00
+    + mean   = -1.5267507382932460e-01
+    + stddev = 1.0574210873121399e+00
+  - air_pressure_at_surface (1 levels):
+    + min    = -2.8049557958761979e+00
+    + max    = 2.7907578406958082e+00
+    + mean   = -2.3744203751358650e-01
+    + stddev = 1.0596791944866595e+00
+Write state: 
+- Valid time: 2010-01-01T18:00:00Z
+  Geometry: L40x21 [840]
+  Fields:
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -2.5477848389334103e+00
+    + max    = 2.8046021061257211e+00
+    + mean   = 1.9099213212737859e-01
+    + stddev = 9.0445142138120060e-01
+  - air_horizontal_velocity_potential (2 levels):
+    + min    = -3.5946450405365482e+00
+    + max    = 2.4169514177351816e+00
+    + mean   = -1.2021256105820206e-01
+    + stddev = 9.2657549979929266e-01
+  - eastward_wind (2 levels):
+    + min    = -3.0944522533060796e+00
+    + max    = 3.3723254113687671e+00
+    + mean   = 9.8960166965529645e-02
+    + stddev = 1.0359905568396810e+00
+  - northward_wind (2 levels):
+    + min    = -2.9181646567728268e+00
+    + max    = 3.2998145386031048e+00
+    + mean   = -1.5267507382932460e-01
+    + stddev = 1.0574210873121399e+00
+  - air_pressure_at_surface (1 levels):
+    + min    = -2.8049557958761979e+00
+    + max    = 2.7907578406958082e+00
+    + mean   = -2.3744203751358650e-01
+    + stddev = 1.0596791944866595e+00
+Write perturbation: 
+- Valid time: 2010-01-01T18:00:00Z
+  Geometry: L40x21 [840]
+  Fields:
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -3.6476979783330008e+00
+    + max    = 2.5503491641441891e+00
+    + mean   = -3.8948210588503696e-01
+    + stddev = 1.0262915987779286e+00
+  - air_horizontal_velocity_potential (2 levels):
+    + min    = -3.2635476224221551e+00
+    + max    = 4.0081936007138648e+00
+    + mean   = 1.6571282075176624e-01
+    + stddev = 1.0871038762186749e+00
+  - eastward_wind (2 levels):
+    + min    = -3.5794474943824710e+00
+    + max    = 3.3076296749652268e+00
+    + mean   = -1.6853688668867223e-01
+    + stddev = 9.3979056642149150e-01
+  - northward_wind (2 levels):
+    + min    = -2.7461661031447213e+00
+    + max    = 2.8164651693419867e+00
+    + mean   = 1.4512532538053941e-01
+    + stddev = 9.7338838362695113e-01
+  - air_pressure_at_surface (1 levels):
+    + min    = -2.4512207157449231e+00
+    + max    = 2.8692133501613020e+00
+    + mean   = -1.0925085111002474e-01
+    + stddev = 9.2192687576663079e-01
+Write state: 
+- Valid time: 2010-01-01T18:00:00Z
+  Geometry: L40x21 [840]
+  Fields:
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -3.6476979783330008e+00
+    + max    = 2.5503491641441891e+00
+    + mean   = -3.8948210588503696e-01
+    + stddev = 1.0262915987779286e+00
+  - air_horizontal_velocity_potential (2 levels):
+    + min    = -3.2635476224221551e+00
+    + max    = 4.0081936007138648e+00
+    + mean   = 1.6571282075176624e-01
+    + stddev = 1.0871038762186749e+00
+  - eastward_wind (2 levels):
+    + min    = -3.5794474943824710e+00
+    + max    = 3.3076296749652268e+00
+    + mean   = -1.6853688668867223e-01
+    + stddev = 9.3979056642149150e-01
+  - northward_wind (2 levels):
+    + min    = -2.7461661031447213e+00
+    + max    = 2.8164651693419867e+00
+    + mean   = 1.4512532538053941e-01
+    + stddev = 9.7338838362695113e-01
+  - air_pressure_at_surface (1 levels):
+    + min    = -2.4512207157449231e+00
+    + max    = 2.8692133501613020e+00
+    + mean   = -1.0925085111002474e-01
+    + stddev = 9.2192687576663079e-01
+Write perturbation: 
+- Valid time: 2010-01-01T18:00:00Z
+  Geometry: L40x21 [840]
+  Fields:
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -3.1551258782276292e+00
+    + max    = 3.9720978503831561e+00
+    + mean   = 3.3065832964705194e-01
+    + stddev = 1.0288494740466689e+00
+  - air_horizontal_velocity_potential (2 levels):
+    + min    = -2.3475030160333632e+00
+    + max    = 3.3909055340786942e+00
+    + mean   = 2.1335573507695568e-01
+    + stddev = 8.8846426020610914e-01
+  - eastward_wind (2 levels):
+    + min    = -2.7227039960220973e+00
+    + max    = 3.0364109597305511e+00
+    + mean   = 1.5508941337935747e-01
+    + stddev = 9.1766930701285732e-01
+  - northward_wind (2 levels):
+    + min    = -4.0421283465777380e+00
+    + max    = 2.8305067471168233e+00
+    + mean   = -3.5593509992359462e-01
+    + stddev = 1.1398763537263987e+00
+  - air_pressure_at_surface (1 levels):
+    + min    = -2.5878054301812945e+00
+    + max    = 2.8769894000179042e+00
+    + mean   = -3.3421750775525727e-02
+    + stddev = 8.3977746489469729e-01
+Write state: 
+- Valid time: 2010-01-01T18:00:00Z
+  Geometry: L40x21 [840]
+  Fields:
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -3.1551258782276292e+00
+    + max    = 3.9720978503831561e+00
+    + mean   = 3.3065832964705194e-01
+    + stddev = 1.0288494740466689e+00
+  - air_horizontal_velocity_potential (2 levels):
+    + min    = -2.3475030160333632e+00
+    + max    = 3.3909055340786942e+00
+    + mean   = 2.1335573507695568e-01
+    + stddev = 8.8846426020610914e-01
+  - eastward_wind (2 levels):
+    + min    = -2.7227039960220973e+00
+    + max    = 3.0364109597305511e+00
+    + mean   = 1.5508941337935747e-01
+    + stddev = 9.1766930701285732e-01
+  - northward_wind (2 levels):
+    + min    = -4.0421283465777380e+00
+    + max    = 2.8305067471168233e+00
+    + mean   = -3.5593509992359462e-01
+    + stddev = 1.1398763537263987e+00
+  - air_pressure_at_surface (1 levels):
+    + min    = -2.5878054301812945e+00
+    + max    = 2.8769894000179042e+00
+    + mean   = -3.3421750775525727e-02
+    + stddev = 8.3977746489469729e-01
+Write perturbation: 
+- Valid time: 2010-01-01T18:00:00Z
+  Geometry: L40x21 [840]
+  Fields:
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -3.0764108684695368e+00
+    + max    = 2.3921951115087059e+00
+    + mean   = -8.4683418993541079e-02
+    + stddev = 9.2183506066931231e-01
+  - air_horizontal_velocity_potential (2 levels):
+    + min    = -2.6333839760189646e+00
+    + max    = 2.7767898682016026e+00
+    + mean   = 2.6802341951447924e-02
+    + stddev = 9.9938534481679153e-01
+  - eastward_wind (2 levels):
+    + min    = -3.4436187895463743e+00
+    + max    = 3.3108051767317721e+00
+    + mean   = 1.7778007595319148e-01
+    + stddev = 1.0312868029721316e+00
+  - northward_wind (2 levels):
+    + min    = -3.4664992525810252e+00
+    + max    = 2.4692079113266860e+00
+    + mean   = 3.4165687759647338e-02
+    + stddev = 1.1292546781732409e+00
+  - air_pressure_at_surface (1 levels):
+    + min    = -2.5803398562001001e+00
+    + max    = 3.7741487071804962e+00
+    + mean   = -7.7489082376749452e-02
+    + stddev = 9.8766254648703045e-01
+Write state: 
+- Valid time: 2010-01-01T18:00:00Z
+  Geometry: L40x21 [840]
+  Fields:
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -3.0764108684695368e+00
+    + max    = 2.3921951115087059e+00
+    + mean   = -8.4683418993541079e-02
+    + stddev = 9.2183506066931231e-01
+  - air_horizontal_velocity_potential (2 levels):
+    + min    = -2.6333839760189646e+00
+    + max    = 2.7767898682016026e+00
+    + mean   = 2.6802341951447924e-02
+    + stddev = 9.9938534481679153e-01
+  - eastward_wind (2 levels):
+    + min    = -3.4436187895463743e+00
+    + max    = 3.3108051767317721e+00
+    + mean   = 1.7778007595319148e-01
+    + stddev = 1.0312868029721316e+00
+  - northward_wind (2 levels):
+    + min    = -3.4664992525810252e+00
+    + max    = 2.4692079113266860e+00
+    + mean   = 3.4165687759647338e-02
+    + stddev = 1.1292546781732409e+00
+  - air_pressure_at_surface (1 levels):
+    + min    = -2.5803398562001001e+00
+    + max    = 3.7741487071804962e+00
+    + mean   = -7.7489082376749452e-02
+    + stddev = 9.8766254648703045e-01
+Write perturbation: 
+- Valid time: 2010-01-01T18:00:00Z
+  Geometry: L40x21 [840]
+  Fields:
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -3.0805812484673858e+00
+    + max    = 3.3402745963102189e+00
+    + mean   = -7.0986789216301943e-02
+    + stddev = 1.0578425815230521e+00
+  - air_horizontal_velocity_potential (2 levels):
+    + min    = -3.2031314403093720e+00
+    + max    = 2.8263969424728792e+00
+    + mean   = 2.3441223004507691e-01
+    + stddev = 9.9532279044706928e-01
+  - eastward_wind (2 levels):
+    + min    = -3.7571106996780501e+00
+    + max    = 2.5511707472369847e+00
+    + mean   = -1.3137615951187070e-01
+    + stddev = 9.9954089025255255e-01
+  - northward_wind (2 levels):
+    + min    = -3.8767146098255392e+00
+    + max    = 2.4431529729021513e+00
+    + mean   = -3.8941076294655830e-01
+    + stddev = 9.8140156446434912e-01
+  - air_pressure_at_surface (1 levels):
+    + min    = -3.2779605405849979e+00
+    + max    = 3.8521869677002423e+00
+    + mean   = -2.0054637777665119e-01
+    + stddev = 1.0854315570921216e+00
+Write state: 
+- Valid time: 2010-01-01T18:00:00Z
+  Geometry: L40x21 [840]
+  Fields:
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -3.0805812484673858e+00
+    + max    = 3.3402745963102189e+00
+    + mean   = -7.0986789216301943e-02
+    + stddev = 1.0578425815230521e+00
+  - air_horizontal_velocity_potential (2 levels):
+    + min    = -3.2031314403093720e+00
+    + max    = 2.8263969424728792e+00
+    + mean   = 2.3441223004507691e-01
+    + stddev = 9.9532279044706928e-01
+  - eastward_wind (2 levels):
+    + min    = -3.7571106996780501e+00
+    + max    = 2.5511707472369847e+00
+    + mean   = -1.3137615951187070e-01
+    + stddev = 9.9954089025255255e-01
+  - northward_wind (2 levels):
+    + min    = -3.8767146098255392e+00
+    + max    = 2.4431529729021513e+00
+    + mean   = -3.8941076294655830e-01
+    + stddev = 9.8140156446434912e-01
+  - air_pressure_at_surface (1 levels):
+    + min    = -3.2779605405849979e+00
+    + max    = 3.8521869677002423e+00
+    + mean   = -2.0054637777665119e-01
+    + stddev = 1.0854315570921216e+00
+Write perturbation: 
+- Valid time: 2010-01-01T18:00:00Z
+  Geometry: L40x21 [840]
+  Fields:
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -3.1669614874932046e+00
+    + max    = 2.8409011334385568e+00
+    + mean   = -5.5727907778653850e-02
+    + stddev = 9.3514623594910984e-01
+  - air_horizontal_velocity_potential (2 levels):
+    + min    = -2.6214914422341620e+00
+    + max    = 3.6738232354919149e+00
+    + mean   = 2.9931813962899284e-01
+    + stddev = 9.5677422401974366e-01
+  - eastward_wind (2 levels):
+    + min    = -3.0585192953294724e+00
+    + max    = 2.6858646662411423e+00
+    + mean   = -1.4582945688296248e-01
+    + stddev = 8.6296297406961642e-01
+  - northward_wind (2 levels):
+    + min    = -3.3800314646778662e+00
+    + max    = 2.4314639133293414e+00
+    + mean   = -8.9480586044947893e-02
+    + stddev = 8.8318241890770433e-01
+  - air_pressure_at_surface (1 levels):
+    + min    = -2.8500272098414348e+00
+    + max    = 1.7557158832501545e+00
+    + mean   = -1.1282474282900096e-01
+    + stddev = 8.2533419262245533e-01
+Write state: 
+- Valid time: 2010-01-01T18:00:00Z
+  Geometry: L40x21 [840]
+  Fields:
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -3.1669614874932046e+00
+    + max    = 2.8409011334385568e+00
+    + mean   = -5.5727907778653850e-02
+    + stddev = 9.3514623594910984e-01
+  - air_horizontal_velocity_potential (2 levels):
+    + min    = -2.6214914422341620e+00
+    + max    = 3.6738232354919149e+00
+    + mean   = 2.9931813962899284e-01
+    + stddev = 9.5677422401974366e-01
+  - eastward_wind (2 levels):
+    + min    = -3.0585192953294724e+00
+    + max    = 2.6858646662411423e+00
+    + mean   = -1.4582945688296248e-01
+    + stddev = 8.6296297406961642e-01
+  - northward_wind (2 levels):
+    + min    = -3.3800314646778662e+00
+    + max    = 2.4314639133293414e+00
+    + mean   = -8.9480586044947893e-02
+    + stddev = 8.8318241890770433e-01
+  - air_pressure_at_surface (1 levels):
+    + min    = -2.8500272098414348e+00
+    + max    = 1.7557158832501545e+00
+    + mean   = -1.1282474282900096e-01
+    + stddev = 8.2533419262245533e-01
+Write perturbation: 
+- Valid time: 2010-01-01T18:00:00Z
+  Geometry: L40x21 [840]
+  Fields:
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -2.9241483562353179e+00
+    + max    = 3.1201437042935369e+00
+    + mean   = -2.3715929842188532e-01
+    + stddev = 8.8756427305003005e-01
+  - air_horizontal_velocity_potential (2 levels):
+    + min    = -4.3437943177689524e+00
+    + max    = 3.7343591412082779e+00
+    + mean   = -5.3926795558170683e-02
+    + stddev = 9.9810627286130582e-01
+  - eastward_wind (2 levels):
+    + min    = -3.6203347430005608e+00
+    + max    = 2.8815251199020215e+00
+    + mean   = 4.7780886700087143e-02
+    + stddev = 9.1148032890054997e-01
+  - northward_wind (2 levels):
+    + min    = -3.2293837532275722e+00
+    + max    = 2.9290620740450559e+00
+    + mean   = -5.0155282554542610e-03
+    + stddev = 8.6062784158683603e-01
+  - air_pressure_at_surface (1 levels):
+    + min    = -3.0860838450932886e+00
+    + max    = 3.0308034503103785e+00
+    + mean   = 2.5002880603530547e-01
+    + stddev = 9.4766355754185772e-01
+Write state: 
+- Valid time: 2010-01-01T18:00:00Z
+  Geometry: L40x21 [840]
+  Fields:
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -2.9241483562353179e+00
+    + max    = 3.1201437042935369e+00
+    + mean   = -2.3715929842188532e-01
+    + stddev = 8.8756427305003005e-01
+  - air_horizontal_velocity_potential (2 levels):
+    + min    = -4.3437943177689524e+00
+    + max    = 3.7343591412082779e+00
+    + mean   = -5.3926795558170683e-02
+    + stddev = 9.9810627286130582e-01
+  - eastward_wind (2 levels):
+    + min    = -3.6203347430005608e+00
+    + max    = 2.8815251199020215e+00
+    + mean   = 4.7780886700087143e-02
+    + stddev = 9.1148032890054997e-01
+  - northward_wind (2 levels):
+    + min    = -3.2293837532275722e+00
+    + max    = 2.9290620740450559e+00
+    + mean   = -5.0155282554542610e-03
+    + stddev = 8.6062784158683603e-01
+  - air_pressure_at_surface (1 levels):
+    + min    = -3.0860838450932886e+00
+    + max    = 3.0308034503103785e+00
+    + mean   = 2.5002880603530547e-01
+    + stddev = 9.4766355754185772e-01
+Write perturbation: 
+- Valid time: 2010-01-01T18:00:00Z
+  Geometry: L40x21 [840]
+  Fields:
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -3.2771856602488225e+00
+    + max    = 3.2467430575965972e+00
+    + mean   = 6.7193154874233871e-02
+    + stddev = 9.8009237381126102e-01
+  - air_horizontal_velocity_potential (2 levels):
+    + min    = -3.3730256474652958e+00
+    + max    = 3.4609420091792553e+00
+    + mean   = 1.3616449262138242e-01
+    + stddev = 1.0430140436275317e+00
+  - eastward_wind (2 levels):
+    + min    = -2.7580389576547324e+00
+    + max    = 3.7109509531356477e+00
+    + mean   = -7.7455916531790833e-02
+    + stddev = 1.1059708276633193e+00
+  - northward_wind (2 levels):
+    + min    = -2.9402041577325715e+00
+    + max    = 3.1073235483329822e+00
+    + mean   = -1.2949949887858209e-01
+    + stddev = 9.1261662296651680e-01
+  - air_pressure_at_surface (1 levels):
+    + min    = -2.1478780197343510e+00
+    + max    = 2.4991499841229947e+00
+    + mean   = -1.0231009126308258e-01
+    + stddev = 8.5121260522349618e-01
+Write state: 
+- Valid time: 2010-01-01T18:00:00Z
+  Geometry: L40x21 [840]
+  Fields:
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -3.2771856602488225e+00
+    + max    = 3.2467430575965972e+00
+    + mean   = 6.7193154874233871e-02
+    + stddev = 9.8009237381126102e-01
+  - air_horizontal_velocity_potential (2 levels):
+    + min    = -3.3730256474652958e+00
+    + max    = 3.4609420091792553e+00
+    + mean   = 1.3616449262138242e-01
+    + stddev = 1.0430140436275317e+00
+  - eastward_wind (2 levels):
+    + min    = -2.7580389576547324e+00
+    + max    = 3.7109509531356477e+00
+    + mean   = -7.7455916531790833e-02
+    + stddev = 1.1059708276633193e+00
+  - northward_wind (2 levels):
+    + min    = -2.9402041577325715e+00
+    + max    = 3.1073235483329822e+00
+    + mean   = -1.2949949887858209e-01
+    + stddev = 9.1261662296651680e-01
+  - air_pressure_at_surface (1 levels):
+    + min    = -2.1478780197343510e+00
+    + max    = 2.4991499841229947e+00
+    + mean   = -1.0231009126308258e-01
+    + stddev = 8.5121260522349618e-01
+Write perturbation: 
+- Valid time: 2010-01-01T18:00:00Z
+  Geometry: L40x21 [840]
+  Fields:
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -3.7836073303375395e+00
+    + max    = 2.6478646738134262e+00
+    + mean   = 6.1560747264288972e-02
+    + stddev = 9.6388430995239138e-01
+  - air_horizontal_velocity_potential (2 levels):
+    + min    = -3.2006742965141237e+00
+    + max    = 3.0326637646806640e+00
+    + mean   = -5.7170140718717871e-02
+    + stddev = 1.0603867079464095e+00
+  - eastward_wind (2 levels):
+    + min    = -2.7150512215374314e+00
+    + max    = 3.5175813739115509e+00
+    + mean   = 1.1965372863061587e-01
+    + stddev = 9.9819312328817045e-01
+  - northward_wind (2 levels):
+    + min    = -4.4353240316872551e+00
+    + max    = 3.4215750286339408e+00
+    + mean   = 1.7619014246282269e-01
+    + stddev = 1.0534540360151072e+00
+  - air_pressure_at_surface (1 levels):
+    + min    = -2.2688318805140875e+00
+    + max    = 3.2950908198281184e+00
+    + mean   = 1.3986400194896204e-01
+    + stddev = 9.4492232704938572e-01
+Write state: 
+- Valid time: 2010-01-01T18:00:00Z
+  Geometry: L40x21 [840]
+  Fields:
+  - air_horizontal_streamfunction (2 levels):
+    + min    = -3.7836073303375395e+00
+    + max    = 2.6478646738134262e+00
+    + mean   = 6.1560747264288972e-02
+    + stddev = 9.6388430995239138e-01
+  - air_horizontal_velocity_potential (2 levels):
+    + min    = -3.2006742965141237e+00
+    + max    = 3.0326637646806640e+00
+    + mean   = -5.7170140718717871e-02
+    + stddev = 1.0603867079464095e+00
+  - eastward_wind (2 levels):
+    + min    = -2.7150512215374314e+00
+    + max    = 3.5175813739115509e+00
+    + mean   = 1.1965372863061587e-01
+    + stddev = 9.9819312328817045e-01
+  - northward_wind (2 levels):
+    + min    = -4.4353240316872551e+00
+    + max    = 3.4215750286339408e+00
+    + mean   = 1.7619014246282269e-01
+    + stddev = 1.0534540360151072e+00
+  - air_pressure_at_surface (1 levels):
+    + min    = -2.2688318805140875e+00
+    + max    = 3.2950908198281184e+00
+    + mean   = 1.3986400194896204e-01
+    + stddev = 9.4492232704938572e-01

@@ -875,7 +875,7 @@ if (conf%get('nicas',section)) then
          allocate(nam%nicas_interp_type(nam%ng))
 
          ! Copy
-         nam%nicas_interp_type = 'si'
+         nam%nicas_interp_type = 'c0'
          do iconf=1,size(confs)
             call confs(iconf)%get_or_die('groups',str_array)
             call confs(iconf)%get_or_die('type',str)
@@ -1005,7 +1005,7 @@ end if
 if (nam%ne==0) nam%ne = nam%ens1_ne
 if (.not.allocated(nam%nicas_interp_type)) then
    allocate(nam%nicas_interp_type(nam%ng))
-   nam%nicas_interp_type = 'si'
+   nam%nicas_interp_type = 'c0'
 end if
 
 ! Apply bounds

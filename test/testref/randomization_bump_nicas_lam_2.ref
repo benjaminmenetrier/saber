@@ -1,15 +1,35 @@
 Norm of input parameter StdDev: 2.7433556094680836e+02
-Member 0: 
+Write state: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: structured [3763]
   Fields:
-    air_horizontal_streamfunction: 1.5542190532569322e+02
-    air_horizontal_velocity_potential: 2.2764619107995816e+02
-    air_pressure_at_surface: 0.0000000000000000e+00
-Member 1: 
+  - air_horizontal_streamfunction (10 levels):
+    + min    = 9.3484754554777183e-01
+    + max    = 6.6985940683226559e+00
+    + mean   = 3.7672935273265158e+00
+    + stddev = 1.2472758585645098e+00
+  - air_horizontal_velocity_potential (10 levels):
+    + min    = 2.1946255689758960e+00
+    + max    = 5.7640225266720648e+00
+    + mean   = 4.2090667762457263e+00
+    + stddev = 7.0119232092199679e-01
+  - air_pressure_at_surface (1 levels):
+    + min    = 0.0000000000000000e+00
+    + max    = 0.0000000000000000e+00
+Write state: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: structured [3763]
   Fields:
-    air_horizontal_streamfunction: 2.0232321167329059e+02
-    air_horizontal_velocity_potential: 1.8993899783022999e+02
-    air_pressure_at_surface: 0.0000000000000000e+00
+  - air_horizontal_streamfunction (10 levels):
+    + min    = 1.3732320619867160e+00
+    + max    = 5.9397159337202527e+00
+    + mean   = 3.4380931128434264e+00
+    + stddev = 7.6501252857088498e-01
+  - air_horizontal_velocity_potential (10 levels):
+    + min    = 6.6113999734111806e-01
+    + max    = 5.4382884381716678e+00
+    + mean   = 3.2367266096712397e+00
+    + stddev = 9.2775776646989550e-01
+  - air_pressure_at_surface (1 levels):
+    + min    = 0.0000000000000000e+00
+    + max    = 0.0000000000000000e+00

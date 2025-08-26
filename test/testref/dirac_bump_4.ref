@@ -2,8 +2,14 @@ Input Dirac increment:
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    eastward_wind: 1.0000000000000000e+00
-    northward_wind: 0.0000000000000000e+00
+  - eastward_wind (2 levels):
+    + min    = 0.0000000000000000e+00
+    + max    = 1.0000000000000000e+00
+    + mean   = 5.9523809523809529e-04
+    + stddev = 2.4397501823713856e-02
+  - northward_wind (2 levels):
+    + min    = 0.0000000000000000e+00
+    + max    = 0.0000000000000000e+00
        Independent levels:  1[2]
           Subset Sc0 size:              762
           Domain area (% of Earth area): 0.100E+03%
@@ -39,7 +45,7 @@ Adjoint test for block BUMP_PsiChiToUV passed
           nc2 =      280
           Independent levels:  1[2]
 Adjoint test for block BUMP_VerticalBalance passed
-Norm of input parameter StdDev: 5.8157693747128690e+01
+Norm of input parameter StdDev: 5.8030999898443227e+01
 Adjoint test for block StdDev passed
        Independent levels:  1[2]
           Subset Sc0 size:              762
@@ -64,5 +70,13 @@ Covariance(SABER) * Increment:
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    eastward_wind: 1.4333166890307929e-12
-    northward_wind: 3.6709144717319915e-13
+  - eastward_wind (2 levels):
+    + min    = -2.9705005351409766e-13
+    + max    = 1.0383896396084448e-12
+    + mean   = -2.6311614644074536e-16
+    + stddev = 4.4876832731422324e-14
+  - northward_wind (2 levels):
+    + min    = -1.7467243081568640e-13
+    + max    = 1.2551788194987130e-13
+    + mean   = 9.5115200345659266e-18
+    + stddev = 9.5537091196015075e-15

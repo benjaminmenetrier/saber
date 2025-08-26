@@ -5,28 +5,28 @@
              Level   2 ~> 100.0%
              Level   1 ~>  0.100E+01 vert. coord.
              Level   2 ~>  0.200E+01 vert. coord.
-Norm of input parameter nicas_a - 1: 4.5934667796822829e+01
-Norm of input parameter nicas_a - 2: 1.2117709782637888e+01
-             nc1(  1) =                       1008
-             nc1(  2) =                       1144
-             ns =                             2152
+Norm of input parameter nicas_a - 1: 4.3971934978016535e+01
+Norm of input parameter nicas_a - 2: 1.4390700922927177e+01
+             nc1(  1) =                        880
+             nc1(  2) =                        880
+             ns =                             1760
              v%n_s =                             2
-             c%n_s[global] =                 57104
-             nc1(  1) =                       3400
-             nc1(  2) =                       3888
-             ns =                             7288
-             v%n_s =                             2
-             c%n_s[global] =                115160
-             nc1(  1) =                       1008
-             nc1(  2) =                       1008
-             ns =                             2016
-             v%n_s =                             2
-             c%n_s[global] =                 53736
-             nc1(  1) =                       3400
+             c%n_s[global] =                 47544
+             nc1(  1) =                       2944
              nc1(  2) =                       3168
-             ns =                             6568
+             ns =                             6112
              v%n_s =                             2
-             c%n_s[global] =                 99968
+             c%n_s[global] =                 97120
+             nc1(  1) =                       1008
+             nc1(  2) =                        760
+             ns =                             1768
+             v%n_s =                             2
+             c%n_s[global] =                 49808
+             nc1(  1) =                       3168
+             nc1(  2) =                       2728
+             ns =                             5896
+             v%n_s =                             2
+             c%n_s[global] =                 91584
     Full NICAS adjoint test result:                        T
        Block NICAS adjoint test result:                    T
           Interpolation adjoint test (horizontal) result:  T
@@ -60,8 +60,8 @@ Norm of input parameter nicas_a - 2: 1.2117709782637888e+01
           Component NICAS adjoint test result:             T
              0.0 /    0.0:  1.0000000
           Level   1:  0.0000000 -  1.0000000
-          Level   2:  0.0000000 -  0.6494906
+          Level   2:  0.0000000 -  0.6450585
              0.0 /    0.0:  0.0000000
           Level   1:  0.0000000 -  0.0000000
           Level   2:  0.0000000 -  0.0000000
-Norm of output parameter dirac_nicas - 1: 2.4099462496983253e+00
+Norm of output parameter dirac_nicas - 1: 2.5890967804275911e+00

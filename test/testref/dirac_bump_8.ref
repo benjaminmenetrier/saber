@@ -2,23 +2,27 @@ Input Dirac increment:
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L120x61 [7320]
   Fields:
-    snow_depth: 1.0000000000000000e+00
+  - snow_depth (1 levels):
+    + min    = 0.0000000000000000e+00
+    + max    = 1.0000000000000000e+00
+    + mean   = 1.3661202185792350e-04
+    + stddev = 1.1688114555304096e-02
        Independent levels:  1[1]
           Subset Sc0 size:             7082
           Domain area (% of Earth area): 0.100E+03%
              Level   1 ~> 100.0%
              Level   1 ~>  0.444E-01 vert. coord.
              Effective levels:   1 
-                   Requested distance between points (min/max/avg):  0.832E+03 km /  0.832E+03 km /  0.832E+03 km
-                   Regular sampling grid size:      544 points
-                   Nearest neighbor distance (min/max/avg):  0.289E+03 km /  0.889E+03 km /  0.774E+03 km
-                   Effective resolution (min/max/avg):  6.75 / 20.73 /  8.51
-                   Subgrid hash:   -474283508
-                Subgrid size:      544
-             nc1(  1) =                        544
-             ns =                              544
+                   Requested distance between points (min/max/avg):  0.120E+04 km /  0.120E+04 km /  0.120E+04 km
+                   Regular sampling grid size:      208 points
+                   Nearest neighbor distance (min/max/avg):  0.556E+03 km /  0.123E+04 km /  0.104E+04 km
+                   Effective resolution (min/max/avg):  4.88 / 10.78 /  6.28
+                   Subgrid hash:  -2117861176
+                Subgrid size:      208
+             nc1(  1) =                        208
+             ns =                              208
              v%n_s =                             1
-             c%n_s[global] =                  7772
+             c%n_s[global] =                  2536
     Full NICAS adjoint test result:                        T
        Block NICAS adjoint test result:                    T
           Interpolation adjoint test (horizontal) result:  T
@@ -33,4 +37,8 @@ Covariance(SABER) * Increment:
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L120x61 [7320]
   Fields:
-    snow_depth: 8.8001315545517045e+00
+  - snow_depth (1 levels):
+    + min    = 0.0000000000000000e+00
+    + max    = 9.9999999999999967e-01
+    + mean   = 1.1002598396175700e-02
+    + stddev = 7.7200322295295540e-02

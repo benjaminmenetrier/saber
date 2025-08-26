@@ -2941,7 +2941,7 @@ do il1=1,nicas_cmp%nl1
       end if
 
       ! Compute interpolation from subset Sc1 to subset Sc0
-      write(mpl%info,'(a16,a)') '','Compute interpolation from subset Sc1 to subset Sc0'
+      write(mpl%info,'(a16,a)') '','Compute interpolation from subset Sc1 to subset Sc0, type '//trim(nicas_cmp%interp_type)
       call mpl%flush(flush=nicas_cmp%verbosity)
 
       if (compute_interp) then

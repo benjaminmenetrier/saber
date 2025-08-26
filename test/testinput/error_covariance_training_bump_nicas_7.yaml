@@ -28,7 +28,7 @@ background error:
       drivers:
         compute covariance: true
         compute correlation: true
-        multivariate strategy: crossed
+        multivariate strategy: univariate
         compute moments: true
         write diagnostics: true
         adjoints test: true
@@ -46,10 +46,10 @@ background error:
         horizontal length-scale:
         - groups:
           - air_horizontal_streamfunction
-          value: 4000.0e3
+          value: 6000.0e3
         - groups:
           - air_horizontal_velocity_potential
-          value: 2000.0e3
+          value: 4000.0e3
         vertical length-scale:
         - groups:
           - air_horizontal_streamfunction

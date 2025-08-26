@@ -40,10 +40,6 @@ background error:
         internal dirac test: true
       nicas:
         resolution: 7
-        interpolation type:
-        - groups:
-          - air_horizontal_streamfunction
-          type: c0
       dirac:
       - longitude: -77.6
         latitude: 12.0

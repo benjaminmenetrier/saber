@@ -2,13 +2,23 @@ Input Dirac increment:
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    eastward_wind: 1.0000000000000000e+00
-    northward_wind: 0.0000000000000000e+00
+  - eastward_wind (2 levels):
+    + min    = 0.0000000000000000e+00
+    + max    = 1.0000000000000000e+00
+    + mean   = 5.9523809523809529e-04
+    + stddev = 2.4397501823713856e-02
+  - northward_wind (2 levels):
+    + min    = 0.0000000000000000e+00
+    + max    = 0.0000000000000000e+00
 - Valid time: 2010-01-01T18:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    eastward_wind: 0.0000000000000000e+00
-    northward_wind: 0.0000000000000000e+00
+  - eastward_wind (2 levels):
+    + min    = 0.0000000000000000e+00
+    + max    = 0.0000000000000000e+00
+  - northward_wind (2 levels):
+    + min    = 0.0000000000000000e+00
+    + max    = 0.0000000000000000e+00
        Independent levels:  1[2]
           Subset Sc0 size:              762
           Domain area (% of Earth area): 0.100E+03%
@@ -36,10 +46,26 @@ Covariance(SABER) * Increment:
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    eastward_wind: 9.1521716747796932e-07
-    northward_wind: 8.7701939311350556e-07
+  - eastward_wind (2 levels):
+    + min    = -3.8952223712493405e-07
+    + max    = 3.8232491337182743e-07
+    + mean   = 4.3583599512827051e-12
+    + stddev = 2.2584696607429401e-08
+  - northward_wind (2 levels):
+    + min    = -3.9374117417695672e-07
+    + max    = 4.0680731348134063e-07
+    + mean   = 3.8063844219128602e-11
+    + stddev = 2.3304669622054958e-08
 - Valid time: 2010-01-01T18:00:00Z
   Geometry: L40x21 [840]
   Fields:
-    eastward_wind: 9.1521716747796932e-07
-    northward_wind: 8.7701939311350556e-07
+  - eastward_wind (2 levels):
+    + min    = -3.8952223712493405e-07
+    + max    = 3.8232491337182743e-07
+    + mean   = 4.3583599512827051e-12
+    + stddev = 2.2584696607429401e-08
+  - northward_wind (2 levels):
+    + min    = -3.9374117417695672e-07
+    + max    = 4.0680731348134063e-07
+    + mean   = 3.8063844219128602e-11
+    + stddev = 2.3304669622054958e-08

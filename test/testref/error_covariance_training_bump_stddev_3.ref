@@ -5,8 +5,8 @@
              Level   2 ~> 100.0%
              Level   1 ~>  0.100E+01 vert. coord.
              Level   2 ~>  0.200E+01 vert. coord.
-             Level   1 ~>  0.10196E+01 /  0.10196E+01
-             Level   2 ~>  0.97136E+00 /  0.97136E+00
-             Level   1 ~>  0.10139E+01 /  0.10139E+01
-             Level   2 ~>  0.10218E+01 /  0.10218E+01
-Norm of output parameter stddev - 1: 5.8157693747128690e+01
+             Level   1 ~>  0.10360E+01 /  0.10360E+01
+             Level   2 ~>  0.98368E+00 /  0.98368E+00
+             Level   1 ~>  0.94243E+00 /  0.94243E+00
+             Level   2 ~>  0.10470E+01 /  0.10470E+01
+Norm of output parameter stddev - 1: 5.8030999898443227e+01
