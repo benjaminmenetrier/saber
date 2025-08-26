@@ -192,8 +192,6 @@ class GeneralSection : public oops::Parameters {
   oops::Parameter<bool> timers = param(def.timers, this);
   // Universe radius [in meters]
   oops::Parameter<double> universe_radius = param(def.universe_radius, this);
-  // Sampling method
-  oops::Parameter<std::string> sampling_method = param(def.sampling_method, this);
   // Use deprecated hull (for backward compatibility)
   oops::Parameter<bool> deprecated_hull = param(def.deprecated_hull, this);
   // Use deprecated work grid (for backward compatibility)
@@ -615,6 +613,9 @@ class NICASSection : public oops::Parameters {
   // Forced localization weights
   oops::Parameter<std::vector<LocWgtParameters>> loc_wgt{"common localization weights", {},
     this};
+  // NICAS C1B to C0A default interpolation type ('c0': C0 mesh-based, 'c1': C1 mesh-based
+  // or 'si': smooth interpolation)
+  oops::Parameter<std::string> default_interp_type = param(def.default_interp_type, this);
   // NICAS C1B to C0A interpolation type ('c0': C0 mesh-based, 'c1': C1 mesh-based
   // or 'si': smooth interpolation)
   oops::Parameter<std::vector<GroupsTypeParameters>> interp_type{"interpolation type", {},

@@ -547,6 +547,11 @@ struct NICASDef {
   std::pair<const char *, bool> forced_radii =
     std::make_pair("explicit length-scales", false);
 
+  // NICAS C1B to C0A default interpolation type ('c0': C0 mesh-based, 'c1': C1 mesh-based
+  // or 'si': smooth interpolation)
+  std::pair<const char *, std::string> default_interp_type =
+    std::make_pair("default interpolation type", "c0");
+
   // Factor to get interpolation radius from convolution radius if nicas_interp_type = 'si'
   std::pair<const char *, double> nicas_si_factor =
     std::make_pair("smooth interpolation factor", 0.8);

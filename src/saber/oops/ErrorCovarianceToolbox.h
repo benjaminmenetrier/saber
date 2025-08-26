@@ -202,6 +202,7 @@ template <typename MODEL> class ErrorCovarianceToolbox : public oops::Applicatio
     // Setup time
     util::DateTime time = xx[0].validTime();
 
+    // Full covariance configuration
     const eckit::LocalConfiguration covarConf(fullConfigUpdated, "background error");
 
     // Dirac test

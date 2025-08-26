@@ -48,8 +48,6 @@ void bump_config_init_f90(eckit::LocalConfiguration * config) {
   param(generalDef.timers, generalConf);
   // Universe radius [in meters]
   param(generalDef.universe_radius, generalConf);
-  // Sampling method
-  param(generalDef.sampling_method, generalConf);
   // Use deprecated hull (for backward compatibility)
   param(generalDef.deprecated_hull, generalConf);
   // Use deprecated work grid (for backward compatibility)
@@ -310,6 +308,9 @@ void bump_config_init_f90(eckit::LocalConfiguration * config) {
   param(nicasDef.nicas_draw_type, nicasConf);
   // Force specific support radii
   param(nicasDef.forced_radii, nicasConf);
+  // NICAS C1B to C0A default interpolation type ('c0': C0 mesh-based, 'c1': C1 mesh-based
+  // or 'si': smooth interpolation)
+  param(nicasDef.default_interp_type, nicasConf);
   // Factor to get interpolation radius from convolution radius if nicas_interp_type = 'si'
   param(nicasDef.nicas_si_factor, nicasConf);
   // Normalization randomization size

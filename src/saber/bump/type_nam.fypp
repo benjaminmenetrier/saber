@@ -24,7 +24,6 @@ type nam_type
    real(kind_real) :: repro_th                                !< Reproducibility threshold
    logical :: timers                                          !< Use timers
    real(kind_real) :: universe_radius                         !< Universe radius [in meters]
-   character(len=1024) :: sampling_method                     !< Sampling method
    logical :: deprecated_hull                                 !< Use deprecated hull (for backward compatibility)
    logical :: deprecated_work_grid                            !< Use deprecated work grid (for backward compatibility)
 
@@ -190,6 +189,7 @@ type nam_type
    real(kind_real),allocatable :: rh(:,:)                     !< Forced horizontal support radius [in meters]
    real(kind_real),allocatable :: rv(:,:)                     !< Forced vertical support radius
    real(kind_real),allocatable :: loc_wgt_sqrt(:,:)           !< Weights square-root for the 'block_weighted' strategy
+   character(len=2) :: nicas_default_interp_type              !< NICAS C1B to C0A default interpolation type ('c0': C0 mesh-based, 'c1': C1 mesh-based or 'si': smooth interpolation)
    character(len=2),allocatable :: nicas_interp_type(:)       !< NICAS C1B to C0A interpolation type ('c0': C0 mesh-based, 'c1': C1 mesh-based or 'si': smooth interpolation)
    real(kind_real) :: nicas_si_factor                         !< Factor to get interpolation radius from convolution radius if nicas_interp_type = 'si'
    integer :: norm_rand_size                                  !< Normalization randomization size (default is 0, which means exact normalization)
@@ -362,7 +362,6 @@ if (conf%get('general',section)) then
    call nam%get(section,'reproducibility threshold',nam%repro_th)
    call nam%get(section,'timers',nam%timers)
    call nam%get(section,'universe length-scale',nam%universe_radius)
-   call nam%get(section,'sampling method',nam%sampling_method)
    call nam%get(section,'deprecated hull',nam%deprecated_hull)
    call nam%get(section,'deprecated work grid',nam%deprecated_work_grid)
 end if
@@ -866,6 +865,7 @@ if (conf%get('nicas',section)) then
          deallocate(loc_wgt)
       end if
    end if
+   call nam%get(section,'default interpolation type',nam%nicas_default_interp_type)
    if (section%get('interpolation type',confs)) then
       if ((size(confs)>0).and.(nam%ng>0)) then
          ! Release memory
@@ -875,7 +875,7 @@ if (conf%get('nicas',section)) then
          allocate(nam%nicas_interp_type(nam%ng))
 
          ! Copy
-         nam%nicas_interp_type = 'c0'
+         nam%nicas_interp_type = nam%nicas_default_interp_type
          do iconf=1,size(confs)
             call confs(iconf)%get_or_die('groups',str_array)
             call confs(iconf)%get_or_die('type',str)
@@ -1005,7 +1005,7 @@ end if
 if (nam%ne==0) nam%ne = nam%ens1_ne
 if (.not.allocated(nam%nicas_interp_type)) then
    allocate(nam%nicas_interp_type(nam%ng))
-   nam%nicas_interp_type = 'c0'
+   nam%nicas_interp_type = nam%nicas_default_interp_type
 end if
 
 ! Apply bounds
@@ -1037,11 +1037,6 @@ character(len=2) :: ildwvchar
 if (nam%repro_ops) then
   if (nam%repro_th<zero) call mpl%abort('${subr}$','repro_th should be non-negative')
 end if
-select case (nam%sampling_method)
-case ('potential','maxrandom')
-case default
-   call mpl%abort('${subr}$','wrong sampling method: '//trim(nam%sampling_method))
-end select
 
 ! I/O section
 if (nam%prefix/='') nam%prefix = trim(nam%prefix)//'_'
