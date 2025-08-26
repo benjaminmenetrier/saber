@@ -72,7 +72,6 @@ BUMP::BUMP(const oops::GeometryData & geometryData,
   iterativeEnsembleLoading_ = covarConf_.getBool("iterative ensemble loading", false);
 
   // Case where size are specified in the BUMP configuration
-  // TODO(Benjamin): when is this necessary?
   if ((nens_[0] == 0) && bumpConf_.has("ensemble sizes.total ensemble size")) {
     // Ensemble 1 size from configuration
     nens_[0] = bumpConf_.getInt("ensemble sizes.total ensemble size");

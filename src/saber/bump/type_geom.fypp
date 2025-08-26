@@ -327,7 +327,7 @@ type(fieldset_type),intent(in),optional :: fieldset    !< Fieldset containing ge
 
 ! Local variables
 integer :: il0,jl0off,jl0r,jc3,jc4,iproc,iv,ig
-integer,allocatable :: order_c0(:),order_c0a(:)
+integer,allocatable :: order_c0a(:)
 real(kind_real),allocatable :: lon_c0(:),lat_c0(:)
 
 ! Set name
@@ -988,7 +988,7 @@ if (geom%nc0u>0) then
          call geom%hull_c0u%init(mpl,geom%nc0u,geom%lon_c0u,geom%lat_c0u,nam%universe_radius)
       end if
    else
-      call geom%hull_c0u%init(mpl,geom%mesh_c0u%nb,vbnd)
+      call geom%hull_c0u%init(geom%mesh_c0u%nb,vbnd)
    end if
 
    ! Release memory
@@ -1054,7 +1054,7 @@ else
    end do
 
    ! Setup hull
-   call geom%hull_c0%init(mpl,mesh_bnd%nb,vbnd)
+   call geom%hull_c0%init(mesh_bnd%nb,vbnd)
 
    ! Release memory
    deallocate(lon_bnda)
@@ -1096,7 +1096,7 @@ real(kind_real) :: area_124,area_234
 real(kind_real),allocatable :: v_c0a(:,:)
 logical :: valid
 type(atlas_functionspace_structuredcolumns) :: afunctionspace_sc
-type(atlas_config) :: aconfig_grid,aconfig_domain,aconfig_work_proj
+type(atlas_config) :: aconfig_domain,aconfig_work_proj
 type(atlas_structuredgrid) :: agrid_work
 type(hull_type) :: hull
 type(minim_type) :: minim
@@ -1216,7 +1216,7 @@ else
          geom%area = area_124+area_234
 
          ! Create hull
-         call hull%init(mpl,4,v_bnd)
+         call hull%init(4,v_bnd)
 
          ! Count points inside hull
          nmg_inside = 0
@@ -1254,7 +1254,7 @@ else
          end do
 
          ! Create hull
-         call hull%init(mpl,4,v_bnd_infl)
+         call hull%init(4,v_bnd_infl)
 
          ! Count points inside hull
          nc0_inside = 0
@@ -2207,10 +2207,9 @@ real(kind_real),allocatable,intent(inout) :: lat_s(:) !< Sampling latitudes (ful
 integer,allocatable,intent(inout) :: s_to_c0(:)       !< Sampling indices (full domain)
 
 ! Local variables
-integer :: nreg,ireg,ix,iy,ns_nomask,is_nomask,is_base,iangle,idist
-integer :: active_list_size,ir_base,ireg_base,nn_base,try_list_size,nn_int,id,ia,ir,ir_test,ireg_test,nn_test,i,ic0,is,js,iproc,hash
+integer :: active_list_size,ir_base,ireg_base,id,ia,ireg_test,nn_test,i,ic0,is,hash,nreg,ireg,ix,iy,ns_nomask,is_nomask,is_base
 integer :: nn_index(1),nn_index_check(2),order_a(na_bridson)
-integer,allocatable :: s_nomask_to_c0(:),active_list(:),s_nomask_to_reg(:),grid_flag(:),nn_index_base(:),nn_index_test(:),order_s(:)
+integer,allocatable :: s_nomask_to_c0(:),active_list(:),s_nomask_to_reg(:),grid_flag(:),nn_index_test(:),order_s(:)
 real(kind_real) :: rh_min,rh_max,lgrid_factor,x,y,z,x_next,y_next,z_next,x_test,y_test,z_test,lon_test,lat_test,rh_test,rh
 real(kind_real) :: x_base,y_base,z_base,lon_base,lat_base,rh_base,cos_lon_base,sin_lon_base,cos_lat_base,sin_lat_base
 real(kind_real) :: dist,angle,cos_angle,sin_angle

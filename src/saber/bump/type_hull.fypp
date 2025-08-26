@@ -70,13 +70,12 @@ end subroutine hull_init_empty
 ! Subroutine: hull_init_from_vertices
 !> Allocation and initialization of hull from vertices
 !----------------------------------------------------------------------
-subroutine hull_init_from_vertices(hull,mpl,n,vbnd)
+subroutine hull_init_from_vertices(hull,n,vbnd)
 
 implicit none
 
 ! Passed variables
 class(hull_type),intent(inout) :: hull  !< Hull
-type(mpl_type),intent(inout) :: mpl     !< MPI data
 integer,intent(in) :: n                 !< Size
 real(kind_real),intent(in) :: vbnd(3,n) !< Hull vertices
 

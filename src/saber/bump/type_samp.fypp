@@ -1741,7 +1741,7 @@ else
       ! Compute sampling, subset Sc1
       write(mpl%info,'(a7,a,i5,a)') '','Compute sampling, subset Sc1 (nc1 = ',nam%nc1,')'
       call mpl%flush
-      call samp%compute_c1_or_c2(mpl,rng,nam,geom,1)
+      call samp%compute_c1_or_c2(mpl,nam,geom,1)
    else
       samp%nc1a = 0
    end if
@@ -1750,7 +1750,7 @@ else
       ! Compute sampling, subset Sc2
       write(mpl%info,'(a7,a,i5,a)') '','Compute sampling, subset Sc2 (nc2 = ',nam%nc2,')'
       call mpl%flush
-      call samp%compute_c1_or_c2(mpl,rng,nam,geom,2)
+      call samp%compute_c1_or_c2(mpl,nam,geom,2)
    else
       samp%nc2a = 0
    end if
@@ -2122,27 +2122,24 @@ end subroutine samp_compute_mask
 ! Subroutine: samp_compute_c1_or_c2
 !> Compute sampling, subset Sc1 or Sc2
 !----------------------------------------------------------------------
-subroutine samp_compute_c1_or_c2(samp,mpl,rng,nam,geom,subset)
+subroutine samp_compute_c1_or_c2(samp,mpl,nam,geom,subset)
 
 implicit none
 
 ! Passed variables
 class(samp_type),intent(inout) :: samp !< Sampling
 type(mpl_type),intent(inout) :: mpl    !< MPI data
-type(rng_type),intent(inout) :: rng    !< Random number generator
 type(nam_type),intent(inout) :: nam    !< Namelist
 type(geom_type),intent(in) :: geom     !< Geometry
 integer,intent(in) :: subset           !< Subset index (1 or 2)
 
 ! Local variables
-integer :: ic0,ic0a,ic0u,icx,icxa,ildwv,iproc,nn_index(1),n,ix,iy,ncx,ncxa
+integer :: ic0,ic0a,ic0u,icx,icxa,ildwv,iproc,nn_index(1),ncx,ncxa
 integer :: proc_to_ncxa(mpl%nproc),proc_to_cx_offset(mpl%nproc)
 integer,allocatable :: cx_to_c0(:),cxa_to_cx(:)
-real(kind_real) :: lonlat(2),latmin,latmax
+real(kind_real) :: latmin,latmax
 real(kind_real),allocatable :: lon_cxa(:),lat_cxa(:),vert_coord_cxa(:,:)
-logical :: fmask_hor_c0a(geom%nc0a),valid
 logical,allocatable :: fmask_c0a(:),fmask_c0(:),smask_hor_c0(:),smask_cxa(:,:)
-type(atlas_structuredgrid) :: agrid
 
 ! Set name
 @:set_name(samp_compute_c1_or_c2)

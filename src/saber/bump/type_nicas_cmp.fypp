@@ -2639,21 +2639,18 @@ type(geom_type),intent(in) :: geom                        !< Geometry
 type(nicas_cmp_type),intent(in),optional :: nicas_cmp_ref !< Reference NICAS data component
 
 ! Local variables
-integer :: il1,il1s,jl1,il0,il0s,jl0,ic1,ic0,iproc,ic1a,n,ix,iy,ic0u,ic0a,ic1u,ifmt,i_s,jc1,jproc,jc1u,ic1b,jc1b,jc0u,ic0b
+integer :: il1,il1s,jl1,il0,il0s,jl0,ic1,ic0,iproc,ic1a,ic0u,ic0a,ic1u,ifmt,i_s,jc1,jproc,jc1u,ic1b,jc1b,jc0u,ic0b
 integer :: nc0own,ic0own,jc0b,is,isu,isa,isb,ndiff
-integer :: nn_index(1)
 integer,allocatable :: c1_to_c0(:),c0u_to_c0b(:),c0b_to_c0(:),c0own_to_c0(:),sb_to_s(:)
 integer,allocatable :: order_c1(:),order_s(:),order_inv_s(:),order_inv_sa(:)
 real(kind_real) :: lon,lat,alon,alat
-real(kind_real) :: lonlat(2),g(3)
+real(kind_real) :: g(3)
 real(kind_real),allocatable :: lon_c1(:),lat_c1(:),lon_s(:),lat_s(:),interpolation_radius(:)
 real(kind_real),allocatable :: fld_src_c1a(:),fld_src_c1b(:),fld_src_c1(:)
 real(kind_real),allocatable :: grad_ref_c1a(:,:),grad_ssrf_c1a(:,:),grad_op_c1a(:,:),grad_op_c1(:,:)
-logical :: valid,compute_interp
+logical :: compute_interp
 logical :: lcheck_c0b(geom%nc0u)
 logical,allocatable :: gmask_c1(:),gmask_c1a(:),lcheck_c1a(:)
-character(len=1024) :: msg
-type(atlas_structuredgrid) :: agrid
 type(com_type) :: com_c1_AU
 type(linop_type),allocatable :: grad(:)
 

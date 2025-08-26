@@ -143,7 +143,7 @@ integer,intent(out),optional :: n                 !< Grid size
 
 ! Local variables
 integer :: nx,ny
-real(kind_real) :: xmin,xmax,ymin,ymax,Lx,Ly,dx,dy,xy_min(2),xy_max(2),ymean
+real(kind_real) :: xmin,xmax,ymin,ymax,Lx,Ly,xy_min(2),xy_max(2),ymean
 type(atlas_config) :: aconfig_proj
 type(atlas_projection) :: aproj
 character(len=:),allocatable :: units

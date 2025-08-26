@@ -10,7 +10,6 @@
 #pragma once
 
 #include <math.h>
-#include <netcdf.h>
 #include <omp.h>
 
 #include <algorithm>
@@ -117,14 +116,20 @@ template <typename MODEL> class ErrorCovarianceToolbox : public oops::Applicatio
   typedef ErrorCovarianceToolboxParameters<MODEL>         ErrorCovarianceToolboxParameters_;
 
  public:
+
 // -----------------------------------------------------------------------------
+
   explicit ErrorCovarianceToolbox(const eckit::mpi::Comm & comm = eckit::mpi::comm()) :
     Application(comm) {
     oops::instantiateCovarFactory<MODEL>();
   }
+
 // -----------------------------------------------------------------------------
+
   virtual ~ErrorCovarianceToolbox() {}
+
 // -----------------------------------------------------------------------------
+
   int execute(const eckit::Configuration & fullConfig) const override {
     // Deserialize parameters
     ErrorCovarianceToolboxParameters_ params;
@@ -203,7 +208,7 @@ template <typename MODEL> class ErrorCovarianceToolbox : public oops::Applicatio
     util::DateTime time = xx[0].validTime();
 
     // Full covariance configuration
-    const eckit::LocalConfiguration covarConf(fullConfigUpdated, "background error");
+    const eckit::LocalConfiguration covarConf = params.backgroundError.value();
 
     // Dirac test
     const auto & diracParams = params.dirac.value();
@@ -256,13 +261,16 @@ template <typename MODEL> class ErrorCovarianceToolbox : public oops::Applicatio
 
     return 0;
   }
+
 // -----------------------------------------------------------------------------
+
  private:
   std::string appname() const override {
     return "oops::ErrorCovarianceToolbox<" + MODEL::name() + ">";
   }
+
 // -----------------------------------------------------------------------------
-// The passed geometry should be consistent with the passed increment
+
   void print_value_at_positions(const eckit::LocalConfiguration & diagConf,
                                 const Geometry_ & geom,
                                 const Increment4D_ & data) const {
@@ -283,8 +291,9 @@ template <typename MODEL> class ErrorCovarianceToolbox : public oops::Applicatio
 
     oops::Log::trace() << appname() << "::print_value_at_position done" << std::endl;
   }
+
 // -----------------------------------------------------------------------------
-// The passed geometry should be consistent with the passed increment
+
   void extract_1d_covariances(const eckit::LocalConfiguration & diracConf,
                               const eckit::LocalConfiguration & profileConf,
                               const Geometry_ & geom,
@@ -369,8 +378,9 @@ template <typename MODEL> class ErrorCovarianceToolbox : public oops::Applicatio
 
   oops::Log::trace() << appname() << "::extract_1d_covariances done" << std::endl;
 }
+
 // -----------------------------------------------------------------------------
-// The passed geometry/variables should be consistent with the passed increment
+
   void dirac(const eckit::LocalConfiguration & covarConf,
              const eckit::LocalConfiguration & testConf,
              std::string & id,
@@ -516,7 +526,9 @@ template <typename MODEL> class ErrorCovarianceToolbox : public oops::Applicatio
       oops::Log::test() << "Localization(" << id << ") * Increment:" << dxo << std::endl;
     }
   }
+
 // -----------------------------------------------------------------------------
+
   void randomization(const ErrorCovarianceToolboxParameters_ & params,
                      const Geometry_ & geom,
                      const oops::Variables & vars,
@@ -614,7 +626,9 @@ template <typename MODEL> class ErrorCovarianceToolbox : public oops::Applicatio
       }
     }
   }
+
 // -----------------------------------------------------------------------------
+
 };
 
 }  // namespace saber
