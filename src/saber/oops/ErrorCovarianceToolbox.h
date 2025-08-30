@@ -116,9 +116,6 @@ template <typename MODEL> class ErrorCovarianceToolbox : public oops::Applicatio
   typedef ErrorCovarianceToolboxParameters<MODEL>         ErrorCovarianceToolboxParameters_;
 
  public:
-
-// -----------------------------------------------------------------------------
-
   explicit ErrorCovarianceToolbox(const eckit::mpi::Comm & comm = eckit::mpi::comm()) :
     Application(comm) {
     oops::instantiateCovarFactory<MODEL>();
@@ -628,7 +625,6 @@ template <typename MODEL> class ErrorCovarianceToolbox : public oops::Applicatio
   }
 
 // -----------------------------------------------------------------------------
-
 };
 
 }  // namespace saber

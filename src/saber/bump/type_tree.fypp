@@ -120,6 +120,10 @@ do i=1,tree%neff
   call tree%kd%insert(tree%lon(i)*rad2deg, tree%lat(i)*rad2deg, i)
 end do
 
+! Build KDTree
+! TODO(Benjamin): should not be necessary, but seems required for Intel compiler
+call tree%kd%build()
+
 end subroutine tree_init
 
 !----------------------------------------------------------------------

@@ -188,7 +188,7 @@ type nam_type
    logical :: forced_radii                                    !< Force specific support radii
    real(kind_real),allocatable :: rh(:,:)                     !< Forced horizontal support radius [in meters]
    real(kind_real),allocatable :: rv(:,:)                     !< Forced vertical support radius
-   real(kind_real),allocatable :: loc_wgt_sqrt(:,:)           !< Weights square-root for the 'block_weighted' strategy
+   real(kind_real),allocatable :: loc_wgt_sqrt(:,:)           !< Weights square-root for the 'duplicated and weighted' strategy
    character(len=2) :: nicas_default_interp_type              !< NICAS C1B to C0A default interpolation type ('c0': C0 mesh-based, 'c1': C1 mesh-based or 'si': smooth interpolation)
    character(len=2),allocatable :: nicas_interp_type(:)       !< NICAS C1B to C0A interpolation type ('c0': C0 mesh-based, 'c1': C1 mesh-based or 'si': smooth interpolation)
    real(kind_real) :: nicas_si_factor                         !< Factor to get interpolation radius from convolution radius if nicas_interp_type = 'si'
@@ -304,13 +304,13 @@ type(fckit_configuration),intent(in) :: conf !< Configuration
 logical,intent(in),optional :: verbose       !< Print configuration sections
 
 ! Local variables
-integer :: iv,jv,iconf,rank,itest,it,ivv,jvv,ig
+integer :: iv,jv,iconf,rank,itest,it,ig,jg
 integer,allocatable :: vbal_order(:)
 real(kind_real) :: real_scalar
 real(kind_real),allocatable :: loc_wgt(:,:)
 logical :: lverbose,color_log,found,valid
 character(len=:),allocatable :: str,str_bal,str_unbal
-character(len=:),allocatable :: str_array(:),str_array_row(:),str_array_col(:)
+character(len=:),allocatable :: str_array(:)
 type(fckit_configuration) :: section
 type(fckit_configuration),allocatable :: confs(:)
 
@@ -817,53 +817,62 @@ if (conf%get('nicas',section)) then
    call nam%get(section,'explicit length-scales',nam%forced_radii)
    call nam%get(mpl,section,'horizontal length-scale',nam%rh,one/req)
    call nam%get(mpl,section,'vertical length-scale',nam%rv)
-   if (section%get('common localization weights',confs)) then
-      if ((nam%strategy=='duplicated and weighted').and.(size(confs)>0).and.(nam%nv>0)) then
-         ! Release memory
-         if (allocated(nam%loc_wgt_sqrt)) deallocate(nam%loc_wgt_sqrt)
+   if ((nam%strategy=='duplicated and weighted').and.(nam%nv>0)) then
+      ! Release memory
+      if (allocated(nam%loc_wgt_sqrt)) deallocate(nam%loc_wgt_sqrt)
 
-         ! Allocation
-         allocate(loc_wgt(nam%nv,nam%nv))
-         allocate(nam%loc_wgt_sqrt(nam%nv,nam%nv))
+      ! Allocation
+      allocate(loc_wgt(nam%nv,nam%nv))
+      allocate(nam%loc_wgt_sqrt(nam%nv,nam%nv))
 
-         ! Initialize diagonal weights at one, others at zero
-         loc_wgt = zero
-         do iv=1,nam%nv
-            loc_wgt(iv,iv) = one
+      ! Initialize weights to zero
+      loc_wgt = zero
+
+      ! Set default weight
+      call nam%get(section,'default off-diagonal weight',real_scalar)
+      do iv=1,nam%nv
+         ig = nam%group_index(iv)
+         do jv=1,nam%nv
+            jg = nam%group_index(jv)
+            if (ig==jg) then
+               if (iv==jv) then
+                  ! Unit diagonal
+                  loc_wgt(iv,jv) = one
+               else
+                  loc_wgt(iv,jv) = real_scalar
+               end if
+            end if
          end do
+      end do
 
-         ! Copy weights
+      ! Copy weights
+      if (section%get('specific off-diagonal weights',confs)) then
          do iconf=1,size(confs)
-            ! Get row and column variables, and the value
-            call confs(iconf)%get_or_die('row variables',str_array_row)
-            call confs(iconf)%get_or_die('column variables',str_array_col)
-            call confs(iconf)%get_or_die('value',real_scalar)
+            ! Get variables pair
+            call confs(iconf)%get_or_die('variables pair',str_array)
+            if (size(str_array)/=2) call mpl%abort('${subr}$','wrong variables pair')
+            call confs(iconf)%get_or_die('weight',real_scalar)
 
-            ! Loop over row and column values
-            do ivv=1,size(str_array_row)
-               do iv=1,nam%nv
-                  if (trim(str_array_row(ivv))==trim(nam%variables(iv))) exit
-               end do
-               do jvv=1,size(str_array_col)
-                  do jv=1,nam%nv
-                     if (trim(str_array_col(jvv))==trim(nam%variables(jv))) then
-                        if (iv/=jv) then
-                           loc_wgt(iv,jv) = real_scalar
-                           loc_wgt(jv,iv) = real_scalar
-                        end if
-                        exit
-                     end if
-                  end do
+            ! Set specific values
+            do iv=1,nam%nv
+               ig = nam%group_index(iv)
+               do jv=1,nam%nv
+                  jg = nam%group_index(jv)
+                  if ((nam%variables(iv)==str_array(1)).and.(nam%variables(jv)==str_array(2))) then
+                     if (ig/=jg) call mpl%abort('${subr}$','variables of a specific weight should be in the same group')
+                     loc_wgt(iv,jv) = real_scalar
+                     loc_wgt(jv,iv) = real_scalar
+                  end if
                end do
             end do
          end do
-
-         ! Cholesky decomposition
-         call cholesky(mpl,nam%nv,loc_wgt,nam%loc_wgt_sqrt)
-
-         ! Release memory
-         deallocate(loc_wgt)
       end if
+
+      ! Cholesky decomposition
+      call cholesky(mpl,nam%nv,loc_wgt,nam%loc_wgt_sqrt)
+
+      ! Release memory
+      deallocate(loc_wgt)
    end if
    call nam%get(section,'default interpolation type',nam%nicas_default_interp_type)
    if (section%get('interpolation type',confs)) then
@@ -1320,8 +1329,8 @@ if (nam%new_nicas.or.nam%load_nicas_local.or.nam%load_nicas_global) then
          end do
       end do
    end if
-   if (nam%strategy=='block_weighted') then
-      if (.not.allocated(nam%loc_wgt_sqrt)) call mpl%abort('${subr}$','loc_wgt should be specified for block_weighted')
+   if (nam%strategy=='duplicated and weighted') then
+      if (.not.allocated(nam%loc_wgt_sqrt)) call mpl%abort('${subr}$','loc_wgt_sqrt should be specified for duplicated and weighted strategy')
    end if
    select case (nam%nicas_draw_type)
    case ('regular','random')

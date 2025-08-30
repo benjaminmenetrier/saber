@@ -17,7 +17,6 @@
 #include "atlas/util/KDTree.h"
 #include "atlas/util/Point.h"
 
-#include "oops/generic/gc99.h"
 #include "oops/util/Logger.h"
 #include "oops/util/missingValues.h"
 #include "oops/util/Random.h"
@@ -54,8 +53,8 @@ std::unique_ptr<LayerBase> LayerFactory::create(
   const std::string id = params.parallelization.value();
   typename std::map<std::string, LayerFactory*>::iterator jsb = getMakers().find(id);
   if (jsb == getMakers().end()) {
-    oops::Log::error() << id << " does not exist in saber::LayerFactory." << std::endl;
-    throw eckit::UserError("Element does not exist in saber::LayerFactory.", Here());
+    oops::Log::error() << id << " does not exist in saber::fastlam::LayerFactory." << std::endl;
+    throw eckit::UserError("Element does not exist in saber::fastlam::LayerFactory.", Here());
   }
   std::unique_ptr<LayerBase> ptr =
     jsb->second->make(params, fieldsMetaData, gdata, myGroup, myVars, nx0, ny0, nz0);
