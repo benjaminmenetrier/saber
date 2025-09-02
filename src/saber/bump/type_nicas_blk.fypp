@@ -997,7 +997,7 @@ do il0i=1,nl0i
    nicas_blk%cmp(il0i)%verbosity = .false.
    nicas_blk%cmp(il0i)%resol = nam%smoother_resol
    nicas_blk%cmp(il0i)%draw_type = 'regular'
-   nicas_blk%cmp(il0i)%interp_type = 'si'
+   nicas_blk%cmp(il0i)%interp_type = 'c0'
    nicas_blk%cmp(il0i)%smoother = .true.
    nicas_blk%cmp(il0i)%compute_norm = .false.
    nicas_blk%cmp(il0i)%interp_in_global_file = .false.
@@ -1127,8 +1127,12 @@ do icmp=1,nicas_blk%ncmp
             end if
          end do
 
-         ! Apply bounds
-         nover = count((nicas_blk%cmp(icmp)%rh(:,il0)>nam%universe_radius).and.geom%gmask_c0a(:,il0))
+         ! Apply bounds for rh
+         nover = 0
+         do ic0a=1,geom%nc0a
+            if (sup(nicas_blk%cmp(icmp)%rh(ic0a,il0),nam%universe_radius).and.geom%gmask_c0a(ic0a,il0)) nover = nover+1
+         end do
+         call mpl%f_comm%allreduce(nover,fckit_mpi_sum())
          if (nover>0) then
             rover = real(nover,kind_real)/real(geom%nc0_gmask(il0),kind_real)*hundred
             write(message,'(a,f6.2,a,i3,a,a,a,i1)') 'rh over universe radius (',rover,'%) for NICAS at level ',il0,' of block ', &
@@ -1136,27 +1140,31 @@ do icmp=1,nicas_blk%ncmp
             call mpl%warning('${subr}$',message)
             do ic0a=1,geom%nc0a
                if (geom%gmask_c0a(ic0a,il0)) then
-                  nicas_blk%cmp(icmp)%rh(ic0a,il0) = min(nicas_blk%cmp(icmp)%rh(ic0a,il0),nam%universe_radius)
-                  if (nicas_blk%cmp(icmp)%anisotropic) then
-                     ratio = (nicas_blk%cmp(icmp)%rh(ic0a,il0)/nam%universe_radius)**2
-                     if (ratio>one) then
-                        nicas_blk%cmp(icmp)%H11(ic0a,il0) = nicas_blk%cmp(icmp)%H11(ic0a,il0)*ratio
-                        nicas_blk%cmp(icmp)%H22(ic0a,il0) = nicas_blk%cmp(icmp)%H22(ic0a,il0)*ratio
-                        nicas_blk%cmp(icmp)%H12(ic0a,il0) = nicas_blk%cmp(icmp)%H12(ic0a,il0)*ratio
-                     end if
+                  ratio = nicas_blk%cmp(icmp)%rh(ic0a,il0)/nam%universe_radius
+                  if (ratio>one) nicas_blk%cmp(icmp)%rh(ic0a,il0) = nicas_blk%cmp(icmp)%rh(ic0a,il0)/ratio
+                  if (nicas_blk%cmp(icmp)%anisotropic.and.(ratio>one)) then
+                     nicas_blk%cmp(icmp)%H11(ic0a,il0) = nicas_blk%cmp(icmp)%H11(ic0a,il0)*ratio**2
+                     nicas_blk%cmp(icmp)%H22(ic0a,il0) = nicas_blk%cmp(icmp)%H22(ic0a,il0)*ratio**2
+                     nicas_blk%cmp(icmp)%H12(ic0a,il0) = nicas_blk%cmp(icmp)%H12(ic0a,il0)*ratio**2
                   end if
                end if
             end do
          end if
-         nover = count((nicas_blk%cmp(icmp)%rhs(:,il0)>nam%universe_radius).and.geom%gmask_c0a(:,il0))
+
+         ! Apply bounds for rhs
+         nover = 0
+         do ic0a=1,geom%nc0a
+            if (sup(nicas_blk%cmp(icmp)%rhs(ic0a,il0),nam%universe_radius).and.geom%gmask_c0a(ic0a,il0)) nover = nover+1
+         end do
+         call mpl%f_comm%allreduce(nover,fckit_mpi_sum())
          if (nover>0) then
             rover = real(nover,kind_real)/real(geom%nc0_gmask(il0),kind_real)*hundred
             write(message,'(a,f6.2,a,i3,a,a,a,i1)') 'rhs over universe radius (',rover,'%) for NICAS at level ',il0,' of block ', &
  & trim(nam%group_names(ig)),', component ',icmp
             call mpl%warning('${subr}$',message)
             do ic0a=1,geom%nc0a
-               if (geom%gmask_c0a(ic0a,il0)) nicas_blk%cmp(icmp)%rhs(ic0a,il0) = min(nicas_blk%cmp(icmp)%rhs(ic0a,il0), &
- & nam%universe_radius)
+               ratio = nicas_blk%cmp(icmp)%rhs(ic0a,il0)/nam%universe_radius
+               if (ratio>one) nicas_blk%cmp(icmp)%rhs(ic0a,il0) = nicas_blk%cmp(icmp)%rhs(ic0a,il0)/ratio
             end do
          end if
       else
@@ -1385,16 +1393,8 @@ end do
 if (mpl%main) call rng%rand(1,geom%nl0,il0)
 call mpl%f_comm%broadcast(il0,mpl%rootproc-1)
 
-! Resynchronize random number generator
-call rng%resync(mpl)
-
 ! Get random points
-do itest=1,nam%check_normalization
-   call geom%rand_point(mpl,rng,il0(itest),iproc(itest),ic0a(itest))
-end do
-
-! Desynchronize random number generator
-call rng%desync(mpl)
+call geom%rand_points(mpl,rng,nam%check_normalization,il0,iproc,ic0a)
 
 ! Check normalization
 write(mpl%info,'(a10,a)') '','Check normalization'

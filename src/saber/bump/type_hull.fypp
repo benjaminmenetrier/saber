@@ -8,7 +8,7 @@
 !----------------------------------------------------------------------
 module type_hull
 
-use tools_const, only: zero,two,three,four,pi
+use tools_const, only: zero,two,three,four,pi,rad2deg
 use tools_func, only: lonlat2xyz,xyz2lonlat,sphere_dist,vector_product,area
 use tools_kinds, only: kind_real,huge_real
 use tools_repro, only: infeq,sup,repro_th
@@ -45,15 +45,21 @@ contains
 ! Subroutine: hull_init_empty
 !> Allocation and initialization of empty hull
 !----------------------------------------------------------------------
-subroutine hull_init_empty(hull)
+subroutine hull_init_empty(hull,mpl)
 
 implicit none
 
 ! Passed variables
 class(hull_type),intent(inout) :: hull  !< Hull
+type(mpl_type),intent(inout) :: mpl     !< MPI data
 
 ! Set name
 @:set_name(hull_init_empty)
+
+! Missing lon/lat/radius
+hull%lon = mpl%msv%valr
+hull%lat = mpl%msv%valr
+hull%radius = mpl%msv%valr
 
 ! No hull vertices
 hull%nb = 0
@@ -180,6 +186,8 @@ if (n>0) then
    hull%radius = max(hull%radius,min_radius)
 else
    ! Empty universe
+   hull%lon = mpl%msv%valr
+   hull%lat = mpl%msv%valr
    hull%radius = zero
 end if
 
@@ -221,7 +229,7 @@ logical,intent(out) :: inside_hull  !< True if the point is inside the hull
 
 ! Local variables
 integer :: ib,ibnext
-real(kind_real) :: dist
+real(kind_real) :: dist,lontmp,lattmp
 real(kind_real) :: vp(3),v1(3),v2(3),cp(3),cd(3)
 
 ! Set name

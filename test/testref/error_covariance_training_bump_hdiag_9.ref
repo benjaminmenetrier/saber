@@ -50,8 +50,8 @@
           Level   1 ~> 100.0%
           Level   2 ~> 100.0%
           Subgrid hash:  -1366971213
-             -90.00 deg.  ~>100-66-100-100-100-100-100-100-100-100-100-100-100-100-100 
-             -90.00 deg.  ~>100-66-100-100-100-100-100-100-100-100-100-100-100-100-100 
+             -90.00 deg.  ~>100-100-100-100-100-100-100-100-100-100-100-100-100-100-100 
+             -90.00 deg.  ~>100-100-100-100-100-100-100-100-100-100-100-100-100-100-100 
           nc1 =      544
           Independent levels:  1[2]
           Independent levels for angular sector   1 / class   1:  1[2]
@@ -90,19 +90,19 @@
                 Level:   2 ~> cov. at class zero:  0.95E+00
                 Level:   1 ~> cov. at class zero:  0.10E+01
                 Level:   2 ~> cov. at class zero:  0.95E+00
-             Block air_horizontal_streamfunction:  0.14906461E+00 for       60 diagnostic points
+             Block air_horizontal_streamfunction:  0.16395978E+00 for       60 diagnostic points
                    Level:   1 ~> amplitude:        1.00
-                                 cor. hor. support:      4212.64 km
+                                 cor. hor. support:      4512.14 km
                                  cor. ver. support:         3.12 vertical units
                    Level:   2 ~> amplitude:        1.00
-                                 cor. hor. support:      4020.74 km
+                                 cor. hor. support:      4320.11 km
                                  cor. ver. support:         3.12 vertical units
-             Block air_horizontal_streamfunction:  0.18564651E+00 for       60 diagnostic points
+             Block air_horizontal_streamfunction:  0.22022275E+00 for       60 diagnostic points
                    Level:   1 ~> amplitude:        1.00
-                                 cor. hor. support:      7636.00 km
+                                 cor. hor. support:      8445.44 km
                                  cor. ver. support:         1.56 vertical units
                    Level:   2 ~> amplitude:        1.00
-                                 cor. hor. support:      7480.34 km
+                                 cor. hor. support:      8231.52 km
                                  cor. ver. support:         1.56 vertical units
              Block air_horizontal_streamfunction:  0.00000000E+00 for        0 diagnostic points
                    Level:   1 ~> amplitude:        1.00
@@ -111,9 +111,9 @@
                    Level:   2 ~> amplitude:        1.00
                                  loc. hor. support:     10000.00 km
                                  loc. ver. support:         2.00 vertical units
-                Level:   1 ~> hybrid coefficients: 0.37 / 0.59
-                Level:   2 ~> hybrid coefficients: 0.26 / 0.74
+                Level:   1 ~> hybrid coefficients: 0.36 / 0.60
+                Level:   2 ~> hybrid coefficients: 0.27 / 0.73
 Norm of output parameter loc_rh - 1: 4.8989794855663562e+08
 Norm of output parameter loc_rv - 1: 9.7979589711327122e+01
-Norm of output parameter hyb_coef_ens - 1: 1.5662970595584847e+01
-Norm of output parameter hyb_coef_sta - 1: 2.6131616998279842e+01
+Norm of output parameter hyb_coef_ens - 1: 1.5564479484439037e+01
+Norm of output parameter hyb_coef_sta - 1: 2.6279677830239358e+01

@@ -42,8 +42,8 @@ type geom_type
    logical :: deprecated_hull                         !< Use deprecated hull
    logical :: deprecated_work_grid                    !< Use deprecated work grid
 
-   ! Number of processors
-   integer :: nproc                                   !< Number of processors
+   ! Number of tasks
+   integer :: nproc                                   !< Number of tasks
 
    ! Input metadata
    logical,allocatable :: owned_mga(:,:)              !< Owned vs Halo/BC
@@ -76,9 +76,10 @@ type geom_type
 
    ! Universe
    logical,allocatable :: myuniverse(:)               !< MPI tasks in the universe of the local task
+   real(kind_real) :: universe_proportion             !< Proportion of the total domain handled in the universe
 
    ! Geometry data on subset Sc0, halo A
-   integer,allocatable :: proc_to_nc0a(:)             !< Processor to halo A size for subset Sc0
+   integer,allocatable :: proc_to_nc0a(:)             !< Task to halo A size for subset Sc0
    integer :: nc0a                                    !< Halo A size for subset Sc0
    logical :: same_grid                               !< Same grid and distribution flag
    real(kind_real),allocatable :: lon_c0a(:)          !< Longitudes
@@ -89,7 +90,7 @@ type geom_type
    real(kind_real),allocatable :: mdist_c0a(:,:)      !< Minimum distance to mask
 
    ! Geometry data on subset Sc0, universe
-   integer,allocatable :: proc_to_nc0u(:)             !< Processor to universe size for subset Sc0
+   integer,allocatable :: proc_to_nc0u(:)             !< Task to universe size for subset Sc0
    integer :: nc0u                                    !< Universe size for subset Sc0
    real(kind_real),allocatable :: lon_c0u(:)          !< Longitudes
    real(kind_real),allocatable :: lat_c0u(:)          !< Latitudes
@@ -100,7 +101,7 @@ type geom_type
 
    ! Geometry data on subset Sc0, full domain
    integer :: nc0                                     !< Number of subset Sc0 points
-   integer,allocatable :: proc_to_c0_offset(:)        !< Processor to offset on subset Sc0
+   integer,allocatable :: proc_to_c0_offset(:)        !< Task to offset on subset Sc0
    integer,allocatable :: nc0_gmask(:)                !< Horizontal mask size on subset Sc0
    real(kind_real) :: area                            !< Domain area
    real(kind_real),allocatable :: area_ver_c0(:)      !< Area profile on subset Sc0
@@ -153,7 +154,7 @@ type geom_type
    integer :: ndir                                    !< Number of valid Dirac points
    real(kind_real),allocatable :: londir(:)           !< Dirac longitude
    real(kind_real),allocatable :: latdir(:)           !< Dirac latitude
-   integer,allocatable :: iprocdir(:)                 !< Dirac processor
+   integer,allocatable :: iprocdir(:)                 !< Dirac task
    integer,allocatable :: ic0adir(:)                  !< Dirac gridpoint
    integer,allocatable :: il0dir(:)                   !< Dirac level
    integer,allocatable :: ivdir(:)                    !< Dirac field index
@@ -174,9 +175,7 @@ contains
    procedure :: setup_universe => geom_setup_universe
    procedure :: setup_hulls => geom_setup_hulls
    procedure :: setup_grid => geom_setup_grid
-   procedure :: geom_index_from_lonlat_r0
-   procedure :: geom_index_from_lonlat_r1
-   generic :: index_from_lonlat => geom_index_from_lonlat_r0,geom_index_from_lonlat_r1
+   procedure :: lonlat_to_c0 => geom_lonlat_to_c0
    procedure :: setup_dirac => geom_setup_dirac
    #:for dtype in dtypes_irl
       procedure :: geom_copy_c0a_to_mga_${dtype}$_single
@@ -198,7 +197,7 @@ contains
    #:endfor
    procedure :: fieldset_to_c0 => geom_fieldset_to_c0
    procedure :: c0_to_fieldset => geom_c0_to_fieldset
-   procedure :: rand_point => geom_rand_point
+   procedure :: rand_points => geom_rand_points
    procedure :: geom_initialize_sampling_from_size
    procedure :: geom_initialize_sampling_from_rad
    generic :: initialize_sampling => geom_initialize_sampling_from_size,geom_initialize_sampling_from_rad
@@ -337,7 +336,7 @@ real(kind_real),allocatable :: lon_c0(:),lat_c0(:)
 geom%deprecated_hull = nam%deprecated_hull
 geom%deprecated_work_grid = nam%deprecated_work_grid
 
-! Number of processors
+! Number of task
 geom%nproc = mpl%nproc
 
 ! Number of levels
@@ -786,7 +785,7 @@ type(nam_type),intent(in) :: nam       !< Namelist
 
 ! Local variables
 integer :: iproc,ic0a,ic0u,ic0
-integer :: proc_to_universe_size(mpl%nproc)
+integer :: proc_to_universe_size(mpl%nproc),proc_to_universe_proportion(mpl%nproc)
 integer,allocatable :: order(:)
 real(kind_real) :: dist,lon_avg,lat_avg,dist_max
 real(kind_real) :: xyz(3),xyz_avg(3)
@@ -802,7 +801,7 @@ call mpl%flush
 allocate(geom%myuniverse(mpl%nproc))
 
 if (mpl%nproc==1) then
-   ! Single-processors case
+   ! Single-task case
    geom%myuniverse = .true.
 else
    ! Allocation
@@ -841,7 +840,7 @@ else
    call mpl%f_comm%allgather(lat_avg,proc_to_lat)
    call mpl%f_comm%allgather(dist_max,proc_to_dist_max)
 
-   ! Compute distances from sampling points to my processor to other sampling points
+   ! Compute distances from sampling points to my task to other sampling points
    geom%myuniverse = .false.
    do iproc=1,geom%nproc
       if (mpl%msv%isnot(lon_avg).and.mpl%msv%isnot(lat_avg) &
@@ -863,11 +862,14 @@ end if
 ! Share universe size
 call mpl%f_comm%allgather(count(geom%myuniverse),proc_to_universe_size)
 
+! Compute universe area
+proc_to_universe_proportion = real(proc_to_universe_size,kind_real)/real(count(geom%proc_to_nc0a>0),kind_real)
+geom%universe_proportion = proc_to_universe_proportion(mpl%myproc)
+
 ! Print results
 call mpl%flush
 do iproc=1,mpl%nproc
-   write(mpl%info,'(a10,a,i6,a,f6.2,a)') '','Task ',iproc,': ',hundred*real(proc_to_universe_size(iproc),kind_real) &
- & /real(count(geom%proc_to_nc0a > 0),kind_real),'%'
+   write(mpl%info,'(a10,a,i6,a,f6.2,a)') '','Task ',iproc,': ',hundred*proc_to_universe_proportion(iproc),'%'
    call mpl%flush
 end do
 
@@ -982,8 +984,8 @@ if (geom%nc0u>0) then
 
    ! Setup hull
    if (geom%deprecated_hull) then
-      if (geom%global.and.all(geom%myuniverse)) then
-         geom%hull_c0u%radius = mpl%msv%valr
+      if (geom%global.and.indist(geom%universe_proportion,one)) then
+         call geom%hull_c0u%init(mpl)
       else
          call geom%hull_c0u%init(mpl,geom%nc0u,geom%lon_c0u,geom%lat_c0u,nam%universe_radius)
       end if
@@ -998,7 +1000,7 @@ end if
 ! Full domain hull
 if (geom%global) then
    ! Whole sphere
-   call geom%hull_c0%init
+   call geom%hull_c0%init(mpl)
 else
    ! Count local boundary points
    nba = 0
@@ -1063,6 +1065,9 @@ else
    deallocate(lat_bnd)
    deallocate(vbnd)
 end if
+
+print*, "c0",mpl%myproc,geom%hull_c0%lon,geom%hull_c0%lat,geom%hull_c0%radius
+print*, "c0u",mpl%myproc,geom%hull_c0u%lon,geom%hull_c0u%lat,geom%hull_c0u%radius
 
 ! Reset random seed if necessary
 call rng%reseed
@@ -1435,174 +1440,90 @@ call rng%reseed
 end subroutine geom_setup_grid
 
 !----------------------------------------------------------------------
-! Subroutine: geom_index_from_lonlat_r0
-!> Get nearest neighbor index from longitude/latitude/level, scalar
+! Subroutine: geom_lonlat_to_c0
+!> Get nearest neighbor properties from longitude/latitude/level
 !----------------------------------------------------------------------
-subroutine geom_index_from_lonlat_r0(geom,mpl,lon,lat,il0,iproc,ic0a,gmask)
+subroutine geom_lonlat_to_c0(geom,mpl,n,lon,lat,il0,iproc,ic0a,lon_c0,lat_c0,mask_c0)
 
 implicit none
 
 ! Passed variables
-class(geom_type),intent(in) :: geom !< Geometry
-type(mpl_type),intent(inout) :: mpl !< MPI data
-real(kind_real),intent(in) :: lon   !< Longitude
-real(kind_real),intent(in) :: lat   !< Latitude
-integer,intent(in) :: il0           !< Level index
-integer,intent(out) :: iproc        !< Task index
-integer,intent(out) :: ic0a         !< Local index
-logical,intent(out) :: gmask        !< Local mask
+class(geom_type),intent(in) :: geom               !< Geometry
+type(mpl_type),intent(inout) :: mpl               !< MPI data
+integer,intent(in) :: n                           !< Vector size
+real(kind_real),intent(in) :: lon(n)              !< Longitudes
+real(kind_real),intent(in) :: lat(n)              !< Latitudes
+integer,intent(in) :: il0(n)                      !< Level indices
+integer,intent(out),optional :: iproc(n)          !< Task indices
+integer,intent(out),optional :: ic0a(n)           !< Local indices on Sc0, halo A
+real(kind_real),intent(out),optional :: lon_c0(n) !< Longitudes
+real(kind_real),intent(out),optional :: lat_c0(n) !< Latitudes
+logical,intent(out),optional :: mask_c0(n)        !< Output mask
 
 ! Local variables
-integer :: nn_index(1),ic0,nn_proc,proc_to_nn_proc(mpl%nproc),jproc,ic0u
-real(kind_real) :: nn_dist(1),proc_to_nn_dist(mpl%nproc),dist_min
-logical :: valid
+integer :: i
+integer :: lic0a(n),liproc(n),ic0(n),imask(n)
+real(kind_real) :: llon_c0(n),llat_c0(n)
 
 ! Set name
-@:set_name(geom_index_from_lonlat_r0)
+@:set_name(geom_lonlat_to_c0)
 
-! Check if the point is inside the universe
-call geom%hull_c0u%inside(mpl,lon,lat,valid)
-
-if (valid.and.(geom%nc0u>0)) then
-   ! Find nearest neighbor
-   call geom%tree_c0u%find_nearest_neighbors(mpl,lon,lat,1,nn_index,nn_dist)
-   ic0 = geom%c0u_to_c0(nn_index(1))
-   nn_proc = geom%c0_to_proc(ic0)
-else
-   nn_dist = huge_real
-   nn_proc = mpl%msv%vali
-end if
-
-! Communication
-call mpl%f_comm%allgather(nn_dist(1),proc_to_nn_dist)
-call mpl%f_comm%allgather(nn_proc,proc_to_nn_proc)
-
-if (mpl%msv%isanynot(proc_to_nn_proc)) then
-   ! The correct processor should handle its own nearest neighbor, with the minimum distance
-   dist_min = minval(proc_to_nn_dist)
-   iproc = mpl%msv%vali
-   do jproc=1,mpl%nproc
-      if ((proc_to_nn_proc(jproc)==jproc).and.eq(proc_to_nn_dist(jproc),dist_min)) iproc = jproc
-   end do
-   if (mpl%msv%is(iproc)) call mpl%abort('${subr}$','cannot find root processor: did you make sure rng is synchronized?')
-
-   if (iproc==mpl%myproc) then
-      ! Check whether the location is in the hull
-      if (.not.valid) call mpl%abort('${subr}$','wrong processor')
-
-      ! Local index
-      ic0u = nn_index(1)
-      ic0a = geom%c0u_to_c0a(ic0u)
-
-      ! Check mask
-      if (il0==0) then
-         gmask = geom%gmask_hor_c0a(ic0a)
-      else
-         gmask = geom%gmask_c0a(ic0a,il0)
-      end if
-   end if
-
-   ! Broadcast data
-   call mpl%f_comm%broadcast(ic0a,iproc-1)
-   call mpl%f_comm%broadcast(gmask,iproc-1)
-else
-   ! Missing values
-   iproc = mpl%msv%vali
-   ic0a = mpl%msv%vali
-   gmask = .false.
-end if
-
-end subroutine geom_index_from_lonlat_r0
-
-!----------------------------------------------------------------------
-! Subroutine: geom_index_from_lonlat_r1
-!> Get nearest neighbor index from longitude/latitude/level, vector
-!----------------------------------------------------------------------
-subroutine geom_index_from_lonlat_r1(geom,mpl,n,lon,lat,il0,iproc,ic0a,gmask)
-
-implicit none
-
-! Passed variables
-class(geom_type),intent(in) :: geom  !< Geometry
-type(mpl_type),intent(inout) :: mpl  !< MPI data
-integer,intent(in) :: n              !< Vector size
-real(kind_real),intent(in) :: lon(n) !< Longitudes
-real(kind_real),intent(in) :: lat(n) !< Latitudes
-integer,intent(in) :: il0(n)         !< Level indices
-integer,intent(out) :: iproc(n)      !< Task indices
-integer,intent(out) :: ic0a(n)       !< Local indices
-logical,intent(out) :: gmask(n)      !< Local mask
-
-! Local variables
-integer :: i,nn_index(n),ic0,nn_proc(n),proc_to_nn_proc(n,mpl%nproc),jproc,ic0u,imask(n)
-real(kind_real) :: nn_dist(n),proc_to_nn_dist(n,mpl%nproc),dist_min
-logical :: valid(n)
-
-! Set name
-@:set_name(geom_index_from_lonlat_r1)
-
-do i=1,n
-   ! Check if the point is inside the universe
-   call geom%hull_c0u%inside(mpl,lon(i),lat(i),valid(i))
-
-   if (valid(i).and.(geom%nc0u>0)) then
+if (mpl%main) then
+   do i=1,n
       ! Find nearest neighbor
-      call geom%tree_c0u%find_nearest_neighbors(mpl,lon(i),lat(i),1,nn_index(i:i),nn_dist(i:i))
-      ic0 = geom%c0u_to_c0(nn_index(i))
-      nn_proc(i) = geom%c0_to_proc(ic0)
-   else
-      nn_dist(i) = huge_real
-      nn_proc(i) = mpl%msv%vali
-   end if
-end do
+      call geom%tree_c0%find_nearest_neighbors(mpl,lon(i),lat(i),1,ic0(i:i))
 
-! Communication
-call mpl%allgather(nn_dist,proc_to_nn_dist)
-call mpl%allgather(nn_proc,proc_to_nn_proc)
+      ! Find corresponding task
+      liproc(i) = geom%c0_to_proc(ic0(i))
+   end do
+end if
 
-! Initialization
-iproc = mpl%msv%vali
-ic0a = 0
-imask = 0
+! Broadcast task
+call mpl%f_comm%broadcast(liproc,mpl%rootproc-1)
 
-do i=1,n
-   if (mpl%msv%isanynot(proc_to_nn_proc(i,:))) then
-      ! The correct processor should handle its own nearest neighbor, with the minimum distance
-      dist_min = minval(proc_to_nn_dist(i,:))
-      do jproc=1,mpl%nproc
-         if ((proc_to_nn_proc(i,jproc)==jproc).and.eq(proc_to_nn_dist(i,jproc),dist_min)) iproc(i) = jproc
-      end do
-      if (mpl%msv%is(iproc(i))) call mpl%abort('${subr}$','cannot find root processor')
+! Copy if necessary
+if (present(iproc)) iproc = liproc
 
-      if (iproc(i)==mpl%myproc) then
-         ! Check whether the location is in the hull
-         if (.not.valid(i)) call mpl%abort('${subr}$','wrong processor')
+if (present(ic0a).or.(present(lon_c0).and.present(lat_c0)).or.present(mask_c0)) then
+   ! Broadcast index
+   call mpl%f_comm%broadcast(ic0,mpl%rootproc-1)
 
-         ! Local index
-         ic0u = nn_index(i)
-         ic0a(i) = geom%c0u_to_c0a(ic0u)
-
-         ! Check mask
+   ! Get local values
+   do i=1,n
+      if (liproc(i)==mpl%myproc) then
+         lic0a(i) = geom%c0_to_c0a(ic0(i))
          if (il0(i)==0) then
-            call convert_l2i(geom%gmask_hor_c0a(ic0a(i)),imask(i))
+            call convert_l2i(geom%gmask_hor_c0a(lic0a(i)),imask(i))
          else
-            call convert_l2i(geom%gmask_c0a(ic0a(i),il0(i)),imask(i))
+            call convert_l2i(geom%gmask_c0a(lic0a(i),il0(i)),imask(i))
          end if
+         llon_c0(i) = geom%lon_c0a(lic0a(i))
+         llat_c0(i) = geom%lat_c0a(lic0a(i))
+      else
+         lic0a(i) = mpl%msv%vali
+         imask(i) = 0
+         llon_c0(i) = zero
+         llat_c0(i) = zero
       end if
+   end do
+
+   ! Reduce and copy if necessary
+   if (present(ic0a)) ic0a = lic0a
+   if (present(lon_c0).and.present(lat_c0)) then
+      call mpl%f_comm%allreduce(llon_c0,fckit_mpi_sum())
+      call mpl%f_comm%allreduce(llat_c0,fckit_mpi_sum())
+      lon_c0 = llon_c0
+      lat_c0 = llat_c0
    end if
-end do
+   if (present(mask_c0)) then
+      call mpl%f_comm%allreduce(imask,fckit_mpi_sum())
+      do i=1,n
+         call convert_i2l(mpl,imask(i),mask_c0(i))
+      end do
+   end if
+end if
 
-! Communication
-call mpl%f_comm%allreduce(ic0a,fckit_mpi_sum())
-call mpl%f_comm%allreduce(imask,fckit_mpi_sum())
-
-! Final values
-do i=1,n
-   if (mpl%msv%is(iproc(i))) ic0a(i) = mpl%msv%vali
-   call convert_i2l(mpl,imask(i),gmask(i))
-end do
-
-end subroutine geom_index_from_lonlat_r1
+end subroutine geom_lonlat_to_c0
 
 !----------------------------------------------------------------------
 ! Subroutine: geom_setup_dirac
@@ -1619,10 +1540,9 @@ type(nam_type),intent(in) :: nam       !< Namelist
 
 ! Local variables
 integer :: idir,il0,ic0a,idir_2d,ndir_2d,jl0
-integer :: il0dir(nam%ndir),iprocdir(nam%ndir),ic0adir(nam%ndir)
 integer,allocatable :: nn_index(:),order(:,:),inbdir(:),idir_2dto3d(:)
 real(kind_real),allocatable :: distv(:),londir_2d(:),latdir_2d(:)
-logical :: valid(nam%ndir)
+logical :: maskdir(nam%ndir)
 type(tree_type) :: tree_dirac
 
 ! Set name
@@ -1638,21 +1558,8 @@ if (nam%check_dirac.and.(nam%ndir>0)) then
    write(mpl%info,'(a7,a)') '','Setup Dirac parameters'
    call mpl%flush
 
-   ! Find level
-   do idir=1,nam%ndir
-      il0dir(idir) = mpl%msv%vali
-      do il0=1,geom%nl0
-         if (il0==nam%levdir(idir)) il0dir(idir) = il0
-      end do
-      if (mpl%msv%is(il0dir(idir))) call mpl%abort('${subr}$','impossible to find the Dirac level')
-   end do
-
-   ! Index from lon/lat/level
-   call geom%index_from_lonlat(mpl,nam%ndir,nam%londir,nam%latdir,il0dir,iprocdir,ic0adir,valid)
-
    ! Allocation
-   geom%ndir = count(valid)
-   if (geom%ndir==0) call mpl%abort('${subr}$','no valid dirac point')
+   geom%ndir = nam%ndir
    allocate(geom%londir(geom%ndir))
    allocate(geom%latdir(geom%ndir))
    allocate(geom%iprocdir(geom%ndir))
@@ -1660,30 +1567,27 @@ if (nam%check_dirac.and.(nam%ndir>0)) then
    allocate(geom%il0dir(geom%ndir))
    allocate(geom%ivdir(geom%ndir))
 
-   ! Add valid dirac points
-   geom%ndir = 0
+   ! Find level
    do idir=1,nam%ndir
-      if (valid(idir)) then
-         geom%ndir = geom%ndir+1
-         geom%iprocdir(geom%ndir) = iprocdir(idir)
-         geom%ic0adir(geom%ndir) = ic0adir(idir)
-         geom%il0dir(geom%ndir) = il0dir(idir)
-         geom%ivdir(geom%ndir) = nam%ivdir(idir)
-      end if
+      geom%il0dir(idir) = mpl%msv%vali
+      do il0=1,geom%nl0
+         if (il0==nam%levdir(idir)) geom%il0dir(idir) = il0
+      end do
+      if (mpl%msv%is(geom%il0dir(idir))) call mpl%abort('${subr}$','impossible to find the Dirac level')
    end do
 
-   ! Get exact coordinates
+   ! Index from lon/lat/level
+   call geom%lonlat_to_c0(mpl,nam%ndir,nam%londir,nam%latdir,geom%il0dir,iproc=geom%iprocdir, &
+ & ic0a=geom%ic0adir,lon_c0=geom%londir,lat_c0=geom%latdir,mask_c0=maskdir)
+
+   ! Check validity
    do idir=1,geom%ndir
-      if (geom%iprocdir(idir)==mpl%myproc) then
-         geom%londir(idir) = geom%lon_c0a(geom%ic0adir(idir))
-         geom%latdir(idir) = geom%lat_c0a(geom%ic0adir(idir))
-      else
-         geom%londir(idir) = zero
-         geom%latdir(idir) = zero
-      end if
+      if (maskdir(idir)) call geom%hull_c0%inside(mpl,geom%londir(idir),geom%latdir(idir),maskdir(idir))
+      if (.not.maskdir(idir)) call mpl%abort('${subr}$','Dirac point is masked or out of the domain')
    end do
-   call mpl%f_comm%allreduce(geom%londir,fckit_mpi_sum())
-   call mpl%f_comm%allreduce(geom%latdir,fckit_mpi_sum())
+
+   ! Variable
+   geom%ivdir = nam%ivdir
 
    ! Horizontal affectation
    do il0=1,geom%nl0
@@ -1990,10 +1894,10 @@ end if
 end subroutine geom_c0_to_fieldset
 
 !----------------------------------------------------------------------
-! Subroutine: geom_rand_point
+! Subroutine: geom_rand_points
 !> Select random valid point on the horizontal grid
 !----------------------------------------------------------------------
-subroutine geom_rand_point(geom,mpl,rng,il0,iproc,ic0a,nr)
+subroutine geom_rand_points(geom,mpl,rng,n,il0,iproc,ic0a)
 
 implicit none
 
@@ -2001,51 +1905,55 @@ implicit none
 class(geom_type),intent(in) :: geom !< Geometry
 type(mpl_type),intent(inout) :: mpl !< MPI data
 type(rng_type),intent(inout) :: rng !< Random number generator
-integer,intent(in) :: il0           !< Level
-integer,intent(out) :: iproc        !< Processor
-integer,intent(out) :: ic0a         !< Local index
-integer,intent(out),optional :: nr  !< Number of random tries
+integer,intent(in) :: n             !< Vector size
+integer,intent(in) :: il0(n)        !< Levels
+integer,intent(out) :: iproc(n)     !< Tasks
+integer,intent(out) :: ic0a(n)      !< Local index
 
 ! Local variables
-integer :: lnr
-real(kind_real) :: lon,lat,x,y
-logical :: valid
+integer :: i
+real(kind_real) :: x,y
+real(kind_real) :: lon(1),lat(1)
+logical :: valid(1)
 
 ! Set name
-@:set_name(geom_rand_point)
+@:set_name(geom_rand_points)
+
+! Resynchronize random number generator
+call rng%resync(mpl)
 
 ! Initialization
-valid = .false.
-lnr = 0
+i = 1
 
 ! Loop
-do while (.not.valid)
+do while (i<=n)
    ! Generate random lon/lat
    if (geom%global) then
-      call rng%rand(-pi,pi,lon)
-      call rng%rand(-one,one,lat)
+      call rng%rand(-pi,pi,lon(1))
+      call rng%rand(-one,one,lat(1))
       lat = asin(lat)
    else
       call rng%rand(zero,one,x)
       call rng%rand(zero,one,y)
       x = geom%xmin+x*(geom%xmax-geom%xmin)
       y = geom%ymin+y*(geom%ymax-geom%ymin)
-      call geom%aproj_work%xy2lonlat(x,y,lon,lat)
-      lon = lon*deg2rad
-      lat = lat*deg2rad
+      call geom%aproj_work%xy2lonlat(x,y,lon(1),lat(1))
+      lon(1) = lon(1)*deg2rad
+      lat(1) = lat(1)*deg2rad
    end if
 
    ! Get index from lon/lat
-   call geom%index_from_lonlat(mpl,lon,lat,il0,iproc,ic0a,valid)
+   call geom%lonlat_to_c0(mpl,1,lon,lat,il0(i:i),iproc=iproc(i:i),ic0a=ic0a(i:i),mask_c0=valid)
+   if (valid(1)) call geom%hull_c0%inside(mpl,lon(1),lat(1),valid(1))
 
-   ! Update number of tries
-   lnr = lnr+1
+   ! Update index
+   if (valid(1)) i = i+1
 end do
 
-! Set number of tries
-if (present(nr)) nr = lnr
+! Desynchronize random number generator
+call rng%desync(mpl)
 
-end subroutine geom_rand_point
+end subroutine geom_rand_points
 
 !----------------------------------------------------------------------
 ! Subroutine: geom_initialize_sampling_from_size
@@ -2105,7 +2013,7 @@ if (mpl%main) then
          call tree_cx%find_nearest_neighbors(mpl,lonlat(1),lonlat(2),1,nn_index)
          icx = nn_index(1)
 
-         ! Keep valid points on each processor
+         ! Keep valid points on each task
          lmask_cx(icx) = .true.
       end do
    end do
@@ -2444,37 +2352,43 @@ if (mpl%main) then
                   y_test = y_base+dist*(cos_lon_base*cos_angle-sin_lat_base*sin_lon_base*sin_angle)
                   z_test = z_base+dist*cos_lat_base*sin_angle
                   call xyz2lonlat(mpl,x_test,y_test,z_test,lon_test,lat_test)
-                  call tree_reg%find_nearest_neighbors(mpl,lon_test,lat_test,1,nn_index)
+
+                  ! Check if the sampled point is inside the domain
+                  call geom%hull_c0%inside(mpl,lon_test,lat_test,valid)
+
+                  if (valid) then
+                      ! Find nearest neighbor on the regular grid
+                      call tree_reg%find_nearest_neighbors(mpl,lon_test,lat_test,1,nn_index)
       
-                  ! Test support radius
-                  ireg_test = nn_index(1)
-                  rh_test = rh_reg(ireg_test)
+                     ! Test support radius
+                     ireg_test = nn_index(1)
+                     rh_test = rh_reg(ireg_test)
       
-                  ! Find nearest neighbors
-                  call tree_reg%find_nearest_neighbors(mpl,lon_test,lat_test,rh_test, &
+                     ! Find nearest neighbors
+                     call tree_reg%find_nearest_neighbors(mpl,lon_test,lat_test,rh_test, &
  & nn_test,nn_index_test,nn_dist_test)
       
-                  ! Check nearest neighbors
-                  valid = .true.
-                  do i=1,nn_test
-                     ireg = nn_index_test(i)
-                     rh = sqrt(rh_reg(ireg)*rh_test)
-                     if ((grid_flag(ireg)>0).and.inf(nn_dist_test(i),rh)) then
-                       valid = .false.
-                       exit
-                     end if
-                  end do
-                  deallocate(nn_index_test)
+                     ! Check nearest neighbors
+                     do i=1,nn_test
+                        ireg = nn_index_test(i)
+                        rh = sqrt(rh_reg(ireg)*rh_test)
+                        if ((grid_flag(ireg)>0).and.inf(nn_dist_test(i),rh)) then
+                          valid = .false.
+                          exit
+                        end if
+                     end do
+                     deallocate(nn_index_test)
       
-                  if (valid) then
-                     ns_nomask = ns_nomask+1
-                     active_list_size = active_list_size+1
-                     active_list(active_list_size) = ns_nomask
-                     lon_s_nomask(ns_nomask) = lon_test
-                     lat_s_nomask(ns_nomask) = lat_test
-                     s_nomask_to_reg(ns_nomask) = ireg_test
-                     grid_flag(ireg_test) = ns_nomask
-                     found = .true.
+                     if (valid) then
+                        ns_nomask = ns_nomask+1
+                        active_list_size = active_list_size+1
+                        active_list(active_list_size) = ns_nomask
+                        lon_s_nomask(ns_nomask) = lon_test
+                        lat_s_nomask(ns_nomask) = lat_test
+                        s_nomask_to_reg(ns_nomask) = ireg_test
+                        grid_flag(ireg_test) = ns_nomask
+                        found = .true.
+                     end if
                   end if
                end if
             end do
@@ -2639,26 +2553,23 @@ real(kind_real),intent(out) :: fld(geom%nc0a,geom%nl0,nam%nv,ntest) !< Field
 
 ! Local variables
 integer :: itest
-integer :: il0dir,iprocdir,ic0adir
+integer :: il0dir(ntest),iprocdir(ntest),ic0adir(ntest)
 
 ! Set name
 @:set_name(geom_define_test_vectors)
 
-! Resynchronize random number generator
-call rng%resync(mpl)
+! Define random dirac levels
+if (mpl%main) call rng%rand(1,geom%nl0,il0dir)
+call mpl%f_comm%broadcast(il0dir,mpl%rootproc-1)
+
+! Define random dirac location
+call geom%rand_points(mpl,rng,ntest,il0dir,iprocdir,ic0adir)
 
 do itest=1,ntest
-   ! Define random dirac location
-   call rng%rand(1,geom%nl0,il0dir)
-   call geom%rand_point(mpl,rng,il0dir,iprocdir,ic0adir)
-
    ! Define test vector
    fld(:,:,:,itest) = zero
-   if (iprocdir==mpl%myproc) fld(ic0adir,il0dir,1,itest) = one
+   if (iprocdir(itest)==mpl%myproc) fld(ic0adir(itest),il0dir(itest),1,itest) = one
 end do
-
-! Desynchronize random number generator
-call rng%desync(mpl)
 
 ! Reset random seed if necessary
 call rng%reseed
@@ -2690,7 +2601,7 @@ end function geom_c0_to_c0a
 
 !----------------------------------------------------------------------
 ! Function: geom_c0_to_proc
-!> Conversion from full domain to processor on subset Sc0
+!> Conversion from full domain to task on subset Sc0
 !----------------------------------------------------------------------
 function geom_c0_to_proc(geom,ic0) result(iproc)
 

@@ -12,10 +12,10 @@ use atlas_module, only: atlas_structuredgrid
 use fckit_mpi_module, only: fckit_mpi_sum,fckit_mpi_min,fckit_mpi_max,fckit_mpi_status
 !$ use omp_lib
 use tools_const, only: zero,quarter,half,one,four,hundred,pi,req,reqkm,deg2rad,rad2deg
-use tools_func, only: lonlatmod,independent_levels,sphere_bearing,sphere_dist,cx_to_cxa,cx_to_proc,cx_to_cxu, &
+use tools_func, only: lonlatmod,independent_levels,sphere_dist,lonlat2xyz,xyz2lonlat,cx_to_cxa,cx_to_proc,cx_to_cxu, &
  & convert_i2l,convert_l2i,zss_maxval,zss_minval,zss_sum,zss_count
 use tools_gc99, only: fit_func
-use tools_kinds, only: kind_int,kind_real
+use tools_kinds, only: kind_int,kind_long,kind_real
 use tools_netcdf, only: create_file,open_file,put_att,get_att,define_dim,inquire_dim,inquire_dim_size,define_var,inquire_var, &
  & put_var,get_var,close_file
 use tools_qsort, only: qsort
@@ -81,6 +81,7 @@ type samp_type
    integer,allocatable :: c1a_to_c1u(:)                   !< Subset Sc1, halo A, to subset Sc1, universe
    real(kind_real),allocatable :: lon_c1a(:)              !< Longitudes on subset Sc1, halo A
    real(kind_real),allocatable :: lat_c1a(:)              !< Latitudes on subset Sc1, halo A
+   integer,allocatable :: order_c1a(:)                    !< Order on subset Sc1, halo A
    real(kind_real),allocatable :: vert_coord_c1a(:,:)     !< Generalized vertical coordinate on subset Sc1, halo A
    logical,allocatable :: smask_c1a(:,:)                  !< Mask on subset Sc1, halo A
    real(kind_real),allocatable :: lon_c3a(:,:,:)          !< Longitudes on subset Sc1 and Sc3, halo A
@@ -267,6 +268,7 @@ if (allocated(samp%c1a_to_c1)) deallocate(samp%c1a_to_c1)
 if (allocated(samp%c1a_to_c1u)) deallocate(samp%c1a_to_c1u)
 if (allocated(samp%lon_c1a)) deallocate(samp%lon_c1a)
 if (allocated(samp%lat_c1a)) deallocate(samp%lat_c1a)
+if (allocated(samp%order_c1a)) deallocate(samp%order_c1a)
 if (allocated(samp%vert_coord_c1a)) deallocate(samp%vert_coord_c1a)
 if (allocated(samp%smask_c1a)) deallocate(samp%smask_c1a)
 if (allocated(samp%lon_c3a)) deallocate(samp%lon_c3a)
@@ -790,10 +792,9 @@ type(geom_type),intent(in) :: geom     !< Geometry
 integer :: ncid,nc1_id,lon_c1_id,lat_c1_id,vert_coord_c1_id,smask_c1_id,lon_c3_id,lat_c3_id,smask_c3_id
 integer :: lon_c2_id,lat_c2_id,vert_coord_c2_id,smask_c2_id
 integer :: ic1,ic1a,iproc,ic2,ic2a
-integer,allocatable :: lev_c1(:),c1_on_file_to_proc(:),c1_to_c0a(:)
-integer,allocatable :: lev_c2(:),c2_on_file_to_proc(:),c2_to_c0a(:)
+integer,allocatable :: lev_c1(:),c1_on_file_to_proc(:)
+integer,allocatable :: lev_c2(:),c2_on_file_to_proc(:)
 real(kind_real),allocatable :: lon_c1(:),lat_c1(:),lon_c2(:),lat_c2(:)
-logical,allocatable :: gmask_c1(:),gmask_c2(:)
 
 ! Set name
 @:set_name(samp_read_global)
@@ -830,12 +831,10 @@ if (samp%sc1) then
    ! Allocation
    allocate(lev_c1(samp%nc1))
    allocate(c1_on_file_to_proc(samp%nc1))
-   allocate(c1_to_c0a(samp%nc1))
-   allocate(gmask_c1(samp%nc1))
 
    ! Split sampling among processors
    lev_c1 = 0
-   call geom%index_from_lonlat(mpl,samp%nc1,lon_c1,lat_c1,lev_c1,c1_on_file_to_proc,c1_to_c0a,gmask_c1)
+   call geom%lonlat_to_c0(mpl,samp%nc1,lon_c1,lat_c1,lev_c1,iproc=c1_on_file_to_proc)
    if (mpl%msv%isany(c1_on_file_to_proc)) call mpl%abort('${subr}$','subset Sc1 point is out of the domain')
 
    ! Sampling size on halo A
@@ -907,8 +906,6 @@ if (samp%sc1) then
    ! Release memory
    deallocate(lev_c1)
    deallocate(c1_on_file_to_proc)
-   deallocate(c1_to_c0a)
-   deallocate(gmask_c1)
 end if
 
 if (samp%sc2) then
@@ -939,12 +936,10 @@ if (samp%sc2) then
    ! Allocation
    allocate(lev_c2(samp%nc2))
    allocate(c2_on_file_to_proc(samp%nc2))
-   allocate(c2_to_c0a(samp%nc2))
-   allocate(gmask_c2(samp%nc2))
 
    ! Split sampling among processors
    lev_c2 = 0
-   call geom%index_from_lonlat(mpl,samp%nc2,lon_c2,lat_c2,lev_c2,c2_on_file_to_proc,c2_to_c0a,gmask_c2)
+   call geom%lonlat_to_c0(mpl,samp%nc2,lon_c2,lat_c2,lev_c2,iproc=c2_on_file_to_proc)
    if (mpl%msv%isany(c2_on_file_to_proc)) call mpl%abort('${subr}$','subset Sc2 point is out of the domain')
 
    ! Sampling size on halo A
@@ -1000,8 +995,6 @@ if (samp%sc2) then
    ! Release memory
    deallocate(lev_c2)
    deallocate(c2_on_file_to_proc)
-   deallocate(c2_to_c0a)
-   deallocate(gmask_c2)
 else
    ! Initialization
    samp%nc2a = 0
@@ -1646,8 +1639,9 @@ type(ens_type),intent(inout),optional :: ens !< Ensemble
 
 ! Local variables
 integer :: il0,jc3,jc4,ildwv,jldwv,ival,nc1_valid
+integer,allocatable :: ldwv_to_il0(:)
 real(kind_real),allocatable :: ldwv_to_lon(:),ldwv_to_lat(:)
-logical :: valid
+logical,allocatable :: gmask_ldwv(:)
 character(len=8) :: ivalformat
 character(len=1024) :: color
 
@@ -1697,25 +1691,19 @@ else
       allocate(samp%ldwv_to_c0a(nam%nldwv))
       allocate(ldwv_to_lon(nam%nldwv))
       allocate(ldwv_to_lat(nam%nldwv))
+      allocate(ldwv_to_il0(nam%nldwv))
+      allocate(gmask_ldwv(nam%nldwv))
 
       ! Initialization
-      ldwv_to_lon = zero
-      ldwv_to_lat = zero
+      ldwv_to_il0 = 0
 
+      ! Get index from lon/lat
+      call geom%lonlat_to_c0(mpl,nam%nldwv,nam%lon_ldwv,nam%lat_ldwv,ldwv_to_il0,iproc=samp%ldwv_to_proc, &
+ & ic0a=samp%ldwv_to_c0a,lon_c0=ldwv_to_lon,lat_c0=ldwv_to_lat,mask_c0=gmask_ldwv)
       do ildwv=1,nam%nldwv
-         ! Get index from lon/lat
-         call geom%index_from_lonlat(mpl,nam%lon_ldwv(ildwv),nam%lat_ldwv(ildwv),0,samp%ldwv_to_proc(ildwv), &
- & samp%ldwv_to_c0a(ildwv),valid)
-         if (valid) then
-            if (samp%ldwv_to_proc(ildwv)==mpl%myproc) then
-               ldwv_to_lon(ildwv) = geom%lon_c0a(samp%ldwv_to_c0a(ildwv))
-               ldwv_to_lat(ildwv) = geom%lat_c0a(samp%ldwv_to_c0a(ildwv))
-            end if
-            call mpl%f_comm%broadcast(ldwv_to_lon(ildwv),samp%ldwv_to_proc(ildwv)-1)
-            call mpl%f_comm%broadcast(ldwv_to_lat(ildwv),samp%ldwv_to_proc(ildwv)-1)
-         else
-            call mpl%abort('${subr}$','profile '//trim(nam%name_ldwv(ildwv))//' is masked or out of the domain')
-         end if
+         if (gmask_ldwv(ildwv)) call geom%hull_c0%inside(mpl,ldwv_to_lon(ildwv),ldwv_to_lat(ildwv),gmask_ldwv(ildwv))
+         if (.not.gmask_ldwv(ildwv)) call mpl%abort('${subr}$', &
+ & 'profile '//trim(nam%name_ldwv(ildwv))//' is masked or out of the domain')
       end do
 
       do ildwv=1,nam%nldwv
@@ -1735,6 +1723,8 @@ else
       ! Release memory
       deallocate(ldwv_to_lon)
       deallocate(ldwv_to_lat)
+      deallocate(ldwv_to_il0)
+      deallocate(gmask_ldwv)
    end if
 
    if (samp%sc1) then
@@ -2136,7 +2126,7 @@ integer,intent(in) :: subset           !< Subset index (1 or 2)
 ! Local variables
 integer :: ic0,ic0a,ic0u,icx,icxa,ildwv,iproc,nn_index(1),ncx,ncxa
 integer :: proc_to_ncxa(mpl%nproc),proc_to_cx_offset(mpl%nproc)
-integer,allocatable :: cx_to_c0(:),cxa_to_cx(:)
+integer,allocatable :: order_cxa(:),cx_to_c0(:),cxa_to_cx(:)
 real(kind_real) :: latmin,latmax
 real(kind_real),allocatable :: lon_cxa(:),lat_cxa(:),vert_coord_cxa(:,:)
 logical,allocatable :: fmask_c0a(:),fmask_c0(:),smask_hor_c0(:),smask_cxa(:,:)
@@ -2166,12 +2156,14 @@ if (samp%lat_bands.and.(subset==2)) then
    ! Allocation
    allocate(lon_cxa(ncxa))
    allocate(lat_cxa(ncxa))
+   allocate(order_cxa(ncxa))
 
    if (ncx==1) then
       ! Single point
       if (mpl%main) then
          lon_cxa(1) = zero
          lat_cxa(1) = zero
+         order_cxa(1) = 1
       end if
    else
       ! Latitude bounds
@@ -2185,10 +2177,12 @@ if (samp%lat_bands.and.(subset==2)) then
          do icxa=1,ncxa
             lon_cxa(icxa) = zero
             lat_cxa(icxa) = latmin+real(icxa-1,kind_real)/real(ncxa-1,kind_real)*(latmax-latmin)
+            order_cxa(icxa) = icxa
          end do
       end if
    end if
 else
+
    ! Check subsampling size
    if (ncx>samp%nc0_smask(0)) then
       ! Not enough points remaining in the sampling mask
@@ -2231,7 +2225,7 @@ else
          allocate(fmask_c0(0))
          allocate(smask_hor_c0(0))
       end if
-   
+
       ! Initialization
       fmask_c0a = .false.
       if (subset==2) then
@@ -2244,11 +2238,11 @@ else
             end if
          end do
       end if
-   
+
       ! Communication
       call mpl%loc_to_glb(geom%nc0a,geom%nc0,geom%c0a_to_c0,fmask_c0a,fmask_c0)
       call mpl%loc_to_glb(geom%nc0a,geom%nc0,geom%c0a_to_c0,samp%smask_hor_c0a,smask_hor_c0)
-   
+
       ! Compte subsampling
       write(mpl%info,'(a7,a,i1,a)') '','Compute horizontal subset Sc',subset,':'
       call mpl%flush
@@ -2271,6 +2265,7 @@ else
    ! Allocation
    allocate(lon_cxa(ncxa))
    allocate(lat_cxa(ncxa))
+   allocate(order_cxa(ncxa))
 
    ! Get lon/lat
    icxa = 0
@@ -2282,6 +2277,7 @@ else
          ic0u = geom%c0_to_c0u(ic0)
          lon_cxa(icxa) = geom%lon_c0u(ic0u)
          lat_cxa(icxa) = geom%lat_c0u(ic0u)
+         order_cxa(icxa) = icx
       end if
    end do
 
@@ -2330,6 +2326,7 @@ if (subset==1) then
    samp%nc1a = ncxa
    allocate(samp%lon_c1a(samp%nc1a))
    allocate(samp%lat_c1a(samp%nc1a))
+   allocate(samp%order_c1a(samp%nc1a))
    allocate(samp%vert_coord_c1a(samp%nc1a,geom%nl0))
    allocate(samp%smask_c1a(samp%nc1a,geom%nl0))
    allocate(samp%c1a_to_c1(samp%nc1a))
@@ -2337,6 +2334,7 @@ if (subset==1) then
    ! Copy
    samp%lon_c1a = lon_cxa
    samp%lat_c1a = lat_cxa
+   samp%order_c1a = order_cxa
    samp%proc_to_nc1a = proc_to_ncxa
    samp%proc_to_c1_offset = proc_to_cx_offset
    samp%vert_coord_c1a = vert_coord_cxa
@@ -2365,6 +2363,7 @@ end if
 ! Release memory
 deallocate(lon_cxa)
 deallocate(lat_cxa)
+deallocate(order_cxa)
 deallocate(vert_coord_cxa)
 deallocate(smask_cxa)
 deallocate(cxa_to_cx)
@@ -2387,10 +2386,12 @@ type(nam_type),intent(in) :: nam       !< Namelist
 type(geom_type),intent(in) :: geom     !< Geometry
 
 ! Local variables
-integer :: jc3,jc4,ic1a,ir,irtmp,jc0a,jc0u,jc0,il0,iproc
-real(kind_real) :: a,d
-logical :: done,proc_to_done(mpl%nproc),valid
-logical,allocatable :: c3a_free(:,:,:)
+integer :: ic1a,jc3,jc4,il0,dir
+integer :: nn_index(1)
+real(kind_real) :: das,cos_lon_base,sin_lon_base,cos_lat_base,sin_lat_base,x_base,y_base,z_base,dist,angle
+real(kind_real) :: cos_angle,sin_angle,x_test,y_test,z_test,lon_test,lat_test
+real(kind_real),allocatable :: distmin(:),distmax(:),asmin(:),asmax(:)
+logical :: valid
 
 ! Set name
 @:set_name(samp_compute_c3)
@@ -2416,92 +2417,88 @@ end do
 
 if ((nam%nc3>1).and.(nam%dc>0.0)) then
    ! Allocation
-   allocate(c3a_free(samp%nc1a,nam%nc3,nam%nc4))
+   allocate(distmin(nam%nc3))
+   allocate(distmax(nam%nc3))
+   allocate(asmin(nam%nc4))
+   allocate(asmax(nam%nc4))
 
-   ! Initialization
-   c3a_free = .true.
+   ! Distance class bounds
+   distmin(1) = zero
+   distmax(1) = half*nam%dc
+   do jc3=2,nam%nc3
+      distmin(jc3) = distmax(jc3-1)
+      distmax(jc3) = distmin(jc3)+nam%dc
+   end do
 
-   ! Resynchronize random number generator
-   call rng%resync(mpl)
+   ! Angular sector bounds
+   das = pi/real(nam%nc4,kind_real)
+   asmin(1) = -half*pi
+   asmax(1) = asmin(1)+das
+   do jc4=2,nam%nc4
+      asmin(jc4) = asmax(jc4-1)
+      asmax(jc4) = asmin(jc4)+das
+   end do
 
    ! Initialization
    write(mpl%info,'(a7,a)') '','Compute HDIAG pairs: '
    call mpl%flush(newl=.false.)
-   call mpl%prog_init(nam%nc3*nam%nc4*samp%nc1a)
-   do ic1a=1,samp%nc1a
-      mpl%done((ic1a-1)*nam%nc3*nam%nc4+1) = .true.
-   end do
-   if (samp%nc1a>0) then
-      done = all(mpl%done)
-   else
-      done = .true.
-   end if
-   call mpl%f_comm%allgather(done,proc_to_done)
-   ir = 0
+   call mpl%prog_init(samp%nc1a)
 
    ! Sample angular sectors and horizontal distance classes
-   do while ((.not.all(proc_to_done)).and.(ir<=nam%irmax))
-      ! Define a random geographical point
-      call geom%rand_point(mpl,rng,0,iproc,jc0a,irtmp)
-      ir = ir+irtmp
+   do ic1a=1,samp%nc1a
+      ! Base sample coordinates
+      cos_lon_base = cos(samp%lon_c1a(ic1a))
+      sin_lon_base = sin(samp%lon_c1a(ic1a))
+      cos_lat_base = cos(samp%lat_c1a(ic1a))
+      sin_lat_base = sin(samp%lat_c1a(ic1a))
+      call lonlat2xyz(mpl,samp%lon_c1a(ic1a),samp%lat_c1a(ic1a),x_base,y_base,z_base)
 
-      if (samp%myuniverse(iproc)) then
-         ! Indices
-         jc0 = geom%proc_to_c0_offset(iproc)+jc0a
-         jc0u = geom%c0_to_c0u(jc0)
+      ! Force seed
+      rng%seed = int(samp%order_c1a(ic1a),kind_long)
 
-         !$omp parallel do schedule(static) private(ic1a,a,jc4,d,jc3)
-         do ic1a=1,samp%nc1a
-            if (nam%nc4>1) then
-               ! Compute the bearing
-               call sphere_bearing(samp%lon_c1a(ic1a),samp%lat_c1a(ic1a),geom%lon_c0u(jc0u),geom%lat_c0u(jc0u),a)
+      do jc3=2,nam%nc3         
+         do jc4=1,nam%nc4
+            ! Distance / angle
+            call rng%rand(distmin(jc3),distmax(jc3),dist)
+            call rng%rand(asmin(jc4),asmax(jc4),angle)
 
-               ! Reset bearing between -pi/2 and pi/2
-               if (a<=-half*pi) a = a+pi
-               if (a>=half*pi) a = a-pi
+            ! Modulo pi
+            call rng%rand(0,1,dir)
+            angle = angle+real(dir,kind_real)*pi
 
-               ! Find the angular sector
-               jc4 = floor((a+half*pi-half*geom%das)/geom%das)+2
-               if (jc4==nam%nc4+1) jc4 = 1
-               if ((jc4<1).or.(jc4>nam%nc4)) call mpl%abort('${subr}$','jc4 out of bounds')
-            else
-               ! Single angular sector
-               jc4 = 1
-            end if
+            ! Find point coordinates
+            cos_angle = cos(angle)
+            sin_angle = sin(angle)
+            x_test = x_base+dist*(-sin_lon_base*cos_angle-sin_lat_base*cos_lon_base*sin_angle)
+            y_test = y_base+dist*(cos_lon_base*cos_angle-sin_lat_base*sin_lon_base*sin_angle)
+            z_test = z_base+dist*cos_lat_base*sin_angle
+            call xyz2lonlat(mpl,x_test,y_test,z_test,lon_test,lat_test)
 
-            if (any(c3a_free(ic1a,:,jc4))) then
-               ! Compute the distance
-               call sphere_dist(samp%lon_c1a(ic1a),samp%lat_c1a(ic1a),geom%lon_c0u(jc0u),geom%lat_c0u(jc0u),d)
+            ! Check if the sampled point is inside the domain
+            call geom%hull_c0%inside(mpl,lon_test,lat_test,valid)
 
-               ! Find the horizontal distance class
-               if (d>half*nam%dc) then
-                  ! Horizontal class distance index
-                  jc3 = floor((d-half*nam%dc)/nam%dc)+2
-                  if (jc3<1) call mpl%abort('${subr}$','jc3 is not positive')
-                  if (jc3<=nam%nc3) then
-                     ! Find if this class has not been already filled
-                     if (c3a_free(ic1a,jc3,jc4)) then
-                        samp%lon_c3a(ic1a,jc3,jc4) = geom%lon_c0u(jc0u)
-                        samp%lat_c3a(ic1a,jc3,jc4) = geom%lat_c0u(jc0u)
-                        samp%smask_c3a(ic1a,jc3,jc4,:) = samp%smask_c0u(jc0u,:)
-                        c3a_free(ic1a,jc3,jc4) = .false.
-                        mpl%done((ic1a-1)*nam%nc3*nam%nc4+(jc3-1)*nam%nc4+jc4) = .true.
-                     end if
-                  end if
+            if (valid) then
+               ! Check if the sampled point is inside the universe
+               call geom%hull_c0u%inside(mpl,lon_test,lat_test,valid)
+
+               if (valid) then
+                  ! Find nearest neighbor in universe
+                  call geom%tree_c0u%find_nearest_neighbors(mpl,lon_test,lat_test,1,nn_index)
+
+                  ! Save lon/lat/mask
+                  samp%lon_c3a(ic1a,jc3,jc4) = lon_test
+                  samp%lat_c3a(ic1a,jc3,jc4) = lat_test
+                  samp%smask_c3a(ic1a,jc3,jc4,:) = samp%smask_c0u(nn_index(1),:)
+               else
+                  ! Not inside universe
+                  call mpl%abort('${subr}$','sampling point outside universe, increase universe_rad')
                end if
             end if
          end do
-         !$omp end parallel do
+      end do
 
-         ! Update
-         call mpl%prog_print
-      end if
-      if (samp%nc1a>0) then
-         done = all(mpl%done)
-      else
-         done = .true.
-      end if
-      call mpl%f_comm%allgather(done,proc_to_done)
+      ! Update
+      call mpl%prog_print(ic1a)
    end do
    call mpl%prog_final
 
@@ -2509,7 +2506,10 @@ if ((nam%nc3>1).and.(nam%dc>0.0)) then
    call rng%desync(mpl)
 
    ! Release memory
-   deallocate(c3a_free)
+   deallocate(distmin)
+   deallocate(distmax)
+   deallocate(asmin)
+   deallocate(asmax)
 end if
 
 ! Check sampling mask

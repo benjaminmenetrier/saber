@@ -22,6 +22,7 @@ use type_tree, only: tree_type
 
 implicit none
 
+logical,parameter :: perturb_coordinates = .true.        !< Perturb mesh coordinate to avoid colinear points
 integer,parameter :: nnmax = 20                          !< Maximum number of nearest neighbors in the triangle search
 real(kind_real),parameter :: pfactor = 1.0e-10_kind_real !< Perturbation factor
 
@@ -141,27 +142,29 @@ end do
 mesh%lon = mesh%lon(mesh%order)
 mesh%lat = mesh%lat(mesh%order)
 
-! Perturb grid coordinates to avoid colinear points
-do i=1,mesh%n
-   ! Compute hash
-   call rad2short(mesh%lon(i),lon_short)
-   call rad2short(mesh%lat(i),lat_short)
-   hash = fletcher32((/lon_short,lat_short/))
-   hash_long = int(hash,kind_long)
+if (perturb_coordinates) then
+   ! Perturb grid coordinates to avoid colinear points
+   do i=1,mesh%n
+      ! Compute hash
+      call rad2short(mesh%lon(i),lon_short)
+      call rad2short(mesh%lat(i),lat_short)
+      hash = fletcher32((/lon_short,lat_short/))
+      hash_long = int(hash,kind_long)
 
-   ! Generate pseudo-random numbers between -1e-10 and 1e-10 from the hash
-   call rng%lcg(lon_pert(i),hash_long)
-   call rng%lcg(lat_pert(i),hash_long)
-   lon_pert(i) = pfactor*(two*lon_pert(i)-one)
-   lat_pert(i) = pfactor*(two*lat_pert(i)-one)
+      ! Generate pseudo-random numbers between -1e-10 and 1e-10 from the hash
+      call rng%lcg(lon_pert(i),hash_long)
+      call rng%lcg(lat_pert(i),hash_long)
+      lon_pert(i) = pfactor*(two*lon_pert(i)-one)
+      lat_pert(i) = pfactor*(two*lat_pert(i)-one)
 
-   ! Perturb grid coordinates
-   mesh%lon(i) = mesh%lon(i)+lon_pert(i)
-   mesh%lat(i) = mesh%lat(i)+lat_pert(i)
+      ! Perturb grid coordinates
+      mesh%lon(i) = mesh%lon(i)+lon_pert(i)
+      mesh%lat(i) = mesh%lat(i)+lat_pert(i)
 
-   ! Apply bounds
-   call lonlatmod(mesh%lon(i),mesh%lat(i))
-end do
+      ! Apply bounds
+      call lonlatmod(mesh%lon(i),mesh%lat(i))
+   end do
+end if
 
 ! Transform to cartesian coordinates
 do i=1,mesh%n
@@ -200,17 +203,19 @@ do i=1,mesh%n
    end do
 end do
 
-do i=1,mesh%n
-   ! Unperturb grid coordinates
-   mesh%lon(i) = mesh%lon(i)-lon_pert(i)
-   mesh%lat(i) = mesh%lat(i)-lat_pert(i)
+if (perturb_coordinates) then
+   do i=1,mesh%n
+      ! Unperturb grid coordinates
+      mesh%lon(i) = mesh%lon(i)-lon_pert(i)
+      mesh%lat(i) = mesh%lat(i)-lat_pert(i)
 
-   ! Apply bounds
-   call lonlatmod(mesh%lon(i),mesh%lat(i))
+      ! Apply bounds
+      call lonlatmod(mesh%lon(i),mesh%lat(i))
 
-   ! Transform to cartesian coordinates
-   call lonlat2xyz(mpl,mesh%lon(i),mesh%lat(i),mesh%x(i),mesh%y(i),mesh%z(i))
-end do
+      ! Transform to cartesian coordinates
+      call lonlat2xyz(mpl,mesh%lon(i),mesh%lat(i),mesh%x(i),mesh%y(i),mesh%z(i))
+   end do
+end if
 
 ! Allocation
 allocate(nodes(mesh%n))

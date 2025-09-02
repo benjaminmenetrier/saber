@@ -43,9 +43,6 @@ end interface
 interface independent_levels
    module procedure func_independent_levels
 end interface
-interface sphere_bearing
-   module procedure func_sphere_bearing
-end interface
 interface sphere_dist
    module procedure func_sphere_dist
 end interface
@@ -145,7 +142,7 @@ interface global_average
 end interface
 
 private
-public :: fletcher32,lonlatmod,rad2short,grid_hash,independent_levels,sphere_bearing,sphere_dist,cart_dist,lonlat2xyz,xyz2lonlat, &
+public :: fletcher32,lonlatmod,rad2short,grid_hash,independent_levels,sphere_dist,cart_dist,lonlat2xyz,xyz2lonlat, &
  & vector_product,det,area,add,divide,vert_interp_size,vert_interp_setup,vert_interp,cholesky,syminv,histogram, &
  & cx_to_cxa,cx_to_proc,cx_to_cxu,convert_i2l,convert_l2i,zss_maxval,zss_minval,zss_sum,zss_count,global_average
 
@@ -415,42 +412,6 @@ real(kind_real),intent(out) :: dist !< Great-circle distance
 dist = sqrt((x_f-x_i)**2+(y_f-y_i)**2+(z_f-z_i)**2)
 
 end subroutine func_cart_dist
-
-!----------------------------------------------------------------------
-! Subroutine: func_sphere_bearing
-!> Compute the bearing between two points
-!----------------------------------------------------------------------
-subroutine func_sphere_bearing(lon_i,lat_i,lon_f,lat_f,bearing)
-
-implicit none
-
-! Passed variable
-real(kind_real),intent(in) :: lon_i    !< Initial point longitude [radians]
-real(kind_real),intent(in) :: lat_i    !< Initial point latitude [radians]
-real(kind_real),intent(in) :: lon_f    !< Final point longitude [radians]
-real(kind_real),intent(in) :: lat_f    !< Final point latitude [radians]
-real(kind_real),intent(out) :: bearing !< Bearing [radians]
-
-! Local variables
-real(kind_real) :: cosdlon,sindlon,coslat_i,coslat_f,sinlat_i,sinlat_f,x,y
-
-! Set name
-@:set_name(func_sphere_bearing)
-
-! Trigonometry
-cosdlon = cos(lon_f-lon_i)
-sindlon = sin(lon_f-lon_i)
-coslat_i = cos(lat_i)
-coslat_f = cos(lat_f)
-sinlat_i = sin(lat_i)
-sinlat_f = sin(lat_f)
-
-! Compute bearing
-x = coslat_f*sindlon
-y = coslat_i*sinlat_f-sinlat_i*coslat_f*cosdlon
-bearing = atan2(y,x)
-
-end subroutine func_sphere_bearing
 
 !----------------------------------------------------------------------
 ! Subroutine: func_sphere_dist

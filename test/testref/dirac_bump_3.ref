@@ -90,15 +90,15 @@ Covariance(SABER) * Increment:
   Geometry: L40x21 [840]
   Fields:
   - eastward_wind (2 levels):
-    + min    = -6.4070971362620724e-03
-    + max    = 1.5943959887929002e+00
-    + mean   = 5.3580420550493361e-03
-    + stddev = 5.9715988065544331e-02
+    + min    = -7.0413856979607073e-03
+    + max    = 1.7661213073639164e+00
+    + mean   = 6.0901146438667869e-03
+    + stddev = 6.7908501447640157e-02
   - northward_wind (2 levels):
-    + min    = -1.0435508415210384e-01
-    + max    = 1.9297936318105416e-01
-    + mean   = 5.5402156603691420e-04
-    + stddev = 1.0721743910711574e-02
+    + min    = -1.2797154160110324e-01
+    + max    = 2.3155131282731073e-01
+    + mean   = 6.2668672975368695e-04
+    + stddev = 1.2166480696910072e-02
        Independent levels:  1[2]
           Subset Sc0 size:              762
           Domain area (% of Earth area): 0.100E+03%
@@ -167,15 +167,15 @@ Covariance(SABER1_SABER) * Increment:
   Geometry: L40x21 [840]
   Fields:
   - eastward_wind (2 levels):
-    + min    = -9.6432756326258176e-13
-    + max    = 2.7232363558732694e-12
-    + mean   = -5.0962785431477555e-16
-    + stddev = 1.4750912024033638e-13
+    + min    = -8.2232144585516153e-13
+    + max    = 2.5790423601979487e-12
+    + mean   = -4.7894792548800691e-16
+    + stddev = 1.4430025621570007e-13
   - northward_wind (2 levels):
-    + min    = -5.3484898764165116e-13
-    + max    = 5.9964020563533430e-13
-    + mean   = -1.3255225582486833e-16
-    + stddev = 5.3388105212171291e-14
+    + min    = -4.3844493453858791e-13
+    + max    = 4.4880784904874341e-13
+    + mean   = -1.2424330269867015e-16
+    + stddev = 5.0572072369356438e-14
 Norm of input parameter inflation: 6.9558608381710329e+01
 Norm of input parameter StdDev: 1.7389652095427326e+02
        Independent levels:  1[2]
@@ -193,12 +193,12 @@ Covariance(SABER2_SABER) * Increment:
   Geometry: L40x21 [840]
   Fields:
   - eastward_wind (2 levels):
-    + min    = -1.2814194271559810e-02
-    + max    = 3.1887919775830764e+00
-    + mean   = 1.0716084110099170e-02
-    + stddev = 1.1943197613097720e-01
+    + min    = -1.4082771395266751e-02
+    + max    = 3.5322426147252526e+00
+    + mean   = 1.2180229287734054e-02
+    + stddev = 1.3581700289517060e-01
   - northward_wind (2 levels):
-    + min    = -2.0871016830373235e-01
-    + max    = 3.8595872636209194e-01
-    + mean   = 1.1080431320739607e-03
-    + stddev = 2.1443487821429734e-02
+    + min    = -2.5594308320186854e-01
+    + max    = 4.6310262565462768e-01
+    + mean   = 1.2533734595074971e-03
+    + stddev = 2.4332961393827134e-02

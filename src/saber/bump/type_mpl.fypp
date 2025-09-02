@@ -58,6 +58,7 @@ type mpl_type
 
    ! Display parameters
    logical :: verbose = .true.            !< Verbosity for this task
+   logical :: debug_verbose = .false.     !< Debug verbosity for this task
    type(fckit_logchannel) :: info_channel !< Info channel pointer
    type(fckit_logchannel) :: test_channel !< Test channel pointer
    character(len=1024) :: info            !< Info buffer
