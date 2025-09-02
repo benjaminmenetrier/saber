@@ -1066,9 +1066,6 @@ else
    deallocate(vbnd)
 end if
 
-print*, "c0",mpl%myproc,geom%hull_c0%lon,geom%hull_c0%lat,geom%hull_c0%radius
-print*, "c0u",mpl%myproc,geom%hull_c0u%lon,geom%hull_c0u%lat,geom%hull_c0u%radius
-
 ! Reset random seed if necessary
 call rng%reseed
 
