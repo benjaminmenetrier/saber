@@ -689,7 +689,7 @@ end if
 
 end subroutine linop_apply_ad
 
-!----------------------------------------------------------------------%prefix
+!----------------------------------------------------------------------
 ! Subroutine: linop_add_op
 !> Add operation
 !----------------------------------------------------------------------
@@ -1256,11 +1256,14 @@ do i_dst=1,n_dst
       n = 0
       found = .false.
       if (lrh(i_dst)>zero) then
-         call tree_src%find_nearest_neighbors(mpl,lon_dst(i_dst),lat_dst(i_dst),lrh(i_dst),n,nn_index,nn_dist)
+         ! Count number of required neighbors
+         call tree_src%count_nearest_neighbors(mpl,lon_dst(i_dst),lat_dst(i_dst),lrh(i_dst),n)
       end if
 
       if (n>0) then
          ! Allocation
+         allocate(nn_index(n))
+         allocate(nn_dist(n))
          allocate(nn_valid(n))
 
          ! Find nearest neighors
