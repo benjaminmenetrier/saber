@@ -119,14 +119,14 @@ do iv=1,fieldset%nv
 
       ! Add field
       call fieldset%add(afield)
-
-      ! Release pointer
-      call afield%final()
    end if
 end do
 
 ! Check fieldset
 call fieldset%check(mpl)
+
+! Release memory
+call afield%final()
 
 end subroutine fieldset_init_from_functionspace
 
@@ -252,14 +252,13 @@ do iv=1,fieldset_out%nv
             call mpl%abort('${subr}$','wrong field rank')
          end select
       end if
-
-      ! Release pointer
-      call afield_out%final()
    end if
-
-   ! Release pointer
-   call afield_in%final()
 end do
+
+! Release memory
+call afield_in%final()
+call afield_out%final()
+call afunctionspace%final()
 
 ! Check fieldset
 call fieldset_out%check(mpl)
@@ -361,10 +360,10 @@ do iv=1,fieldset%nv
    ! Print norm
    write(mpl%test,'(a10,a,e15.8)') '','Norm of '//trim(afield%name())//': ',norm
    call mpl%flush
-
-   ! Release pointer
-   call afield%final()
 end do
+
+! Release memory
+call afield%final()
 
 end subroutine fieldset_print
 
@@ -404,13 +403,13 @@ do iv=1,fieldset%nv
    case default
       call mpl%abort('${subr}$','wrong field rank')
    end select
-
-   ! Release pointer
-   call afield%final()
 end do
 
 ! Apply mask
 call fieldset%apply_mask(mpl)
+
+! Release memory
+call afield%final()
 
 end subroutine fieldset_zero_fields
 
@@ -453,14 +452,14 @@ do iv=1,fieldset_out%nv
    case default
       call mpl%abort('${subr}$','wrong field rank')
    end select
-
-   ! Release pointers
-   call afield_in%final()
-   call afield_out%final()
 end do
 
 ! Apply mask
 call fieldset_out%apply_mask(mpl)
+
+! Release memory
+call afield_in%final()
+call afield_out%final()
 
 end subroutine fieldset_add_fields
 
@@ -503,14 +502,14 @@ do iv=1,fieldset_out%nv
    case default
       call mpl%abort('${subr}$','wrong field rank')
    end select
-
-   ! Release pointers
-   call afield_in%final()
-   call afield_out%final()
 end do
 
 ! Apply mask
 call fieldset_out%apply_mask(mpl)
+
+! Release memory
+call afield_in%final()
+call afield_out%final()
 
 end subroutine fieldset_sub_fields
 
@@ -551,13 +550,13 @@ do iv=1,fieldset%nv
    case default
       call mpl%abort('${subr}$','wrong field rank')
    end select
-
-   ! Release pointer
-   call afield%final()
 end do
 
 ! Apply mask
 call fieldset%apply_mask(mpl)
+
+! Release memory
+call afield%final()
 
 end subroutine fieldset_mult_fields_scalar
 
@@ -607,14 +606,14 @@ do iv=1,fieldset_out%nv
    case default
       call mpl%abort('${subr}$','wrong field rank')
    end select
-
-   ! Release pointers
-   call afield_in%final()
-   call afield_out%final()
 end do
 
 ! Apply mask
 call fieldset_out%apply_mask(mpl)
+
+! Release memory
+call afield_in%final()
+call afield_out%final()
 
 end subroutine fieldset_div_fields
 
@@ -654,13 +653,13 @@ do iv=1,fieldset%nv
    case default
       call mpl%abort('${subr}$','wrong field rank')
    end select
-
-   ! Release pointer
-   call afield%final()
 end do
 
 ! Apply mask
 call fieldset%apply_mask(mpl)
+
+! Release memory
+call afield%final()
 
 end subroutine fieldset_square_fields
 
@@ -703,13 +702,13 @@ do iv=1,fieldset%nv
    case default
       call mpl%abort('${subr}$','wrong field rank')
    end select
-
-   ! Release pointer
-   call afield%final()
 end do
 
 ! Apply mask
 call fieldset%apply_mask(mpl)
+
+! Release memory
+call afield%final()
 
 end subroutine fieldset_sqrt_fields
 
@@ -749,6 +748,9 @@ do iv=1,fieldset%nv
    if (get_atlas_field_size(mpl,afield)/=fieldset%nmga) call mpl%abort('${subr}$','wrong horizontal size')
    if ((afield%levels()/=1).and.(afield%levels()/=fieldset%nl0)) call mpl%abort('${subr}$','wrong number of levels')
 end do
+
+! Release memory
+call afield%final()
 
 end subroutine fieldset_check_single
 
@@ -794,11 +796,11 @@ do iv=1,fieldset_in%nv
    shp_in = afield_in%shape()
    shp_out = afield_in%shape()
    if (any(shp_in/=shp_out)) call mpl%abort('${subr}$','inconsistent shapes')
-
-   ! Release pointers
-   call afield_in%final()
-   call afield_out%final()
 end do
+
+! Release memory
+call afield_in%final()
+call afield_out%final()
 
 end subroutine fieldset_check_pair
 

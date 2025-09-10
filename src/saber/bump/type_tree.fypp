@@ -124,6 +124,9 @@ end do
 ! TODO(Benjamin): should not be necessary, but seems required for Intel compiler
 call tree%kd%build()
 
+! Release memory
+call ageometry%final()
+
 end subroutine tree_init
 
 !----------------------------------------------------------------------
@@ -166,10 +169,10 @@ if (allocated(tree%from_eff)) then
    deallocate(tree%to_eff)
    deallocate(tree%lon)
    deallocate(tree%lat)
-
-   ! Destroy KDTree
-   call tree%kd%final()
 end if
+
+! Destroy KDTree
+call tree%kd%final()
 
 end subroutine tree_dealloc
 

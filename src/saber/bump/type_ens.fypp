@@ -299,6 +299,9 @@ end do
 call ens%m2%mult_fields(mpl,one/real(ens%ne-ens%nsub,kind_real))
 call ens%m4%mult_fields(mpl,one/real(ens%ne,kind_real))
 
+! Release memory
+call pert%final()
+
 end subroutine ens_compute_moments
 
 !----------------------------------------------------------------------
@@ -351,6 +354,9 @@ end do
 
 ! Recompute moments
 call ens%compute_moments(mpl,nam,geom)
+
+! Release memory
+call std%final()
 
 end subroutine ens_normalize
 

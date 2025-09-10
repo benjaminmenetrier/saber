@@ -304,6 +304,9 @@ call geom%hull_c0%dealloc
 if (allocated(geom%l0_to_l0i)) deallocate(geom%l0_to_l0i)
 if (allocated(geom%grp2d)) deallocate(geom%grp2d)
 call geom%io%dealloc
+call geom%aconfig_work_grid%final()
+call geom%aproj_work%final()
+call geom%afunctionspace_mg%final()
 geom%allocated = .false.
 
 end subroutine geom_dealloc
@@ -652,6 +655,14 @@ do imga=1,geom%nmga
 end do
 call mpl%f_comm%allreduce(maxdist,fckit_mpi_max())
 geom%global = supeq(maxdist,pi)
+
+! Release memory
+call afield%final()
+call afield_lonlat%final()
+call afunctionspace_nc%final()
+call afunctionspace_pc%final()
+call afunctionspace_sc%final()
+call anodes%final()
 
 end subroutine geom_from_atlas
 
@@ -2530,6 +2541,7 @@ if (ifmt>0) call mpl%flush
 deallocate(rh_c0)
 deallocate(order_s)
 deallocate(gmask_s)
+call agrid%final()
 call tree_s%dealloc
 
 end subroutine geom_initialize_sampling_from_rad
