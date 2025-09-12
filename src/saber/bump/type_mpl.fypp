@@ -14,7 +14,7 @@ use fckit_mpi_module, only: fckit_mpi_comm,fckit_mpi_sum,fckit_mpi_status
 use iso_c_binding, only: c_ptr,c_null_ptr,c_associated
 use iso_fortran_env, only: output_unit
 !$ use omp_lib
-use tools_const, only: zero,one,ten,hundred
+use tools_const, only: zero,half,one,ten,hundred
 use tools_kinds, only: kind_int,kind_float,kind_double,kind_real
 use tools_log, only: write_log
 use tools_qsort, only: qsort
@@ -25,10 +25,10 @@ implicit none
 integer,parameter :: ddis = 5 !< Progression display step
 
 type timer_type
-   character(len=1024) :: name !< Timer name
-   integer :: clock_start      !< Timer start
-   real(kind_real) :: elapsed  !< Elapsed time
-   integer :: ncall            !< Number of calls
+   character(len=1024) :: name               !< Timer name
+   integer :: clock_start                    !< Timer start
+   integer :: ncall                          !< Number of calls
+   real(kind_real),allocatable :: elapsed(:) !< Elapsed time
 end type timer_type
 
 type mpl_type
@@ -1010,8 +1010,8 @@ mpl%t(8)%name = 'nicas_apply_convol_sqrt_com'
 mpl%t(9)%name = 'nicas_apply_norm'
 do it=1,mpl%nt
    mpl%t(it)%clock_start = -1
-   mpl%t(it)%elapsed = zero
    mpl%t(it)%ncall = 0
+   allocate(mpl%t(it)%elapsed(1000))
 end do
 
 ! System clock info
@@ -1077,8 +1077,9 @@ class(mpl_type),intent(inout) :: mpl !< MPI data
 character(len=*),intent(in) :: name  !< Timer name
 
 ! Local variables
-integer :: it,clock_stop
+integer :: it,clock_stop,nel
 real(kind_real) :: elapsed
+real(kind_real),allocatable :: tmp(:)
 logical :: found
 
 ! Set name
@@ -1109,11 +1110,20 @@ if (allocated(mpl%t)) then
             elapsed = real(clock_stop-mpl%t(it)%clock_start,kind_real)/real(mpl%count_rate,kind_real)
          end if
 
-         ! Accumulate elapsed time
-         mpl%t(it)%elapsed = mpl%t(it)%elapsed+elapsed
-
          ! Add a call
          mpl%t(it)%ncall = mpl%t(it)%ncall+1
+
+         ! Save elapsed time
+         nel = size(mpl%t(it)%elapsed)
+         if (mpl%t(it)%ncall>nel) then
+            ! Reallocate elapsed
+            allocate(tmp(nel))
+            tmp = mpl%t(it)%elapsed
+            deallocate(mpl%t(it)%elapsed)
+            allocate(mpl%t(it)%elapsed(nel+1000))
+            mpl%t(it)%elapsed(1:nel) = tmp
+         end if
+         mpl%t(it)%elapsed(mpl%t(it)%ncall) = elapsed
 
          ! Reset clock start
          mpl%t(it)%clock_start = -1
@@ -1143,22 +1153,42 @@ implicit none
 class(mpl_type),intent(inout) :: mpl !< MPI data
 
 ! Local variables
-integer :: it
-
+integer :: it,ncall
+integer,allocatable :: order(:)
+real(kind_real) :: elapsed_min,elapsed_max,elapsed_mean,elapsed_median
+ 
 ! Set name
 @:set_name(mpl_print_timers)
 
 if (allocated(mpl%t)) then
-   ! Print results
    write(mpl%info,'(a)') '-------------------------------------------------------------------'
    call mpl%flush
-   write(mpl%info,'(a)') '--- Internal timers'
+   write(mpl%info,'(a)') '--- Internal timers (# / min / max / mean / median, in ms)'
    call mpl%flush
    do it=1,mpl%nt
-      if (mpl%t(it)%ncall > 0) then
-         write(mpl%info,'(a7,a30,a,i5,a,f12.3,a)') '',mpl%t(it)%name,': ',mpl%t(it)%ncall,' call(s) / ', &
- & 1.0e3*mpl%t(it)%elapsed/real(mpl%t(it)%ncall,kind_real),' ms per call'
+      ncall = mpl%t(it)%ncall
+      if (ncall > 0) then
+         ! Allocation
+         allocate(order(ncall))
+
+         ! Compute statistics
+         elapsed_min = minval(mpl%t(it)%elapsed(1:ncall))
+         elapsed_max = maxval(mpl%t(it)%elapsed(1:ncall))
+         elapsed_mean = sum(mpl%t(it)%elapsed(1:ncall))/real(ncall,kind_real)
+         call qsort(ncall,mpl%t(it)%elapsed(1:ncall),order,.true.)
+         if (mod(ncall,2)==0) then
+            elapsed_median = half*(mpl%t(it)%elapsed(ncall/2)+mpl%t(it)%elapsed(ncall/2+1))
+         else
+            elapsed_median = mpl%t(it)%elapsed((ncall+1)/2)
+         end if
+
+         ! Print results
+         write(mpl%info,'(a7,a30,a,i5,a,f12.3,a,f12.3,a,f12.3,a,f12.3)') '',mpl%t(it)%name,': ',ncall,' / ', &
+ & elapsed_min,' / ',elapsed_max,' / ',elapsed_mean,' / ',elapsed_median
          call mpl%flush
+
+         ! Release memory
+         deallocate(order)
       end if
    end do  
 end if
