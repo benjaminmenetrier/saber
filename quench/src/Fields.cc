@@ -315,6 +315,9 @@ void Fields::constantValue(const eckit::Configuration & config) {
 Fields & Fields::operator=(const Fields & rhs) {
   oops::Log::trace() << classname() << "::operator= starting" << std::endl;
 
+  // Check that fields are compatible
+  ASSERT(checkFieldsCompatible(rhs));
+
   for (const auto & var : vars_.variables()) {
     atlas::Field field = fset_[var];
     const atlas::Field fieldRhs = rhs.fset_[var];
@@ -339,6 +342,9 @@ Fields & Fields::operator=(const Fields & rhs) {
 
 Fields & Fields::operator+=(const Fields & rhs) {
   oops::Log::trace() << classname() << "::operator+= starting" << std::endl;
+
+  // Check that fields are compatible
+  ASSERT(checkFieldsCompatible(rhs));
 
   // Right-hand side fieldset
   atlas::FieldSet fsetRhs;
@@ -386,6 +392,9 @@ Fields & Fields::operator+=(const Fields & rhs) {
 
 Fields & Fields::operator-=(const Fields & rhs) {
   oops::Log::trace() << classname() << "::operator-= starting" << std::endl;
+
+  // Check that fields are compatible
+  ASSERT(checkFieldsCompatible(rhs));
 
   for (const auto & var : vars_) {
     atlas::Field field = fset_[var.name()];
@@ -447,6 +456,9 @@ void Fields::axpy(const double & zz,
                   const Fields & rhs) {
   oops::Log::trace() << classname() << "::axpy starting" << std::endl;
 
+  // Check that fields are compatible
+  ASSERT(checkFieldsCompatible(rhs));
+
   for (const auto & var : vars_) {
     atlas::Field field = fset_[var.name()];
     const std::string gmaskName = "gmask_" + std::to_string(geom_->groupIndex(var.name()));
@@ -473,6 +485,9 @@ void Fields::axpy(const double & zz,
 
 double Fields::dot_product_with(const Fields & fld2) const {
   oops::Log::trace() << classname() << "::dot_product_with starting" << std::endl;
+
+  // Check that fields are compatible
+  ASSERT(checkFieldsCompatible(fld2));
 
   double zz = 0;
   const auto ownedView = atlas::array::make_view<int, 2>(geom_->fields().field("owned"));
@@ -502,6 +517,9 @@ double Fields::dot_product_with(const Fields & fld2) const {
 
 void Fields::schur_product_with(const Fields & fld2) {
   oops::Log::trace() << classname() << "::schur_product_with starting" << std::endl;
+
+  // Check that fields are compatible
+  ASSERT(checkFieldsCompatible(fld2));
 
   for (const auto & var : vars_) {
     atlas::Field field = fset_[var.name()];
@@ -694,18 +712,39 @@ void Fields::dirac(const eckit::Configuration & config) {
     // Get dirac specifications
     std::vector<double> lon = config.getDoubleVector("lon");
     std::vector<double> lat = config.getDoubleVector("lat");
-    ASSERT(config.has("level") || config.has("vertical coordinate"));
-    std::vector<double> level = config.has("level") ? config.getDoubleVector("level") :
-      config.getDoubleVector("vertical coordinate");
+    if (lat.size() != lon.size()) throw eckit::UserError("Inconsistent dirac specification size",
+      Here());
     std::vector<std::string> vars = config.getStringVector("variable");
-
-    // Check sizes
-    if (lon.size() != lat.size()) throw eckit::UserError("Inconsistent dirac specification size",
+    if (vars.size() != lon.size()) throw eckit::UserError("Inconsistent dirac specification size",
       Here());
-    if (lon.size() != level.size()) throw eckit::UserError("Inconsistent dirac specification size",
-      Here());
-    if (lon.size() != vars.size()) throw eckit::UserError("Inconsistent dirac specification size",
-      Here());
+    std::vector<int> level;
+    if (config.has("level")) {
+      // Copy levels and add an offset to start from 0 instead of 1
+      level = config.getIntVector("level");
+      if (level.size() != lon.size()) throw eckit::UserError(
+        "Inconsistent dirac specification size", Here());
+      for (auto & item : level) {
+        item -= 1;
+      }
+    } else if (config.has("vertical coordinate")) {
+      // Find levels from verticals coordinates
+      const std::vector<double> vertCoord = config.getDoubleVector("vertical coordinate");
+      if (vertCoord.size() != lon.size()) throw eckit::UserError(
+        "Inconsistent dirac specification size", Here());
+      const double vertCoordTol = config.getDouble("vertical coordinate tolerance", 0.0);
+      for (size_t jdir = 0; jdir < vertCoord.size(); ++jdir) {
+        level[jdir] = -1;
+        for (size_t jlev = 0; jlev < geom_->vertCoordAvg(vars[jdir]).size(); ++jlev) {
+          if (std::abs(geom_->vertCoordAvg(vars[jdir])[jlev]-vertCoord[jdir]) < vertCoordTol) {
+            ASSERT(level[jdir] == -1);
+            level[jdir] = jlev;
+          }
+        }
+        ASSERT(level[jdir] > -1);
+      }
+    } else {
+      throw eckit::UserError("level or vertical coordinate missing in dirac configuration", Here());
+    }
 
     // Build KDTree for each MPI task
     const auto ghostView = atlas::array::make_view<int, 1>(geom_->functionSpace().ghost());
@@ -781,19 +820,7 @@ void Fields::dirac(const eckit::Configuration & config) {
         // Add Dirac impulse
         if (field.rank() == 2) {
           auto view = atlas::array::make_view<double, 2>(field);
-          if (config.has("level")) {
-            view(index, static_cast<int>(level[jdir])-1) = 1.0;
-          } else {
-            const auto levelIt = std::find(geom_->vertCoordAvg(vars[jdir]).begin(),
-              geom_->vertCoordAvg(vars[jdir]).end(), level[jdir]);
-            if (levelIt != geom_->vertCoordAvg(vars[jdir]).end()) {
-              // The Dirac level has been found among the vertical levels
-              const size_t jlevel = std::distance(geom_->vertCoordAvg(vars[jdir]).begin(), levelIt);
-              view(index, jlevel) = 1.0;
-            } else {
-              throw eckit::Exception("Dirac level not found among vertical levels", Here());
-            }
-          }
+          view(index, level[jdir]) = 1.0;
         }
       }
 
@@ -822,6 +849,10 @@ void Fields::dirac(const eckit::Configuration & config) {
 void Fields::diff(const Fields & x1,
                   const Fields & x2) {
   oops::Log::trace() << classname() << "::diff starting" << std::endl;
+
+  // Check that fields are compatible
+  ASSERT(checkFieldsCompatible(x1));
+  ASSERT(checkFieldsCompatible(x2));
 
   for (const auto & var : vars_) {
     atlas::Field field = fset_[var.name()];
@@ -1014,6 +1045,68 @@ double Fields::norm() const {
 
 // -----------------------------------------------------------------------------
 
+size_t Fields::serialSize() const {
+  oops::Log::trace() << classname() << "::serialSize starting" << std::endl;
+
+  size_t nn = 0;
+  for (const auto & var : vars_) {
+    atlas::Field field = fset_[var.name()];
+    if (field.rank() == 2) {
+      nn += field.shape(0)*field.shape(1);
+    }
+  }
+  nn += time_.serialSize();
+
+  oops::Log::trace() << classname() << "::serialSize done" << std::endl;
+  return nn;
+}
+
+// -----------------------------------------------------------------------------
+
+void Fields::serialize(std::vector<double> & vect)  const {
+  oops::Log::trace() << classname() << "::serialize starting" << std::endl;
+
+  for (const auto & var : vars_) {
+    const atlas::Field field = fset_[var.name()];
+    if (field.rank() == 2) {
+      const auto view = atlas::array::make_view<double, 2>(field);
+      for (atlas::idx_t jnode = 0; jnode < field.shape(0); ++jnode) {
+        for (atlas::idx_t jlevel = 0; jlevel < field.shape(1); ++jlevel) {
+          vect.push_back(view(jnode, jlevel));
+        }
+      }
+    }
+  }
+  time_.serialize(vect);
+
+  oops::Log::trace() << classname() << "::serialize done" << std::endl;
+}
+
+// -----------------------------------------------------------------------------
+
+void Fields::deserialize(const std::vector<double> & vect,
+                         size_t & index) {
+  oops::Log::trace() << classname() << "::deserialize starting" << std::endl;
+
+  for (const auto & var : vars_) {
+    atlas::Field field = fset_[var.name()];
+    if (field.rank() == 2) {
+      auto view = atlas::array::make_view<double, 2>(field);
+      for (atlas::idx_t jnode = 0; jnode < field.shape(0); ++jnode) {
+        for (atlas::idx_t jlevel = 0; jlevel < field.shape(1); ++jlevel) {
+          view(jnode, jlevel) = vect[index];
+          ++index;
+        }
+      }
+    }
+  }
+  time_.deserialize(vect, index);
+
+  oops::Log::trace() << classname() << "::deserialize done" << std::endl;
+}
+
+// -----------------------------------------------------------------------------
+
 void Fields::print(std::ostream & os) const {
   oops::Log::trace() << classname() << "::print starting" << std::endl;
 
@@ -1024,9 +1117,10 @@ void Fields::print(std::ostream & os) const {
   }
   os << prefix << "  Geometry: " << geom_->grid().name() << " [" << geom_->grid().size() << "]"
     << std::endl;
-  os << prefix << "  Fields:" << std::endl;
+  os << prefix << "  Fields:";
   const auto ghostView = atlas::array::make_view<int, 1>(geom_->functionSpace().ghost());
   for (const auto & var : vars_) {
+    os << std::endl;
     double zzmin = std::numeric_limits<double>::max();
     double zzmax = -std::numeric_limits<double>::max();
     double zzave = 0.0;
@@ -1088,68 +1182,6 @@ void Fields::print(std::ostream & os) const {
   }
 
   oops::Log::trace() << classname() << "::print done" << std::endl;
-}
-
-// -----------------------------------------------------------------------------
-
-size_t Fields::serialSize() const {
-  oops::Log::trace() << classname() << "::serialSize starting" << std::endl;
-
-  size_t nn = 0;
-  for (const auto & var : vars_) {
-    atlas::Field field = fset_[var.name()];
-    if (field.rank() == 2) {
-      nn += field.shape(0)*field.shape(1);
-    }
-  }
-  nn += time_.serialSize();
-
-  oops::Log::trace() << classname() << "::serialSize done" << std::endl;
-  return nn;
-}
-
-// -----------------------------------------------------------------------------
-
-void Fields::serialize(std::vector<double> & vect)  const {
-  oops::Log::trace() << classname() << "::serialize starting" << std::endl;
-
-  for (const auto & var : vars_) {
-    const atlas::Field field = fset_[var.name()];
-    if (field.rank() == 2) {
-      const auto view = atlas::array::make_view<double, 2>(field);
-      for (atlas::idx_t jnode = 0; jnode < field.shape(0); ++jnode) {
-        for (atlas::idx_t jlevel = 0; jlevel < field.shape(1); ++jlevel) {
-          vect.push_back(view(jnode, jlevel));
-        }
-      }
-    }
-  }
-  time_.serialize(vect);
-
-  oops::Log::trace() << classname() << "::serialize done" << std::endl;
-}
-
-// -----------------------------------------------------------------------------
-
-void Fields::deserialize(const std::vector<double> & vect,
-                         size_t & index) {
-  oops::Log::trace() << classname() << "::deserialize starting" << std::endl;
-
-  for (const auto & var : vars_) {
-    atlas::Field field = fset_[var.name()];
-    if (field.rank() == 2) {
-      auto view = atlas::array::make_view<double, 2>(field);
-      for (atlas::idx_t jnode = 0; jnode < field.shape(0); ++jnode) {
-        for (atlas::idx_t jlevel = 0; jlevel < field.shape(1); ++jlevel) {
-          view(jnode, jlevel) = vect[index];
-          ++index;
-        }
-      }
-    }
-  }
-  time_.deserialize(vect, index);
-
-  oops::Log::trace() << classname() << "::deserialize done" << std::endl;
 }
 
 // -----------------------------------------------------------------------------
@@ -1246,6 +1278,48 @@ void Fields::resetDuplicatePoints() {
   }
 
   oops::Log::trace() << classname() << "::resetDuplicatePoints done" << std::endl;
+}
+
+// -----------------------------------------------------------------------------
+
+bool Fields::checkFieldsCompatible(const Fields & other) const {
+  // Number of fields check
+  if (fset_.size() < other.fset_.size()) {
+    oops::Log::warning() << "checkFieldsCompatible: Fields 1 is not a superset of Fields 2"
+      << std::endl;
+    return false;
+  }
+
+  for (const auto & otherField : other.fset_) {
+    // Variables check
+    if (!fset_.has(otherField.name())) {
+      oops::Log::warning() << "checkFieldsCompatible: Fields do not contain the same variables"
+        << std::endl;
+      return false;
+    }
+
+    // Levels check
+    const auto field = fset_[otherField.name()];
+    if (field.shape(1) != otherField.shape(1)) {
+      oops::Log::warning() << "checkFieldsCompatible: Fields have differing levels" << std::endl;
+      return false;
+    }
+
+    // Functionspace checks
+    const auto fs = field.functionspace();
+    const auto otherFs = otherField.functionspace();
+    if (fs.type() != otherFs.type()) {
+      oops::Log::warning() << "checkFieldsCompatible: FunctionSpace types differ" << std::endl;
+      return false;
+    }
+    if (fs.size() != otherFs.size()) {
+      std::cout << "TOTO: " << fs.size() << " " << otherFs.size() << std::endl;
+      oops::Log::warning() << "checkFieldsCompatible: FunctionSpace sizes differ" << std::endl;
+      return false;
+    }
+  }
+
+  return true;
 }
 
 // -----------------------------------------------------------------------------

@@ -10,6 +10,7 @@
 #pragma once
 
 #include <math.h>
+#include <netcdf.h>
 #include <omp.h>
 
 #include <algorithm>
@@ -432,11 +433,7 @@ template <typename MODEL> class ErrorCovarianceToolbox : public oops::Applicatio
     util::seekAndReplace(outputBConf, "%id%", id);
 
     // Write output increment
-    if (outputBConf.has("states")) {
-      dxo.write(outputBConf);
-    } else {
-      dxo[0].write(outputBConf);
-    }
+    dxo.write(outputBConf);
     oops::Log::test() << "Covariance(" << id << ") * Increment:" << dxo << std::endl;
 
     // Look for hybrid or ensemble covariance models
@@ -515,11 +512,8 @@ template <typename MODEL> class ErrorCovarianceToolbox : public oops::Applicatio
       util::seekAndReplace(outputLConf, "%id%", idL);
 
       // Write output increment
-      if (outputLConf.has("states")) {
-        dxo.write(outputLConf);
-      } else {
-        dxo[0].write(outputLConf);
-      }
+      dxo.write(outputLConf);
+
       oops::Log::test() << "Localization(" << id << ") * Increment:" << dxo << std::endl;
     }
   }
@@ -567,11 +561,7 @@ template <typename MODEL> class ErrorCovarianceToolbox : public oops::Applicatio
 
         // Write perturbation
         oops::Log::test() << "Write perturbation: " << dx;
-        if (outputPerturbationsUpdated.has("states")) {
-          dx.write(outputPerturbationsUpdated);
-        } else {
-          dx[0].write(outputPerturbationsUpdated);
-        }
+        dx.write(outputPerturbationsUpdated);
       }
 
       if (outputStates != boost::none) {
@@ -586,11 +576,7 @@ template <typename MODEL> class ErrorCovarianceToolbox : public oops::Applicatio
 
         // Write state
         oops::Log::test() << "Write state: " << xp;
-        if (outputStatesUpdated.has("states")) {
-          xp.write(outputStatesUpdated);
-        } else {
-          xp[0].write(outputStatesUpdated);
-        }
+        xp.write(outputStatesUpdated);
       }
 
       // Square perturbation
@@ -616,11 +602,7 @@ template <typename MODEL> class ErrorCovarianceToolbox : public oops::Applicatio
 
       // Write variance
       oops::Log::test() << "Write randomized variance:" << variance[0] << std::endl;
-      if (outputVarianceUpdated.has("states")) {
-        variance.write(outputVarianceUpdated);
-      } else {
-        variance[0].write(outputVarianceUpdated);
-      }
+      variance.write(outputVarianceUpdated);
     }
   }
 

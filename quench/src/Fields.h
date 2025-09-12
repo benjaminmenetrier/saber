@@ -104,15 +104,18 @@ class Fields : public util::Printable,
   // Grid interpolations
   static std::vector<quench::Interpolation>& interpolations();
 
-  // Duplicate points
-  void resetDuplicatePoints();
-
  private:
   // Print
   void print(std::ostream &) const;
 
   // Return grid interpolation
   std::vector<quench::Interpolation>::iterator setupGridInterpolation(const Geometry &) const;
+
+  // Duplicate points
+  void resetDuplicatePoints();
+
+  // Check that fields are compatible
+  bool checkFieldsCompatible(const Fields &) const;
 
   // Geometry
   std::shared_ptr<const Geometry> geom_;

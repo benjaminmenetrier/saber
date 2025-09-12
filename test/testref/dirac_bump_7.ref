@@ -57,7 +57,7 @@ Covariance(SABER) * Increment:
     + min    = 1.8306696559379036e+09
     + max    = 1.1342599757936182e+12
     + mean   = 1.4099691067075516e+11
-    + stddev = 1.7717354015880698e+11
+    + stddev = 1.7717354015880701e+11
   - air_horizontal_velocity_potential (4 levels):
     + min    = -1.1332856845900806e+11
     + max    = 1.2455253243267209e+11
@@ -66,7 +66,7 @@ Covariance(SABER) * Increment:
   - air_temperature (4 levels):
     + min    = -7.6379105452715696e+04
     + max    = 5.9993395783620057e+04
-    + mean   = 1.1309569934775566e+03
+    + mean   = 1.1309569934775568e+03
     + stddev = 1.2687539264330562e+04
   - air_pressure_at_surface (1 levels):
     + min    = -5.2426811491225881e+03

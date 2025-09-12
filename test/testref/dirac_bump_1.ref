@@ -101,8 +101,8 @@ Covariance(hybrid) * Increment:
   - northward_wind (2 levels):
     + min    = -3.0161121497419696e+00
     + max    = 4.4200992646470666e-01
-    + mean   = -7.9685815674479382e-03
-    + stddev = 1.1719283550750087e-01
+    + mean   = -7.9685815674479365e-03
+    + stddev = 1.1719283550750084e-01
 - Valid time: 2010-01-01T18:00:00Z
   Geometry: L40x21 [840]
   Fields:
@@ -112,7 +112,7 @@ Covariance(hybrid) * Increment:
     + mean   = 1.0795156115744118e-02
     + stddev = 1.5591273349362730e-01
   - northward_wind (2 levels):
-    + min    = -1.7778132616868887e+00
+    + min    = -1.7778132616868894e+00
     + max    = 1.8680333973216818e+00
     + mean   = -3.6402081258399503e-03
     + stddev = 1.0495498530107096e-01
@@ -185,26 +185,26 @@ Covariance(hybrid1_SABER) * Increment:
   Fields:
   - eastward_wind (2 levels):
     + min    = -8.2232144585516153e-13
-    + max    = 2.5790423601979487e-12
-    + mean   = -4.7894792548800691e-16
+    + max    = 2.5790423601979483e-12
+    + mean   = -4.7894792548800829e-16
     + stddev = 1.4430025621570007e-13
   - northward_wind (2 levels):
     + min    = -4.3844493453858791e-13
     + max    = 4.4880784904874341e-13
-    + mean   = -1.2424330269867015e-16
+    + mean   = -1.2424330269867072e-16
     + stddev = 5.0572072369356438e-14
 - Valid time: 2010-01-01T18:00:00Z
   Geometry: L40x21 [840]
   Fields:
   - eastward_wind (2 levels):
     + min    = -8.2232144585516153e-13
-    + max    = 2.5790423601979487e-12
-    + mean   = -4.7894792548800691e-16
+    + max    = 2.5790423601979483e-12
+    + mean   = -4.7894792548800829e-16
     + stddev = 1.4430025621570007e-13
   - northward_wind (2 levels):
     + min    = -4.3844493453858791e-13
     + max    = 4.4880784904874341e-13
-    + mean   = -1.2424330269867015e-16
+    + mean   = -1.2424330269867072e-16
     + stddev = 5.0572072369356438e-14
        Independent levels:  1[2]
           Subset Sc0 size:              762
@@ -225,8 +225,8 @@ Covariance(hybrid2_ensemble) * Increment:
   - northward_wind (2 levels):
     + min    = -6.0322242994839730e+00
     + max    = 8.8401985292982777e-01
-    + mean   = -1.5937163134895745e-02
-    + stddev = 2.3438567101500468e-01
+    + mean   = -1.5937163134895741e-02
+    + stddev = 2.3438567101500465e-01
 - Valid time: 2010-01-01T18:00:00Z
   Geometry: L40x21 [840]
   Fields:
@@ -236,10 +236,10 @@ Covariance(hybrid2_ensemble) * Increment:
     + mean   = 2.1590312231488724e-02
     + stddev = 3.1182546698715652e-01
   - northward_wind (2 levels):
-    + min    = -3.5556265233737969e+00
+    + min    = -3.5556265233737983e+00
     + max    = 3.7360667946433699e+00
-    + mean   = -7.2804162516797791e-03
-    + stddev = 2.0990997060214267e-01
+    + mean   = -7.2804162516797782e-03
+    + stddev = 2.0990997060214270e-01
        Independent levels:  1[2]
           Subset Sc0 size:              762
           Domain area (% of Earth area): 0.100E+03%

@@ -65,5 +65,5 @@ Covariance(SABER) * Increment:
   - air_pressure_at_surface (1 levels):
     + min    ~ 0
     + max    = 1.0000000000000002e+00
-    + mean   = 1.1266076461901953e-01
-    + stddev = 2.2012060665805774e-01
+    + mean   = 1.1266076461901950e-01
+    + stddev = 2.2012060665805777e-01
