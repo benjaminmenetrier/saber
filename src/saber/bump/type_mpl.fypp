@@ -993,7 +993,7 @@ integer :: it
 @:set_name(mpl_init_timers)
 
 ! Number of timers
-mpl%nt = 8
+mpl%nt = 9
 
 ! Allocation
 allocate(mpl%t(mpl%nt))
@@ -1007,6 +1007,7 @@ mpl%t(5)%name = 'nicas_apply_interp_lin'
 mpl%t(6)%name = 'nicas_apply_interp_com'
 mpl%t(7)%name = 'nicas_apply_convol_sqrt_lin'
 mpl%t(8)%name = 'nicas_apply_convol_sqrt_com'
+mpl%t(9)%name = 'nicas_apply_norm'
 do it=1,mpl%nt
    mpl%t(it)%clock_start = -1
    mpl%t(it)%elapsed = zero
