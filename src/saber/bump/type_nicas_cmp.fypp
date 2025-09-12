@@ -4610,7 +4610,7 @@ if (any(nicas_cmp%vlev)) then
          end if
       end do
       !$omp end parallel do
-      call mpl%end_timer('nicas_apply_norm')
+      call mpl%stop_timer('nicas_apply_norm')
       if (lsteps) call nicas_cmp%steps(7)%add(mpl,geom,fld)
    else
       ! Same horizontal convolution for all levels, no vertical convolution
@@ -4642,7 +4642,7 @@ if (any(nicas_cmp%vlev)) then
             if (geom%gmask_c0a(ic0a,il0)) fld(ic0a,il0) = fld(ic0a,il0)*nicas_cmp%norm(ic0a,1)*sqrt(nicas_cmp%a(ic0a,1))
          end do
          !$omp end parallel do
-         call mpl%end_timer('nicas_apply_norm')
+         call mpl%stop_timer('nicas_apply_norm')
       end do
    end if
 end if
@@ -4697,7 +4697,7 @@ if (any(nicas_cmp%vlev)) then
          end if
       end do
       !$omp end parallel do
-      call mpl%end_timer('nicas_apply_norm')
+      call mpl%stop_timer('nicas_apply_norm')
       if (lsteps) call nicas_cmp%steps(2)%add(mpl,geom,fld_tmp)
 
       ! Adjoint interpolation
@@ -4730,7 +4730,7 @@ if (any(nicas_cmp%vlev)) then
             if (geom%gmask_c0a(ic0a,il0)) fld_tmp(ic0a,1) = fld_tmp(ic0a,1)*nicas_cmp%norm(ic0a,1)*sqrt(nicas_cmp%a(ic0a,1))
          end do
          !$omp end parallel do
-         call mpl%end_timer('nicas_apply_norm')
+         call mpl%stop_timer('nicas_apply_norm')
 
          ! Adjoint interpolation
          call mpl%start_timer('nicas_apply_interp_lin')
