@@ -1113,17 +1113,18 @@ if (allocated(mpl%t)) then
          ! Add a call
          mpl%t(it)%ncall = mpl%t(it)%ncall+1
 
-         ! Save elapsed time
+         ! Reallocate elapsed if necessary
          nel = size(mpl%t(it)%elapsed)
          if (mpl%t(it)%ncall>nel) then
-            ! Reallocate elapsed
             allocate(tmp(nel))
             tmp = mpl%t(it)%elapsed
             deallocate(mpl%t(it)%elapsed)
             allocate(mpl%t(it)%elapsed(nel+1000))
             mpl%t(it)%elapsed(1:nel) = tmp
          end if
-         mpl%t(it)%elapsed(mpl%t(it)%ncall) = elapsed
+
+         ! Save elapsed time (in ms)
+         mpl%t(it)%elapsed(mpl%t(it)%ncall) = 1.0e3*elapsed
 
          ! Reset clock start
          mpl%t(it)%clock_start = -1
@@ -1156,7 +1157,7 @@ class(mpl_type),intent(inout) :: mpl !< MPI data
 integer :: it,ncall
 integer,allocatable :: order(:)
 real(kind_real) :: elapsed_min,elapsed_max,elapsed_mean,elapsed_median
- 
+
 ! Set name
 @:set_name(mpl_print_timers)
 
@@ -1190,7 +1191,7 @@ if (allocated(mpl%t)) then
          ! Release memory
          deallocate(order)
       end if
-   end do  
+   end do
 end if
 
 end subroutine mpl_print_timers
