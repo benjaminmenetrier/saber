@@ -14,7 +14,7 @@ use fckit_mpi_module, only: fckit_mpi_comm,fckit_mpi_sum,fckit_mpi_status
 use iso_c_binding, only: c_ptr,c_null_ptr,c_associated
 use iso_fortran_env, only: output_unit
 !$ use omp_lib
-use tools_const, only: zero,half,one,ten,hundred
+use tools_const, only: zero,half,one,ten,hundred,thousand
 use tools_kinds, only: kind_int,kind_float,kind_double,kind_real
 use tools_log, only: write_log
 use tools_qsort, only: qsort
@@ -1124,7 +1124,7 @@ if (allocated(mpl%t)) then
          end if
 
          ! Save elapsed time (in ms)
-         mpl%t(it)%elapsed(mpl%t(it)%ncall) = 1.0e3*elapsed
+         mpl%t(it)%elapsed(mpl%t(it)%ncall) = thousand*elapsed
 
          ! Reset clock start
          mpl%t(it)%clock_start = -1
