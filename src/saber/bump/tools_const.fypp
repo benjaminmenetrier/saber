@@ -49,6 +49,10 @@ interface initialize_constants
    module procedure const_initialize_constants
 end interface
 
+interface finalize_constants
+  module procedure const_finalize_constants
+end interface
+
 public
 
 contains
@@ -68,5 +72,21 @@ implicit none
 ageometry = atlas_geometry('UnitSphere')
 
 end subroutine const_initialize_constants
+
+!----------------------------------------------------------------------
+! Subroutine: const_finalize_constants
+!> Finalize constants
+!----------------------------------------------------------------------
+subroutine const_finalize_constants
+
+implicit none
+
+! Set name
+@:set_name(const_finalize_constants)
+
+! Release memory
+call ageometry%final()
+
+end subroutine const_finalize_constants
 
 end module tools_const
