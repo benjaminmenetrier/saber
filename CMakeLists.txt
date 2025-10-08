@@ -50,7 +50,7 @@ if( DEFINED ENV{ATLAS_REGIONAL_INTERP} )
 endif()
 
 if( atlas_VERSION VERSION_GREATER "0.41" )
-    add_definitions(-DATLAS_MAKE_SPARSE)
+    add_compile_definitions( ATLAS_MAKE_SPARSE )
 endif()
 
 if( ENABLE_MKL )
@@ -72,7 +72,7 @@ find_package( gsibec 1.2.1 QUIET )
 find_package( eccodes 2.24 QUIET )
 if( eccodes_FOUND )
     set( ECCODES_LIBRARIES eccodes )
-    add_definitions(-DECCODES_FOUND=1)
+    add_compile_definitions( ECCODES_FOUND )
 endif()
 
 # Optional SABER blocks
