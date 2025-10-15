@@ -25,6 +25,7 @@ option( ENABLE_OFFLINE_CODECOV "Enable SABER offline code coverage" OFF )
 option( ENABLE_SABER_DOC "Enable SABER documentation" OFF )
 option( ENABLE_MKL "Use MKL for LAPACK implementation (if available)" ON )
 option( ENABLE_BUMP "Compile BUMP and run BUMP-based tests" ON )
+option( ENABLE_BUMP_INSTRUMENTATION "Enable BUMP instrumentation" OFF )
 option( ENABLE_QUENCH "Compile QUENCH and run QUENCH-based tests" ON )
 include( ${PROJECT_NAME}_compiler_flags )
 
@@ -93,24 +94,21 @@ else()
     message( STATUS "SABER block SPECTRALB is NOT enabled" )
 endif()
 
-## Code coverage
-if ( ENABLE_OFFLINE_CODECOV )
-    message( STATUS "Offline code coverage is enabled" )
-    set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage")
-    set( CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} -fprofile-arcs -ftest-coverage")
-    set( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fprofile-arcs -ftest-coverage")
-    set( CMAKE_Fortran_LINK_FLAGS "${CMAKE_Fortran_LINK_FLAGS} -fprofile-arcs -ftest-coverage")
-else()
-    message( STATUS "Offline code coverage is not enabled" )
-endif()
-
 ## Sources
-if( ENABLE_QUENCH )
-  add_subdirectory( quench )
-endif()
 add_subdirectory( src/saber )
 add_subdirectory( tools )
-add_subdirectory( test )
+
+## BUMP instrumentation
+if( ENABLE_BUMP )
+    if( ENABLE_BUMP_INSTRUMENTATION )
+        message( STATUS "BUMP instrumentation is enabled" )
+        add_definitions(-DENABLE_BUMP_INSTRUMENTATION=1)
+    else()
+        message( STATUS "BUMP instrumentation is not enabled" )
+        add_definitions(-DENABLE_BUMP_INSTRUMENTATION=0)
+    endif()
+endif()
+
 if( ENABLE_SABER_DOC )
     message( STATUS "SABER documentation is enabled" )
     add_subdirectory( docs )
@@ -118,11 +116,38 @@ else()
     message( STATUS "SABER documentation is not enabled" )
 endif()
 
-## Global tests
-ecbuild_add_test( TARGET saber_coding_norms_src
-                  TYPE SCRIPT
-                  COMMAND ${CMAKE_BINARY_DIR}/bin/${PROJECT_NAME}_cpplint.py
-                  ARGS --quiet --recursive ${CMAKE_SOURCE_DIR}/${PROJECT_NAME}/src )
+if( BUILD_TESTING )
+  # Test data
+  find_package( jedi-model-data 1.0.0 QUIET )
+
+  ## Code coverage
+  if ( ENABLE_OFFLINE_CODECOV )
+      message( STATUS "Offline code coverage is enabled" )
+      set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage")
+      set( CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} -fprofile-arcs -ftest-coverage")
+      set( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fprofile-arcs -ftest-coverage")
+      set( CMAKE_Fortran_LINK_FLAGS "${CMAKE_Fortran_LINK_FLAGS} -fprofile-arcs -ftest-coverage")
+  else()
+      message( STATUS "Offline code coverage is not enabled" )
+  endif()
+
+  # If test data repo found build the tests
+  if( jedi-model-data_FOUND )
+      message( STATUS "jedi-model-data found; building saber tests" )
+      add_subdirectory( test )
+  else()
+      message( STATUS "jedi-model-data not found; skipping saber tests" )
+  endif()
+
+  ## Global tests
+  ecbuild_add_test( TARGET saber_coding_norms_src
+                    TYPE SCRIPT
+                    COMMAND ${CMAKE_BINARY_DIR}/bin/${PROJECT_NAME}_cpplint.py
+                    ARGS --quiet --recursive ${CMAKE_SOURCE_DIR}/${PROJECT_NAME}/src )
+endif()
+if( ENABLE_QUENCH )
+  add_subdirectory( quench )
+endif()
 
 ## Package Config
 ecbuild_install_project( NAME ${PROJECT_NAME} )

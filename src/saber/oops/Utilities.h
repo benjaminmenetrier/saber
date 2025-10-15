@@ -66,7 +66,8 @@ oops::Variables getInnerOnlyVars(const SaberBlockParametersBase & params,
 // -----------------------------------------------------------------------------
 
 void setMPI(eckit::LocalConfiguration & conf,
-            const int & mpi);
+            const int & mpi,
+            const int & omp = 0);
 
 // -----------------------------------------------------------------------------
 
