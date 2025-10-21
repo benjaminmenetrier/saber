@@ -86,8 +86,9 @@ void allocateMissingFields(oops::FieldSet3D & fset,
 template<typename MODEL>
 oops::FieldSets readEnsemble(const oops::Geometry<MODEL> & geom,
                              const oops::Variables & modelvars,
-                             const oops::State4D<MODEL> & xb,
-                             const oops::State4D<MODEL> & fg,
+                             const std::vector<util::DateTime> & times,
+                             const eckit::mpi::Comm & commTime,
+                             const eckit::mpi::Comm & commEns,
                              const eckit::LocalConfiguration & inputConf,
                              const bool & iterativeEnsembleLoading,
                              eckit::LocalConfiguration & outputConf) {
@@ -193,7 +194,7 @@ oops::FieldSets readEnsemble(const oops::Geometry<MODEL> & geom,
     if (!ensembleConf.empty()) {
       oops::Log::info() << "Info     : Ensemble of states, perturbation using the mean"
                         << std::endl;
-      oops::StateSet<MODEL> tmp(geom, ensembleConf, xb.commTime());
+      oops::StateSet<MODEL> tmp(geom, ensembleConf, commTime);
       oops::IncrementSet<MODEL> ensemble(geom, vars, tmp, true);
       ensemble -= ensemble.ens_mean();
       oops::FieldSets fsetEns(ensemble);
@@ -203,8 +204,8 @@ oops::FieldSets readEnsemble(const oops::Geometry<MODEL> & geom,
     // Increment ensemble from increments on disk
     if (!ensemblePert.empty()) {
       oops::Log::info() << "Info     : Increment ensemble from increments on disk" << std::endl;
-      oops::IncrementSet<MODEL> ensemble(geom, vars, xb.times(),
-                                         ensemblePertParams.toConfiguration(), xb.commTime());
+      oops::IncrementSet<MODEL> ensemble(geom, vars, times,
+                                         ensemblePertParams.toConfiguration(), commTime);
       oops::FieldSets fsetEns(ensemble);
       return fsetEns;
     }
@@ -213,8 +214,8 @@ oops::FieldSets readEnsemble(const oops::Geometry<MODEL> & geom,
     if (!ensembleBase.empty() && !ensemblePairs.empty()) {
       oops::Log::info() << "Info     : Increment ensemble from difference of two states"
                         << std::endl;
-      oops::StateSet<MODEL> states1(geom, ensembleBaseParams.toConfiguration(), xb.commTime());
-      oops::StateSet<MODEL> states2(geom, ensemblePairsParams.toConfiguration(), xb.commTime());
+      oops::StateSet<MODEL> states1(geom, ensembleBaseParams.toConfiguration(), commTime);
+      oops::StateSet<MODEL> states2(geom, ensemblePairsParams.toConfiguration(), commTime);
       oops::IncrementSet<MODEL> ensemble(geom, vars, states1.times(), states1.commTime(),
                                          states1.members(), states1.commEns());
       ensemble.diff(states1, states2);
@@ -272,15 +273,15 @@ oops::FieldSets readEnsemble(const oops::Geometry<MODEL> & geom,
                                     util::ParallelFieldSetIO::Mode::Read);
 
         // Read perturbations into oops::FieldSets
-        oops::FieldSets fsetEns(fspace, vars, io, xb.times(),
+        oops::FieldSets fsetEns(fspace, vars, io, times,
                                 ensemblePertOtherGeom,
-                                commGeom, xb.commTime());
+                                commGeom, commTime);
 
         return fsetEns;
       } else {
-        oops::FieldSets fsetEns(fspace, vars, xb.times(),
+        oops::FieldSets fsetEns(fspace, vars, times,
                                 ensemblePertOtherGeom,
-                                commGeom, xb.commTime());
+                                commGeom, commTime);
         return fsetEns;
       }
     }
@@ -288,7 +289,7 @@ oops::FieldSets readEnsemble(const oops::Geometry<MODEL> & geom,
   // Return empty ensemble if none was returned before
   std::vector<util::DateTime> dates;
   std::vector<int> ensmems;
-  oops::FieldSets ensemble(dates, xb.commTime(), ensmems, xb.commEns());
+  oops::FieldSets ensemble(dates, commTime, ensmems, commEns);
   return ensemble;
 }
 

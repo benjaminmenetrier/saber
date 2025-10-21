@@ -243,7 +243,7 @@ template <typename MODEL> class ProcessPerts : public oops::Application {
     eckit::LocalConfiguration outputEnsConf;
     oops::FieldSets fsetEnsI = readEnsemble<MODEL>(geom,
                                                    incVars,
-                                                   xx, xx,
+                                                   xx.times(), xx.commTime(), xx.commEns(),
                                                    ensembleConf,
                                                    iterativeEnsembleLoading,
                                                    outputEnsConf);
