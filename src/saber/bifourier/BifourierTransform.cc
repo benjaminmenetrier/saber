@@ -189,6 +189,12 @@ BifourierTransform::BifourierTransform(const oops::GeometryData & gdata,
 
 // -----------------------------------------------------------------------------
 
+BifourierTransform::~BifourierTransform() {
+  cleanupFFT();
+}
+
+// -----------------------------------------------------------------------------
+
 void BifourierTransform::gp2sp(const atlas::FieldSet & gpFset,
                                atlas::FieldSet & spFset,
                                const oops::Variables & activeVars) const {
@@ -1643,9 +1649,9 @@ void BifourierTransform::setupLocalSpectralSpace() {
   flds.add(globalIndexField);
   auto lonlatView = make_view<double, 2>(lonlatField);
   auto ghostView = make_view<int, 1>(ghostField);
-  auto remoteIndexView = make_view<int, 1>(remoteIndexField);
+  auto remoteIndexView = make_indexview<int, 1>(remoteIndexField);
   auto partitionView = make_view<int, 1>(partitionField);
-  auto globalIndexView = make_view<atlas::gidx_t, 1>(globalIndexField);
+  auto globalIndexView = make_indexview<atlas::gidx_t, 1>(globalIndexField);
 
   for (size_t js = 0; js < ns_; ++js) {
     // Get global index
@@ -1827,6 +1833,19 @@ void BifourierTransform::setupFFT() {
     colsBufR_, yInembed, yIstride, yIdist, FFTW_ESTIMATE);
 
   oops::Log::trace() << classname() << "::setupFFT done" << std::endl;
+}
+
+// -----------------------------------------------------------------------------
+
+void BifourierTransform::cleanupFFT() {
+  fftw_destroy_plan(rowsPlan_r2c_);
+  fftw_destroy_plan(rowsPlan_c2r_);
+  fftw_destroy_plan(colsPlan_r2c_);
+  fftw_destroy_plan(colsPlan_c2r_);
+  fftw_free(rowsBufR_);
+  fftw_free(rowsBufC_);
+  fftw_free(colsBufR_);
+  fftw_free(colsBufC_);
 }
 
 // -----------------------------------------------------------------------------
