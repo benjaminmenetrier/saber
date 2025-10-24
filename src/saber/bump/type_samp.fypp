@@ -11,9 +11,9 @@ module type_samp
 use atlas_module, only: atlas_structuredgrid
 use fckit_mpi_module, only: fckit_mpi_sum,fckit_mpi_min,fckit_mpi_max,fckit_mpi_status
 !$ use omp_lib
-use tools_const, only: zero,quarter,half,one,four,hundred,pi,req,reqkm,deg2rad,rad2deg
+use tools_const, only: zero,half,one,four,hundred,pi,reqkm,deg2rad,rad2deg
 use tools_func, only: lonlatmod,independent_levels,sphere_dist,lonlat2xyz,xyz2lonlat,cx_to_cxa,cx_to_proc,cx_to_cxu, &
- & convert_i2l,convert_l2i,zss_maxval,zss_minval,zss_sum,zss_count
+ & zss_maxval,zss_minval,zss_sum,zss_count
 use tools_gc99, only: fit_func
 use tools_kinds, only: kind_int,kind_long,kind_real
 use tools_netcdf, only: create_file,open_file,put_att,get_att,define_dim,inquire_dim,inquire_dim_size,define_var,inquire_var, &

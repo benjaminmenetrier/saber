@@ -65,5 +65,5 @@
                    Level:   2 ~> amplitude:        1.00
                                  loc. hor. support:      3195.47 km
                                  loc. ver. support:         2.45 vertical units
-Norm of output parameter loc_rh - 1: 1.2948576070576040e+08
-Norm of output parameter loc_rv - 1: 1.0050165524506204e+02
+Norm of output parameter loc_rh - 1: 1.2332747934563664e+08
+Norm of output parameter loc_rv - 1: 9.5721844192604635e+01

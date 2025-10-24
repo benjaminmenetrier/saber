@@ -5,12 +5,12 @@
              Level   2 ~> 100.0%
              Level   1 ~>  0.100E+01 vert. coord.
              Level   2 ~>  0.200E+01 vert. coord.
-Norm of input parameter a - 1: 5.1035936401792029e+01
-Norm of input parameter a - 2: 6.9996934948940082e+00
-Norm of input parameter rh - 1: 2.6996455736320084e+08
-Norm of input parameter rh - 2: 1.5181222694219911e+08
-Norm of input parameter rv - 1: 2.0829457956243201e+02
-Norm of input parameter rv - 2: 2.0829457956326149e+01
+Norm of input parameter a - 1: 4.8608691474422692e+01
+Norm of input parameter a - 2: 6.6667913924447193e+00
+Norm of input parameter rh - 1: 2.5712517106742477e+08
+Norm of input parameter rh - 2: 1.4459210943799543e+08
+Norm of input parameter rv - 1: 1.9838818815890900e+02
+Norm of input parameter rv - 2: 1.9838818815970122e+01
              Effective levels:   1   2 
                    Requested distance between points (min/max/avg):  0.928E+03 km /  0.928E+03 km /  0.928E+03 km
                    Regular sampling grid size:      360 points

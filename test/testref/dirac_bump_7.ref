@@ -5,8 +5,8 @@ Input Dirac increment:
   - air_horizontal_streamfunction (4 levels):
     + min    = 0.0000000000000000e+00
     + max    = 1.0000000000000000e+00
-    + mean   = 7.5483091787439610e-05
-    + stddev = 8.6881005857098320e-03
+    + mean   = 7.8864353312302845e-05
+    + stddev = 8.8805604165660551e-03
   - air_horizontal_velocity_potential (4 levels):
     + min    = 0.0000000000000000e+00
     + max    = 0.0000000000000000e+00
@@ -29,7 +29,7 @@ Input Dirac increment:
              Level   4 ~> -0.110E+02 vert. coord.
           nc2 =       89
 Adjoint test for block BUMP_VerticalBalance passed
-Norm of input parameter StdDev: 3.2367672341787326e+08
+Norm of input parameter StdDev: 3.1578046935875434e+08
 Adjoint test for block StdDev passed
        Independent levels:  1[4]
           Subset Sc0 size:             3170
@@ -56,20 +56,20 @@ Covariance(SABER) * Increment:
   - air_horizontal_streamfunction (4 levels):
     + min    = 1.8306696559379036e+09
     + max    = 1.1342599757936182e+12
-    + mean   = 1.4099691067075516e+11
-    + stddev = 1.7717354015880701e+11
+    + mean   = 1.4145096210878461e+11
+    + stddev = 1.7915765764318381e+11
   - air_horizontal_velocity_potential (4 levels):
     + min    = -1.1332856845900806e+11
     + max    = 1.2455253243267209e+11
-    + mean   = 4.1461283230705231e+08
-    + stddev = 2.1260680536664532e+10
+    + mean   = 3.8338530540770137e+08
+    + stddev = 2.1244720484858017e+10
   - air_temperature (4 levels):
     + min    = -7.6379105452715696e+04
     + max    = 5.9993395783620057e+04
-    + mean   = 1.1309569934775568e+03
-    + stddev = 1.2687539264330562e+04
+    + mean   = 9.7481156645806163e+02
+    + stddev = 1.2581015379533012e+04
   - air_pressure_at_surface (1 levels):
     + min    = -5.2426811491225881e+03
     + max    = 5.0880780898559133e+03
-    + mean   = 2.1480001138792045e+02
-    + stddev = 2.1373353574936655e+03
+    + mean   = 1.7892173721691040e+02
+    + stddev = 2.1097032798009059e+03

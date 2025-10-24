@@ -176,15 +176,15 @@
                    Level:   1 ~> amplitude:        0.12
                                  cor. hor. support:      2619.76 km
                                  cor. ver. support:         0.00 vertical units
-Norm of output parameter cor_a - 1: 5.3495475626933889e+01
-Norm of output parameter cor_a - 2: 1.1591079771627157e+01
-Norm of output parameter cor_rh1 - 1: 3.0149085616171139e+08
-Norm of output parameter cor_rh1 - 2: 2.6268318660626826e+08
-Norm of output parameter cor_rh2 - 1: 3.2012531213425940e+08
-Norm of output parameter cor_rh2 - 2: 2.7916479044553202e+08
-Norm of output parameter cor_rhc - 1: 8.1255130381066412e+00
-Norm of output parameter cor_rhc - 2: 8.1255130381066412e+00
-Norm of output parameter cor_rh - 1: 3.0863863837063408e+08
-Norm of output parameter cor_rh - 2: 2.6916410962097460e+08
-Norm of output parameter cor_rv - 1: 2.0098682037963334e+02
-Norm of output parameter cor_rv - 2: 3.4274282239687444e+01
+Norm of output parameter cor_a - 1: 5.0808620707443012e+01
+Norm of output parameter cor_a - 2: 1.1174545682972937e+01
+Norm of output parameter cor_rh1 - 1: 2.8694684170467079e+08
+Norm of output parameter cor_rh1 - 2: 2.4892482296903673e+08
+Norm of output parameter cor_rh2 - 1: 3.0636917043196994e+08
+Norm of output parameter cor_rh2 - 2: 2.6604399704367176e+08
+Norm of output parameter cor_rhc - 1: 7.8680668989728186e+00
+Norm of output parameter cor_rhc - 2: 7.8680668989728186e+00
+Norm of output parameter cor_rh - 1: 2.9449862442687052e+08
+Norm of output parameter cor_rh - 2: 2.5574800624343485e+08
+Norm of output parameter cor_rv - 1: 1.9245091199721224e+02
+Norm of output parameter cor_rv - 2: 3.2384804082426633e+01

@@ -5,8 +5,8 @@ Input Dirac increment:
   - snow_depth (1 levels):
     + min    = 0.0000000000000000e+00
     + max    = 1.0000000000000000e+00
-    + mean   = 1.3661202185792350e-04
-    + stddev = 1.1688114555304096e-02
+    + mean   = 1.4120304998587970e-04
+    + stddev = 1.1882888957904500e-02
        Independent levels:  1[1]
           Subset Sc0 size:             7082
           Domain area (% of Earth area): 0.100E+03%
@@ -40,5 +40,5 @@ Covariance(SABER) * Increment:
   - snow_depth (1 levels):
     + min    = 0.0000000000000000e+00
     + max    = 9.9999999999999967e-01
-    + mean   = 1.1002598396175700e-02
-    + stddev = 7.7200322295295540e-02
+    + mean   = 1.1372355303587423e-02
+    + stddev = 7.8460196564529336e-02

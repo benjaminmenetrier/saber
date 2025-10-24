@@ -24,8 +24,8 @@ Write perturbation:
   - air_horizontal_streamfunction (2 levels):
     + min    = -2.7222881062415354e+00
     + max    = 2.4695351317964973e+00
-    + mean   = -1.8674363634179489e-01
-    + stddev = 1.0117579324837815e+00
+    + mean   = -1.4312773785979013e-01
+    + stddev = 1.0062593253090493e+00
 Write perturbation: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
@@ -33,8 +33,8 @@ Write perturbation:
   - air_horizontal_streamfunction (2 levels):
     + min    = -3.1995962549944501e+00
     + max    = 2.5972509222267832e+00
-    + mean   = -1.0439797207106719e-01
-    + stddev = 1.0776365066207294e+00
+    + mean   = -1.2118743798853236e-01
+    + stddev = 1.0452270856439398e+00
 Write perturbation: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
@@ -42,8 +42,8 @@ Write perturbation:
   - air_horizontal_streamfunction (2 levels):
     + min    = -2.6901808264570013e+00
     + max    = 1.8333715763123613e+00
-    + mean   = -4.4299843524882559e-01
-    + stddev = 9.0463818247819039e-01
+    + mean   = -4.4900968584987688e-01
+    + stddev = 9.0146600945755506e-01
 Write perturbation: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
@@ -51,8 +51,8 @@ Write perturbation:
   - air_horizontal_streamfunction (2 levels):
     + min    = -2.0477844651696349e+00
     + max    = 2.9909393866304916e+00
-    + mean   = 4.1291574993358898e-01
-    + stddev = 8.6686725402449494e-01
+    + mean   = 4.1850211289699868e-01
+    + stddev = 8.7445793151209450e-01
 Write perturbation: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
@@ -60,8 +60,8 @@ Write perturbation:
   - air_horizontal_streamfunction (2 levels):
     + min    = -2.5479246200195416e+00
     + max    = 2.7032147940935989e+00
-    + mean   = 2.6243764288859356e-01
-    + stddev = 1.0457681567899935e+00
+    + mean   = 2.0631768252157526e-01
+    + stddev = 1.0260573405898501e+00
 Write perturbation: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
@@ -69,8 +69,8 @@ Write perturbation:
   - air_horizontal_streamfunction (2 levels):
     + min    = -3.2445347238897826e+00
     + max    = 2.0489180729778536e+00
-    + mean   = 1.9918170545223456e-02
-    + stddev = 8.4885626448034213e-01
+    + mean   = 4.9540371257222146e-02
+    + stddev = 8.4946943678108211e-01
 Write perturbation: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
@@ -78,8 +78,8 @@ Write perturbation:
   - air_horizontal_streamfunction (2 levels):
     + min    = -3.0493589792720752e+00
     + max    = 4.1072887455306706e+00
-    + mean   = 6.1146728526839736e-02
-    + stddev = 1.1720580991802729e+00
+    + mean   = 1.1310175346807125e-01
+    + stddev = 1.1747162800171964e+00
 Write perturbation: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
@@ -87,8 +87,8 @@ Write perturbation:
   - air_horizontal_streamfunction (2 levels):
     + min    = -2.4533335676840440e+00
     + max    = 2.7323098425478287e+00
-    + mean   = 1.3172673788831560e-01
-    + stddev = 8.7648105311461433e-01
+    + mean   = 1.5007266366089006e-01
+    + stddev = 8.9710502403387538e-01
 Write perturbation: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
@@ -96,8 +96,8 @@ Write perturbation:
   - air_horizontal_streamfunction (2 levels):
     + min    = -2.4337374965841523e+00
     + max    = 2.3961418436911477e+00
-    + mean   = 1.5103322029633734e-02
-    + stddev = 8.3739527699740546e-01
+    + mean   = 6.2984871932795020e-02
+    + stddev = 8.5859567069210119e-01
 Write perturbation: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
@@ -105,8 +105,8 @@ Write perturbation:
   - air_horizontal_streamfunction (2 levels):
     + min    = -2.1385614303131701e+00
     + max    = 2.5130734904916903e+00
-    + mean   = 1.6505939929897365e-01
-    + stddev = 9.6484008270820554e-01
+    + mean   = 1.3075704611319308e-01
+    + stddev = 9.6762946409099992e-01
 Write perturbation: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
@@ -114,8 +114,8 @@ Write perturbation:
   - air_horizontal_streamfunction (2 levels):
     + min    = -3.6624433826433020e+00
     + max    = 2.7864122561423605e+00
-    + mean   = 4.3093385020622843e-01
-    + stddev = 9.8319953095670409e-01
+    + mean   = 3.5205275081335602e-01
+    + stddev = 9.7945168870077604e-01
 Write perturbation: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
@@ -123,8 +123,8 @@ Write perturbation:
   - air_horizontal_streamfunction (2 levels):
     + min    = -3.1173702846661038e+00
     + max    = 3.2328812135684735e+00
-    + mean   = 4.6585433492030960e-02
-    + stddev = 8.7427516023793361e-01
+    + mean   = 8.6654659263121478e-02
+    + stddev = 8.7424588574226625e-01
 Write perturbation: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
@@ -132,8 +132,8 @@ Write perturbation:
   - air_horizontal_streamfunction (2 levels):
     + min    = -2.2480697133650382e+00
     + max    = 3.0753204375498444e+00
-    + mean   = 2.8557479963900856e-01
-    + stddev = 9.3037894480697569e-01
+    + mean   = 2.6325007134618406e-01
+    + stddev = 9.6055433508321675e-01
 Write perturbation: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
@@ -141,8 +141,8 @@ Write perturbation:
   - air_horizontal_streamfunction (2 levels):
     + min    = -3.2372525596226422e+00
     + max    = 2.9905152829287176e+00
-    + mean   = -3.1633848227209177e-01
-    + stddev = 1.0907392267269294e+00
+    + mean   = -3.1394885571567116e-01
+    + stddev = 1.0935855038030240e+00
 Write perturbation: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
@@ -150,8 +150,8 @@ Write perturbation:
   - air_horizontal_streamfunction (2 levels):
     + min    = -2.4059863103179358e+00
     + max    = 3.3852775141090703e+00
-    + mean   = 1.4165615423997699e-01
-    + stddev = 9.5816495967266391e-01
+    + mean   = 1.3435715200589360e-01
+    + stddev = 9.3448791227328221e-01
 Write perturbation: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
@@ -159,8 +159,8 @@ Write perturbation:
   - air_horizontal_streamfunction (2 levels):
     + min    = -3.2916471935444971e+00
     + max    = 3.5860569467489070e+00
-    + mean   = -4.6041356617473224e-02
-    + stddev = 1.1111005695297123e+00
+    + mean   = -7.4603802418266002e-02
+    + stddev = 1.1050375166550153e+00
 Write perturbation: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
@@ -168,8 +168,8 @@ Write perturbation:
   - air_horizontal_streamfunction (2 levels):
     + min    = -3.5638364706048185e+00
     + max    = 2.4529404660922292e+00
-    + mean   = -3.7079539696304437e-01
-    + stddev = 9.4024480157933399e-01
+    + mean   = -3.7675630850248698e-01
+    + stddev = 9.8037457084225765e-01
 Write perturbation: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
@@ -177,8 +177,8 @@ Write perturbation:
   - air_horizontal_streamfunction (2 levels):
     + min    = -3.1189486228649641e+00
     + max    = 2.9783524706132298e+00
-    + mean   = 5.2529454365980076e-02
-    + stddev = 9.6072028186330194e-01
+    + mean   = 3.2544818853534566e-02
+    + stddev = 9.8552563455950426e-01
 Write perturbation: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
@@ -186,8 +186,8 @@ Write perturbation:
   - air_horizontal_streamfunction (2 levels):
     + min    = -2.2814948739044150e+00
     + max    = 2.4026092463482156e+00
-    + mean   = -6.5562181857272542e-02
-    + stddev = 8.4390222784604185e-01
+    + mean   = -1.5169273043842801e-02
+    + stddev = 8.4557632434027652e-01
 Write perturbation: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
@@ -195,8 +195,8 @@ Write perturbation:
   - air_horizontal_streamfunction (2 levels):
     + min    = -2.2937846365939292e+00
     + max    = 3.8061716997092589e+00
-    + mean   = 1.6160168652950713e-01
-    + stddev = 8.6475392003590112e-01
+    + mean   = 1.7490931756317862e-01
+    + stddev = 8.8967880038273717e-01
 Write perturbation: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
@@ -204,8 +204,8 @@ Write perturbation:
   - air_horizontal_streamfunction (2 levels):
     + min    = -2.9959704009337869e+00
     + max    = 3.7448555882308878e+00
-    + mean   = -2.0100780387197259e-01
-    + stddev = 1.3891545326838564e+00
+    + mean   = -1.4617486194867560e-01
+    + stddev = 1.2943021063943159e+00
 Write perturbation: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
@@ -213,8 +213,8 @@ Write perturbation:
   - air_horizontal_streamfunction (2 levels):
     + min    = -3.0757111094364826e+00
     + max    = 3.0619800326442577e+00
-    + mean   = 6.0085650205206453e-02
-    + stddev = 8.0399160439919959e-01
+    + mean   = 5.3809228277772923e-02
+    + stddev = 8.1886564727376987e-01
 Write perturbation: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
@@ -222,8 +222,8 @@ Write perturbation:
   - air_horizontal_streamfunction (2 levels):
     + min    = -2.1588501756422862e+00
     + max    = 2.9174876814089004e+00
-    + mean   = -3.4901039269525071e-02
-    + stddev = 9.2037814086766523e-01
+    + mean   = 3.0549171392407769e-02
+    + stddev = 8.8683075780875742e-01
 Write perturbation: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
@@ -231,8 +231,8 @@ Write perturbation:
   - air_horizontal_streamfunction (2 levels):
     + min    = -3.2207077647213023e+00
     + max    = 2.5063480944437786e+00
-    + mean   = -3.7627767823506506e-02
-    + stddev = 9.9111305141501316e-01
+    + mean   = -4.7334556279991252e-02
+    + stddev = 1.0048201061943642e+00
 Write perturbation: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
@@ -240,5 +240,5 @@ Write perturbation:
   - air_horizontal_streamfunction (2 levels):
     + min    = -2.6507900232109201e+00
     + max    = 2.5224037259632102e+00
-    + mean   = 3.0642366997145903e-01
-    + stddev = 8.6584892514060985e-01
+    + mean   = 2.8066216076084394e-01
+    + stddev = 8.9114548575674613e-01

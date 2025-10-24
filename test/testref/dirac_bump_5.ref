@@ -5,9 +5,9 @@ Input Dirac increment:
   - air_horizontal_streamfunction (2 levels):
     + min    = 0.0000000000000000e+00
     + max    = 1.0000000000000000e+00
-    + mean   = 5.9523809523809529e-04
-    + stddev = 2.4397501823713856e-02
-Norm of input parameter StdDev: 4.1188766642544991e+01
+    + mean   = 6.5616797900262466e-04
+    + stddev = 2.5615775978927613e-02
+Norm of input parameter StdDev: 3.9229848438112732e+01
        Independent levels:  1[2]
           Subset Sc0 size:              762
           Domain area (% of Earth area): 0.100E+03%
@@ -25,5 +25,5 @@ Covariance(SABER) * Increment:
   - air_horizontal_streamfunction (2 levels):
     + min    = -3.5169570259916079e-02
     + max    = 1.5502093305887765e+00
-    + mean   = 5.6516122455723223e-03
-    + stddev = 6.1833707229208695e-02
+    + mean   = 6.2301237352765755e-03
+    + stddev = 6.4895532708861836e-02

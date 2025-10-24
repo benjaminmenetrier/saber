@@ -8,14 +8,12 @@
 !----------------------------------------------------------------------
 module type_mpl
 
-use fckit_configuration_module, only: fckit_configuration
 use fckit_log_module, only: fckit_logchannel
 use fckit_mpi_module, only: fckit_mpi_comm,fckit_mpi_sum,fckit_mpi_status
-use iso_c_binding, only: c_ptr,c_null_ptr,c_associated
 use iso_fortran_env, only: output_unit
 !$ use omp_lib
-use tools_const, only: zero,half,one,ten,hundred,thousand
-use tools_kinds, only: kind_int,kind_float,kind_double,kind_real
+use tools_const, only: zero,half,hundred,thousand
+use tools_kinds, only: kind_int,kind_real
 use tools_log, only: write_log
 use tools_qsort, only: qsort
 use type_msv, only: msv_type

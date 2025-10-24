@@ -15,12 +15,12 @@ Input Dirac increment:
     + max    = 1.0000000000000000e+00
     + mean   = 2.3917087430241827e-03
     + stddev = 4.8853072639868877e-02
-Norm of input parameter weight_0: 6.5417987010223953e+01
-Norm of input parameter weight_1: 1.2449635175136821e+02
-Norm of input parameter weight_2: 5.8505939145572903e+01
-Norm of input parameter normalization_0: 2.1623265113143773e+02
-Norm of input parameter normalization_1: 2.2423422309329479e+02
-Norm of input parameter normalization_2: 2.1929433659055982e+02
+Norm of input parameter weight_0: 8.8383651045292581e+01
+Norm of input parameter weight_1: 1.7288316712711989e+02
+Norm of input parameter weight_2: 8.1175858595288702e+01
+Norm of input parameter normalization_0: 2.9866798932368988e+02
+Norm of input parameter normalization_1: 3.1027210488626434e+02
+Norm of input parameter normalization_2: 3.0314295076703809e+02
     FastLAM interpolation accuracy test passed
     FastLAM interpolation adjoint test passed
     FastLAM interpolation accuracy test passed

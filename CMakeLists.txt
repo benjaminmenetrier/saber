@@ -31,7 +31,9 @@ include( ${PROJECT_NAME}_compiler_flags )
 
 ## Dependencies
 # Required
-find_package( jedicmake REQUIRED )  # Prefer find modules from jedi-cmake
+if( ENABLE_QUENCH )
+    find_package( jedicmake REQUIRED )  # Prefer find modules from jedi-cmake
+endif()
 if(OPENMP)
   find_package( OpenMP REQUIRED COMPONENTS CXX Fortran )
 endif()
@@ -39,7 +41,11 @@ find_package( MPI REQUIRED COMPONENTS Fortran )
 find_package( NetCDF REQUIRED COMPONENTS C Fortran )
 find_package( eckit 1.17.1 REQUIRED COMPONENTS MPI )
 find_package( fckit 0.9.5 REQUIRED )
-find_package( atlas 0.35.0 REQUIRED COMPONENTS OMP_Fortran TESSELATION)
+if(OpenMP_FOUND)
+    find_package( atlas 0.35.0 REQUIRED COMPONENTS OMP_Fortran TESSELATION)
+else()
+    find_package( atlas 0.35.0 REQUIRED COMPONENTS TESSELATION)
+endif()
 # TODO(Benjamin): check when ATLAS PR #215 is merged into a tagged version to update the version number
 if( atlas_VERSION VERSION_GREATER "0.38.1" )
     set( ATLAS_REGIONAL_INTERP ON )

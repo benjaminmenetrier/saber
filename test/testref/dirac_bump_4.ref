@@ -5,8 +5,8 @@ Input Dirac increment:
   - eastward_wind (2 levels):
     + min    = 0.0000000000000000e+00
     + max    = 1.0000000000000000e+00
-    + mean   = 5.9523809523809529e-04
-    + stddev = 2.4397501823713856e-02
+    + mean   = 6.5616797900262466e-04
+    + stddev = 2.5615775978927613e-02
   - northward_wind (2 levels):
     + min    = 0.0000000000000000e+00
     + max    = 0.0000000000000000e+00
@@ -45,7 +45,7 @@ Adjoint test for block BUMP_PsiChiToUV passed
           nc2 =      280
           Independent levels:  1[2]
 Adjoint test for block BUMP_VerticalBalance passed
-Norm of input parameter StdDev: 5.8030999898443227e+01
+Norm of input parameter StdDev: 5.5271073069144208e+01
 Adjoint test for block StdDev passed
        Independent levels:  1[2]
           Subset Sc0 size:              762
@@ -73,10 +73,10 @@ Covariance(SABER) * Increment:
   - eastward_wind (2 levels):
     + min    = -3.4657685609331201e-13
     + max    = 1.1162235916549968e-12
-    + mean   = -2.7577506425882546e-16
-    + stddev = 4.8773353903344097e-14
+    + mean   = -3.0400400784437454e-16
+    + stddev = 5.1210298377635781e-14
   - northward_wind (2 levels):
     + min    = -2.0187631367326895e-13
     + max    = 1.3379005811267138e-13
-    + mean   = 1.0922875961199642e-17
-    + stddev = 1.0928743990520207e-14
+    + mean   = 1.2040965626519290e-17
+    + stddev = 1.1474813264515446e-14

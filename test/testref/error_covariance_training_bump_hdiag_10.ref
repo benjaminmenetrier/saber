@@ -21,7 +21,7 @@
              Level   8 ~>  0.800E+01 vert. coord.
              Level   9 ~>  0.900E+01 vert. coord.
              Level  10 ~>  0.100E+02 vert. coord.
-Norm of input parameter sampling_mask_field - 1: 9.3995248855099263e+01
+Norm of input parameter sampling_mask_field - 1: 8.9728039154758349e+01
           Norm of air_horizontal_streamfunction:  0.87865069E+02
           Norm of air_horizontal_streamfunction:  0.79131883E+02
           Norm of air_horizontal_streamfunction:  0.78481342E+02
@@ -104,5 +104,5 @@ Norm of input parameter sampling_mask_field - 1: 9.3995248855099263e+01
                    Level:   4 ~> amplitude:        1.00
                                  cor. hor. support:      6665.74 km
                                  cor. ver. support:         7.10 vertical units
-Norm of output parameter cor_rh - 1: 4.5963222665885717e+08
-Norm of output parameter cor_rv - 1: 4.7743619040391320e+02
+Norm of output parameter cor_rh - 1: 2.2548549692382601e+40
+Norm of output parameter cor_rv - 1: 2.2548549692382601e+40

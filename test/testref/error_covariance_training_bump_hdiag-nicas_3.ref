@@ -148,9 +148,9 @@
              0.0 /    0.0:  1.0000000
           Level   1:  0.0000000 -  1.0000000
           Level   2:  0.0000000 -  0.9217012
-Norm of output parameter loc_rh - 1: 2.7483625917796105e+08
-Norm of output parameter loc_rv - 1: 2.0421631328255006e+02
-Norm of output parameter hyb_coef_ens - 1: 2.5918723349188472e+01
-Norm of output parameter hyb_coef_ens_lr - 1: 2.1734906291904331e+01
-Norm of output parameter loc_rh_lr - 1: 2.8107089038603479e+08
-Norm of output parameter loc_rv_lr - 1: 2.4733995645437614e+02
+Norm of output parameter loc_rh - 1: 2.6385235156393513e+08
+Norm of output parameter loc_rv - 1: 1.9605475146722972e+02
+Norm of output parameter hyb_coef_ens - 1: 2.4882874354618114e+01
+Norm of output parameter hyb_coef_ens_lr - 1: 2.0866264710826773e+01
+Norm of output parameter loc_rh_lr - 1: 2.7378231229532695e+08
+Norm of output parameter loc_rv_lr - 1: 2.4092607067241505e+02

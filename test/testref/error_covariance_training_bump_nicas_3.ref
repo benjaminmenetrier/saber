@@ -5,11 +5,11 @@
              Level   2 ~> 100.0%
              Level   1 ~>  0.100E+01 vert. coord.
              Level   2 ~>  0.200E+01 vert. coord.
-Norm of input parameter nicas_a - 1: 5.1035936401792029e+01
-Norm of input parameter nicas_a - 2: 6.9996934948940082e+00
-Norm of input parameter rh - 1: 2.6996455736320084e+08
-Norm of input parameter rh - 2: 1.5181222694219911e+08
-Norm of input parameter nicas_norm - 1: 8.6436043410010242e+01
+Norm of input parameter nicas_a - 1: 4.8608691474422692e+01
+Norm of input parameter nicas_a - 2: 6.6667913924447193e+00
+Norm of input parameter rh - 1: 2.5712517106742477e+08
+Norm of input parameter rh - 2: 1.4459210943799543e+08
+Norm of input parameter nicas_norm - 1: 8.2270122319688767e+01
              nc1(  1) =                        880
              nc1(  2) =                        880
              ns =                             1760

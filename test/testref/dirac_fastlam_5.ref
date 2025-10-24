@@ -13,12 +13,12 @@ Input Dirac increment:
   - air_pressure_at_surface (1 levels):
     + min    = 0.0000000000000000e+00
     + max    = 0.0000000000000000e+00
-Norm of input parameter weight_0: 6.5417987010223953e+01
-Norm of input parameter weight_1: 1.2449635175136821e+02
-Norm of input parameter weight_2: 5.8505939145572903e+01
-Norm of input parameter normalization_0: 2.1621771424848495e+02
-Norm of input parameter normalization_1: 2.2404458519331988e+02
-Norm of input parameter normalization_2: 2.1895312294994417e+02
+Norm of input parameter weight_0: 8.8383651045292581e+01
+Norm of input parameter weight_1: 1.7288316712711989e+02
+Norm of input parameter weight_2: 8.1175858595288702e+01
+Norm of input parameter normalization_0: 2.9865717534686115e+02
+Norm of input parameter normalization_1: 3.1001277718425632e+02
+Norm of input parameter normalization_2: 3.0267235672470059e+02
     FastLAM interpolation accuracy test passed
     FastLAM interpolation adjoint test passed
     FastLAM redToRows test passed

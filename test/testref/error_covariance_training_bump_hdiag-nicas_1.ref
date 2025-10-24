@@ -253,20 +253,20 @@
              0.0 /    0.0:  0.0000000
           Level   1:  0.0000000 -  0.0000000
           Level   2:  0.0000000 -  0.0000000
-Norm of output parameter dirac_mom_cov - 1: 1.2008109822133207e+01
-Norm of output parameter dirac_mom_single_obs - 1: 1.3867350131416982e+01
-Norm of output parameter dirac_mom - 1: 1.2708641259147969e+01
+Norm of output parameter dirac_mom_cov - 1: 1.1345203847591828e+01
+Norm of output parameter dirac_mom_single_obs - 1: 1.3101805063180700e+01
+Norm of output parameter dirac_mom - 1: 1.2029943769764627e+01
 Norm of output parameter dirac_diag_cor - 1: 2.6937582997896983e+00
-Norm of output parameter cor_a - 1: 5.1035936401792029e+01
-Norm of output parameter cor_a - 2: 6.9996934948940082e+00
-Norm of output parameter cor_rh1 - 1: 2.5980097467790154e+08
-Norm of output parameter cor_rh1 - 2: 1.4609682438626081e+08
-Norm of output parameter cor_rh2 - 1: 2.8192193236524189e+08
-Norm of output parameter cor_rh2 - 2: 1.5853635304665196e+08
-Norm of output parameter cor_rhc - 1: 5.5442659605568654e+00
-Norm of output parameter cor_rhc - 2: 5.5442659605568654e+00
-Norm of output parameter cor_rh - 1: 2.6996455736320084e+08
-Norm of output parameter cor_rh - 2: 1.5181222694219911e+08
-Norm of output parameter cor_rv - 1: 2.0829457956243201e+02
-Norm of output parameter cor_rv - 2: 2.0829457956326149e+01
-Norm of output parameter nicas_norm - 1: 8.6436043410010242e+01
+Norm of output parameter cor_a - 1: 4.8608691474422692e+01
+Norm of output parameter cor_a - 2: 6.6667913924447193e+00
+Norm of output parameter cor_rh1 - 1: 2.4744496355374479e+08
+Norm of output parameter cor_rh1 - 2: 1.3914852871662256e+08
+Norm of output parameter cor_rh2 - 1: 2.6851385898612356e+08
+Norm of output parameter cor_rh2 - 2: 1.5099643929437658e+08
+Norm of output parameter cor_rhc - 1: 5.2805833012871615e+00
+Norm of output parameter cor_rhc - 2: 5.2805833012871615e+00
+Norm of output parameter cor_rh - 1: 2.5712517106742477e+08
+Norm of output parameter cor_rh - 2: 1.4459210943799543e+08
+Norm of output parameter cor_rv - 1: 1.9838818815890900e+02
+Norm of output parameter cor_rv - 2: 1.9838818815970122e+01
+Norm of output parameter nicas_norm - 1: 8.2270122319688767e+01

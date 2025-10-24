@@ -10,7 +10,7 @@ module type_linop
 
 use ieee_arithmetic
 !$ use omp_lib
-use tools_const, only: zero,half,one,two,rad2deg,pi
+use tools_const, only: zero,half,one,two,pi
 use tools_func, only: sphere_dist,zss_maxval,zss_minval
 use tools_gc99, only: fit_func
 use tools_kinds, only: kind_real,huge_real
