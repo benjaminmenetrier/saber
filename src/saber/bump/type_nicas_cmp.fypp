@@ -2471,7 +2471,7 @@ else
       nicas_cmp%vlev = nicas_cmp%vlev.and.(npos>0).and.(nmis==0)
       if (geom%grp2d(ig)) then
          do il0=1,nicas_cmp%nl0
-            nicas_cmp%vlev(il0) = (nicas_cmp%vlev(il0).and.(geom%nl2d==il0))
+            nicas_cmp%vlev(il0) = (nicas_cmp%vlev(il0).and.(nam%ilev2d==il0))
          end do
       end if
    end if

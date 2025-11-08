@@ -127,7 +127,6 @@ type geom_type
 
    ! 2D groups
    logical,allocatable :: grp2d(:)                    !< 2D groups (for which all variables are 2D)
-   integer :: nl2d                                    !< 2D level index
 
    ! Other fields
    real(kind_real),allocatable :: vert_coordavg(:)    !< Averaged vertical coordinate
@@ -324,7 +323,7 @@ type(mpl_type),intent(inout) :: mpl                    !< MPI data
 type(rng_type),intent(inout) :: rng                    !< Random number generator
 type(nam_type),intent(in) :: nam                       !< Namelist
 type(atlas_functionspace),intent(in) :: afunctionspace !< ATLAS function space
-type(fieldset_type),intent(in),optional :: fieldset    !< Fieldset containing geometry elements
+type(fieldset_type),intent(in) :: fieldset             !< Fieldset containing geometry elements
 
 ! Local variables
 integer :: il0,jl0off,jl0r,jc3,jc4,iproc,iv,ig
@@ -338,7 +337,7 @@ real(kind_real),allocatable :: lon_c0(:),lat_c0(:)
 geom%deprecated_hull = nam%deprecated_hull
 geom%deprecated_work_grid = nam%deprecated_work_grid
 
-! Number of task
+! Number of tasks
 geom%nproc = mpl%nproc
 
 ! Number of levels
@@ -364,18 +363,9 @@ do iv=1,nam%nv
   ig = nam%group_index(iv)
   if (.not.nam%var2d(iv)) geom%grp2d(ig) = .false.
 end do
-if (trim(nam%lev2d)=='first') then
-   geom%nl2d = 1
-else if (trim(nam%lev2d)=='last') then
-   geom%nl2d = geom%nl0
-end if
 
-! Copy function space pointer
-if (present(fieldset)) then
-   call geom%from_atlas(mpl,nam,afunctionspace,fieldset)
-else
-   call geom%from_atlas(mpl,nam,afunctionspace)
-end if
+! Setup geometry from atlas function space and
+call geom%from_atlas(mpl,nam,afunctionspace,fieldset)
 
 ! Setup subset Sc0
 call geom%setup_c0(mpl)
@@ -532,7 +522,7 @@ class(geom_type),intent(inout) :: geom                 !< Geometry
 type(mpl_type),intent(inout) :: mpl                    !< MPI data
 type(nam_type),intent(in) :: nam                       !< Namelist
 type(atlas_functionspace),intent(in) :: afunctionspace !< ATLAS function space
-type(fieldset_type),intent(in),optional :: fieldset    !< Fieldset
+type(fieldset_type),intent(in) :: fieldset             !< Fieldset
 
 ! Local variables
 integer :: il0,imga
@@ -570,27 +560,22 @@ do il0=1,geom%nl0
 end do
 geom%gmask_mga = .true.
 
-if (present(fieldset)) then
-   ! Get owned vs halo/BC field
-   if (fieldset%has_field('owned')) then
-      afield = fieldset%field('owned')
-      call field_to_array(afield,mpl,geom%owned_mga)
-      call afield%final()
-   end if
+! Get owned vs halo/BC field
+if (fieldset%has_field('owned')) then
+   afield = fieldset%field('owned')
+   call field_to_array(afield,mpl,geom%owned_mga,1)
+end if
 
-   ! Get vertical coordinate
-   if (nam%vert_coord_name /= '') then
-      afield = fieldset%field(nam%vert_coord_name)
-      call field_to_array(afield,mpl,geom%vert_coord_mga)
-      call afield%final()
-   end if
+! Get vertical coordinate
+if ((nam%vert_coord_name/='').and.(fieldset%has_field(nam%vert_coord_name))) then
+   afield = fieldset%field(nam%vert_coord_name)
+   call field_to_array(afield,mpl,geom%vert_coord_mga,nam%ilev2d)
+end if
 
-   ! Get geometry mask
-   if (nam%gmask_name /= '') then
-      afield = fieldset%field(nam%gmask_name)
-      call field_to_array(afield,mpl,geom%gmask_mga)
-      call afield%final()
-   end if
+! Get geometry mask
+if ((nam%gmask_name/='').and.(fieldset%has_field(nam%gmask_name))) then
+   afield = fieldset%field(nam%gmask_name)
+   call field_to_array(afield,mpl,geom%gmask_mga,nam%ilev2d)
 end if
 
 ! Get lon/lat
@@ -1444,6 +1429,11 @@ call independent_levels(mpl,geom%nc0a,geom%nl0,geom%gmask_c0a,geom%nl0i,geom%l0_
 ! Reset random seed if necessary
 call rng%reseed
 
+! Release memory
+call aconfig_domain%final()
+call aconfig_work_proj%final()
+call agrid_work%final()
+
 end subroutine geom_setup_grid
 
 !----------------------------------------------------------------------
@@ -2025,9 +2015,6 @@ if (mpl%main) then
       end do
    end do
 
-   ! Release memory
-   call agrid%final()
-
    ! Apply mask
    lmask_cx = lmask_cx.and.mask_cx
 
@@ -2093,6 +2080,7 @@ write(mpl%test,trim(cfmt)) '','Subgrid hash: ',hash
 if (ifmt>0) call mpl%flush
 
 ! Release memory
+call agrid%final()
 deallocate(lon_s)
 deallocate(lat_s)
 deallocate(order_s)

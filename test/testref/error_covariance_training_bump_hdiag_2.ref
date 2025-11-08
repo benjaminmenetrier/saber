@@ -50,7 +50,7 @@
           Independent levels for angular sector   4 / class  10:  1[2]
                 Level:   1 ~> cov. at class zero:  0.10E+01
                 Level:   2 ~> cov. at class zero:  0.99E+00
-                Level:   1 ~> cov. at class zero:  0.93E+00
+                Level:   2 ~> cov. at class zero:  0.93E+00
              Block air_horizontal_streamfunction:  0.30957776E+00 for    45440 diagnostic points
              Block air_pressure_at_surface:  0.30263772E+00 for    11360 diagnostic points
                    Level:   1 ~> amplitude:        0.89
@@ -65,10 +65,10 @@
                    Level:   2 ~> amplitude:        0.11
                                  cor. hor. support:      2615.24 km
                                  cor. ver. support:         0.37 vertical units
-                   Level:   1 ~> amplitude:        0.88
+                   Level:   2 ~> amplitude:        0.88
                                  cor. hor. support:      4658.67 km
                                  cor. ver. support:         0.00 vertical units
-                   Level:   1 ~> amplitude:        0.12
+                   Level:   2 ~> amplitude:        0.12
                                  cor. hor. support:      2619.76 km
                                  cor. ver. support:         0.00 vertical units
 Norm of output parameter cor_a - 1: 3.9190367828348130e+01
@@ -76,10 +76,10 @@ Norm of output parameter cor_a - 2: 8.8643318302367735e+00
 Norm of output parameter cor_rh1 - 1: 2.1968497135020724e+08
 Norm of output parameter cor_rh1 - 2: 1.9509821170206001e+08
 Norm of output parameter cor_rh2 - 1: 2.3116828803599650e+08
-Norm of output parameter cor_rh2 - 2: 2.0522158105870917e+08
+Norm of output parameter cor_rh2 - 2: 2.0522158105870745e+08
 Norm of output parameter cor_rhc - 1: 6.2534033633026684e+00
 Norm of output parameter cor_rhc - 2: 6.2534033633026684e+00
 Norm of output parameter cor_rh - 1: 2.2376159018263230e+08
-Norm of output parameter cor_rh - 2: 1.9887765244342139e+08
+Norm of output parameter cor_rh - 2: 1.9887765244342065e+08
 Norm of output parameter cor_rv - 1: 1.3838336639907556e+02
 Norm of output parameter cor_rv - 2: 2.0736067065750085e+01
