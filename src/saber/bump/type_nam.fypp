@@ -850,17 +850,19 @@ if (conf%get('nicas',section)) then
       ! Copy weights
       if (section%get('specific off-diagonal weights',confs)) then
          do iconf=1,size(confs)
+            print*, iconf,size(confs)
             ! Get variables pair
             call confs(iconf)%get_or_die('variables pair',str_array)
             if (size(str_array)/=2) call mpl%abort('${subr}$','wrong variables pair')
             call confs(iconf)%get_or_die('weight',real_scalar)
-
+            print*, str_array
             ! Set specific values
             do iv=1,nam%nv
                ig = nam%group_index(iv)
                do jv=1,nam%nv
                   jg = nam%group_index(jv)
-                  if ((nam%variables(iv)==str_array(1)).and.(nam%variables(jv)==str_array(2))) then
+
+                  if ((nam%variables(iv)==trim(str_array(1))).and.(nam%variables(jv)==trim(str_array(2)))) then
                      if (ig/=jg) call mpl%abort('${subr}$','variables of a specific weight should be in the same group')
                      loc_wgt(iv,jv) = real_scalar
                      loc_wgt(jv,iv) = real_scalar
@@ -869,10 +871,10 @@ if (conf%get('nicas',section)) then
             end do
          end do
       end if
-
+      print*, "TOTO: ",loc_wgt
       ! Cholesky decomposition
       call cholesky(mpl,nam%nv,loc_wgt,nam%loc_wgt_sqrt)
-
+      print*, "TATA: ",nam%loc_wgt_sqrt
       ! Release memory
       deallocate(loc_wgt)
    end if

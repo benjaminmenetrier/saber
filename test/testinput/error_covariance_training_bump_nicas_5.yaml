@@ -47,7 +47,7 @@ background error:
         - groups:
           - common
           value: 3.0
-        specific off-diagonal localization weights:
+        specific off-diagonal weights:
         - variables pair: [air_horizontal_streamfunction, air_horizontal_velocity_potential]
           weight: 0.5
         positive-definiteness test: true

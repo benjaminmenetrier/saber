@@ -547,6 +547,10 @@ struct NICASDef {
   std::pair<const char *, bool> forced_radii =
     std::make_pair("explicit length-scales", false);
 
+  // Default off-diagonal weight
+  std::pair<const char *, double> defaultWeight =
+    std::make_pair("default off-diagonal weight", 0.0);
+
   // NICAS C1B to C0A default interpolation type ('c0': C0 mesh-based, 'c1': C1 mesh-based
   // or 'si': smooth interpolation)
   std::pair<const char *, std::string> default_interp_type =

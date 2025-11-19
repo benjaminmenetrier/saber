@@ -308,6 +308,8 @@ void bump_config_init_f90(eckit::LocalConfiguration * config) {
   param(nicasDef.nicas_draw_type, nicasConf);
   // Force specific support radii
   param(nicasDef.forced_radii, nicasConf);
+  // Default off-diagonal weight
+  param(nicasDef.defaultWeight, nicasConf);
   // NICAS C1B to C0A default interpolation type ('c0': C0 mesh-based, 'c1': C1 mesh-based
   // or 'si': smooth interpolation)
   param(nicasDef.default_interp_type, nicasConf);
