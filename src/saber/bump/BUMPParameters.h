@@ -609,7 +609,7 @@ class NICASSection : public oops::Parameters {
   oops::Parameter<std::vector<GroupsValueOrProfileParameters>> rv{"vertical length-scale", {},
     this};
   // Default off-diagonal weight
-  oops::Parameter<double> defaultWeight{"default off-diagonal weight", 0.0, this};
+  oops::Parameter<double> defaultWeight = param(def.defaultWeight, this);
   // Specific off-diagonal weights
   oops::Parameter<std::vector<SpecWgtParameters>> specWeights{"specific off-diagonal weights", {},
     this};
