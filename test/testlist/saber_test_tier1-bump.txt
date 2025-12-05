@@ -11,6 +11,9 @@ dirac_bump_7
 dirac_bump_8
 dirac_bump_9
 dirac_ens_noloc_4d
+dirac_localization_bump_1
+dirac_localization_bump_2
+dirac_localization_mixed_1
 dirac_oops_ens_noloc_4d
 dirac_shadowlevels_1
 dirac_shadowlevels_2
@@ -69,6 +72,7 @@ error_covariance_training_bump_wind_1
 error_covariance_training_bump_wind_2
 error_covariance_training_stddev_1
 error_covariance_training_stddev_2
+randomization_bump_nicas_F12L2
 randomization_bump_nicas_L10L2
 randomization_bump_nicas_L10L2T18
 randomization_bump_nicas_L10L2_static

@@ -29,14 +29,14 @@ void SaberEnsembleBlockChain::multiply(oops::FieldSet4D & fset4d) const {
     // Copy initial FieldSet4D
     oops::FieldSet4D fset4dMem = oops::copyFieldSet4D(fset4dInit);
 
-    if (locBlockChain_) {
+    if (locWrapper_) {
       // With localization
       // First schur product
       for (size_t it = 0; it < fset4dMem.size(); ++it) {
         fset4dMem[it] *= ensemble_(it, ie);
       }
       // Apply localization
-      locBlockChain_->multiply(fset4dMem);
+      locWrapper_->multiply(fset4dMem);
       // Second schur product
       for (size_t it = 0; it < fset4dMem.size(); ++it) {
         fset4dMem[it] *= ensemble_(it, ie);
@@ -85,11 +85,11 @@ void SaberEnsembleBlockChain::randomize(oops::FieldSet4D & fset4d) const {
     // Copy ensemble member
     fset4dMem.deepCopy(ensemble_, ie);
 
-    if (locBlockChain_) {
+    if (locWrapper_) {
       // With localization
 
       // Randomize localization
-      locBlockChain_->randomize(fset4dMem);
+      locWrapper_->randomize(fset4dMem);
 
       // Schur product
       for (size_t it = 0; it < fset4dMem.size(); ++it) {
@@ -137,10 +137,10 @@ void SaberEnsembleBlockChain::multiplySqrt(const atlas::Field & cv,
     // Create empty FieldSet4D
     oops::FieldSet4D fset4dMem(fset4d.times(), fset4d.commTime(), fset4d[0].commGeom());
 
-    if (locBlockChain_) {
+    if (locWrapper_) {
       // With localization
-      locBlockChain_->multiplySqrt(cv, fset4dMem, index);
-      index += locBlockChain_->ctlVecSize();
+      locWrapper_->multiplySqrt(cv, fset4dMem, index);
+      index += locWrapper_->ctlVecSize();
 
       // Schur product
       for (size_t it = 0; it < fset4dMem.size(); ++it) {
@@ -198,7 +198,7 @@ void SaberEnsembleBlockChain::multiplySqrtAD(const oops::FieldSet4D & fset4d,
 
   // Central block: ensemble covariance square-root adjoint
   for (unsigned int ie = 0; ie < ensemble_.ens_size(); ++ie) {
-    if (locBlockChain_) {
+    if (v) {
       // Apply localization
 
       // Copy initial fieldset
@@ -210,8 +210,8 @@ void SaberEnsembleBlockChain::multiplySqrtAD(const oops::FieldSet4D & fset4d,
       }
 
       // Apply localization square-root adjoint
-      locBlockChain_->multiplySqrtAD(fset4dMem, cv, index);
-      index += locBlockChain_->ctlVecSize();
+      locWrapper_->multiplySqrtAD(fset4dMem, cv, index);
+      index += locWrapper_->ctlVecSize();
     } else {
       // No localization
       auto cvView = atlas::array::make_view<double, 1>(cv);

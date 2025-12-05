@@ -25,6 +25,7 @@
 #include "oops/util/Timer.h"
 
 #include "saber/blocks/SaberParametricBlockChain.h"
+#include "saber/oops/LocalizationWrapper.h"
 #include "saber/oops/Utilities.h"
 
 namespace saber {
@@ -49,7 +50,9 @@ class Localization : public oops::LocalizationBase<MODEL> {
 
  private:
   void print(std::ostream &) const override;
-  std::unique_ptr<SaberParametricBlockChain> loc_;
+
+  // Localization wrapper
+  std::unique_ptr<LocalizationWrapper> locWrapper_;
 };
 
 // -----------------------------------------------------------------------------
@@ -58,7 +61,6 @@ template<typename MODEL>
 Localization<MODEL>::Localization(const Geometry_ & geom,
                                   const oops::Variables & incVarsNoMeta,
                                   const eckit::Configuration & conf)
-  : loc_()
 {
   oops::Log::trace() << "Localization::Localization starting" << std::endl;
   util::Timer timer(classname(), "Localization");
@@ -66,7 +68,7 @@ Localization<MODEL>::Localization(const Geometry_ & geom,
   // Create dummy time
   util::DateTime dummyTime(1977, 5, 25, 0, 0, 0);
 
-  // Initialize
+  // Initialize increment variables with levels metadata
   const std::vector<std::size_t> vlevs = geom.variableSizes(incVarsNoMeta);
   oops::Variables incVars(incVarsNoMeta);
   for (std::size_t i = 0; i < vlevs.size() ; ++i) {
@@ -83,7 +85,10 @@ Localization<MODEL>::Localization(const Geometry_ & geom,
   fg.shallowCopy(fg_state.fieldSet());
   oops::FieldSet4D fg4d(fg);
 
+  // Prepare empty ensemble
   oops::FieldSets emptyFsetEns({}, oops::mpi::myself(), {}, oops::mpi::myself());
+
+  // Prepare configurations
   // TODO(AS): revisit what configuration needs to be passed to SaberParametricBlockChain.
   eckit::LocalConfiguration covarConf;
   eckit::LocalConfiguration ensembleConf;
@@ -100,10 +105,10 @@ Localization<MODEL>::Localization(const Geometry_ & geom,
   // 3D localization always used here (4D aspects handled in oops::Localization),
   // so this parameter can be anything.
   covarConf.set("time covariance", "univariate");
-  // Initialize localization blockchain
-  loc_ = std::make_unique<SaberParametricBlockChain>(geom, geom,
-              incVars, xb4d, fg4d,
-              emptyFsetEns, emptyFsetEns, covarConf, conf);
+
+  // Initialize localization wrapper
+  locWrapper_.reset(new LocalizationWrapper(geom, geom, incVars, xb4d, fg4d, emptyFsetEns,
+    emptyFsetEns, covarConf, conf));
 
   oops::Log::trace() << "Localization:Localization done" << std::endl;
 }
@@ -123,10 +128,12 @@ void Localization<MODEL>::randomize(Increment_ & dx) const {
   util::Timer timer(classname(), "randomize");
   oops::Log::trace() << "Localization:randomize starting" << std::endl;
 
-  // SABER block chain randomization
+  // Create 4D fieldset
   oops::FieldSet3D fset3d(dx.validTime(), dx.geometry().getComm());
   oops::FieldSet4D fset4d(fset3d);
-  loc_->randomize(fset4d);
+
+  // SABER block chain randomization
+  locWrapper_->randomize(fset4d);
 
   // ATLAS fieldset to Increment_
   dx.fromFieldSet(fset4d[0].fieldSet());
@@ -141,10 +148,12 @@ void Localization<MODEL>::multiply(Increment_ & dx) const {
   util::Timer timer(classname(), "multiply");
   oops::Log::trace() << "Localization:multiply starting" << std::endl;
 
-  // SABER block chain multiplication
+  // Create 4D fieldset
   oops::FieldSet4D fset4d({dx.validTime(), dx.geometry().getComm()});
   fset4d[0].shallowCopy(dx.fieldSet());
-  loc_->multiply(fset4d);
+
+  // SABER block chain multiplication
+  locWrapper_->multiply(fset4d);
 
   // ATLAS fieldset to Increment_
   dx.fromFieldSet(fset4d[0].fieldSet());

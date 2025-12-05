@@ -1,0 +1,180 @@
+geometry:
+  function space: StructuredColumns
+  grid:
+    type: regular_lonlat
+    N: 10
+  groups:
+  - variables:
+    - eastward_wind
+    - northward_wind
+    - air_horizontal_streamfunction
+    levels: 2
+  - variables:
+    - air_pressure_at_surface
+    levels: 1
+  halo: 1
+background:
+  date: 2010-01-01T12:00:00Z
+  state variables:
+  - eastward_wind
+  - northward_wind
+  - air_horizontal_streamfunction
+  - air_pressure_at_surface
+background error:
+  covariance model: hybrid
+  components:
+  - covariance:
+      covariance model: ensemble
+      members from template:
+        template:
+          date: 2010-01-01T12:00:00Z
+          filepath: testdata/randomization_bump_nicas_L10L2/_MPI_-_OMP__member_%mem%
+          state variables:
+          - eastward_wind
+          - northward_wind
+          - air_horizontal_streamfunction
+          - air_pressure_at_surface
+        pattern: '%mem%'
+        nmembers: 25
+        zero padding: 6
+      localization:
+        localization method: SABER
+        saber central block:
+          saber block name: BUMP_NICAS
+          calibration:
+            general:
+              testing: true
+              universe length-scale: 10000.0e3
+            io:
+              data directory: testdata
+              files prefix: dirac_localization_bump_1/_MPI_-_OMP_
+            model:
+              groups:
+              - group name: group1
+                variables:
+                - eastward_wind
+                - northward_wind
+              - group name: group2
+                variables:
+                - air_horizontal_streamfunction
+                - air_pressure_at_surface
+            drivers:
+              multivariate strategy: univariate
+              compute nicas: true
+            ensemble sizes:
+              total ensemble size: 25
+            nicas:
+              resolution: 4.0
+              explicit length-scales: true
+              horizontal length-scale:
+              - groups:
+                - group1
+                value: 4000.0e3
+              - groups:
+                - group2
+                value: 3000.0e3
+              vertical length-scale:
+              - groups:
+                - group1
+                value: 3.0
+              - groups:
+                - group2
+                value: 2.5
+    weight:
+      value: 0.5
+  - covariance:
+      covariance model: ensemble
+      members from template:
+        template:
+          date: 2010-01-01T12:00:00Z
+          filepath: testdata/randomization_bump_nicas_L10L2/_MPI_-_OMP__member_%mem%
+          state variables:
+          - eastward_wind
+          - northward_wind
+          - air_horizontal_streamfunction
+          - air_pressure_at_surface
+        pattern: '%mem%'
+        nmembers: 25
+        zero padding: 6
+      localization:
+        localization method: SABER
+        multivariate strategy: univariate
+        groups:
+        - group name: group1
+          variables:
+          - eastward_wind
+          - northward_wind
+          saber central block:
+            saber block name: BUMP_NICAS
+            calibration:
+              general:
+                testing: true
+                universe length-scale: 10000.0e3
+              io:
+                data directory: testdata
+                files prefix: dirac_localization_saber_1/_MPI_-_OMP__group1
+              drivers:
+                multivariate strategy: univariate
+                compute nicas: true
+              ensemble sizes:
+                total ensemble size: 25
+              nicas:
+                resolution: 4.0
+                explicit length-scales: true
+                horizontal length-scale:
+                - groups:
+                  - group1
+                  value: 4000.0e3
+                vertical length-scale:
+                - groups:
+                  - group1
+                  value: 3.0
+        - group name: group2
+          variables:
+          - air_horizontal_streamfunction
+          - air_pressure_at_surface
+          saber central block:
+            saber block name: BUMP_NICAS
+            calibration:
+              general:
+                testing: true
+                universe length-scale: 10000.0e3
+              io:
+                data directory: testdata
+                files prefix: dirac_localization_saber_1/_MPI_-_OMP__group2
+              drivers:
+                multivariate strategy: univariate
+                compute nicas: true
+              ensemble sizes:
+                total ensemble size: 25
+              nicas:
+                resolution: 4.0
+                explicit length-scales: true
+                horizontal length-scale:
+                - groups:
+                  - group2
+                  value: 3000.0e3
+                vertical length-scale:
+                - groups:
+                  - group2
+                  value: 2.5
+    weight:
+      value: 0.5
+dirac:
+  lon:
+  - 0.0
+  - 0.0
+  lat:
+  - 0.0
+  - 0.0
+  level:
+  - 1
+  - 2
+  variable:
+  - eastward_wind
+  - air_horizontal_streamfunction
+output dirac:
+  mpi pattern: '%MPI%'
+  filepath: testdata/dirac_localization_bump_1/%MPI%_dirac_%id%
+test:
+  reference filename: testref/dirac_localization_bump_1.ref
