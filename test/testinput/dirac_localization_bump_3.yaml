@@ -47,7 +47,7 @@ background error:
               universe length-scale: 10000.0e3
             io:
               data directory: testdata
-              files prefix: dirac_localization_bump_2/_MPI_-_OMP_
+              files prefix: dirac_localization_bump_3/_MPI_-_OMP_
             model:
               groups:
               - group name: group1
@@ -59,7 +59,7 @@ background error:
                 - air_pressure_at_surface
                 - air_horizontal_streamfunction
             drivers:
-              multivariate strategy: duplicated
+              multivariate strategy: crossed
               compute nicas: true
               write local nicas: true
             ensemble sizes:
@@ -99,7 +99,7 @@ background error:
         zero padding: 6
       localization:
         localization method: SABER
-        multivariate strategy: duplicated
+        multivariate strategy: crossed
         groups:
         - group name: group1
           variables:
@@ -113,7 +113,7 @@ background error:
                 universe length-scale: 10000.0e3
               io:
                 data directory: testdata
-                files prefix: dirac_localization_bump_2/_MPI_-_OMP_
+                files prefix: dirac_localization_bump_3/_MPI_-_OMP_
               drivers:
                 multivariate strategy: univariate
                 read local nicas: true
@@ -129,7 +129,7 @@ background error:
                 universe length-scale: 10000.0e3
               io:
                 data directory: testdata
-                files prefix: dirac_localization_bump_2/_MPI_-_OMP_
+                files prefix: dirac_localization_bump_3/_MPI_-_OMP_
               drivers:
                 multivariate strategy: univariate
                 read local nicas: true
@@ -164,9 +164,9 @@ background error:
                 universe length-scale: 10000.0e3
               io:
                 data directory: testdata
-                files prefix: dirac_localization_bump_2/_MPI_-_OMP_
+                files prefix: dirac_localization_bump_3/_MPI_-_OMP_
               drivers:
-                multivariate strategy: univariate
+                multivariate strategy: crossed
                 read local nicas: true
               model:
                 groups:
@@ -201,7 +201,7 @@ background error:
       saber central block:
         saber block name: Ensemble
         localization:
-          multivariate strategy: duplicated
+          multivariate strategy: crossed
           groups:
           - group name: group1
             variables:
@@ -215,7 +215,7 @@ background error:
                   universe length-scale: 10000.0e3
                 io:
                   data directory: testdata
-                  files prefix: dirac_localization_bump_2/_MPI_-_OMP_
+                  files prefix: dirac_localization_bump_3/_MPI_-_OMP_
                 drivers:
                   multivariate strategy: univariate
                   read local nicas: true
@@ -231,7 +231,7 @@ background error:
                   universe length-scale: 10000.0e3
                 io:
                   data directory: testdata
-                  files prefix: dirac_localization_bump_2/_MPI_-_OMP_
+                  files prefix: dirac_localization_bump_3/_MPI_-_OMP_
                 drivers:
                   multivariate strategy: univariate
                   read local nicas: true
@@ -252,6 +252,6 @@ dirac:
   - air_pressure_at_surface
 output dirac:
   mpi pattern: '%MPI%'
-  filepath: testdata/dirac_localization_bump_2/%MPI%_dirac_%id%
+  filepath: testdata/dirac_localization_bump_3/%MPI%_dirac_%id%
 test:
-  reference filename: testref/dirac_localization_bump_2.ref
+  reference filename: testref/dirac_localization_bump_3.ref

@@ -107,8 +107,8 @@ Localization<MODEL>::Localization(const Geometry_ & geom,
   covarConf.set("time covariance", "univariate");
 
   // Initialize localization wrapper
-  locWrapper_.reset(new LocalizationWrapper(geom, geom, incVars, xb4d, fg4d, emptyFsetEns,
-    emptyFsetEns, covarConf, conf));
+  locWrapper_.reset(new LocalizationWrapper(geom, geom, geom.generic(), incVars, xb4d, fg4d,
+    emptyFsetEns, emptyFsetEns, covarConf, conf));
 
   oops::Log::trace() << "Localization:Localization done" << std::endl;
 }

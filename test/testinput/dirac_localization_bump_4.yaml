@@ -61,7 +61,6 @@ background error:
             drivers:
               multivariate strategy: duplicated
               compute nicas: true
-              write local nicas: true
             ensemble sizes:
               total ensemble size: 25
             nicas:
@@ -116,7 +115,20 @@ background error:
                 files prefix: dirac_localization_bump_2/_MPI_-_OMP_
               drivers:
                 multivariate strategy: univariate
-                read local nicas: true
+                compute nicas: true
+              ensemble sizes:
+                total ensemble size: 25
+              nicas:
+                resolution: 4.0
+                explicit length-scales: true
+                horizontal length-scale:
+                - groups:
+                  - group1
+                  value: 6000.0e3
+                vertical length-scale:
+                - groups:
+                  - group1
+                  value: 3.0
         - group name: group2
           variables:
           - air_pressure_at_surface
@@ -132,7 +144,20 @@ background error:
                 files prefix: dirac_localization_bump_2/_MPI_-_OMP_
               drivers:
                 multivariate strategy: univariate
-                read local nicas: true
+                compute nicas: true
+              ensemble sizes:
+                total ensemble size: 25
+              nicas:
+                resolution: 4.0
+                explicit length-scales: true
+                horizontal length-scale:
+                - groups:
+                  - group2
+                  value: 4000.0e3
+                vertical length-scale:
+                - groups:
+                  - group2
+                  value: 2.5
     weight:
       value: 0.25
   - covariance:
@@ -165,9 +190,6 @@ background error:
               io:
                 data directory: testdata
                 files prefix: dirac_localization_bump_2/_MPI_-_OMP_
-              drivers:
-                multivariate strategy: univariate
-                read local nicas: true
               model:
                 groups:
                 - group name: group1
@@ -178,6 +200,28 @@ background error:
                   variables:
                   - air_pressure_at_surface
                   - air_horizontal_streamfunction
+              drivers:
+                multivariate strategy: duplicated
+                compute nicas: true
+              ensemble sizes:
+                total ensemble size: 25
+              nicas:
+                resolution: 4.0
+                explicit length-scales: true
+                horizontal length-scale:
+                - groups:
+                  - group1
+                  value: 6000.0e3
+                - groups:
+                  - group2
+                  value: 4000.0e3
+                vertical length-scale:
+                - groups:
+                  - group1
+                  value: 3.0
+                - groups:
+                  - group2
+                  value: 2.5
     weight:
       value: 0.25
   - covariance:
@@ -218,7 +262,20 @@ background error:
                   files prefix: dirac_localization_bump_2/_MPI_-_OMP_
                 drivers:
                   multivariate strategy: univariate
-                  read local nicas: true
+                  compute nicas: true
+                ensemble sizes:
+                  total ensemble size: 25
+                nicas:
+                  resolution: 4.0
+                  explicit length-scales: true
+                  horizontal length-scale:
+                  - groups:
+                    - group1
+                    value: 6000.0e3
+                  vertical length-scale:
+                  - groups:
+                    - group1
+                    value: 3.0
           - group name: group2
             variables:
             - air_pressure_at_surface
@@ -234,7 +291,20 @@ background error:
                   files prefix: dirac_localization_bump_2/_MPI_-_OMP_
                 drivers:
                   multivariate strategy: univariate
-                  read local nicas: true
+                  compute nicas: true
+                ensemble sizes:
+                  total ensemble size: 25
+                nicas:
+                  resolution: 4.0
+                  explicit length-scales: true
+                  horizontal length-scale:
+                  - groups:
+                    - group2
+                    value: 4000.0e3
+                  vertical length-scale:
+                  - groups:
+                    - group2
+                    value: 2.5
     weight:
       value: 0.25
 dirac:

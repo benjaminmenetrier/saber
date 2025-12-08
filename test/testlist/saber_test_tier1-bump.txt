@@ -13,6 +13,8 @@ dirac_bump_9
 dirac_ens_noloc_4d
 dirac_localization_bump_1
 dirac_localization_bump_2
+dirac_localization_bump_3
+dirac_localization_bump_4
 dirac_localization_mixed_1
 dirac_oops_ens_noloc_4d
 dirac_shadowlevels_1

@@ -198,7 +198,7 @@ void SaberEnsembleBlockChain::multiplySqrtAD(const oops::FieldSet4D & fset4d,
 
   // Central block: ensemble covariance square-root adjoint
   for (unsigned int ie = 0; ie < ensemble_.ens_size(); ++ie) {
-    if (v) {
+    if (locWrapper_) {
       // Apply localization
 
       // Copy initial fieldset

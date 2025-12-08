@@ -10,6 +10,7 @@ ErrorCovarianceParameters.h
 # Drivers
 ErrorCovariance.h
 Localization.h
+LocalizationWrapper.cc
 LocalizationWrapper.h
 
 # Applications
