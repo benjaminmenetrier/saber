@@ -31,6 +31,7 @@
 #include "saber/oops/Utilities.h"
 
 namespace saber {
+namespace generic {
 
 // -----------------------------------------------------------------------------
 
@@ -85,7 +86,7 @@ class LocalizationWrapper  {
                       const eckit::LocalConfiguration &,
                       const eckit::Configuration &);
   ~LocalizationWrapper();
-  static const std::string classname() {return "saber::LocalizationWrapper";}
+  static const std::string classname() {return "saber::generic::LocalizationWrapper";}
 
   void randomize(oops::FieldSet4D &) const;
   void multiply(oops::FieldSet4D &) const;
@@ -373,4 +374,5 @@ LocalizationWrapper::LocalizationWrapper(const oops::Geometry<MODEL> & geom,
 
 // -----------------------------------------------------------------------------
 
+}  // namespace generic
 }  // namespace saber

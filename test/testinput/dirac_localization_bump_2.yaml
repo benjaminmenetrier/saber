@@ -22,6 +22,7 @@ background:
   - air_horizontal_streamfunction
 background error:
   covariance model: hybrid
+  run components recursively: true
   components:
   - covariance:
       covariance model: ensemble

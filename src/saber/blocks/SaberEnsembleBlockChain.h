@@ -27,7 +27,7 @@
 #include "saber/blocks/SaberBlockChainBase.h"
 #include "saber/blocks/SaberBlockParametersBase.h"
 #include "saber/blocks/SaberOuterBlockChain.h"
-#include "saber/oops/LocalizationWrapper.h"
+#include "saber/generic/LocalizationWrapper.h"
 #include "saber/oops/Utilities.h"
 
 namespace saber {
@@ -71,7 +71,7 @@ class SaberEnsembleBlockChain : public SaberBlockChainBase {
   /// @brief Outer blocks (optional).
   std::unique_ptr<SaberOuterBlockChain> outerBlockChain_;
   /// @brief 3D localization wrapper (optional).
-  std::unique_ptr<LocalizationWrapper> locWrapper_;
+  std::unique_ptr<generic::LocalizationWrapper> locWrapper_;
   /// @brief Ensemble used in the ensemble covariance.
   oops::FieldSets ensemble_;
   /// @brief Control vector size.
@@ -261,16 +261,16 @@ SaberEnsembleBlockChain::SaberEnsembleBlockChain(const oops::Geometry<MODEL> & g
                 outerBlockChain_->innerGeometryData() : geom.generic();
 
     // Initialize localization wrapper
-    locWrapper_.reset(new LocalizationWrapper(geom,
-                                              dualResGeom,
-                                              localizationOuterGeomData,
-                                              currentOuterVars,
-                                              fset4dXb,
-                                              fset4dFg,
-                                              ensemble_,
-                                              fsetDualResEns,
-                                              covarConfUpdated,
-                                              *locConf));
+    locWrapper_.reset(new generic::LocalizationWrapper(geom,
+                                                       dualResGeom,
+                                                       localizationOuterGeomData,
+                                                       currentOuterVars,
+                                                       fset4dXb,
+                                                       fset4dFg,
+                                                       ensemble_,
+                                                       fsetDualResEns,
+                                                       covarConfUpdated,
+                                                       *locConf));
   }
 
   // Direct calibration

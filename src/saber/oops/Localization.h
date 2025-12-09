@@ -25,7 +25,7 @@
 #include "oops/util/Timer.h"
 
 #include "saber/blocks/SaberParametricBlockChain.h"
-#include "saber/oops/LocalizationWrapper.h"
+#include "saber/generic/LocalizationWrapper.h"
 #include "saber/oops/Utilities.h"
 
 namespace saber {
@@ -52,7 +52,7 @@ class Localization : public oops::LocalizationBase<MODEL> {
   void print(std::ostream &) const override;
 
   // Localization wrapper
-  std::unique_ptr<LocalizationWrapper> locWrapper_;
+  std::unique_ptr<generic::LocalizationWrapper> locWrapper_;
 };
 
 // -----------------------------------------------------------------------------
@@ -107,8 +107,8 @@ Localization<MODEL>::Localization(const Geometry_ & geom,
   covarConf.set("time covariance", "univariate");
 
   // Initialize localization wrapper
-  locWrapper_.reset(new LocalizationWrapper(geom, geom, geom.generic(), incVars, xb4d, fg4d,
-    emptyFsetEns, emptyFsetEns, covarConf, conf));
+  locWrapper_.reset(new generic::LocalizationWrapper(geom, geom, geom.generic(), incVars,
+    xb4d, fg4d, emptyFsetEns, emptyFsetEns, covarConf, conf));
 
   oops::Log::trace() << "Localization:Localization done" << std::endl;
 }

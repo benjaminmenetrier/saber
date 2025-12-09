@@ -5,13 +5,14 @@
  * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
  */
 
-#include "saber/oops/LocalizationWrapper.h"
+#include "saber/generic/LocalizationWrapper.h"
 
 using atlas::array::make_datatype;
 using atlas::array::make_shape;
 using atlas::array::make_view;
 
 namespace saber {
+namespace generic {
 
 // -----------------------------------------------------------------------------
 
@@ -545,4 +546,5 @@ void LocalizationWrapper::multiplySqrtAD(const oops::FieldSet4D & fset4d,
 
 // -----------------------------------------------------------------------------
 
+}  // namespace generic
 }  // namespace saber
