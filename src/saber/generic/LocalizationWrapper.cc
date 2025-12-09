@@ -136,7 +136,7 @@ void LocalizationWrapper::multiply(oops::FieldSet4D & fset4d) const {
           }
         }
       }
-    } else if ((strategy_ == "crossed") || (strategy_ == "duplicated and weighted")) {
+    } else if ((strategy_ == "duplicated and weighted") || (strategy_ == "crossed")) {
       // Crossed strategy or duplicated and weighted strategy
 
       // Initialization
@@ -158,8 +158,6 @@ void LocalizationWrapper::multiply(oops::FieldSet4D & fset4d) const {
 
       // Apply multiplySqrt
       multiplySqrt(ctlVec, fset4d, offset);
-    } else if (strategy_ == "duplicated and weighted") {
-      throw eckit::Exception("not implemented yet", Here());
     } else {
       throw eckit::Exception("invalid multivariate strategy", Here());
     }
@@ -192,15 +190,15 @@ size_t LocalizationWrapper::ctlVecSize() const {
         // Add the group control vector
         ctlVecSize += group.localization()->ctlVecSize();
       }
-    } else if (strategy_ == "crossed") {
-      // Crossed strategy
-      ctlVecSize += groups_[0].localization()->ctlVecSize();
     } else if (strategy_ == "duplicated and weighted") {
       // Duplicated and weighted strategy
       for (const auto & group : groups_) {
         // Add the group control vector size for each variable
         ctlVecSize += group.localization()->ctlVecSize()*group.variables().size();
       }
+    } else if (strategy_ == "crossed") {
+      // Crossed strategy
+      ctlVecSize += groups_[0].localization()->ctlVecSize();
     } else {
       throw eckit::Exception("invalid multivariate strategy", Here());
     }
@@ -360,7 +358,7 @@ void LocalizationWrapper::multiplySqrt(const atlas::Field & cv,
             // Sum weighted off-diagonal fields
             for (int jnode = 0; jnode < otherField.shape(0); ++jnode) {
               for (int jlevel = 0; jlevel < otherField.shape(1); ++jlevel) {
-                otherView(jnode, jlevel) += locWgtSqrt_(jvarJ, jvarI)*view(jnode, jlevel);
+                otherView(jnode, jlevel) += group.locWgtSqrt()(jvarJ, jvarI)*view(jnode, jlevel);
               }
             }
           }
@@ -524,7 +522,7 @@ void LocalizationWrapper::multiplySqrtAD(const oops::FieldSet4D & fset4d,
             // Sum weighted off-diagonal fields
             for (int jnode = 0; jnode < otherField.shape(0); ++jnode) {
               for (int jlevel = 0; jlevel < otherField.shape(1); ++jlevel) {
-                view(jnode, jlevel) += locWgtSqrt_(jvarJ, jvarI)*otherView(jnode, jlevel);
+                view(jnode, jlevel) += group.locWgtSqrt()(jvarJ, jvarI)*otherView(jnode, jlevel);
               }
             }
           }

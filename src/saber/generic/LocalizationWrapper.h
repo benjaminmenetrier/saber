@@ -53,6 +53,10 @@ class LocalizationGroup {
     {return loc_;}
   std::unique_ptr<SaberParametricBlockChain> & localization()
     {return loc_;}
+  const Eigen::MatrixXd & locWgtSqrt() const
+    {return locWgtSqrt_;}
+  Eigen::MatrixXd & locWgtSqrt()
+    {return locWgtSqrt_;}
 
   // 2D levels
   const size_t get2dLevel(const std::string & var) const
@@ -64,10 +68,21 @@ class LocalizationGroup {
  private:
   // Group name
   const std::string name_;
+
+  // Group variables
   const oops::Variables vars_;
+
+  // Group reference variable (for fields summation)
   const std::string refVar_;
+
+  // Level for 2D fields (for 3D and 2D fields summation)
   std::unordered_map<std::string, size_t> lev2d_;
+
+  // Localization as a parametric block chain
   std::unique_ptr<SaberParametricBlockChain> loc_;
+
+  // Localization weights for the "duplicated and weighted" strategy
+  Eigen::MatrixXd locWgtSqrt_;
 };
 
 // -----------------------------------------------------------------------------
@@ -107,9 +122,6 @@ class LocalizationWrapper  {
 
   // Groups of variables, with their own localization
   std::vector<LocalizationGroup> groups_;
-
-  // Duplicated and weighted strategy weights
-  Eigen::MatrixXd locWgtSqrt_;
 };
 
 // -----------------------------------------------------------------------------
@@ -175,19 +187,19 @@ LocalizationWrapper::LocalizationWrapper(const oops::Geometry<MODEL> & geom,
     groups_.emplace_back(std::move(group));
   } else {
     // Get multivariate strategy:
-    // - Univariate: localization of each group is applied to each variable of the group
+    // - Univariate: localization of each group is applied to each variable of the group.
     // - Duplicated: the localization of each group is to the sum of all the fields of the group,
-    //   the result is split into the different fields
+    //   the result is split into the different fields.
+    // - Duplicated and weighted: the localization of each group is applied to each variable,
+    //   but variables of the same group are combined with user-specified weights.
     // - Crossed: the localization of each group is to the sum of all the fields of the group,
     //   the result is split into the different fields. All the groups share the same control
     //   vector: square-root formulation is necessary.
-    // - Duplicated and weighted: the localization of each group is applied to each variable,
-    //   but variables of the same group are combined with user-specified weights
     strategy_ = conf.getString("multivariate strategy");
     ASSERT(strategy_ == "univariate" ||
            strategy_ == "duplicated" ||
-           strategy_ == "crossed" ||
-           strategy_ == "duplicated and weighted");
+           strategy_ == "duplicated and weighted" ||
+           strategy_ == "crossed");
 
     // Get groups
     const std::vector<eckit::LocalConfiguration> groupConfs = conf.getSubConfigurations("groups");
@@ -291,80 +303,69 @@ LocalizationWrapper::LocalizationWrapper(const oops::Geometry<MODEL> & geom,
         }
       }
 
+
+      // Strategy-specific setup
+      if (strategy_ == "duplicated and weighted") {
+        // Prepare weights for the "duplicated and weighted" strategy
+
+        // Allocation
+        const size_t nv = groupVars.size();
+        Eigen::MatrixXd locWgt = Eigen::MatrixXd::Zero(nv, nv);
+        group.locWgtSqrt().resize(nv, nv);
+
+        // Set default weights
+        const double defaultWeight = groupConf.getDouble("default off-diagonal weight", 0.0);
+        for (size_t jvarJ = 0; jvarJ < groupVars.size(); ++jvarJ) {
+          for (size_t jvarI = 0; jvarI < groupVars.size(); ++jvarI) {
+            if (jvarJ == jvarI) {
+              // Unit diagonal
+              locWgt(jvarJ, jvarI) = 1.0;
+            } else {
+              // Default off-diagonal weight
+              locWgt(jvarJ, jvarI) = defaultWeight;
+            }
+          }
+        }
+
+        // Set specific weights
+        if (groupConf.has("specific off-diagonal weights")) {
+          // Get specific weights
+          const std::vector<eckit::LocalConfiguration> specWeights =
+            groupConf.getSubConfigurations("specific off-diagonal weights");
+
+          for (const auto & specWeight : specWeights) {
+            // Get variables pair and weight
+            const std::vector<std::string> varPair = specWeight.getStringVector("variables pair");
+            ASSERT(varPair.size() == 2);
+            const double weight = specWeight.getDouble("value");
+
+            // Get variables pair indices
+            const size_t jvarJ = groupVars.find(varPair[0]);
+            const size_t jvarI = groupVars.find(varPair[1]);
+
+            // Check that variables are different
+            ASSERT(jvarJ != jvarI);
+
+            // Set weight symmetrically
+            locWgt(jvarI, jvarJ) = weight;
+            locWgt(jvarJ, jvarI) = weight;
+          }
+        }
+
+        // Cholesky decomposition
+        group.locWgtSqrt() = locWgt.llt().matrixL();
+      }
+
       // Add group
       groups_.emplace_back(std::move(group));
     }
 
-    // Strategy-specific setups and checks
+    // Strategy-specific check
     if (strategy_ == "crossed") {
       // Check that all groups have the same control vector size
       const size_t ctlVecSize = groups_[0].localization()->ctlVecSize();
       for (const auto & group : groups_) {
         ASSERT(group.localization()->ctlVecSize() == ctlVecSize);
-      }
-    } else if (strategy_ == "duplicated and weighted") {
-      // Prepare weights for the "duplicated and weighted" strategy
-
-      // Allocation
-      const size_t nv = outerVars.size();
-      Eigen::MatrixXd locWgt = Eigen::MatrixXd::Zero(nv, nv);
-      locWgtSqrt_.resize(nv, nv);
-
-      // Set default weights
-      const double defaultWeight = conf.getDouble("default off-diagonal weight", 0.0);
-      for (size_t jg = 0; jg < groups_.size(); ++jg) {
-        for (const auto & var1 : groups_[jg].variables()) {
-          // Get variable 1 index
-          const size_t jv1 = outerVars.find(var1.name());
-
-          for (const auto & var2 : groups_[jg].variables()) {
-            // Get variable 2 index
-            const size_t jv2 = outerVars.find(var2.name());
-
-            if (jv1 == jv2) {
-              // Unit diagonal
-              locWgt(jv2, jv1) = 1.0;
-            } else {
-              // Default off-diagonal weight
-              locWgt(jv2, jv1) = defaultWeight;
-            }
-          }
-        }
-      }
-
-      // Set specific weights
-      if (conf.has("specific off-diagonal weights")) {
-        // Get specific weights
-        const std::vector<eckit::LocalConfiguration> specWeights =
-          conf.getSubConfigurations("specific off-diagonal weights");
-
-        for (const auto & specWeight : specWeights) {
-          // Get variables pair and weight
-          const std::vector<std::string> varPair = specWeight.getStringVector("variables pair");
-          ASSERT(varPair.size() == 2);
-          const double weight = specWeight.getDouble("value");
-
-          // Get variables pair indices
-          const size_t jv1 = outerVars.find(varPair[0]);
-          const size_t jv2 = outerVars.find(varPair[1]);
-
-          // Check that variables are different
-          ASSERT(jv1 != jv2);
-
-          // Check that variables are in the same group
-          for (const auto & group : groups_) {
-            if (group.variables().has(varPair[0]) || group.variables().has(varPair[1])) {
-              ASSERT(group.variables().has(varPair[0]) && group.variables().has(varPair[1]));
-            }
-          }
-
-          // Set weight symmetrically
-          locWgt(jv2, jv1) = weight;
-          locWgt(jv1, jv2) = weight;
-        }
-
-        // Cholesky decomposition
-        locWgtSqrt_ = locWgt.llt().matrixL();
       }
     }
   }
