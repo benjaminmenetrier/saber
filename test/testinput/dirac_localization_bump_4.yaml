@@ -9,16 +9,12 @@ geometry:
     - northward_wind
     - air_horizontal_streamfunction
     levels: 2
-  - variables:
-    - air_pressure_at_surface
-    levels: 1
   halo: 1
 background:
   date: 2010-01-01T12:00:00Z
   state variables:
   - eastward_wind
   - northward_wind
-  - air_pressure_at_surface
   - air_horizontal_streamfunction
 background error:
   covariance model: hybrid
@@ -32,7 +28,6 @@ background error:
           state variables:
           - eastward_wind
           - northward_wind
-          - air_pressure_at_surface
           - air_horizontal_streamfunction
         pattern: '%mem%'
         nmembers: 25
@@ -47,20 +42,18 @@ background error:
               universe length-scale: 10000.0e3
             io:
               data directory: testdata
-              files prefix: dirac_localization_bump_2/_MPI_-_OMP_
+              files prefix: dirac_localization_bump_4/_MPI_-_OMP_
             model:
               groups:
               - group name: group1
                 variables:
                 - eastward_wind
                 - northward_wind
-              - group name: group2
-                variables:
-                - air_pressure_at_surface
                 - air_horizontal_streamfunction
             drivers:
-              multivariate strategy: duplicated
+              multivariate strategy: duplicated and weighted
               compute nicas: true
+              write local nicas: true
             ensemble sizes:
               total ensemble size: 25
             nicas:
@@ -70,16 +63,21 @@ background error:
               - groups:
                 - group1
                 value: 6000.0e3
-              - groups:
-                - group2
-                value: 4000.0e3
               vertical length-scale:
               - groups:
                 - group1
                 value: 3.0
-              - groups:
-                - group2
-                value: 2.5
+              common localization weights:
+              - row variables:
+                - eastward_wind
+                column variables:
+                - northward_wind
+                value: 0.5
+              - row variables:
+                - eastward_wind
+                column variables:
+                - air_horizontal_streamfunction
+                value: 0.3
     weight:
       value: 0.25
   - covariance:
@@ -91,47 +89,24 @@ background error:
           state variables:
           - eastward_wind
           - northward_wind
-          - air_pressure_at_surface
           - air_horizontal_streamfunction
         pattern: '%mem%'
         nmembers: 25
         zero padding: 6
       localization:
         localization method: SABER
-        multivariate strategy: duplicated
+        multivariate strategy: duplicated and weighted
+        default off-diagonal weight: 0.3
+        specific off-diagonal weights:
+        - variables pair:
+          - eastward_wind
+          - northward_wind
+          value: 0.5
         groups:
         - group name: group1
           variables:
           - eastward_wind
           - northward_wind
-          saber central block:
-            saber block name: BUMP_NICAS
-            read:
-              general:
-                testing: true
-                universe length-scale: 10000.0e3
-              io:
-                data directory: testdata
-                files prefix: dirac_localization_bump_2/_MPI_-_OMP_
-              drivers:
-                multivariate strategy: univariate
-                compute nicas: true
-              ensemble sizes:
-                total ensemble size: 25
-              nicas:
-                resolution: 4.0
-                explicit length-scales: true
-                horizontal length-scale:
-                - groups:
-                  - group1
-                  value: 6000.0e3
-                vertical length-scale:
-                - groups:
-                  - group1
-                  value: 3.0
-        - group name: group2
-          variables:
-          - air_pressure_at_surface
           - air_horizontal_streamfunction
           saber central block:
             saber block name: BUMP_NICAS
@@ -141,23 +116,10 @@ background error:
                 universe length-scale: 10000.0e3
               io:
                 data directory: testdata
-                files prefix: dirac_localization_bump_2/_MPI_-_OMP_
+                files prefix: dirac_localization_bump_4/_MPI_-_OMP_
               drivers:
                 multivariate strategy: univariate
-                compute nicas: true
-              ensemble sizes:
-                total ensemble size: 25
-              nicas:
-                resolution: 4.0
-                explicit length-scales: true
-                horizontal length-scale:
-                - groups:
-                  - group2
-                  value: 4000.0e3
-                vertical length-scale:
-                - groups:
-                  - group2
-                  value: 2.5
+                read local nicas: true
     weight:
       value: 0.25
   - covariance:
@@ -173,7 +135,6 @@ background error:
             state variables:
             - eastward_wind
             - northward_wind
-            - air_pressure_at_surface
             - air_horizontal_streamfunction
           pattern: '%mem%'
           nmembers: 25
@@ -189,39 +150,29 @@ background error:
                 universe length-scale: 10000.0e3
               io:
                 data directory: testdata
-                files prefix: dirac_localization_bump_2/_MPI_-_OMP_
+                files prefix: dirac_localization_bump_4/_MPI_-_OMP_
               model:
                 groups:
                 - group name: group1
                   variables:
                   - eastward_wind
                   - northward_wind
-                - group name: group2
-                  variables:
-                  - air_pressure_at_surface
                   - air_horizontal_streamfunction
               drivers:
-                multivariate strategy: duplicated
-                compute nicas: true
-              ensemble sizes:
-                total ensemble size: 25
+                multivariate strategy: duplicated and weighted
+                read local nicas: true
               nicas:
-                resolution: 4.0
-                explicit length-scales: true
-                horizontal length-scale:
-                - groups:
-                  - group1
-                  value: 6000.0e3
-                - groups:
-                  - group2
-                  value: 4000.0e3
-                vertical length-scale:
-                - groups:
-                  - group1
-                  value: 3.0
-                - groups:
-                  - group2
-                  value: 2.5
+                common localization weights:
+                - row variables:
+                  - eastward_wind
+                  column variables:
+                  - northward_wind
+                  value: 0.5
+                - row variables:
+                  - eastward_wind
+                  column variables:
+                  - air_horizontal_streamfunction
+                  value: 0.3
     weight:
       value: 0.25
   - covariance:
@@ -237,7 +188,6 @@ background error:
             state variables:
             - eastward_wind
             - northward_wind
-            - air_pressure_at_surface
             - air_horizontal_streamfunction
           pattern: '%mem%'
           nmembers: 25
@@ -245,40 +195,18 @@ background error:
       saber central block:
         saber block name: Ensemble
         localization:
-          multivariate strategy: duplicated
+          multivariate strategy: duplicated and weighted
+          default off-diagonal weight: 0.3
+          specific off-diagonal weights:
+          - variables pair:
+            - eastward_wind
+            - northward_wind
+            value: 0.5
           groups:
           - group name: group1
             variables:
             - eastward_wind
             - northward_wind
-            saber central block:
-              saber block name: BUMP_NICAS
-              read:
-                general:
-                  testing: true
-                  universe length-scale: 10000.0e3
-                io:
-                  data directory: testdata
-                  files prefix: dirac_localization_bump_2/_MPI_-_OMP_
-                drivers:
-                  multivariate strategy: univariate
-                  compute nicas: true
-                ensemble sizes:
-                  total ensemble size: 25
-                nicas:
-                  resolution: 4.0
-                  explicit length-scales: true
-                  horizontal length-scale:
-                  - groups:
-                    - group1
-                    value: 6000.0e3
-                  vertical length-scale:
-                  - groups:
-                    - group1
-                    value: 3.0
-          - group name: group2
-            variables:
-            - air_pressure_at_surface
             - air_horizontal_streamfunction
             saber central block:
               saber block name: BUMP_NICAS
@@ -288,23 +216,10 @@ background error:
                   universe length-scale: 10000.0e3
                 io:
                   data directory: testdata
-                  files prefix: dirac_localization_bump_2/_MPI_-_OMP_
+                  files prefix: dirac_localization_bump_4/_MPI_-_OMP_
                 drivers:
                   multivariate strategy: univariate
-                  compute nicas: true
-                ensemble sizes:
-                  total ensemble size: 25
-                nicas:
-                  resolution: 4.0
-                  explicit length-scales: true
-                  horizontal length-scale:
-                  - groups:
-                    - group2
-                    value: 4000.0e3
-                  vertical length-scale:
-                  - groups:
-                    - group2
-                    value: 2.5
+                  read local nicas: true
     weight:
       value: 0.25
 dirac:
@@ -319,9 +234,9 @@ dirac:
   - 1
   variable:
   - eastward_wind
-  - air_pressure_at_surface
+  - air_horizontal_streamfunction
 output dirac:
   mpi pattern: '%MPI%'
-  filepath: testdata/dirac_localization_bump_2/%MPI%_dirac_%id%
+  filepath: testdata/dirac_localization_bump_4/%MPI%_dirac_%id%
 test:
-  reference filename: testref/dirac_localization_bump_2.ref
+  reference filename: testref/dirac_localization_bump_4.ref

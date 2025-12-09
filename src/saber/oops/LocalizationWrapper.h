@@ -173,7 +173,15 @@ LocalizationWrapper::LocalizationWrapper(const oops::Geometry<MODEL> & geom,
     // Add group
     groups_.emplace_back(std::move(group));
   } else {
-    // Get multivariate strategy
+    // Get multivariate strategy:
+    // - Univariate: localization of each group is applied to each variable of the group
+    // - Duplicated: the localization of each group is to the sum of all the fields of the group,
+    //   the result is split into the different fields
+    // - Crossed: the localization of each group is to the sum of all the fields of the group,
+    //   the result is split into the different fields. All the groups share the same control
+    //   vector: square-root formulation is necessary.
+    // - Duplicated and weighted: the localization of each group is applied to each variable,
+    //   but variables of the same group are combined with user-specified weights
     strategy_ = conf.getString("multivariate strategy");
     ASSERT(strategy_ == "univariate" ||
            strategy_ == "duplicated" ||
@@ -195,7 +203,7 @@ LocalizationWrapper::LocalizationWrapper(const oops::Geometry<MODEL> & geom,
         // Get number of levels
         const size_t varLevels = outerVars[varName].getLevels();
 
-        if (strategy_ == "univariate") {
+        if ((strategy_ == "univariate") || (strategy_ == "duplicated and weighted")) {
           // All the fields of the group should have the same number of levels.
           ASSERT(levelsCheck == varLevels);
         } else {

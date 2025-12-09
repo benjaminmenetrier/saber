@@ -47,30 +47,29 @@ void LocalizationWrapper::multiply(oops::FieldSet4D & fset4d) const {
     groups_[0].localization()->multiply(fset4d);
   } else {
     if (strategy_ == "univariate") {
-      // Univariate: localization of each group is applied to each variable of the group
+      // Univariate strategy
       for (const auto & group : groups_) {
         for (const auto & var : group.variables()) {
           // Get field
           auto field = fset4d[0][var.name()];
 
-          // Rename the field with the name of the group
+          // Rename field with the name of the group
           field.rename(group.name());
 
           // Apply localization
           group.localization()->multiply(fset4d);
 
-          // Rename the field with its initial name
+          // Rename field with its initial name
           field.rename(var.name());
         }
       }
     } else if (strategy_ == "duplicated") {
-      // Duplicated: the localization of each group is to the sum of all the fields of the group,
-      // the result is split into the different fields
+      // Duplicated strategy
       for (const auto & group : groups_) {
         // Get reference field
         auto refField = fset4d[0][group.referenceVariable()];
 
-        // Rename the field with the name of the group
+        // Rename field with the name of the group
         refField.rename(group.name());
 
         // Get reference field view
@@ -109,7 +108,7 @@ void LocalizationWrapper::multiply(oops::FieldSet4D & fset4d) const {
         // Split field
         for (const auto & var : group.variables()) {
           if (var.name() == group.referenceVariable()) {
-            // Rename the field with its initial name
+            // Rename field with its initial name
             refField.rename(var.name());
           } else {
             // Get field
@@ -136,10 +135,8 @@ void LocalizationWrapper::multiply(oops::FieldSet4D & fset4d) const {
           }
         }
       }
-    } else if (strategy_ == "crossed") {
-      // Crossed: the localization of each group is to the sum of all the fields of the group,
-      // the result is split into the different fields. All the groups share the same control
-      // vector: square-root formulation is necessary.
+    } else if ((strategy_ == "crossed") || (strategy_ == "duplicated and weighted")) {
+      // Crossed strategy or duplicated and weighted strategy
 
       // Initialization
       atlas::Field ctlVec = atlas::Field("genericCtlVec", make_datatype<double>(),
@@ -183,25 +180,26 @@ size_t LocalizationWrapper::ctlVecSize() const {
     ctlVecSize += groups_[0].localization()->ctlVecSize();
   } else {
     if (strategy_ == "univariate") {
-      // Univariate: localization of each group is applied to each variable of the group
+      // Univariate strategy
       for (const auto & group : groups_) {
         // Add the group control vector size for each variable
         ctlVecSize += group.localization()->ctlVecSize()*group.variables().size();
       }
     } else if (strategy_ == "duplicated") {
-      // Duplicated: the localization of each group is to the sum of all the fields of the group,
-      // the result is split into the different fields
+      // Duplicated strategy
       for (const auto & group : groups_) {
         // Add the group control vector
         ctlVecSize += group.localization()->ctlVecSize();
       }
     } else if (strategy_ == "crossed") {
-      // Crossed: the localization of each group is to the sum of all the fields of the group,
-      // the result is split into the different fields. All the groups share the same control
-      // vector: square-root formulation is necessary.
+      // Crossed strategy
       ctlVecSize += groups_[0].localization()->ctlVecSize();
     } else if (strategy_ == "duplicated and weighted") {
-      throw eckit::Exception("not implemented yet", Here());
+      // Duplicated and weighted strategy
+      for (const auto & group : groups_) {
+        // Add the group control vector size for each variable
+        ctlVecSize += group.localization()->ctlVecSize()*group.variables().size();
+      }
     } else {
       throw eckit::Exception("invalid multivariate strategy", Here());
     }
@@ -227,7 +225,7 @@ void LocalizationWrapper::multiplySqrt(const atlas::Field & cv,
     size_t index = offset;
 
     if (strategy_ == "univariate") {
-      // Univariate: localization of each group is applied to each variable of the group
+      // Univariate strategy
       for (const auto & group : groups_) {
         for (const auto & var : group.variables()) {
           // Create an empty FieldSet4D
@@ -242,7 +240,7 @@ void LocalizationWrapper::multiplySqrt(const atlas::Field & cv,
           // Get field
           auto field = fset4dTmp[0][group.name()];
 
-          // Rename the field with its initial name
+          // Rename field with its initial name
           field.rename(var.name());
 
           // Add field to output FieldSet4D
@@ -250,11 +248,7 @@ void LocalizationWrapper::multiplySqrt(const atlas::Field & cv,
         }
       }
     } else if ((strategy_ == "duplicated") || (strategy_ == "crossed")) {
-      // Duplicated: the localization of each group is to the sum of all the fields of the group,
-      // the result is split into the different fields
-      // Crossed: the localization of each group is to the sum of all the fields of the group,
-      // the result is split into the different fields. All the groups share the same control
-      // vector: square-root formulation is necessary.
+      // Duplicated strategy or crossed strategy
       for (const auto & group : groups_) {
         // Create an empty FieldSet4D
         oops::FieldSet4D fset4dTmp({fset4d[0].validTime(), fset4d[0].commGeom()});
@@ -270,7 +264,7 @@ void LocalizationWrapper::multiplySqrt(const atlas::Field & cv,
         // Get reference field
         auto refField = fset4dTmp[0][group.name()];
 
-        // Rename the field with its initial name
+        // Rename field with its initial name
         refField.rename(group.referenceVariable());
 
         // Add field to output FieldSet4D
@@ -311,7 +305,66 @@ void LocalizationWrapper::multiplySqrt(const atlas::Field & cv,
         }
       }
     } else if (strategy_ == "duplicated and weighted") {
-      throw eckit::Exception("not implemented yet", Here());
+      // Duplicated and weighted strategy
+      for (const auto & group : groups_) {
+        // Get variables
+        const auto vars = group.variables();
+
+        for (size_t jvarI = 0; jvarI < vars.size(); ++jvarI) {
+          // Get variable
+          const auto varI = vars[jvarI];
+
+          // Create an empty FieldSet4D
+          oops::FieldSet4D fset4dTmp({fset4d[0].validTime(), fset4d[0].commGeom()});
+
+          // Apply localization
+          group.localization()->multiplySqrt(cv, fset4dTmp, index);
+
+          // Update index
+          index += group.localization()->ctlVecSize();
+
+          // Get field
+          const auto field = fset4dTmp[0][group.name()];
+
+          // Get field view
+          const auto view = make_view<double, 2>(field);
+
+          for (size_t jvarJ = jvarI; jvarJ < vars.size(); ++jvarJ) {
+            // Get variable
+            const auto varJ = vars[jvarJ];
+
+            // Other field
+            atlas::Field otherField;
+
+            if (fset4d[0].has(varJ.name())) {
+              // Get other field
+              otherField = fset4d[0][varJ.name()];
+            } else {
+              // Create other field
+              otherField = field.functionspace().createField<double>(
+                atlas::option::name(varJ.name()) | atlas::option::levels(varJ.getLevels()));
+
+              // Get other field view
+              auto otherView = make_view<double, 2>(otherField);
+
+              otherView.assign(0.0);
+
+              // Add other field
+              fset4d[0].add(otherField);
+            }
+
+            // Get other field view
+            auto otherView = make_view<double, 2>(otherField);
+
+            // Sum weighted off-diagonal fields
+            for (int jnode = 0; jnode < otherField.shape(0); ++jnode) {
+              for (int jlevel = 0; jlevel < otherField.shape(1); ++jlevel) {
+                otherView(jnode, jlevel) += locWgtSqrt_(jvarJ, jvarI)*view(jnode, jlevel);
+              }
+            }
+          }
+        }
+      }
     } else {
       throw eckit::Exception("invalid multivariate strategy", Here());
     }
@@ -341,38 +394,42 @@ void LocalizationWrapper::multiplySqrtAD(const oops::FieldSet4D & fset4d,
     }
 
     if (strategy_ == "univariate") {
-      // Univariate: localization of each group is applied to each variable of the group
+      // Univariate strategy
       for (const auto & group : groups_) {
         for (const auto & var : group.variables()) {
-          // Get field
-          auto field = fset4d[0][var.name()];
+          // Create an empty FieldSet4D
+          oops::FieldSet4D fset4dTmp({fset4d[0].validTime(), fset4d[0].commGeom()});
 
-          // Rename the field with the name of the group
+          // Clone field
+          auto field = fset4d[0][var.name()].clone();
+
+          // Rename field with the name of the group
           field.rename(group.name());
 
+          // Add field
+          fset4dTmp[0].add(field);
+
           // Apply localization
-          group.localization()->multiplySqrtAD(fset4d, cv, index);
+          group.localization()->multiplySqrtAD(fset4dTmp, cv, index);
 
           // Update index
           index += group.localization()->ctlVecSize();
-
-          // Rename the field with its initial name
-          field.rename(var.name());
         }
       }
     } else if ((strategy_ == "duplicated") || (strategy_ == "crossed")) {
-      // Duplicated: the localization of each group is to the sum of all the fields of the group,
-      // the result is split into the different fields
-      // Crossed: the localization of each group is to the sum of all the fields of the group,
-      // the result is split into the different fields. All the groups share the same control
-      // vector: square-root formulation is necessary.
-
+      // Duplicated strategy or crossed strategy
       for (const auto & group : groups_) {
-        // Get reference field
-        auto refField = fset4d[0][group.referenceVariable()];
+        // Create an empty FieldSet4D
+        oops::FieldSet4D fset4dTmp({fset4d[0].validTime(), fset4d[0].commGeom()});
 
-        // Rename the field with the name of the group
+        // Clone reference field
+        auto refField = fset4d[0][group.referenceVariable()].clone();
+
+        // Rename reference field with the name of the group
         refField.rename(group.name());
+
+        // Add reference field
+        fset4dTmp[0].add(refField);
 
         // Get reference field view
         auto refView = make_view<double, 2>(refField);
@@ -406,7 +463,7 @@ void LocalizationWrapper::multiplySqrtAD(const oops::FieldSet4D & fset4d,
 
         if (strategy_ == "duplicated") {
           // Apply localization
-          group.localization()->multiplySqrtAD(fset4d, cv, index);
+          group.localization()->multiplySqrtAD(fset4dTmp, cv, index);
 
           // Update index
           index += group.localization()->ctlVecSize();
@@ -416,7 +473,7 @@ void LocalizationWrapper::multiplySqrtAD(const oops::FieldSet4D & fset4d,
             make_shape(group.localization()->ctlVecSize()));
 
           // Apply localization
-          group.localization()->multiplySqrtAD(fset4d, ctlVecTmp, 0);
+          group.localization()->multiplySqrtAD(fset4dTmp, ctlVecTmp, 0);
 
           // Add control vector contribution
           const auto ctlVecTmpView = make_view<double, 1>(ctlVecTmp);
@@ -424,17 +481,60 @@ void LocalizationWrapper::multiplySqrtAD(const oops::FieldSet4D & fset4d,
             ctlVecView(index+jnode) += ctlVecTmpView(jnode);
           }
         }
-
-        // Split field
-        for (const auto & var : group.variables()) {
-          if (var.name() == group.referenceVariable()) {
-            // Rename the field with its initial name
-            refField.rename(var.name());
-          }
-        }
       }
     } else if (strategy_ == "duplicated and weighted") {
-      throw eckit::Exception("not implemented yet", Here());
+      // Duplicated and weighted strategy
+      for (const auto & group : groups_) {
+        // Get variables
+        const auto vars = group.variables();
+
+        for (size_t jvarI = 0; jvarI < vars.size(); ++jvarI) {
+          // Get variable
+          const auto varI = vars[jvarI];
+
+          // Create an empty FieldSet4D
+          oops::FieldSet4D fset4dTmp({fset4d[0].validTime(), fset4d[0].commGeom()});
+
+          // Clone field
+          auto field = fset4d[0][varI.name()].clone();
+
+          // Rename field with the name of the group
+          field.rename(group.name());
+
+          // Add field
+          fset4dTmp[0].add(field);
+
+          // Get field view
+          auto view = make_view<double, 2>(field);
+
+          // Set to zero
+          view.assign(0.0);
+
+          for (size_t jvarJ = jvarI; jvarJ < vars.size(); ++jvarJ) {
+            // Get variable
+            const auto varJ = vars[jvarJ];
+
+            // Get other field
+            const auto otherField = fset4d[0][varJ.name()];
+
+            // Get other field view
+            const auto otherView = make_view<double, 2>(otherField);
+
+            // Sum weighted off-diagonal fields
+            for (int jnode = 0; jnode < otherField.shape(0); ++jnode) {
+              for (int jlevel = 0; jlevel < otherField.shape(1); ++jlevel) {
+                view(jnode, jlevel) += locWgtSqrt_(jvarJ, jvarI)*otherView(jnode, jlevel);
+              }
+            }
+          }
+
+          // Apply localization
+          group.localization()->multiplySqrtAD(fset4dTmp, cv, index);
+
+          // Update index
+          index += group.localization()->ctlVecSize();
+        }
+      }
     } else {
       throw eckit::Exception("invalid multivariate strategy", Here());
     }

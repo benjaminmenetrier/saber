@@ -240,16 +240,12 @@ background error:
 dirac:
   lon:
   - 0.0
-  - 0.0
   lat:
-  - 0.0
   - 0.0
   level:
   - 1
-  - 1
   variable:
   - eastward_wind
-  - air_pressure_at_surface
 output dirac:
   mpi pattern: '%MPI%'
   filepath: testdata/dirac_localization_bump_3/%MPI%_dirac_%id%
