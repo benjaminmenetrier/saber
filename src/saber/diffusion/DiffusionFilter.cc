@@ -5,36 +5,32 @@
  * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
  */
 
-#include "saber/diffusion/Diffusion.h"
+#include "saber/diffusion/DiffusionFilter.h"
 
 namespace saber {
 
 // --------------------------------------------------------------------------------------
 
-static SaberCentralBlockMaker<Diffusion> makerSaberDiffusion_("diffusion");
+static SaberOuterBlockMaker<DiffusionFilter> makerSaberDiffusionFilter_("diffusion filter");
 
 // --------------------------------------------------------------------------------------
 
-Diffusion::Diffusion(
-    const oops::GeometryData & geometryData,
-    const oops::Variables & centralVars,
+DiffusionFilter::DiffusionFilter(
+    const oops::GeometryData & outerGeometryData,
+    const oops::Variables & outerVars,
     const eckit::Configuration & covarConf,
     const Parameters_ & params,
     const oops::FieldSet3D & xb,
     const oops::FieldSet3D & fg)
-  : saber::SaberCentralBlockBase(params, xb.validTime()),
-    geom_(geometryData),
+  : saber::SaberOuterBlockBase(params, xb.validTime(), outerGeometryData, outerVars),
     params_(params)
 {
   // Compute total number of levels
   size_t nlevs = 0;
-  for (const auto & var : params.activeVars.value().get_value_or(centralVars)) {
+  for (const auto & var : params.activeVars.value().get_value_or(outerVars)) {
     nlevs += var.getLevels();
   }
-  // Compute control vector size
-  ctlVecSize_ = nlevs*geom_.functionSpace().size();
 }
-
 // --------------------------------------------------------------------------------------
 
 }  // namespace saber

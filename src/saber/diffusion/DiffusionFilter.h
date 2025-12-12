@@ -14,7 +14,7 @@
 
 #include "atlas/field.h"
 
-#include "saber/blocks/SaberCentralBlockBase.h"
+#include "saber/blocks/SaberOuterBlockBase.h"
 #include "saber/diffusion/DiffusionImplementation.h"
 #include "saber/diffusion/DiffusionParameters.h"
 
@@ -27,43 +27,44 @@ namespace saber {
 
 // -----------------------------------------------------------------------------
 
-/// The diffusion based correlation/localization saber central block. Diffusion (explicit
+/// The diffusion based saber outer block, used for filtering. Diffusion (explicit
 /// diffusion in this case) is best for small correlation lengths. If you have large
 /// lengths, you're better off using BUMP_NICAS.
-class Diffusion : public saber::SaberCentralBlockBase {
+class DiffusionFilter : public saber::SaberOuterBlockBase {
  public:
-  static const std::string classname() { return "saber::Diffusion"; }
+  static const std::string classname() { return "saber::DiffusionFilter"; }
   typedef DiffusionParameters Parameters_;
 
-  Diffusion(const oops::GeometryData &,
-            const oops::Variables &,
-            const eckit::Configuration &,
-            const Parameters_ &,
-            const oops::FieldSet3D &,
-            const oops::FieldSet3D &);
+  DiffusionFilter(const oops::GeometryData &,
+                  const oops::Variables &,
+                  const eckit::Configuration &,
+                  const Parameters_ &,
+                  const oops::FieldSet3D &,
+                  const oops::FieldSet3D &);
 
-  void randomize(oops::FieldSet3D & fset) const override
-    {diffusion::randomize(geom_, groups_, fset);}
+  const oops::GeometryData & innerGeometryData() const override
+    {return outerGeometryData();}
+  const oops::Variables & innerVars() const override
+    {return outerVars();}
+
   void multiply(oops::FieldSet3D & fset) const override
-    {diffusion::multiply(geom_, groups_, fset);}
+    {diffusion::filter(groups_, fset);}
+  void multiplyAD(oops::FieldSet3D &) const override
+    {throw eckit::Exception("No adjoint for filter outer blocks", Here());}
 
   void read() override
-    {diffusion::read(geom_, groups_, params_);}
+    {diffusion::read(outerGeometryData(), groups_, params_);}
   std::vector<std::pair<std::string, eckit::LocalConfiguration>> getReadConfs() const override
     {return diffusion::getReadConfs(params_);}
   void setReadFields(const std::vector<oops::FieldSet3D> & fvec) override
     {return diffusion::setReadFields(fvec, calibrateReadFields_);}
   void directCalibration(const oops::FieldSets &) override
-    {return diffusion::directCalibration(geom_, groups_, calibrateReadFields_, params_);}
-
-  size_t ctlVecSize() const override
-    {return ctlVecSize_;}
+    {return diffusion::directCalibration(outerGeometryData(), groups_, calibrateReadFields_,
+      params_);}
 
  private:
   void print(std::ostream &) const override {}
 
-  const oops::GeometryData & geom_;
-  size_t ctlVecSize_;
   Parameters_ params_;
   std::queue<atlas::Field> calibrateReadFields_;
 

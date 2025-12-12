@@ -108,7 +108,6 @@ std::tuple<const SaberBlockParametersBase&, oops::Variables, oops::Variables>
             const oops::Variables & outerVars,
             oops::FieldSet4D & fset4dXb,
             oops::FieldSet4D & fset4dFg) {
-
   // Get outer block parameters
   const SaberBlockParametersBase & saberOuterBlockParams =
     saberOuterBlockParamWrapper.saberOuterBlockParameters;
@@ -148,7 +147,7 @@ std::tuple<const SaberBlockParametersBase&, oops::Variables, oops::Variables>
     // Creating outer block
     oops::Log::info() << "Info     : Creating outer block: "
                     << saberOuterBlockParams.saberBlockName.value() << std::endl;
-  
+
     // Get required variables in xb, fg if needed
     const oops::Variables mandatoryStateVars = saberOuterBlockParams.mandatoryStateVars();
     if (!(mandatoryStateVars <= fset4dXb.variables())) {
@@ -184,7 +183,7 @@ std::tuple<const SaberBlockParametersBase&, oops::Variables, oops::Variables>
         throw eckit::Exception(errorMsg.str(), Here());
       }
     }
-  
+
     // Create outer block
     outerBlocks_.emplace_back(std::make_pair(SaberOuterBlockFactory::create(
                                                  outerGeometryData,

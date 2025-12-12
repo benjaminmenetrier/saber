@@ -260,9 +260,9 @@ template <typename MODEL> class ProcessPerts : public oops::Application {
     for (const auto & bandConf : bandsConfs) {
       eckit::LocalConfiguration bConf = bandConf.getSubConfiguration("band");
       if (bConf.has("filter")) {
-        for (const auto & cmpOuterBlockConf : bConf.getSubConfigurations("filter")) {
+        for (const auto & outerBlockConf : bConf.getSubConfigurations("filter")) {
           SaberOuterBlockParametersWrapper cmpOuterBlockParamsWrapper;
-          cmpOuterBlockParamsWrapper.deserialize(cmpOuterBlockConf);
+          cmpOuterBlockParamsWrapper.deserialize(outerBlockConf);
           filterCovBlockConfs[b].push_back(cmpOuterBlockParamsWrapper);
         }
       }
@@ -274,9 +274,9 @@ template <typename MODEL> class ProcessPerts : public oops::Application {
       if (bandConf.has("output")) {
         eckit::LocalConfiguration oConf = bandConf.getSubConfiguration("output");
         if (oConf.has("diagnostic only block")) {
-          for (const auto & cmpOuterBlockConf : oConf.getSubConfigurations("diagnostic only block")) {
+          for (const auto & outerBlockConf : oConf.getSubConfigurations("diagnostic only block")) {
             SaberOuterBlockParametersWrapper cmpOuterBlockParamsWrapper;
-            cmpOuterBlockParamsWrapper.deserialize(cmpOuterBlockConf);
+            cmpOuterBlockParamsWrapper.deserialize(outerBlockConf);
             diagBlockConfs[b].push_back(cmpOuterBlockParamsWrapper);
           }
         }

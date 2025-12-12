@@ -7,100 +7,90 @@ Input Dirac increment:
     + max    = 1.0000000000000000e+00
     + mean   = 1.2400793650793651e-05
     + stddev = 3.5214760613667857e-03
-
   - northward_wind (70 levels):
     + min    = 0.0000000000000000e+00
     + max    = 0.0000000000000000e+00
-
 Covariance(SABER) diagnostics:
 - Variances at Dirac points:
-  + Value for variable eastward_wind, subwindow 0, at (longitude, latitude, vertical index) point (180.00000, 3.67270, 1): 2.7559914744362236e-02
+  + Value for variable eastward_wind, subwindow 0, at (longitude, latitude, vertical index) point (180.00000, 3.67270, 1): 4.2922340580544179e-03
 - Covariances at diagnostic points:
-  + Value for variable eastward_wind, subwindow 0, at (longitude, latitude, vertical index) point (0.00000, 3.67270, 70): -9.6875183805069896e-03
-  + Value for variable eastward_wind, subwindow 0, at (longitude, latitude, vertical index) point (180.00000, 3.67270, 1): 2.7559914744362236e-02
-  + Value for variable northward_wind, subwindow 0, at (longitude, latitude, vertical index) point (0.00000, 84.37646, 1): -1.5246850187523701e-03
+  + Value for variable eastward_wind, subwindow 0, at (longitude, latitude, vertical index) point (0.00000, 3.67270, 70): -1.0927368690165423e-03
+  + Value for variable eastward_wind, subwindow 0, at (longitude, latitude, vertical index) point (180.00000, 3.67270, 1): 4.2922340580544179e-03
+  + Value for variable northward_wind, subwindow 0, at (longitude, latitude, vertical index) point (0.00000, 84.37646, 1): -6.6315654421112054e-04
 Covariance(SABER) * Increment:
 - Valid time: 2016-01-01T16:00:00Z
   Geometry: F12 [1152]
   Fields:
   - eastward_wind (70 levels):
-    + min    = -2.2055482201260210e-01
-    + max    = 2.5057002486461000e-01
-    + mean   = -1.8640115086053960e-04
-    + stddev = 1.2456180353216989e-02
-
+    + min    = -4.0259989958992264e-02
+    + max    = 4.1887065337515399e-02
+    + mean   = -9.1515039532819191e-05
+    + stddev = 2.6374543029130128e-03
   - northward_wind (70 levels):
-    + min    = -1.4440853283813354e-01
-    + max    = 2.0509840868964346e-01
-    + mean   = -1.6337417289272172e-04
-    + stddev = 1.1466576541323683e-02
-
+    + min    = -2.4535554049227037e-02
+    + max    = 3.3379163867763822e-02
+    + mean   = -2.6683939432027197e-05
+    + stddev = 2.4858806705893521e-03
 Covariance(SABER1_SABER) diagnostics:
 - Variances at Dirac points:
-  + Value for variable eastward_wind, subwindow 0, at (longitude, latitude, vertical index) point (180.00000, 3.67270, 1): 7.6839273046207441e-04
+  + Value for variable eastward_wind, subwindow 0, at (longitude, latitude, vertical index) point (180.00000, 3.67270, 1): 1.1967095973420680e-04
 - Covariances at diagnostic points:
-  + Value for variable eastward_wind, subwindow 0, at (longitude, latitude, vertical index) point (0.00000, 3.67270, 70): 1.8574771500185177e-07
-  + Value for variable eastward_wind, subwindow 0, at (longitude, latitude, vertical index) point (180.00000, 3.67270, 1): 7.6839273046207441e-04
-  + Value for variable northward_wind, subwindow 0, at (longitude, latitude, vertical index) point (0.00000, 84.37646, 1): 5.2770928220335147e-05
+  + Value for variable eastward_wind, subwindow 0, at (longitude, latitude, vertical index) point (0.00000, 3.67270, 70): 2.0952050726045948e-08
+  + Value for variable eastward_wind, subwindow 0, at (longitude, latitude, vertical index) point (180.00000, 3.67270, 1): 1.1967095973420680e-04
+  + Value for variable northward_wind, subwindow 0, at (longitude, latitude, vertical index) point (0.00000, 84.37646, 1): 2.2952535089541306e-05
 Covariance(SABER1_SABER) * Increment:
 - Valid time: 2016-01-01T16:00:00Z
   Geometry: F12 [1152]
   Fields:
   - eastward_wind (70 levels):
-    + min    = -6.8386576470642864e-03
-    + max    = 1.1929208585877088e-02
-    + mean   = -1.1155031470326002e-05
-    + stddev = 7.5451262468764692e-04
-
+    + min    = -1.3397987755911812e-03
+    + max    = 2.0452429011273174e-03
+    + mean   = -4.0229080239436295e-06
+    + stddev = 1.6539723103059818e-04
   - northward_wind (70 levels):
-    + min    = -7.2275321615881787e-03
-    + max    = 5.8464305185313399e-03
-    + mean   = 4.2784689703527931e-06
-    + stddev = 6.1977841590212955e-04
-
+    + min    = -1.3133786486088928e-03
+    + max    = 1.0698023905254901e-03
+    + mean   = -1.2381929452927699e-06
+    + stddev = 1.4243405948037431e-04
 Covariance(SABER2_SABER) diagnostics:
 - Variances at Dirac points:
-  + Value for variable eastward_wind, subwindow 0, at (longitude, latitude, vertical index) point (180.00000, 3.67270, 1): 1.4718740378137626e-02
+  + Value for variable eastward_wind, subwindow 0, at (longitude, latitude, vertical index) point (180.00000, 3.67270, 1): 2.2923248975444174e-03
 - Covariances at diagnostic points:
-  + Value for variable eastward_wind, subwindow 0, at (longitude, latitude, vertical index) point (0.00000, 3.67270, 70): -4.9714937321715964e-03
-  + Value for variable eastward_wind, subwindow 0, at (longitude, latitude, vertical index) point (180.00000, 3.67270, 1): 1.4718740378137626e-02
-  + Value for variable northward_wind, subwindow 0, at (longitude, latitude, vertical index) point (0.00000, 84.37646, 1): -1.2862470104918386e-03
+  + Value for variable eastward_wind, subwindow 0, at (longitude, latitude, vertical index) point (0.00000, 3.67270, 70): -5.6077669036063782e-04
+  + Value for variable eastward_wind, subwindow 0, at (longitude, latitude, vertical index) point (180.00000, 3.67270, 1): 2.2923248975444174e-03
+  + Value for variable northward_wind, subwindow 0, at (longitude, latitude, vertical index) point (0.00000, 84.37646, 1): -5.5944874645495214e-04
 Covariance(SABER2_SABER) * Increment:
 - Valid time: 2016-01-01T16:00:00Z
   Geometry: F12 [1152]
   Fields:
   - eastward_wind (70 levels):
-    + min    = -1.2965810576322026e-01
-    + max    = 1.3613974633802667e-01
-    + mean   = -2.5507617138879115e-04
-    + stddev = 7.4173080802602820e-03
-
+    + min    = -2.3667739333447624e-02
+    + max    = 2.3208514429782248e-02
+    + mean   = -9.0193634344914184e-05
+    + stddev = 1.5828454037585284e-03
   - northward_wind (70 levels):
-    + min    = -9.0197374916792403e-02
-    + max    = 1.1808324552875978e-01
-    + mean   = 2.9607023176549255e-05
-    + stddev = 6.8665428201692422e-03
-
+    + min    = -1.4439531557228108e-02
+    + max    = 1.9217701530323428e-02
+    + mean   = 9.5838449293656424e-06
+    + stddev = 1.4899983594347109e-03
 Covariance(SABER3_SABER) diagnostics:
 - Variances at Dirac points:
-  + Value for variable eastward_wind, subwindow 0, at (longitude, latitude, vertical index) point (180.00000, 3.67270, 1): 1.2072781635762538e-02
+  + Value for variable eastward_wind, subwindow 0, at (longitude, latitude, vertical index) point (180.00000, 3.67270, 1): 1.8802382007757942e-03
 - Covariances at diagnostic points:
-  + Value for variable eastward_wind, subwindow 0, at (longitude, latitude, vertical index) point (0.00000, 3.67270, 70): -4.7162103960503958e-03
-  + Value for variable eastward_wind, subwindow 0, at (longitude, latitude, vertical index) point (180.00000, 3.67270, 1): 1.2072781635762538e-02
-  + Value for variable northward_wind, subwindow 0, at (longitude, latitude, vertical index) point (0.00000, 84.37646, 1): -2.9120893648086670e-04
+  + Value for variable eastward_wind, subwindow 0, at (longitude, latitude, vertical index) point (0.00000, 3.67270, 70): -5.3198113070663036e-04
+  + Value for variable eastward_wind, subwindow 0, at (longitude, latitude, vertical index) point (180.00000, 3.67270, 1): 1.8802382007757942e-03
+  + Value for variable northward_wind, subwindow 0, at (longitude, latitude, vertical index) point (0.00000, 84.37646, 1): -1.2666033284570966e-04
 Covariance(SABER3_SABER) * Increment:
 - Valid time: 2016-01-01T16:00:00Z
   Geometry: F12 [1152]
   Fields:
   - eastward_wind (70 levels):
-    + min    = -8.6134321788796500e-02
-    + max    = 1.0283883500836843e-01
-    + mean   = 7.9830051998578660e-05
-    + stddev = 5.3454045379432869e-03
-
+    + min    = -1.5518555428364547e-02
+    + max    = 1.6847696234066220e-02
+    + mean   = 2.7015028360391147e-06
+    + stddev = 1.1375039689611745e-03
   - northward_wind (70 levels):
-    + min    = -6.4781710086777466e-02
-    + max    = 8.6322222774967539e-02
-    + mean   = -1.9725966503962610e-04
-    + stddev = 5.0634938036211215e-03
-
+    + min    = -1.0802241551554443e-02
+    + max    = 1.4450146421148025e-02
+    + mean   = -3.5029591416098697e-05
+    + stddev = 1.0986575044158215e-03
