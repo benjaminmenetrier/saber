@@ -49,9 +49,11 @@ class SaberOuterBlockBase : public util::Printable,
                                const util::DateTime & validTime,
                                const oops::GeometryData & outerGeometryData,
                                const oops::Variables & outerVars)
-    : validTime_(validTime), blockName_(params.saberBlockName),
-      skipInverse_(params.skipInverse), filterMode_(params.filterMode),
-      outerGeometryData_(outerGeometryData), outerVars_(outerVars) {}
+    : params_(params),
+      validTime_(validTime),
+      outerGeometryData_(outerGeometryData),
+      outerVars_(outerVars)
+    {}
   virtual ~SaberOuterBlockBase() {}
 
   // Accessor
@@ -73,12 +75,12 @@ class SaberOuterBlockBase : public util::Printable,
   // Block left inverse multiplication
   virtual void leftInverseMultiply(oops::FieldSet3D &) const
     {throw eckit::NotImplemented("leftInverseMultiply not implemented yet for the block "
-      + blockName_, Here());}
+      + params_.saberBlockName.value(), Here());}
 
   // Block right inverse multiplication
   virtual void rightInverseMultiply(oops::FieldSet3D &) const
     {throw eckit::NotImplemented("rightInverseMultiply not implemented yet for the block "
-      + blockName_, Here());}
+      + params_.saberBlockName.value(), Here());}
 
   // Setup / calibration methods
 
@@ -145,13 +147,10 @@ class SaberOuterBlockBase : public util::Printable,
   // Non-virtual methods
 
   // Return block name
-  const std::string blockName() const {return blockName_;}
+  const std::string blockName() const {return params_.saberBlockName.value();}
 
   // Return flag to skip inverse application
-  bool skipInverse() const {return skipInverse_;}
-
-  // Return flag to replace adjoint with inverse in blockchain
-  bool filterMode() const {return filterMode_;}
+  bool skipInverse() const {return params_.skipInverse.value();}
 
   // Return outer geometry data
   const oops::GeometryData & outerGeometryData() const {return outerGeometryData_;}
@@ -192,14 +191,12 @@ class SaberOuterBlockBase : public util::Printable,
                    const double &) const;
 
  protected:
+  const SaberBlockParametersBase & params_;
   const util::DateTime validTime_;
-
- private:
-  const std::string blockName_;
-  const bool skipInverse_;
-  const bool filterMode_;
   const oops::GeometryData & outerGeometryData_;
   const oops::Variables & outerVars_;
+
+ private:
   virtual void print(std::ostream &) const = 0;
 };
 

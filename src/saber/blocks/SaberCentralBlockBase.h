@@ -45,7 +45,9 @@ class SaberCentralBlockBase : public util::Printable,
  public:
   explicit SaberCentralBlockBase(const SaberBlockParametersBase & params,
                                  const util::DateTime & validTime)
-    : validTime_(validTime), blockName_(params.saberBlockName) {}
+    : params_(params),
+      validTime_(validTime)
+    {}
   virtual ~SaberCentralBlockBase() {}
 
   // Application methods
@@ -116,7 +118,7 @@ class SaberCentralBlockBase : public util::Printable,
   // Non-virtual methods
 
   // Return block name
-  std::string blockName() const {return blockName_;}
+  std::string blockName() const {return params_.saberBlockName.value();}
 
   // Return date/time
   const util::DateTime validTime() const {return validTime_;}
@@ -141,10 +143,10 @@ class SaberCentralBlockBase : public util::Printable,
                 const double &) const;
 
  protected:
+  const SaberBlockParametersBase & params_;
   const util::DateTime validTime_;
 
  private:
-  std::string blockName_;
   virtual void print(std::ostream &) const = 0;
 };
 
