@@ -55,7 +55,7 @@ class VertProj : public SaberOuterBlockBase {
   virtual ~VertProj() = default;
 
   const oops::GeometryData & innerGeometryData()
-    const override {return outerGeometryData_;}
+    const override {return outerGeometryData();}
   const oops::Variables & innerVars() const override {return innerVars_;}
 
   void multiply(oops::FieldSet3D &) const override;
@@ -65,8 +65,6 @@ class VertProj : public SaberOuterBlockBase {
  private:
   void print(std::ostream &) const override;
 
-  const oops::GeometryData & outerGeometryData_;
-  oops::Variables outerVars_;
   oops::Variables activeVars_;
   oops::Variables innerVars_;
 };

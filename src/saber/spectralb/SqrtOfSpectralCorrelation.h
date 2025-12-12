@@ -50,7 +50,7 @@ class SqrtOfSpectralCorrelation : public SaberOuterBlockBase {
   virtual ~SqrtOfSpectralCorrelation() = default;
 
   const oops::GeometryData & innerGeometryData() const override {return innerGeometryData_;}
-  const oops::Variables & innerVars() const override {return outerVars_;}
+  const oops::Variables & innerVars() const override {return outerVars();}
 
   void multiply(oops::FieldSet3D &) const override;
   void multiplyAD(oops::FieldSet3D &) const override;
@@ -64,8 +64,6 @@ class SqrtOfSpectralCorrelation : public SaberOuterBlockBase {
   Parameters_ params_;
   /// Active variables
   const oops::Variables activeVars_;
-  /// Outer variables
-  oops::Variables outerVars_;
 
   /// Covariance statistics
   atlas::FieldSet spectralCorrelUMatrices_;

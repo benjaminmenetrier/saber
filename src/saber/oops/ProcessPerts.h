@@ -36,7 +36,7 @@
 #include "oops/util/parameters/Parameters.h"
 #include "oops/util/parameters/RequiredParameter.h"
 
-#include "saber/blocks/SaberParametricBlockChain.h"
+#include "saber/blocks/SaberOuterBlockChain.h"
 #include "saber/oops/ErrorCovarianceParameters.h"
 #include "saber/oops/Utilities.h"
 
@@ -84,7 +84,6 @@ template <typename MODEL> class FilterParameters :
   OOPS_CONCRETE_PARAMETERS(FilterParameters, oops::Parameters)
 
  public:
-  typedef ErrorCovarianceParameters<MODEL>           ErrorCovarianceParameters_;
   /// Note that the parameters here are not actually used in the code
   /// They are here to express the intent of these variables.
   /// Later on in the code we use eckit::LocalConfiguration and check whether
@@ -95,9 +94,8 @@ template <typename MODEL> class FilterParameters :
   oops::Parameter<bool> residualIncrementFromOtherBands{
     "residual increment from previous bands", false, this};
 
-  // This will give the parameters associated with an ErrorCovariance model
-  // and can be used to provide a filtering operation.
-  oops::OptionalParameter<ErrorCovarianceParameters_> filter{"filter", this};
+  // This is a vector of outer blocks defining the filter.
+  oops::OptionalParameter<std::vector<SaberOuterBlockParametersWrapper>> filter{"filter", this};
 };
 
 // -----------------------------------------------------------------------------
@@ -108,11 +106,8 @@ template <typename MODEL> class OutputWriteParameters :
   OOPS_CONCRETE_PARAMETERS(OutputWriteParameters, oops::Parameters)
 
  public:
-  typedef ErrorCovarianceParameters<MODEL>                   ErrorCovarianceParameters_;
-
-  // This is there to get ErrorCovarianceParameters and in particular
-  // saber blocks that can be used for diagnostic purposes.
-  oops::OptionalParameter<ErrorCovarianceParameters_> diagnosticOnlyBlock{
+  // This is a vector of outer blocks for diagnostic purposes.
+  oops::OptionalParameter<std::vector<SaberOuterBlockParametersWrapper>> diagnosticOnlyBlock{
     "diagnostic only block", this};
 
   /// Write parameters using generic oops::util::writeFieldSet writer
@@ -254,8 +249,8 @@ template <typename MODEL> class ProcessPerts : public oops::Application {
       = fullConfig.getSubConfigurations("bands");
 
     // need to create a vectors of saber block chains to use later
-    std::map<std::size_t, eckit::LocalConfiguration> diagBlockConfs;
-    std::map<std::size_t, eckit::LocalConfiguration> filterCovBlockConfs;
+    std::map<std::size_t, std::vector<SaberOuterBlockParametersWrapper>> diagBlockConfs;
+    std::map<std::size_t, std::vector<SaberOuterBlockParametersWrapper>> filterCovBlockConfs;
     std::map<std::size_t, eckit::LocalConfiguration> genericWriteConfs;
     std::map<std::size_t, eckit::LocalConfiguration> modelWriteConfs;
     std::vector<bool> calcResidualIncrement;
@@ -265,8 +260,11 @@ template <typename MODEL> class ProcessPerts : public oops::Application {
     for (const auto & bandConf : bandsConfs) {
       eckit::LocalConfiguration bConf = bandConf.getSubConfiguration("band");
       if (bConf.has("filter")) {
-        eckit::LocalConfiguration fConf = bConf.getSubConfiguration("filter");
-        filterCovBlockConfs[b] = fConf;
+        for (const auto & cmpOuterBlockConf : bConf.getSubConfigurations("filter")) {
+          SaberOuterBlockParametersWrapper cmpOuterBlockParamsWrapper;
+          cmpOuterBlockParamsWrapper.deserialize(cmpOuterBlockConf);
+          filterCovBlockConfs[b].push_back(cmpOuterBlockParamsWrapper);
+        }
       }
       calcResidualIncrement.push_back(
         bConf.getBool("residual increment from previous bands", false) );
@@ -276,8 +274,11 @@ template <typename MODEL> class ProcessPerts : public oops::Application {
       if (bandConf.has("output")) {
         eckit::LocalConfiguration oConf = bandConf.getSubConfiguration("output");
         if (oConf.has("diagnostic only block")) {
-          eckit::LocalConfiguration dConf = oConf.getSubConfiguration("diagnostic only block");
-          diagBlockConfs[b] = dConf;
+          for (const auto & cmpOuterBlockConf : oConf.getSubConfigurations("diagnostic only block")) {
+            SaberOuterBlockParametersWrapper cmpOuterBlockParamsWrapper;
+            cmpOuterBlockParamsWrapper.deserialize(cmpOuterBlockConf);
+            diagBlockConfs[b].push_back(cmpOuterBlockParamsWrapper);
+          }
         }
         if (oConf.has("generic write")) {
           eckit::LocalConfiguration gConf = oConf.getSubConfiguration("generic write");
@@ -291,24 +292,17 @@ template <typename MODEL> class ProcessPerts : public oops::Application {
       b++;
     }
 
-    std::vector<std::unique_ptr<SaberParametricBlockChain>> saberFilterBlocks;
+    std::vector<std::unique_ptr<SaberOuterBlockChain>> saberFilterBlocks;
     for (const auto & [key, value] : filterCovBlockConfs) {
       saberFilterBlocks.push_back(
-        std::make_unique<SaberParametricBlockChain>(geom, geom,
-                                                    incVars, fsetXb, fsetFg,
-                                                    fsetEns, dualResFsetEns,
-                                                    covarConf,
-                                                    value));
+        std::make_unique<SaberOuterBlockChain>(geom, incVars, fsetXb, fsetFg, fsetEns,
+                                               covarConf, value));
     }
-
-    std::vector<std::unique_ptr<SaberParametricBlockChain>> saberDiagnosticBlocks;
+    std::vector<std::unique_ptr<SaberOuterBlockChain>> saberDiagnosticBlocks;
     for (const auto & [key, value] : diagBlockConfs) {
       saberDiagnosticBlocks.push_back(
-        std::make_unique<SaberParametricBlockChain>(geom, geom,
-                                                    incVars, fsetXb, fsetFg,
-                                                    fsetEns, dualResFsetEns,
-                                                    covarConf,
-                                                    value));
+        std::make_unique<SaberOuterBlockChain>(geom, incVars, fsetXb, fsetFg, fsetEns,
+                                               covarConf, value));
     }
 
     //  Loop over perturbations
@@ -335,7 +329,7 @@ template <typename MODEL> class ProcessPerts : public oops::Application {
         // Apply filter blocks
         if (auto it{filterCovBlockConfs.find(b)}; it != std::end(filterCovBlockConfs)) {
           const std::size_t idx = std::distance(std::begin(filterCovBlockConfs), it);
-          saberFilterBlocks[idx]->filter(fset4dDx);
+          saberFilterBlocks[idx]->applyOuterBlocks(fset4dDx);
           if (calcComplement[b]) {
             fset4dDx[0] -= fset4dDxI[0];
             fset4dDx[0] *= -1.0;
@@ -358,7 +352,8 @@ template <typename MODEL> class ProcessPerts : public oops::Application {
         // Apply diagnostic blocks
         if (auto it{diagBlockConfs.find(b)}; it != std::end(diagBlockConfs)) {
           const std::size_t idx = std::distance(std::begin(diagBlockConfs), it);
-          saberDiagnosticBlocks[idx]->filter(fset4dDx);
+          saberDiagnosticBlocks[idx]->applyOuterBlocksAD(fset4dDx);
+          saberDiagnosticBlocks[idx]->applyOuterBlocks(fset4dDx);
         }
 
         if (auto it{genericWriteConfs.find(b)}; it != std::end(genericWriteConfs)) {

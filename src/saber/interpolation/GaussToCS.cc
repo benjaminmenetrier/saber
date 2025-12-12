@@ -343,7 +343,7 @@ GaussToCS::GaussToCS(const oops::GeometryData & outerGeometryData,
                      const Parameters_ & params,
                      const oops::FieldSet3D & xb,
                      const oops::FieldSet3D & fg)
-  : SaberOuterBlockBase(params, xb.validTime()),
+  : SaberOuterBlockBase(params, xb.validTime(), outerGeometryData, outerVars),
     innerVars_(outerVars),
     activeVars_(params.activeVariables.value().get_value_or(innerVars_)),
     CSFunctionSpace_(outerGeometryData.functionSpace()),
@@ -491,8 +491,8 @@ void GaussToCS::multiplyAD(oops::FieldSet3D & fieldSet) const {
 
 // -----------------------------------------------------------------------------
 
-void GaussToCS::leftInverseMultiply(oops::FieldSet3D & fieldSet) const {
-  oops::Log::trace() << classname() << "::leftInverseMultiply starting" << std::endl;
+void GaussToCS::inverseMultiply(oops::FieldSet3D & fieldSet) const {
+  oops::Log::trace() << classname() << "::inverseMultiply starting" << std::endl;
 
   atlas::FieldSet newFieldSet = atlas::FieldSet();
   atlas::FieldSet srcFieldSet = atlas::FieldSet();
@@ -530,7 +530,7 @@ void GaussToCS::leftInverseMultiply(oops::FieldSet3D & fieldSet) const {
 
   fieldSet.fieldSet() = newFieldSet;
 
-  oops::Log::trace() << classname() << "::leftInverseMultiply done" << std::endl;
+  oops::Log::trace() << classname() << "::inverseMultiply done" << std::endl;
 }
 
 // -----------------------------------------------------------------------------

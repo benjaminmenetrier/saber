@@ -290,10 +290,9 @@ SpectralToGauss::SpectralToGauss(const oops::GeometryData & outerGeometryData,
                                  const Parameters_ & params,
                                  const oops::FieldSet3D & xb,
                                  const oops::FieldSet3D & fg)
-  : SaberOuterBlockBase(params, xb.validTime()),
+  : SaberOuterBlockBase(params, xb.validTime(), outerGeometryData, outerVars),
     activeVars_(getActiveVars(params, outerVars)),
-    outerVars_(outerVars),
-    useWindTransform_(outerVars_.has("eastward_wind") && outerVars_.has("northward_wind")),
+    useWindTransform_(outerVars.has("eastward_wind") && outerVars.has("northward_wind")),
     innerVars_(createInnerVars(outerVars, activeVars_, useWindTransform_)),
     gaussFunctionSpace_(outerGeometryData.functionSpace()),
     specFunctionSpace_(2 * atlas::GaussianGrid(gaussFunctionSpace_.grid()).N() - 1),
@@ -635,8 +634,8 @@ void SpectralToGauss::multiplyAD(oops::FieldSet3D & fieldSet) const {
 
 // -----------------------------------------------------------------------------
 
-void SpectralToGauss::leftInverseMultiply(oops::FieldSet3D & fieldSet) const {
-  oops::Log::trace() << classname() << "::leftInverseMultiply starting" << std::endl;
+void SpectralToGauss::inverseMultiply(oops::FieldSet3D & fieldSet) const {
+  oops::Log::trace() << classname() << "::inverseMultiply starting" << std::endl;
   auto outFieldSet = atlas::FieldSet();
   auto scalarFieldSet = atlas::FieldSet();
   auto windFieldSet = atlas::FieldSet();
@@ -660,7 +659,7 @@ void SpectralToGauss::leftInverseMultiply(oops::FieldSet3D & fieldSet) const {
 
   fieldSet.fieldSet() = outFieldSet;
 
-  oops::Log::trace() << classname() << "::leftInverseMultiply done" << std::endl;
+  oops::Log::trace() << classname() << "::inverseMultiply done" << std::endl;
 }
 
 // -----------------------------------------------------------------------------

@@ -54,7 +54,7 @@ class VertLocInterp : public SaberOuterBlockBase {
   virtual ~VertLocInterp() = default;
 
   const oops::GeometryData & innerGeometryData()
-    const override {return outerGeometryData_;}
+    const override {return outerGeometryData();}
   const oops::Variables & innerVars() const override {return innerVars_;}
 
   void multiply(oops::FieldSet3D &) const override;
@@ -64,8 +64,6 @@ class VertLocInterp : public SaberOuterBlockBase {
   void print(std::ostream &) const override;
 
   Parameters_ params_;
-  const oops::GeometryData & outerGeometryData_;
-  oops::Variables outerVars_;
   oops::Variables activeVars_;
   oops::Variables innerVars_;
 };

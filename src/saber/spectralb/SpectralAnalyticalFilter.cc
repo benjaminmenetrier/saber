@@ -195,11 +195,6 @@ auto createSpectralFilter(const oops::GeometryData & geometryData,
                    spectralFilter.begin(), [](auto & e){return 1.0 - e;});
   }
 
-  // 4) Take square root (as this is an outer block)
-  // -----------------------------------------------
-  std::transform(spectralFilter.begin(), spectralFilter.end(),
-                 spectralFilter.begin(), [](auto & e){return std::sqrt(e);});
-
   return spectralFilter;
 }
 
@@ -212,7 +207,7 @@ SpectralAnalyticalFilter::SpectralAnalyticalFilter(const oops::GeometryData & ge
                                                    const Parameters_ & params,
                                                    const oops::FieldSet3D & xb,
                                                    const oops::FieldSet3D & fg)
-  : SaberOuterBlockBase(params, xb.validTime()), params_(params),
+  : SaberOuterBlockBase(params, xb.validTime(), geometryData, outerVars), params_(params),
     activeVars_(getActiveVars(params, outerVars)),
     innerGeometryData_(geometryData),
     innerVars_(outerVars),

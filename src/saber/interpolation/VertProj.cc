@@ -94,9 +94,7 @@ VertProj::VertProj(const oops::GeometryData & outerGeometryData,
                    const Parameters_ & params,
                    const oops::FieldSet3D & xb,
                    const oops::FieldSet3D & fg)
-  : SaberOuterBlockBase(params, xb.validTime()),
-    outerGeometryData_(outerGeometryData),
-    outerVars_(outerVars),
+  : SaberOuterBlockBase(params, xb.validTime(), outerGeometryData, outerVars),
     activeVars_(params.activeVars.value().get_value_or(outerVars)),
     innerVars_(createInnerVars(params.innerVerticalLevels, activeVars_, outerVars))
 {
@@ -129,9 +127,9 @@ void VertProj::multiply(oops::FieldSet3D & fieldSet) const {
   // Note: ambiguity in levels in active variables; get levels from outer vars
   for (const auto & var : activeVars_) {
     atlas::Field modelField =
-      outerGeometryData_.functionSpace().createField<double>(
+      outerGeometryData().functionSpace().createField<double>(
           atlas::option::name(var.name()) |
-          atlas::option::levels(outerVars_[var.name()].getLevels()) |
+          atlas::option::levels(outerVars()[var.name()].getLevels()) |
           atlas::option::halo(1));
     atlas::array::make_view<double, 2>(modelField).assign(0.0);
     modelField.set_dirty(false);
@@ -177,7 +175,7 @@ void VertProj::multiplyAD(oops::FieldSet3D & fieldSet) const {
   // Note: ambiguity in levels in active variables; get levels from inner vars
   for (const auto & var : activeVars_) {
     atlas::Field vertField =
-      outerGeometryData_.functionSpace().createField<double>
+      outerGeometryData().functionSpace().createField<double>
         (atlas::option::name(var.name()) |
          atlas::option::levels(innerVars_[var.name()].getLevels()) |
          atlas::option::halo(1));
@@ -225,7 +223,7 @@ void VertProj::leftInverseMultiply(oops::FieldSet3D & fieldSet) const {
   atlas::FieldSet vertFieldSet;
   for (const auto & var : activeVars_) {
     atlas::Field vertField =
-      outerGeometryData_.functionSpace().createField<double>
+      outerGeometryData().functionSpace().createField<double>
         (atlas::option::name(var.name()) |
          atlas::option::levels(innerVars_[var.name()].getLevels()) |
          atlas::option::halo(1));

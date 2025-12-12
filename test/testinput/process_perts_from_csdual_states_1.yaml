@@ -19,17 +19,17 @@ background:
 bands:
 - band:
     filter:
-      saber central block:
-        saber block name: ID
-      saber outer blocks:
-      - saber block name: spectral analytical filter
-        function:
-          horizontal daley length: 5008e3
-      - saber block name: spectral to gauss
-        filter mode: true # instead of running the adjoint code it runs the inverse
-      - saber block name: gauss to cubed-sphere-dual
-        gauss grid uid: F45
-        filter mode: true # instead of running the adjoint code it runs the inverse
+    - saber block name: gauss to cubed-sphere-dual
+      gauss grid uid: F45
+      right-inverse of existing block: true
+    - saber block name: spectral to gauss
+      right-inverse of existing block: true
+    - saber block name: spectral analytical filter
+      function:
+        horizontal daley length: 5008e3
+    - saber block name: spectral to gauss
+    - saber block name: gauss to cubed-sphere-dual
+      gauss grid uid: F45
   output:
     model write:
       filepath: testdata/process_perts_from_csdual_states_1/filtered_pert_mb%MEM%_wb1

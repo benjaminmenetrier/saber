@@ -77,7 +77,6 @@ class Interpolation : public SaberOuterBlockBase {
   void print(std::ostream &) const override;
 
   const Parameters_ params_;
-  const oops::GeometryData & outerGeomData_;
   const oops::Variables innerVars_;
   const oops::Variables activeVars_;
   const oops::Variables invVars_;

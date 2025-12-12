@@ -46,9 +46,12 @@ class SaberOuterBlockBase : public util::Printable,
                             private eckit::NonCopyable {
  public:
   explicit SaberOuterBlockBase(const SaberBlockParametersBase & params,
-                               const util::DateTime & validTime)
-    : validTime_(validTime), blockName_(params.saberBlockName), skipInverse_(params.skipInverse),
-      filterMode_(params.filterMode) {}
+                               const util::DateTime & validTime,
+                               const oops::GeometryData & outerGeometryData,
+                               const oops::Variables & outerVars)
+    : validTime_(validTime), blockName_(params.saberBlockName),
+      skipInverse_(params.skipInverse), filterMode_(params.filterMode),
+      outerGeometryData_(outerGeometryData), outerVars_(outerVars) {}
   virtual ~SaberOuterBlockBase() {}
 
   // Accessor
@@ -150,6 +153,12 @@ class SaberOuterBlockBase : public util::Printable,
   // Return flag to replace adjoint with inverse in blockchain
   bool filterMode() const {return filterMode_;}
 
+  // Return outer geometry data
+  const oops::GeometryData & outerGeometryData() const {return outerGeometryData_;}
+
+  // Return outer variables
+  const oops::Variables & outerVars() const {return outerVars_;}
+
   // Return date/time
   const util::DateTime validTime() const {return validTime_;}
 
@@ -189,6 +198,8 @@ class SaberOuterBlockBase : public util::Printable,
   const std::string blockName_;
   const bool skipInverse_;
   const bool filterMode_;
+  const oops::GeometryData & outerGeometryData_;
+  const oops::Variables & outerVars_;
   virtual void print(std::ostream &) const = 0;
 };
 
@@ -209,7 +220,7 @@ class SaberOuterBlockParametersWrapper : public oops::Parameters {
 
 class SaberOuterBlockFactory {
  public:
-  static std::unique_ptr<SaberOuterBlockBase> create(const oops::GeometryData &,
+  static std::shared_ptr<SaberOuterBlockBase> create(const oops::GeometryData &,
                                                      const oops::Variables &,
                                                      const eckit::Configuration &,
                                                      const SaberBlockParametersBase &,
@@ -228,7 +239,7 @@ class SaberOuterBlockFactory {
   explicit SaberOuterBlockFactory(const std::string &name);
 
  private:
-  virtual std::unique_ptr<SaberOuterBlockBase> make(const oops::GeometryData &,
+  virtual std::shared_ptr<SaberOuterBlockBase> make(const oops::GeometryData &,
                                                     const oops::Variables &,
                                                     const eckit::Configuration &,
                                                     const SaberBlockParametersBase &,
@@ -249,14 +260,14 @@ template<class T>
 class SaberOuterBlockMaker : public SaberOuterBlockFactory {
   typedef typename T::Parameters_ Parameters_;
 
-  std::unique_ptr<SaberOuterBlockBase> make(const oops::GeometryData & outerGeometryData,
+  std::shared_ptr<SaberOuterBlockBase> make(const oops::GeometryData & outerGeometryData,
                                             const oops::Variables & outerVars,
                                             const eckit::Configuration & covarConf,
                                             const SaberBlockParametersBase & params,
                                             const oops::FieldSet3D & xb,
                                             const oops::FieldSet3D & fg) override {
     const auto &stronglyTypedParams = dynamic_cast<const Parameters_&>(params);
-    return std::make_unique<T>(outerGeometryData, outerVars,
+    return std::make_shared<T>(outerGeometryData, outerVars,
                                covarConf, stronglyTypedParams, xb, fg);
   }
 

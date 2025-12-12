@@ -85,6 +85,9 @@ class SaberBlockParametersBase : public oops::Parameters {
   // Force calling write()
   oops::Parameter<bool> forceWrite{"force write", false, this};
 
+  // Inverse of existing block
+  oops::Parameter<bool> inverseOfExisting{"right-inverse of existing block", false, this};
+
   // METHODS
   // Find out whether calibration is needed
   bool doCalibration() const;
