@@ -139,13 +139,13 @@ void Interpolation::multiplyAD(oops::FieldSet3D & fieldSet) const {
 
 // -----------------------------------------------------------------------------
 
-void Interpolation::leftInverseMultiply(oops::FieldSet3D & fieldSet) const {
+void Interpolation::inverseMultiply(oops::FieldSet3D & fieldSet) const {
   // If specific `state variables to inverse` were requested in the yaml, apply the (inverse)
   // interpolator to those variables only. Otherwise, apply the (inverse) interpolator to the
   // whole fieldset.
-  // NOTE that in a SaberOuterBlockChain, the logic to call Interpolation::leftInverseMultiply
+  // NOTE that in a SaberOuterBlockChain, the logic to call Interpolation::inverseMultiply
   // includes checking for the existence of the `state variables to inverse` key. Thus, omitting
-  // the yaml key is likely to skip the leftInverseMultiply completely.
+  // the yaml key is likely to skip the inverseMultiply completely.
   const oops::Variables invVars = (invVars_.size() > 0 ? invVars_ : fieldSet.variables());
 
   // Prepare inverse interpolator
@@ -187,7 +187,7 @@ void Interpolation::leftInverseMultiply(oops::FieldSet3D & fieldSet) const {
   // Reset
   fieldSet.fieldSet() = targetFieldSet;
 
-  oops::Log::trace() << classname() << "::leftInverseMultiply done" << std::endl;
+  oops::Log::trace() << classname() << "::inverseMultiply done" << std::endl;
 }
 
 // -----------------------------------------------------------------------------

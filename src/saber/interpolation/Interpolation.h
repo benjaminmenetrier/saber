@@ -65,7 +65,10 @@ class Interpolation : public SaberOuterBlockBase {
 
   void multiply(oops::FieldSet3D &) const override;
   void multiplyAD(oops::FieldSet3D &) const override;
-  void leftInverseMultiply(oops::FieldSet3D &) const override;
+  void leftInverseMultiply(oops::FieldSet3D & fset) const override
+    {inverseMultiply(fset);}
+  void rightInverseMultiply(oops::FieldSet3D & fset) const override
+    {inverseMultiply(fset);}
 
   oops::FieldSet3D generateInnerFieldSet(const oops::GeometryData & innerGeometryData,
                                          const oops::Variables & innerVars) const override;
