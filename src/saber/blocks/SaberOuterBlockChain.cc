@@ -119,16 +119,10 @@ std::tuple<const SaberBlockParametersBase&, oops::Variables, oops::Variables>
   // Get active variables
   const oops::Variables activeVars = getActiveVars(saberOuterBlockParams, currentOuterVars);
 
-  // Get mode
-  const bool rightInverse = saberOuterBlockParams.rightInverse.value();
-
-  if (saberOuterBlockParams.sameAsFollowing.value()) {
-    // Creating inverse of outer block
-    oops::Log::info() << "Info     : Same as a following outer block: "
+  if (saberOuterBlockParams.rightInverse.value()) {
+    // Creating inverse of a following outer block
+    oops::Log::info() << "Info     : Right-inverse of a following outer block: "
                       << saberOuterBlockParams.saberBlockName.value() << std::endl;
-    if (rightInverse) {
-      oops::Log::info() << "Info     : Initialized in right-inverse mode" << std::endl;
-    }
 
     // Find the target block, while checking for its unicity
     std::shared_ptr<SaberOuterBlockBase> targetBlock;
@@ -148,14 +142,11 @@ std::tuple<const SaberBlockParametersBase&, oops::Variables, oops::Variables>
     ASSERT(found);
 
     // Share pointer of target block
-    outerBlocks_.emplace_back(std::make_pair(targetBlock, rightInverse));
+    outerBlocks_.emplace_back(std::make_pair(targetBlock, true));
   } else {
     // Creating outer block
     oops::Log::info() << "Info     : Creating outer block: "
                     << saberOuterBlockParams.saberBlockName.value() << std::endl;
-    if (rightInverse) {
-      oops::Log::info() << "Info     : Initialized in right-inverse mode" << std::endl;
-    }
 
     // Get required variables in xb, fg if needed
     const oops::Variables mandatoryStateVars = saberOuterBlockParams.mandatoryStateVars();
@@ -201,7 +192,7 @@ std::tuple<const SaberBlockParametersBase&, oops::Variables, oops::Variables>
                                                saberOuterBlockParams,
                                                fset4dXb[0],
                                                fset4dFg[0]),
-                                             rightInverse));
+                                             false));
   }
 
   return std::tuple<const SaberBlockParametersBase&, oops::Variables, oops::Variables>(

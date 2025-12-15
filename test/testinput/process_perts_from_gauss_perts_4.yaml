@@ -23,8 +23,7 @@ bands:
 - band:
     filter:
     - saber block name: spectral to gauss
-      pointing to a following block: true
-      right-inverse mode: true
+      right-inverse of a following block: true
     - saber block name: spectral analytical filter
       function:
         shape: waveband filter
@@ -48,8 +47,7 @@ bands:
 - band:
     filter:
     - saber block name: spectral to gauss
-      pointing to a following block: true
-      right-inverse mode: true
+      right-inverse of a following block: true
     - saber block name: spectral analytical filter
       function:
         shape: waveband filter
@@ -73,8 +71,7 @@ bands:
 - band:
     filter:
     - saber block name: spectral to gauss
-      pointing to a following block: true
-      right-inverse mode: true
+      right-inverse of a following block: true
     - saber block name: spectral analytical filter
       function:
         shape: waveband filter
