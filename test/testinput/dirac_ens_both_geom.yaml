@@ -67,6 +67,7 @@ background error:
             - saber block name: spectral analytical filter
               # Equivalent to no localization level by level (but full inter-level and
               # inter-variables localization), to allow comparison with other component
+              square-root filter: true
               function:
                 shape: boxcar
                 waveband min: 0

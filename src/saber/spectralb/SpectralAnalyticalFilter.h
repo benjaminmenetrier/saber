@@ -39,6 +39,9 @@ class SpectralAnalyticalFilterParameters : public SaberBlockParametersBase {
     /// Define filter as the complement of the function
     oops::Parameter<bool> complementFilter{"complement filter", false, this};
 
+    /// Define filter as a square-root
+    oops::Parameter<bool> squareRootFilter{"square root filter", false, this};
+
     /// Filter specifications (Gaussian, boxcar function, triangle...)
     oops::Parameter<eckit::LocalConfiguration> function{"function",
                                                         eckit::LocalConfiguration(), this};
@@ -67,8 +70,7 @@ class SpectralAnalyticalFilter : public SaberOuterBlockBase {
   const oops::Variables & innerVars() const override {return innerVars_;}
 
   void multiply(oops::FieldSet3D &) const override;
-  void multiplyAD(oops::FieldSet3D &) const override
-    {throw eckit::Exception("no adjoint for spectral analytical filter", Here());}
+  void multiplyAD(oops::FieldSet3D &) const override;
   void leftInverseMultiply(oops::FieldSet3D &) const override;
 
   // For inverse tests

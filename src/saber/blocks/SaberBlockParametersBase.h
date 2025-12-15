@@ -82,8 +82,11 @@ class SaberBlockParametersBase : public oops::Parameters {
   // Force calling write()
   oops::Parameter<bool> forceWrite{"force write", false, this};
 
-  // Inverse of existing block
-  oops::Parameter<bool> inverseOfExisting{"right-inverse of existing block", false, this};
+  // Right-inverse mode (only for filters, some methods are not available) 
+  oops::Parameter<bool> rightInverse{"right-inverse mode", false, this};
+
+  // Pointing to a following block (no need for a new instance, sharing pointer)
+  oops::Parameter<bool> sameAsFollowing{"pointing to a following block", false, this};
 
   // METHODS
   // Find out whether calibration is needed

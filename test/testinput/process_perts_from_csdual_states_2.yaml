@@ -16,21 +16,23 @@ background:
 
 bands:
 - band:
+    gauss to cubed-sphere-dual block: &GaussToCSDual # To avoid a copy in right-inverse and direct blocks
+      saber block name: gauss to cubed-sphere-dual
+      gauss grid uid: F14
     filter:
     - saber block name: write variances
       binning:
         type: "horizontal global average"
       field names: *vars
-      filter mode: true # instead of running the adjoint code it runs the inverse
       instantaneous statistics:
         multiply fset filename: initial_CS14_variance
         output path: testdata/process_perts_from_csdual_states_2/
-    - saber block name: gauss to cubed-sphere-dual
-      gauss grid uid: F14
-      right-inverse of existing block: true
+    - <<: *GaussToCSDual
+      pointing to a following block: true
+      right-inverse mode: true
     - saber block name: spectral to gauss
-      active variables: *vars
-      right-inverse of existing block: true
+      pointing to a following block: true
+      right-inverse mode: true
     - saber block name: spectral analytical filter
       function:
         shape: waveband filter
@@ -51,20 +53,22 @@ bands:
     - saber block name: write fields
       output path: testdata/process_perts_from_csdual_states_2/
       multiply fset filename: wb1_F14_inc
-    - saber block name: gauss to cubed-sphere-dual
-      gauss grid uid: F14
+    - <<: *GaussToCSDual
   output:
     model write:
       filepath: testdata/process_perts_from_csdual_states_2/wb1_CS-LFR-14_mb%MEM%_inc
       member pattern: '%MEM%'
 - band:
-    filter:
-    - saber block name: gauss to cubed-sphere-dual
+    gauss to cubed-sphere-dual block: &GaussToCSDual # To avoid a copy in right-inverse and direct blocks
+      saber block name: gauss to cubed-sphere-dual
       gauss grid uid: F14
-      right-inverse of existing block: true
+    filter:
+    - <<: *GaussToCSDual
+      pointing to a following block: true
+      right-inverse mode: true
     - saber block name: spectral to gauss
-      active variables: *vars
-      right-inverse of existing block: true
+      pointing to a following block: true
+      right-inverse mode: true
     - saber block name: spectral analytical filter
       function:
         shape: waveband filter
@@ -85,16 +89,18 @@ bands:
     - saber block name: write fields
       output path: testdata/process_perts_from_csdual_states_2/
       multiply fset filename: wb2_F14_inc
-    - saber block name: gauss to cubed-sphere-dual
-      gauss grid uid: F14
+    - <<: *GaussToCSDual
 - band:
-    filter:
-    - saber block name: gauss to cubed-sphere-dual
+    gauss to cubed-sphere-dual block: &GaussToCSDual # To avoid a copy in right-inverse and direct blocks
+      saber block name: gauss to cubed-sphere-dual
       gauss grid uid: F14
-      right-inverse of existing block: true
+    filter:
+    - <<: *GaussToCSDual
+      pointing to a following block: true
+      right-inverse mode: true
     - saber block name: spectral to gauss
-      active variables: *vars
-      right-inverse of existing block: true
+      pointing to a following block: true
+      right-inverse mode: true
     - saber block name: spectral analytical filter
       function:
         shape: waveband filter
@@ -106,8 +112,7 @@ bands:
       active variables: *vars
     - saber block name: spectral to gauss
       active variables: *vars
-    - saber block name: gauss to cubed-sphere-dual
-      gauss grid uid: F14
+    - <<: *GaussToCSDual
     use residual from filter: true
   output:
     diagnostic only block:

@@ -23,7 +23,8 @@ bands:
 - band:
     filter:
     - saber block name: spectral to gauss
-      right-inverse of existing block: true
+      pointing to a following block: true
+      right-inverse mode: true
     - saber block name: spectral analytical filter
       function:
         shape: waveband filter
@@ -36,7 +37,6 @@ bands:
       - air_horizontal_velocity_potential
     - saber block name: spectral to gauss
       active variables: *vars
-      filter mode: true # instead of running the adjoint code it runs the inverse
     - saber block name: write fields
       output path: testdata/process_perts_from_gauss_perts_5/
       multiply fset filename: wb1_F12_inc
@@ -47,7 +47,8 @@ bands:
 - band:
     filter:
     - saber block name: spectral to gauss
-      right-inverse of existing block: true
+      pointing to a following block: true
+      right-inverse mode: true
     - saber block name: spectral analytical filter
       function:
         shape: waveband filter
@@ -60,7 +61,6 @@ bands:
       - air_horizontal_velocity_potential
     - saber block name: spectral to gauss
       active variables: *vars
-      filter mode: true # instead of running the adjoint code it runs the inverse
     - saber block name: write fields
       output path: testdata/process_perts_from_gauss_perts_5/
       multiply fset filename: wb2_F12_inc
@@ -71,7 +71,8 @@ bands:
 - band:
     filter:
     - saber block name: spectral to gauss
-      right-inverse of existing block: true
+      pointing to a following block: true
+      right-inverse mode: true
     - saber block name: spectral analytical filter
       function:
         shape: waveband filter
@@ -85,7 +86,6 @@ bands:
       - air_horizontal_velocity_potential
     - saber block name: spectral to gauss
       active variables: *vars
-      filter mode: true # instead of running the adjoint code it runs the inverse
 #    use residual from filter: true # was not at the correct indentation in develop
   output:
     diagnostic only block:

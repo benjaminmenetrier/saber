@@ -195,6 +195,13 @@ auto createSpectralFilter(const oops::GeometryData & geometryData,
                    spectralFilter.begin(), [](auto & e){return 1.0 - e;});
   }
 
+  // 4) Take square root (optional)
+  // ------------------------------
+  if ( params.squareRootFilter.value() ) {
+    std::transform(spectralFilter.begin(), spectralFilter.end(),
+                   spectralFilter.begin(), [](auto & e){return std::sqrt(e);});
+  }
+
   return spectralFilter;
 }
 
@@ -237,6 +244,17 @@ void SpectralAnalyticalFilter::multiply(oops::FieldSet3D & fieldSet) const {
   }
 
   oops::Log::trace() << classname() << "::multiply done" << std::endl;
+}
+
+// -----------------------------------------------------------------------------
+
+void SpectralAnalyticalFilter::multiplyAD(oops::FieldSet3D & fieldSet) const {
+  oops::Log::trace() << classname() << "::multiplyAD starting" << std::endl;
+
+  // The block is self-adjoint:
+  multiply(fieldSet);
+
+  oops::Log::trace() << classname() << "::multiplyAD done" << std::endl;
 }
 
 // -----------------------------------------------------------------------------

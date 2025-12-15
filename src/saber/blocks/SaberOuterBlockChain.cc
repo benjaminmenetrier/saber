@@ -119,13 +119,19 @@ std::tuple<const SaberBlockParametersBase&, oops::Variables, oops::Variables>
   // Get active variables
   const oops::Variables activeVars = getActiveVars(saberOuterBlockParams, currentOuterVars);
 
-  if (saberOuterBlockParams.inverseOfExisting.value()) {
-    // Creating inverse of outer block
-    oops::Log::info() << "Info     : Creating inverse of outer block: "
-                      << saberOuterBlockParams.saberBlockName.value() << std::endl;
+  // Get mode
+  const bool rightInverse = saberOuterBlockParams.rightInverse.value();
 
-    // Find the existing block, while checking for its unicity
-    std::shared_ptr<SaberOuterBlockBase> existingBlock;
+  if (saberOuterBlockParams.sameAsFollowing.value()) {
+    // Creating inverse of outer block
+    oops::Log::info() << "Info     : Same as a following outer block: "
+                      << saberOuterBlockParams.saberBlockName.value() << std::endl;
+    if (rightInverse) {
+      oops::Log::info() << "Info     : Initialized in right-inverse mode" << std::endl;
+    }
+
+    // Find the target block, while checking for its unicity
+    std::shared_ptr<SaberOuterBlockBase> targetBlock;
     bool found = false;
     for (auto it = outerBlocks_.begin(); it != outerBlocks_.end(); ++it) {
       if (it->first->blockName() == saberOuterBlockParams.saberBlockName.value()) {
@@ -134,19 +140,22 @@ std::tuple<const SaberBlockParametersBase&, oops::Variables, oops::Variables>
         found = true;
 
         // Save block pointer
-        existingBlock = it->first;
+        targetBlock = it->first;
       }
     }
 
-    // Check existing block actual existence
+    // Check target block actual existence
     ASSERT(found);
 
-    // Share pointer
-    outerBlocks_.emplace_back(std::make_pair(existingBlock, true));
+    // Share pointer of target block
+    outerBlocks_.emplace_back(std::make_pair(targetBlock, rightInverse));
   } else {
     // Creating outer block
     oops::Log::info() << "Info     : Creating outer block: "
                     << saberOuterBlockParams.saberBlockName.value() << std::endl;
+    if (rightInverse) {
+      oops::Log::info() << "Info     : Initialized in right-inverse mode" << std::endl;
+    }
 
     // Get required variables in xb, fg if needed
     const oops::Variables mandatoryStateVars = saberOuterBlockParams.mandatoryStateVars();
@@ -186,12 +195,13 @@ std::tuple<const SaberBlockParametersBase&, oops::Variables, oops::Variables>
 
     // Create outer block
     outerBlocks_.emplace_back(std::make_pair(SaberOuterBlockFactory::create(
-                                                 outerGeometryData,
-                                                 currentOuterVars,
-                                                 outerBlockConf,
-                                                 saberOuterBlockParams,
-                                                 fset4dXb[0],
-                                                 fset4dFg[0]), false));
+                                               outerGeometryData,
+                                               currentOuterVars,
+                                               outerBlockConf,
+                                               saberOuterBlockParams,
+                                               fset4dXb[0],
+                                               fset4dFg[0]),
+                                             rightInverse));
   }
 
   return std::tuple<const SaberBlockParametersBase&, oops::Variables, oops::Variables>(
