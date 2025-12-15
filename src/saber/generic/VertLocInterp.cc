@@ -251,9 +251,9 @@ void VertLocInterp::multiply(oops::FieldSet3D & fset) const {
   for (const auto & var : activeVars_) {
     // get levels from outer vars (active vars ambiguous)
     atlas::Field field =
-      outerGeometryData().functionSpace().createField<double>(
+      outerGeometryData_.functionSpace().createField<double>(
           atlas::option::name(var.name()) |
-          atlas::option::levels(outerVars()[var.name()].getLevels()) |
+          atlas::option::levels(outerVars_[var.name()].getLevels()) |
           atlas::option::halo(1));
     atlas::array::make_view<double, 2>(field).assign(0.0);
     field.set_dirty(false);
@@ -291,7 +291,7 @@ void VertLocInterp::multiplyAD(oops::FieldSet3D & fset) const {
   for (const auto & var : activeVars_) {
     // get levels from inner vars (active vars ambiguous)
     atlas::Field field =
-      outerGeometryData().functionSpace().createField<double>
+      outerGeometryData_.functionSpace().createField<double>
         (atlas::option::name(var.name()) |
          atlas::option::levels(innerVars_[var.name()].getLevels()) |
          atlas::option::halo(1));

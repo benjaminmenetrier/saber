@@ -61,7 +61,7 @@ const oops::GeometryData & Biperiodization::innerGeometryData() const {
   if (innerGeometryData_) {
     return *innerGeometryData_;
   } else {
-    return outerGeometryData();
+    return outerGeometryData_;
   }
 }
 
@@ -104,7 +104,7 @@ void Biperiodization::read() {
   oops::Log::trace() << classname() << "::read starting" << std::endl;
 
   // Read input test file
-  inputTestFset_->read(outerGeometryData().functionSpace(),
+  inputTestFset_->read(outerGeometryData_.functionSpace(),
                        innerVars_,
                        params_.read.value()->inputTestFile.value());
 

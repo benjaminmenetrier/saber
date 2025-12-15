@@ -545,7 +545,7 @@ void GaussToCS::directCalibration(const oops::FieldSets & fset) {
 
 oops::FieldSet3D GaussToCS::generateInnerFieldSet(const oops::GeometryData & innerGeometryData,
                                                   const oops::Variables & innerVars) const {
-  oops::FieldSet3D fset(this->validTime(), innerGeometryData.comm());
+  oops::FieldSet3D fset(validTime_, innerGeometryData.comm());
   fset.deepCopy(util::createSmoothFieldSet(innerGeometryData.comm(),
                                            innerGeometryData.functionSpace(),
                                            innerVars));
@@ -556,7 +556,7 @@ oops::FieldSet3D GaussToCS::generateInnerFieldSet(const oops::GeometryData & inn
 
 oops::FieldSet3D GaussToCS::generateOuterFieldSet(const oops::GeometryData & outerGeometryData,
                                                   const oops::Variables & outerVars) const {
-  oops::FieldSet3D fset(this->validTime(), outerGeometryData.comm());
+  oops::FieldSet3D fset(validTime_, outerGeometryData.comm());
   fset.deepCopy(util::createSmoothFieldSet(outerGeometryData.comm(),
                                            outerGeometryData.functionSpace(),
                                            outerVars));

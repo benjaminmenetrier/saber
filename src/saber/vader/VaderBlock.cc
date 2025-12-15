@@ -102,7 +102,7 @@ void VaderBlock::multiply(oops::FieldSet3D & fset) const {
   // copy only outer variables to the output fieldset (vader leaves both
   // output and input variables in the fieldset)
   atlas::FieldSet fset_out;
-  for (const auto & outerVar : outerVars()) {
+  for (const auto & outerVar : outerVars_) {
     fset_out.add(fset[outerVar.name()]);
   }
   fset.fieldSet() = fset_out;
@@ -128,7 +128,7 @@ void VaderBlock::multiplyAD(oops::FieldSet3D & fset) const {
 
 void VaderBlock::print(std::ostream & os) const {
   os << "Vader linear variable change from " << innerVars_
-     << " to " << outerVars();
+     << " to " << outerVars_;
 }
 
 // -----------------------------------------------------------------------------

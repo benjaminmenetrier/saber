@@ -43,9 +43,9 @@ class DiffusionFilter : public saber::SaberOuterBlockBase {
                   const oops::FieldSet3D &);
 
   const oops::GeometryData & innerGeometryData() const override
-    {return outerGeometryData();}
+    {return outerGeometryData_;}
   const oops::Variables & innerVars() const override
-    {return outerVars();}
+    {return outerVars_;}
 
   void multiply(oops::FieldSet3D & fset) const override
     {diffusion::filter(groups_, fset);}
@@ -53,13 +53,13 @@ class DiffusionFilter : public saber::SaberOuterBlockBase {
     {throw eckit::Exception("No adjoint for filter outer blocks", Here());}
 
   void read() override
-    {diffusion::read(outerGeometryData(), groups_, params_);}
+    {diffusion::read(outerGeometryData_, groups_, params_);}
   std::vector<std::pair<std::string, eckit::LocalConfiguration>> getReadConfs() const override
     {return diffusion::getReadConfs(params_);}
   void setReadFields(const std::vector<oops::FieldSet3D> & fvec) override
     {return diffusion::setReadFields(fvec, calibrateReadFields_);}
   void directCalibration(const oops::FieldSets &) override
-    {return diffusion::directCalibration(outerGeometryData(), groups_, calibrateReadFields_,
+    {return diffusion::directCalibration(outerGeometryData_, groups_, calibrateReadFields_,
       params_);}
 
  private:

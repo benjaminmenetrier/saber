@@ -73,7 +73,7 @@ void Interpolation::multiply(oops::FieldSet3D & fieldSet) const {
   if (regionalInterp_) {
     for (const auto & var : activeVars_) {
       const atlas::Field sourceField = sourceFieldSet[var.name()];
-      atlas::Field targetField = outerGeometryData().functionSpace().createField<double>(
+      atlas::Field targetField = outerGeometryData_.functionSpace().createField<double>(
           atlas::option::name(var.name()) | atlas::option::levels(sourceField.levels()));
       targetField.metadata() = sourceField.metadata();
       auto targetView = atlas::array::make_view<double, 2>(targetField);
@@ -151,13 +151,13 @@ void Interpolation::inverseMultiply(oops::FieldSet3D & fieldSet) const {
   // Prepare inverse interpolator
   if (!inverseGlobalInterp_ && globalInterp_) {
     inverseGlobalInterp_.reset(new oops::GlobalInterpolator(
-      params_.inverseInterpConf.value(), outerGeometryData(),
+      params_.inverseInterpConf.value(), outerGeometryData_,
       innerGeomData_->functionSpace(), innerGeomData_->comm()));
   }
   if (!inverseRegionalInterp_ && regionalInterp_) {
     inverseRegionalInterp_.reset(new atlas::Interpolation(
        atlas::util::Config("type", "regional-linear-2d"),
-       outerGeometryData().functionSpace(), innerGeomData_->functionSpace()));
+       outerGeometryData_.functionSpace(), innerGeomData_->functionSpace()));
   }
 
   // Temporary FieldSet of active variables for interpolation source
@@ -174,7 +174,7 @@ void Interpolation::inverseMultiply(oops::FieldSet3D & fieldSet) const {
   if (inverseRegionalInterp_) {
     for (const auto & var : invVars) {
       const atlas::Field sourceField = sourceFieldSet[var.name()];
-      atlas::Field targetField = outerGeometryData().functionSpace().createField<double>(
+      atlas::Field targetField = outerGeometryData_.functionSpace().createField<double>(
           atlas::option::name(var.name()) | atlas::option::levels(sourceField.levels()));
       targetField.metadata() = sourceField.metadata();
       auto targetView = atlas::array::make_view<double, 2>(targetField);
@@ -194,7 +194,7 @@ void Interpolation::inverseMultiply(oops::FieldSet3D & fieldSet) const {
 
 oops::FieldSet3D Interpolation::generateInnerFieldSet(const oops::GeometryData & innerGeometryData,
                                                       const oops::Variables & innerVars) const {
-  oops::FieldSet3D fset(this->validTime(), innerGeometryData.comm());
+  oops::FieldSet3D fset(validTime_, innerGeometryData.comm());
   fset.deepCopy(util::createSmoothFieldSet(innerGeometryData.comm(),
                                            innerGeometryData.functionSpace(),
                                            innerVars));
@@ -205,7 +205,7 @@ oops::FieldSet3D Interpolation::generateInnerFieldSet(const oops::GeometryData &
 
 oops::FieldSet3D Interpolation::generateOuterFieldSet(const oops::GeometryData & outerGeometryData,
                                                       const oops::Variables & outerVars) const {
-  oops::FieldSet3D fset(this->validTime(), outerGeometryData.comm());
+  oops::FieldSet3D fset(validTime_, outerGeometryData.comm());
   fset.deepCopy(util::createSmoothFieldSet(outerGeometryData.comm(),
                                            outerGeometryData.functionSpace(),
                                            outerVars));

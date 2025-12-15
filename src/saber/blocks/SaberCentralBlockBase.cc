@@ -112,12 +112,12 @@ void SaberCentralBlockBase::adjointTest(const oops::GeometryData & geometryData,
   oops::Log::info() << std::setprecision(16) << "Info     : Adjoint test: (Ax)^t y = " << dp1
                     << ": x^t (Ay) = " << dp2 << " : adjoint tolerance = "
                     << adjointTolerance << std::endl;
-  oops::Log::test() << "Adjoint test for block " << this->blockName();
+  oops::Log::test() << "Adjoint test for block " << blockName_;
   if (std::abs(dp1-dp2)/std::abs(0.5*(dp1+dp2)) < adjointTolerance) {
     oops::Log::test() << " passed" << std::endl;
   } else {
     oops::Log::test() << " failed" << std::endl;
-    throw eckit::Exception("Adjoint test failure for block " + this->blockName(), Here());
+    throw eckit::Exception("Adjoint test failure for block " + blockName_, Here());
   }
 
   oops::Log::trace() << "SaberCentralBlockBase::adjointTest done" << std::endl;
@@ -142,7 +142,7 @@ void SaberCentralBlockBase::sqrtTest(const oops::GeometryData & geometryData,
   oops::FieldSet3D fsetSave(fset);
 
   // Create control vector
-  oops::Log::info() << "Control vector size for block " << this->blockName() << ": "
+  oops::Log::info() << "Control vector size for block " << blockName_ << ": "
                       << ctlVecSize() << std::endl;
   atlas::Field ctlVec = atlas::Field("genericCtlVec",
                                      atlas::array::make_datatype<double>(),
@@ -195,12 +195,12 @@ void SaberCentralBlockBase::sqrtTest(const oops::GeometryData & geometryData,
   }
 
   // Print results
-  oops::Log::test() << "Square-root test for block " << this->blockName();
+  oops::Log::test() << "Square-root test for block " << blockName_;
   if (adjComparison && sqrtComparison) {
     oops::Log::test() << " passed" << std::endl;
   } else {
     oops::Log::test() << " failed" << std::endl;
-    throw eckit::Exception("Square-root test failure for block " + this->blockName(), Here());
+    throw eckit::Exception("Square-root test failure for block " + blockName_, Here());
   }
 
   oops::Log::trace() << "SaberOuterBlockBase::sqrtTest done" << std::endl;

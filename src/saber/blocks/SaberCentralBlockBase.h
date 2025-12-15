@@ -45,8 +45,8 @@ class SaberCentralBlockBase : public util::Printable,
  public:
   explicit SaberCentralBlockBase(const SaberBlockParametersBase & params,
                                  const util::DateTime & validTime)
-    : params_(params),
-      validTime_(validTime)
+    : validTime_(validTime),
+      blockName_(params.saberBlockName)
     {}
   virtual ~SaberCentralBlockBase() {}
 
@@ -67,7 +67,7 @@ class SaberCentralBlockBase : public util::Printable,
 
   // Read block data
   virtual void read()
-    {throw eckit::NotImplemented("read not implemented yet for the block " + this->blockName(),
+    {throw eckit::NotImplemented("read not implemented yet for the block " + blockName_,
       Here());}
 
   // Read model files
@@ -79,23 +79,23 @@ class SaberCentralBlockBase : public util::Printable,
   // Direct calibration
   virtual void directCalibration(const oops::FieldSets &)
     {throw eckit::NotImplemented("directCalibration not implemented yet for the block "
-      + this->blockName(), Here());}
+      + blockName_, Here());}
 
   // Iterative calibration
   virtual void iterativeCalibrationInit()
     {throw eckit::NotImplemented("iterativeCalibrationInit not implemented yet for the block "
-      + this->blockName(), Here());}
+      + blockName_, Here());}
   virtual void iterativeCalibrationUpdate(const oops::FieldSet3D &)
     {throw eckit::NotImplemented("iterativeCalibrationUpdate not implemented yet for the block "
-      + this->blockName(), Here());}
+      + blockName_, Here());}
   virtual void iterativeCalibrationFinal()
     {throw eckit::NotImplemented("iterativeCalibrationUpdate not implemented yet for the block "
-      + this->blockName(), Here());}
+      + blockName_, Here());}
 
   // Dual resolution setup
   virtual void dualResolutionSetup(const oops::GeometryData &)
     {throw eckit::NotImplemented("dualResolutionSetup not implemented yet for the block "
-      + this->blockName(), Here());}
+      + blockName_, Here());}
 
   // Write block data
   virtual void write() const {}
@@ -107,21 +107,18 @@ class SaberCentralBlockBase : public util::Printable,
   // Square-root formulation
   virtual size_t ctlVecSize() const
     {throw eckit::NotImplemented("ctlVecSize not implemented yet for the block "
-      + this->blockName(), Here());}
+      + blockName_, Here());}
   virtual void multiplySqrt(const atlas::Field &, oops::FieldSet3D &, const size_t &) const
     {throw eckit::NotImplemented("multiplySqrt not implemented yet for the block "
-      + this->blockName(), Here());}
+      + blockName_, Here());}
   virtual void multiplySqrtAD(const oops::FieldSet3D &, atlas::Field &, const size_t &) const
     {throw eckit::NotImplemented("multiplySqrtAD not implemented yet for the block "
-      + this->blockName(), Here());}
+      + blockName_, Here());}
 
   // Non-virtual methods
 
   // Return block name
-  std::string blockName() const {return params_.saberBlockName.value();}
-
-  // Return date/time
-  const util::DateTime validTime() const {return validTime_;}
+  const std::string blockName() const {return blockName_;}
 
   // Read model fields
   template <typename MODEL>
@@ -143,10 +140,10 @@ class SaberCentralBlockBase : public util::Printable,
                 const double &) const;
 
  protected:
-  const SaberBlockParametersBase & params_;
   const util::DateTime validTime_;
 
  private:
+  const std::string blockName_;
   virtual void print(std::ostream &) const = 0;
 };
 

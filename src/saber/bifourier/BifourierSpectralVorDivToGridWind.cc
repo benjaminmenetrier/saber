@@ -263,7 +263,7 @@ void BifourierSpectralVorDivToGridWind::multiply(oops::FieldSet3D & fset) const 
     forward(fset, innerVars_);
   } else {
     // Backward application
-    backward(fset, outerVars());
+    backward(fset, outerVars_);
   }
 
   oops::Log::trace() << classname() << "::multiply done" << std::endl;
@@ -279,7 +279,7 @@ void BifourierSpectralVorDivToGridWind::multiplyAD(oops::FieldSet3D & fset) cons
     forwardAD(fset, innerVars_);
   } else {
     // Backward application, adjoint
-    backwardAD(fset, outerVars());
+    backwardAD(fset, outerVars_);
   }
 
   oops::Log::trace() << classname() << "::multiplyAD done" << std::endl;
@@ -295,7 +295,7 @@ void BifourierSpectralVorDivToGridWind::leftInverseMultiply(oops::FieldSet3D & f
     backward(fset, innerVars_);
   } else {
     // Forward application
-    forward(fset, outerVars());
+    forward(fset, outerVars_);
   }
 
   oops::Log::trace() << classname() << "::leftInverseMultiply done" << std::endl;

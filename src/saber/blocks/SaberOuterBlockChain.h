@@ -82,7 +82,7 @@ class SaberOuterBlockChain {
       // Right-inverse mode
       return outerBlocks_.back().first->outerVars();
     } else {
-      // Direct mode
+      // Direct modes
       return outerBlocks_.back().first->innerVars();
     }
   }
@@ -130,7 +130,7 @@ class SaberOuterBlockChain {
           it->first.get()->multiply(fset);
         } else {
           // Direct mode
-          it->first.get()->leftInverseMultiply(fset);
+          it->first->leftInverseMultiply(fset);
         }
       }
     }

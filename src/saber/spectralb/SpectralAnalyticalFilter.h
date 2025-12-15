@@ -67,7 +67,8 @@ class SpectralAnalyticalFilter : public SaberOuterBlockBase {
   const oops::Variables & innerVars() const override {return innerVars_;}
 
   void multiply(oops::FieldSet3D &) const override;
-  void multiplyAD(oops::FieldSet3D &) const override;
+  void multiplyAD(oops::FieldSet3D &) const override
+    {throw eckit::Exception("no adjoint for spectral analytical filter", Here());}
   void leftInverseMultiply(oops::FieldSet3D &) const override;
 
   // For inverse tests

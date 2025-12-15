@@ -50,7 +50,7 @@ class SqrtOfSpectralCovariance : public SaberOuterBlockBase {
   virtual ~SqrtOfSpectralCovariance() = default;
 
   const oops::GeometryData & innerGeometryData() const override {return innerGeometryData_;}
-  const oops::Variables & innerVars() const override {return outerVars();}
+  const oops::Variables & innerVars() const override {return outerVars_;}
 
   void multiply(oops::FieldSet3D &) const override;
   void multiplyAD(oops::FieldSet3D &) const override;

@@ -49,10 +49,11 @@ class SaberOuterBlockBase : public util::Printable,
                                const util::DateTime & validTime,
                                const oops::GeometryData & outerGeometryData,
                                const oops::Variables & outerVars)
-    : params_(params),
-      validTime_(validTime),
+    : validTime_(validTime),
       outerGeometryData_(outerGeometryData),
-      outerVars_(outerVars)
+      outerVars_(outerVars),
+      blockName_(params.saberBlockName),
+      skipInverse_(params.skipInverse)
     {}
   virtual ~SaberOuterBlockBase() {}
 
@@ -75,19 +76,19 @@ class SaberOuterBlockBase : public util::Printable,
   // Block left inverse multiplication
   virtual void leftInverseMultiply(oops::FieldSet3D &) const
     {throw eckit::NotImplemented("leftInverseMultiply not implemented yet for the block "
-      + params_.saberBlockName.value(), Here());}
+      + blockName_, Here());}
 
   // Block right inverse multiplication
   virtual void rightInverseMultiply(oops::FieldSet3D &) const
     {throw eckit::NotImplemented("rightInverseMultiply not implemented yet for the block "
-      + params_.saberBlockName.value(), Here());}
+      + blockName_, Here());}
 
   // Setup / calibration methods
 
   // Read block data
   virtual void read()
     {throw eckit::NotImplemented("read not implemented yet for the block "
-      + this->blockName(), Here());}
+      + blockName_, Here());}
 
   // Read model fields
   virtual std::vector<std::pair<std::string, eckit::LocalConfiguration>> getReadConfs() const
@@ -97,23 +98,23 @@ class SaberOuterBlockBase : public util::Printable,
   // Direct calibration
   virtual void directCalibration(const oops::FieldSets &)
     {throw eckit::NotImplemented("directCalibration not implemented yet for the block "
-      + this->blockName(), Here());}
+      + blockName_, Here());}
 
   // Iterative calibration
   virtual void iterativeCalibrationInit()
     {throw eckit::NotImplemented("iterativeCalibrationInit not implemented yet for the block "
-      + this->blockName(), Here());}
+      + blockName_, Here());}
   virtual void iterativeCalibrationUpdate(const oops::FieldSet3D &)
     {throw eckit::NotImplemented("iterativeCalibrationUpdate not implemented yet for the block "
-      + this->blockName(), Here());}
+      + blockName_, Here());}
   virtual void iterativeCalibrationFinal()
     {throw eckit::NotImplemented("iterativeCalibrationUpdate not implemented yet for the block "
-      + this->blockName(), Here());}
+      + blockName_, Here());}
 
   // Dual resolution setup
   virtual void dualResolutionSetup(const oops::GeometryData &)
     {throw eckit::NotImplemented("dualResolutionSetup not implemented yet for the block "
-      + this->blockName(), Here());}
+      + blockName_, Here());}
 
   // Write block data
   virtual void write() const {}
@@ -147,19 +148,16 @@ class SaberOuterBlockBase : public util::Printable,
   // Non-virtual methods
 
   // Return block name
-  const std::string blockName() const {return params_.saberBlockName.value();}
+  const std::string blockName() const {return blockName_;}
 
   // Return flag to skip inverse application
-  bool skipInverse() const {return params_.skipInverse.value();}
+  bool skipInverse() const {return skipInverse_;}
 
   // Return outer geometry data
   const oops::GeometryData & outerGeometryData() const {return outerGeometryData_;}
 
   // Return outer variables
   const oops::Variables & outerVars() const {return outerVars_;}
-
-  // Return date/time
-  const util::DateTime validTime() const {return validTime_;}
 
   // Read model fields
   template <typename MODEL>
@@ -189,14 +187,14 @@ class SaberOuterBlockBase : public util::Printable,
                    const oops::Variables &,
                    const double &,
                    const double &) const;
-
  protected:
-  const SaberBlockParametersBase & params_;
   const util::DateTime validTime_;
   const oops::GeometryData & outerGeometryData_;
   const oops::Variables & outerVars_;
 
  private:
+  const std::string blockName_;
+  const bool skipInverse_;
   virtual void print(std::ostream &) const = 0;
 };
 

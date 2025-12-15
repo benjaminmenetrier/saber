@@ -78,6 +78,7 @@ class Interpolation : public SaberOuterBlockBase {
 
  private:
   void print(std::ostream &) const override;
+  void inverseMultiply(oops::FieldSet3D & fset) const;
 
   const Parameters_ params_;
   const oops::Variables innerVars_;

@@ -95,7 +95,7 @@ void PsiChiToUV::multiply(oops::FieldSet3D & fset) const {
 void PsiChiToUV::multiplyAD(oops::FieldSet3D & fset) const {
   oops::Log::trace() << classname() << "::multiplyAD starting" << std::endl;
   bump_->multiplyPsiChiToUVAd(fset);
-  fset.removeFields(outerVars());
+  fset.removeFields(outerVars_);
   oops::Log::trace() << classname() << "::multiplyAD done" << std::endl;
 }
 
