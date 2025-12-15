@@ -253,7 +253,6 @@ if (allocated(geom%c0u_to_c0a)) deallocate(geom%c0u_to_c0a)
 call geom%com_AU%dealloc
 if (allocated(geom%c0a_to_c0)) deallocate(geom%c0a_to_c0)
 if (allocated(geom%c0u_to_c0)) deallocate(geom%c0u_to_c0)
-if (allocated(geom%nc0_gmask)) deallocate(geom%nc0_gmask)
 if (allocated(geom%l0i_to_l0)) deallocate(geom%l0i_to_l0)
 if (allocated(geom%area_ver_c0)) deallocate(geom%area_ver_c0)
 if (allocated(geom%vert_coordavg)) deallocate(geom%vert_coordavg)
@@ -297,6 +296,7 @@ if (allocated(geom%lon_c0a)) deallocate(geom%lon_c0a)
 if (allocated(geom%lat_c0a)) deallocate(geom%lat_c0a)
 if (allocated(geom%vert_coord_c0a)) deallocate(geom%vert_coord_c0a)
 if (allocated(geom%gmask_c0a)) deallocate(geom%gmask_c0a)
+if (allocated(geom%nc0_gmask)) deallocate(geom%nc0_gmask)
 call geom%hull_c0u%dealloc
 call geom%hull_c0%dealloc
 if (allocated(geom%l0_to_l0i)) deallocate(geom%l0_to_l0i)

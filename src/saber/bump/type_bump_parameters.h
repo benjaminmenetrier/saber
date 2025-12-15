@@ -485,10 +485,6 @@ struct VarianceDef {
   // Number of passes for the variance filtering (0 for uniform variance)
   std::pair<const char *, int> var_npass =
     std::make_pair("filtering passes", -1);
-
-  // Resolution for the NICAS smoother
-  std::pair<const char *, double> smoother_resol =
-    std::make_pair("smoother resolution", 5.0);
 };
 
 // Optimality test section
@@ -534,6 +530,14 @@ struct NICASDef {
   // Resolution
   std::pair<const char *, double> resol =
     std::make_pair("resolution", 0.0);
+
+  // Filter mode
+  std::pair<const char *, bool> filter_mode =
+    std::make_pair("filter mode", false);
+
+  // Resolution for the NICAS filter
+  std::pair<const char *, double> filter_resol =
+    std::make_pair("filter resolution", 5.0);
 
   // NICAS draw type ('regular' or 'random')
   std::pair<const char *, std::string> nicas_draw_type =
