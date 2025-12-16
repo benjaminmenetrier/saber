@@ -27,7 +27,7 @@
 #include "saber/blocks/SaberBlockChainBase.h"
 #include "saber/blocks/SaberBlockParametersBase.h"
 #include "saber/blocks/SaberOuterBlockChain.h"
-#include "saber/generic/LocalizationWrapper.h"
+#include "saber/blocks/SaberParametricBlockChain.h"
 #include "saber/oops/Utilities.h"
 
 namespace saber {
@@ -70,8 +70,8 @@ class SaberEnsembleBlockChain : public SaberBlockChainBase {
   const oops::Variables outerVariables_;
   /// @brief Outer blocks (optional).
   std::unique_ptr<SaberOuterBlockChain> outerBlockChain_;
-  /// @brief 3D localization wrapper (optional).
-  std::unique_ptr<generic::LocalizationWrapper> locWrapper_;
+  /// @brief Localization block chain (optional).
+  std::unique_ptr<SaberParametricBlockChain> locBlockChain_;
   /// @brief Ensemble used in the ensemble covariance.
   oops::FieldSets ensemble_;
   /// @brief Control vector size.
@@ -253,33 +253,55 @@ SaberEnsembleBlockChain::SaberEnsembleBlockChain(const oops::Geometry<MODEL> & g
     currentOuterVars = outerBlockChain_->innerVars();
   }
 
+  const oops::GeometryData & localizationOuterGeomData = outerBlockChain_ ?
+              outerBlockChain_->innerGeometryData() : geom.generic();
+
   // Localization
   const auto & locConf = saberCentralBlockParams.localization.value();
   if (locConf != boost::none) {
-    // Get localization outer geometry data
-    const oops::GeometryData & localizationOuterGeomData = outerBlockChain_ ?
-                outerBlockChain_->innerGeometryData() : geom.generic();
+    // The localization is a parametric block chain constructed with the same geometry
+    // as the ensemble block chain by default. If the outer blocks or transform block
+    // chain include a change of geometries, we need to use build the localization from
+    // the current geometryData, using a generic constructor of the parametric block chain.
 
-    // Initialize localization wrapper
-    locWrapper_.reset(new generic::LocalizationWrapper(geom,
-                                                       dualResGeom,
-                                                       localizationOuterGeomData,
-                                                       currentOuterVars,
-                                                       fset4dXb,
-                                                       fset4dFg,
-                                                       ensemble_,
-                                                       fsetDualResEns,
-                                                       covarConfUpdated,
-                                                       *locConf));
+    // Check consistency of `geom` and the current geometry
+    const auto & currentFspace = localizationOuterGeomData.functionSpace();
+    if (util::getGridUid(geom.functionSpace()) != util::getGridUid(currentFspace)) {
+      oops::Log::info() << "Info     : Localization and ensemble are on different "
+                           "functionSpaces, building localization with generic "
+                           "constructor" << std::endl;
+      // Note QUENCH could just build another geometry here and use the standard
+      // constructor, but other models usually don't have this ability to create a
+      // Geometry on any mesh.
+      locBlockChain_ = std::make_unique<SaberParametricBlockChain>(localizationOuterGeomData,
+                                                                   geom.levelsAreTopDown(),
+                                                                   currentOuterVars,
+                                                                   fset4dXb,
+                                                                   fset4dFg,
+                                                                   covarConfUpdated,
+                                                                   *locConf);
+    } else {
+      oops::Log::info() << "Info     : Localization and ensemble are on same "
+                           "functionSpaces, building localization with standard "
+                           "constructor" << std::endl;
+      locBlockChain_ = std::make_unique<SaberParametricBlockChain>(geom,
+                                                                   dualResGeom,
+                                                                   currentOuterVars,
+                                                                   fset4dXb,
+                                                                   fset4dFg,
+                                                                   ensemble_,
+                                                                   fsetDualResEns,
+                                                                   covarConfUpdated,
+                                                                   *locConf);
+    }
   }
-
   // Direct calibration
   oops::Log::info() << "Info     : Direct calibration" << std::endl;
 
   // Get control vector size
-  if (locWrapper_) {
+  if (locBlockChain_) {
     // With localization
-    ctlVecSize_ = ensemble_.ens_size()*locWrapper_->ctlVecSize();
+    ctlVecSize_ = ensemble_.ens_size()*locBlockChain_->ctlVecSize();
   } else {
     // Without localization
     ctlVecSize_ = ensemble_.ens_size();
@@ -355,7 +377,7 @@ SaberEnsembleBlockChain::SaberEnsembleBlockChain(const oops::Geometry<MODEL> & g
     for (size_t jnode = 0; jnode < this->ctlVecSize(); ++jnode) {
       randVec.push_back(dist[jnode]);
     }
-    if (!locWrapper_) {
+    if (!locBlockChain_) {
       currentOuterGeom.comm().broadcast(randVec, 0);
     }
     auto view = atlas::array::make_view<double, 1>(ctlVec);
@@ -382,7 +404,7 @@ SaberEnsembleBlockChain::SaberEnsembleBlockChain(const oops::Geometry<MODEL> & g
     for (size_t jnode = 0; jnode < this->ctlVecSize(); ++jnode) {
       dp2 += view(jnode)*viewSave(jnode);
     }
-    if (locWrapper_) {
+    if (locBlockChain_) {
       currentOuterGeom.comm().allReduceInPlace(dp2, eckit::mpi::sum());
       fset4d.commTime().allReduceInPlace(dp2, eckit::mpi::sum());
     }

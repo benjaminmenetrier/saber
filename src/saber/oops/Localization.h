@@ -25,7 +25,6 @@
 #include "oops/util/Timer.h"
 
 #include "saber/blocks/SaberParametricBlockChain.h"
-#include "saber/generic/LocalizationWrapper.h"
 #include "saber/oops/Utilities.h"
 
 namespace saber {
@@ -50,9 +49,7 @@ class Localization : public oops::LocalizationBase<MODEL> {
 
  private:
   void print(std::ostream &) const override;
-
-  // Localization wrapper
-  std::unique_ptr<generic::LocalizationWrapper> locWrapper_;
+  std::unique_ptr<SaberParametricBlockChain> loc_;
 };
 
 // -----------------------------------------------------------------------------
@@ -61,6 +58,7 @@ template<typename MODEL>
 Localization<MODEL>::Localization(const Geometry_ & geom,
                                   const oops::Variables & incVarsNoMeta,
                                   const eckit::Configuration & conf)
+  : loc_()
 {
   oops::Log::trace() << "Localization::Localization starting" << std::endl;
   util::Timer timer(classname(), "Localization");
@@ -106,9 +104,10 @@ Localization<MODEL>::Localization(const Geometry_ & geom,
   // so this parameter can be anything.
   covarConf.set("time covariance", "univariate");
 
-  // Initialize localization wrapper
-  locWrapper_.reset(new generic::LocalizationWrapper(geom, geom, geom.generic(), incVars,
-    xb4d, fg4d, emptyFsetEns, emptyFsetEns, covarConf, conf));
+  // Initialize localization blockchain
+  loc_ = std::make_unique<SaberParametricBlockChain>(geom, geom,
+              incVars, xb4d, fg4d,
+              emptyFsetEns, emptyFsetEns, covarConf, conf);
 
   oops::Log::trace() << "Localization:Localization done" << std::endl;
 }
@@ -133,7 +132,7 @@ void Localization<MODEL>::randomize(Increment_ & dx) const {
   oops::FieldSet4D fset4d(fset3d);
 
   // SABER block chain randomization
-  locWrapper_->randomize(fset4d);
+  loc_->randomize(fset4d);
 
   // ATLAS fieldset to Increment_
   dx.fromFieldSet(fset4d[0].fieldSet());
@@ -153,7 +152,7 @@ void Localization<MODEL>::multiply(Increment_ & dx) const {
   fset4d[0].shallowCopy(dx.fieldSet());
 
   // SABER block chain multiplication
-  locWrapper_->multiply(fset4d);
+  loc_->multiply(fset4d);
 
   // ATLAS fieldset to Increment_
   dx.fromFieldSet(fset4d[0].fieldSet());

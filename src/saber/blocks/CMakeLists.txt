@@ -31,6 +31,10 @@ SaberOuterBlockChain.h
 SaberParametricBlockChain.cc
 SaberParametricBlockChain.h
 
+# SABER parametric block chain group
+SaberParametricBlockChainGroup.cc
+SaberParametricBlockChainGroup.h
+
 # Factories
 instantiateBlockChainFactory.h
 )

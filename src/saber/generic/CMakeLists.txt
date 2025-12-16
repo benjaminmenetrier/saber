@@ -20,10 +20,6 @@ Hybrid.cc
 ID.h
 ID.cc
 
-# Localization wrapper
-LocalizationWrapper.cc
-LocalizationWrapper.h
-
 # Orographic interpolation block
 OrographicInterp.h
 OrographicInterp.cc
