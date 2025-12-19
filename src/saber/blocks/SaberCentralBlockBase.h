@@ -92,11 +92,6 @@ class SaberCentralBlockBase : public util::Printable,
     {throw eckit::NotImplemented("iterativeCalibrationUpdate not implemented yet for the block "
       + blockName_, Here());}
 
-  // Dual resolution setup
-  virtual void dualResolutionSetup(const oops::GeometryData &)
-    {throw eckit::NotImplemented("dualResolutionSetup not implemented yet for the block "
-      + blockName_, Here());}
-
   // Write block data
   virtual void write() const {}
 

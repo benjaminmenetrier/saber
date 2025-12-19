@@ -88,7 +88,7 @@ class SaberOuterBlockBase : public util::Printable,
   // Read block data
   virtual void read()
     {throw eckit::NotImplemented("read not implemented yet for the block "
-      + blockName_, Here());}
+      + this->blockName(), Here());}
 
   // Read model fields
   virtual std::vector<std::pair<std::string, eckit::LocalConfiguration>> getReadConfs() const
@@ -109,11 +109,6 @@ class SaberOuterBlockBase : public util::Printable,
       + blockName_, Here());}
   virtual void iterativeCalibrationFinal()
     {throw eckit::NotImplemented("iterativeCalibrationUpdate not implemented yet for the block "
-      + blockName_, Here());}
-
-  // Dual resolution setup
-  virtual void dualResolutionSetup(const oops::GeometryData &)
-    {throw eckit::NotImplemented("dualResolutionSetup not implemented yet for the block "
       + blockName_, Here());}
 
   // Write block data
@@ -187,6 +182,7 @@ class SaberOuterBlockBase : public util::Printable,
                    const oops::Variables &,
                    const double &,
                    const double &) const;
+
  protected:
   const util::DateTime validTime_;
   const oops::GeometryData & outerGeometryData_;

@@ -295,14 +295,24 @@ template <typename MODEL> class ProcessPerts : public oops::Application {
     std::vector<std::unique_ptr<SaberOuterBlockChain>> saberFilterBlocks;
     for (const auto & [key, value] : filterCovBlockConfs) {
       saberFilterBlocks.push_back(
-        std::make_unique<SaberOuterBlockChain>(geom, incVars, fsetXb, fsetFg, fsetEns,
-                                               covarConf, value));
+        std::make_unique<SaberOuterBlockChain>(geom,
+                                               incVars,
+                                               fsetXb,
+                                               fsetFg,
+                                               fsetEns,
+                                               covarConf,
+                                               value));
     }
     std::vector<std::unique_ptr<SaberOuterBlockChain>> saberDiagnosticBlocks;
     for (const auto & [key, value] : diagBlockConfs) {
       saberDiagnosticBlocks.push_back(
-        std::make_unique<SaberOuterBlockChain>(geom, incVars, fsetXb, fsetFg, fsetEns,
-                                               covarConf, value));
+        std::make_unique<SaberOuterBlockChain>(geom,
+                                               incVars,
+                                               fsetXb,
+                                               fsetFg,
+                                               fsetEns,
+                                               covarConf,
+                                               value));
     }
 
     //  Loop over perturbations
