@@ -53,7 +53,7 @@ class SaberOuterBlockBase : public util::Printable,
 
   // Accessor
 
-  // To inner Geometry data
+  // To inner geometry data
   virtual const oops::GeometryData & innerGeometryData() const = 0;
 
   // To inner variables
@@ -70,6 +70,11 @@ class SaberOuterBlockBase : public util::Printable,
   // Block left inverse multiplication
   virtual void leftInverseMultiply(oops::FieldSet3D &) const
     {throw eckit::NotImplemented("leftInverseMultiply not implemented yet for the block "
+      + blockName_, Here());}
+
+  // Block right inverse multiplication
+  virtual void rightInverseMultiply(oops::FieldSet3D &) const
+    {throw eckit::NotImplemented("rightInverseMultiply not implemented yet for the block "
       + blockName_, Here());}
 
   // Setup / calibration methods
@@ -98,11 +103,6 @@ class SaberOuterBlockBase : public util::Printable,
       + this->blockName(), Here());}
   virtual void iterativeCalibrationFinal()
     {throw eckit::NotImplemented("iterativeCalibrationUpdate not implemented yet for the block "
-      + this->blockName(), Here());}
-
-  // Dual resolution setup
-  virtual void dualResolutionSetup(const oops::GeometryData &)
-    {throw eckit::NotImplemented("dualResolutionSetup not implemented yet for the block "
       + this->blockName(), Here());}
 
   // Write block data
@@ -151,11 +151,13 @@ class SaberOuterBlockBase : public util::Printable,
   // Read model fields
   template <typename MODEL>
   void read(const oops::Geometry<MODEL> &,
+            const bool &,
             const oops::Variables &);
 
   // Write model fields
   template <typename MODEL>
   void write(const oops::Geometry<MODEL> &,
+             const bool &,
              const oops::Variables &) const;
 
   // Adjoint test
@@ -265,8 +267,12 @@ class SaberOuterBlockMaker : public SaberOuterBlockFactory {
 
 template <typename MODEL>
 void SaberOuterBlockBase::read(const oops::Geometry<MODEL> & geom,
+                               const bool & validModelGeom,
                                const oops::Variables & vars) {
   oops::Log::trace() << "SaberOuterBlockBase::read starting" << std::endl;
+
+  // Cannot read files without a valid MODEL geometry
+  ASSERT(validModelGeom || (this->getReadConfs().size() == 0));
 
   // Read fieldsets as increments
   std::vector<oops::FieldSet3D> fsetVec;
@@ -298,8 +304,12 @@ void SaberOuterBlockBase::read(const oops::Geometry<MODEL> & geom,
 
 template <typename MODEL>
 void SaberOuterBlockBase::write(const oops::Geometry<MODEL> & geom,
+                                const bool & validModelGeom,
                                 const oops::Variables & vars) const {
   oops::Log::trace() << "SaberOuterBlockBase::write starting" << std::endl;
+
+  // Cannot write files without a valid MODEL geometry
+  ASSERT(validModelGeom || (this->fieldsToWrite().size() == 0));
 
   // Get vector of configuration/FieldSet pairs
   std::vector<std::pair<eckit::LocalConfiguration, oops::FieldSet3D>> outputs

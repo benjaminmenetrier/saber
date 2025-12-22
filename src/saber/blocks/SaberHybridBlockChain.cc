@@ -31,10 +31,10 @@ void SaberHybridBlockChain::randomize(oops::FieldSet4D & fset4d) const {
     ASSERT(hybridBlockChain_.size() == 1);
 
     // global communicator and functionSpace
-    const auto & globalSpaceComm = fset4d[0].commGeom();
+    const auto & defaultSpaceComm = fset4d[0].commGeom();
 
     // check global communicator is the default one for atlas MPI
-    ASSERT(eckit::mpi::comm().name() == globalSpaceComm.name());
+    ASSERT(eckit::mpi::comm().name() == defaultSpaceComm.name());
 
     // subcommunicator within this component
     const auto spaceCommName = "comm_space_" + std::to_string(myComponent_);
@@ -59,20 +59,20 @@ void SaberHybridBlockChain::randomize(oops::FieldSet4D & fset4d) const {
     }
 
     // Add components
-    globalSpaceComm.barrier();
+    defaultSpaceComm.barrier();
 
     for (size_t jtime = 0; jtime < fset4dCmp.size(); jtime++) {
       // Redistribute to global communicator and sum
        util::gatherAndSumFromSubcommunicator(fset4dCmp[jtime].fieldSet(),
                                              fset4d[jtime].fieldSet(),
                                              localSpaceComm,
-                                             globalSpaceComm,
+                                             defaultSpaceComm,
                                              *localHybridFs_,
                                              *globalHybridFs_);
     }
 
     // Restore atlas MPI to previous
-    eckit::mpi::setCommDefault(globalSpaceComm.name().c_str());
+    eckit::mpi::setCommDefault(defaultSpaceComm.name().c_str());
 
     fset4d += fset4dCmp;
   } else {
@@ -124,8 +124,8 @@ void SaberHybridBlockChain::multiply(oops::FieldSet4D & fset4d) const {
     ASSERT(hybridFieldWeightSqrt_.size() == 1);
 
     // Global communicator
-    const auto & globalSpaceComm = fset4d[0].commGeom();
-    ASSERT(globalSpaceComm.name() == eckit::mpi::comm().name());
+    const auto & defaultSpaceComm = fset4d[0].commGeom();
+    ASSERT(defaultSpaceComm.name() == eckit::mpi::comm().name());
 
     // Subcommunicator within component
     const std::string spaceCommName = "comm_space_" + std::to_string(myComponent_);
@@ -136,7 +136,7 @@ void SaberHybridBlockChain::multiply(oops::FieldSet4D & fset4d) const {
     for (size_t jtime = 0; jtime < fset4dCmp.size(); jtime++) {
       util::redistributeToSubcommunicator(fset4d[jtime].fieldSet(),
                                           fset4dCmp[jtime].fieldSet(),
-                                          globalSpaceComm,
+                                          defaultSpaceComm,
                                           localSpaceComm,
                                           *globalHybridFs_,
                                           *localHybridFs_);
@@ -169,20 +169,20 @@ void SaberHybridBlockChain::multiply(oops::FieldSet4D & fset4d) const {
     }
 
     // Wait for all components to have finished multiplying
-    globalSpaceComm.barrier();
+    defaultSpaceComm.barrier();
 
     // Gather and sum data across components
     for (size_t jtime = 0; jtime < fset4dCmp.size(); jtime++) {
       util::gatherAndSumFromSubcommunicator(fset4dCmp[jtime].fieldSet(),
                                             fset4dSum[jtime].fieldSet(),
                                             localSpaceComm,
-                                            globalSpaceComm,
+                                            defaultSpaceComm,
                                             *localHybridFs_,
                                             *globalHybridFs_);
     }
 
     // Set back default MPI communicator
-    eckit::mpi::setCommDefault(globalSpaceComm.name().c_str());
+    eckit::mpi::setCommDefault(defaultSpaceComm.name().c_str());
 
   } else {
     if (hybridBlockChain_.size() > 1) {

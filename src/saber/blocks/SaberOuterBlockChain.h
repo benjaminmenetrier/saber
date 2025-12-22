@@ -118,6 +118,19 @@ class SaberOuterBlockChain {
     }
   }
 
+  /// @brief Right inverse multiply (used in ensemble transform) by all outer blocks
+  ///        except the ones that haven't implemented inverse yet.
+  void rightInverseMultiply(oops::FieldSet3D & fset) const {
+    for (auto it = outerBlocks_.begin(); it != outerBlocks_.end(); ++it) {
+      if (it->get()->skipInverse()) {
+        oops::Log::info() << "Warning: right inverse multiplication skipped for block "
+                          << it->get()->blockName() << std::endl;
+      } else {
+        it->get()->rightInverseMultiply(fset);
+      }
+    }
+  }
+
  private:
   /// @brief Initialize outer block, and return tuple of current outer variables,
   ///        saber block parameters and active variables
@@ -136,7 +149,9 @@ class SaberOuterBlockChain {
   void calibrateBlock(const eckit::LocalConfiguration & covarConf,
                       const oops::FieldSet4D & fset4dXb,
                       const oops::Geometry<MODEL> & geom,
+                      const bool & validModelGeom,
                       const oops::Variables & outerVars,
+                      const oops::Variables & currentOuterVars,
                       oops::FieldSets & fsetEns);
 
   /// @brief Left inverse multiply (used in calibration) by all outer blocks
@@ -208,6 +223,9 @@ SaberOuterBlockChain::SaberOuterBlockChain(const oops::Geometry<MODEL> & geom,
   // Copy vector of parameters
   std::vector<SaberOuterBlockParametersWrapper> innerParams = params;
 
+  // Flag to check if the MODEL geometry is still valid
+  bool validModelGeom = true;
+
   // Loop in reverse order
   for (int jb = params.size()-1; jb >= 0; --jb) {
     // Initialize current outer geometry data
@@ -225,8 +243,13 @@ SaberOuterBlockChain::SaberOuterBlockChain(const oops::Geometry<MODEL> & geom,
                           fset4dXb,
                           fset4dFg);
 
+    // Update MODEL geometry validity, by checking whether the inner geometry data returned by
+    // the last outer block shares the same reference as its own outer geometry data
+    validModelGeom = validModelGeom &&
+      (&(outerBlocks_.back()->innerGeometryData()) == &currentOuterGeometryData);
+
     // Read and add model fields
-    outerBlocks_.back()->read(geom, currentOuterVars);
+    outerBlocks_.back()->read(geom, validModelGeom, currentOuterVars);
 
     // Remove element from inner parameters
     innerParams.pop_back();
@@ -236,6 +259,8 @@ SaberOuterBlockChain::SaberOuterBlockChain(const oops::Geometry<MODEL> & geom,
       calibrateBlock(covarConf,
                      fset4dXb,
                      geom,
+                     validModelGeom,
+                     outerVars,
                      currentOuterVars,
                      fsetEns);
     } else if (saberOuterBlockParams.doRead()) {
@@ -247,7 +272,7 @@ SaberOuterBlockChain::SaberOuterBlockChain(const oops::Geometry<MODEL> & geom,
     if (saberOuterBlockParams.forceWrite.value()) {
       // Write data
       oops::Log::info() << "Info     : Write data" << std::endl;
-      outerBlocks_.back()->write(geom, outerVars);
+      outerBlocks_.back()->write(geom, validModelGeom, currentOuterVars);
       outerBlocks_.back()->write();
     }
 
@@ -308,7 +333,9 @@ void SaberOuterBlockChain::calibrateBlock(
             const eckit::LocalConfiguration & covarConf,
             const oops::FieldSet4D & fset4dXb,
             const oops::Geometry<MODEL> & geom,
+            const bool & validModelGeom,
             const oops::Variables & outerVars,
+            const oops::Variables & currentOuterVars,
             oops::FieldSets & fsetEns) {
   oops::Log::trace() << "calibrateBlock starting" << std::endl;
 
@@ -334,6 +361,7 @@ void SaberOuterBlockChain::calibrateBlock(
                          ensembleConf,
                          ie,
                          fset);
+
       // Apply outer blocks inverse (except last)
       this->leftInverseMultiplyExceptLast(fset);
 
@@ -353,7 +381,7 @@ void SaberOuterBlockChain::calibrateBlock(
 
   // Write calibration data
   oops::Log::info() << "Info     : Write calibration data" << std::endl;
-  outerBlocks_.back()->write(geom, outerVars);
+  outerBlocks_.back()->write(geom, validModelGeom, currentOuterVars);
   outerBlocks_.back()->write();
 
   oops::Log::trace() << "calibrateBlock done" << std::endl;

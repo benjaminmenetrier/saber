@@ -57,12 +57,10 @@ class SaberHybridBlockChain : public SaberBlockChainBase {
  public:
   template<typename MODEL>
   SaberHybridBlockChain(const oops::Geometry<MODEL> & geom,
-                        const oops::Geometry<MODEL> & dualResGeom,
                         const oops::Variables & outerVars,
                         oops::FieldSet4D & fset4dXb,
                         oops::FieldSet4D & fset4dFg,
                         oops::FieldSets & fsetEns,
-                        oops::FieldSets & fsetDualResEns,
                         const eckit::LocalConfiguration & covarConf,
                         const eckit::Configuration & conf);
   ~SaberHybridBlockChain() = default;
@@ -111,12 +109,10 @@ class SaberHybridBlockChain : public SaberBlockChainBase {
 
 template<typename MODEL>
 SaberHybridBlockChain::SaberHybridBlockChain(const oops::Geometry<MODEL> & geom,
-                       const oops::Geometry<MODEL> & dualResGeom,
                        const oops::Variables & outerVars,
                        oops::FieldSet4D & fset4dXb,
                        oops::FieldSet4D & fset4dFg,
                        oops::FieldSets & fsetEns,
-                       oops::FieldSets & fsetDualResEns,
                        const eckit::LocalConfiguration & covarConf,
                        const eckit::Configuration & conf)
   : outerFunctionSpace_(geom.functionSpace()), outerVariables_(outerVars),
@@ -139,28 +135,68 @@ SaberHybridBlockChain::SaberHybridBlockChain(const oops::Geometry<MODEL> & geom,
 
   // Hybrid central block
   parallelHybrid_ = conf.getBool("saber central block.run in parallel", false);
-
+  const eckit::mpi::Comm & defaultSpaceComm = geom.getComm();
+  const size_t ntasks = defaultSpaceComm.size();
   const size_t nComponents = conf.getSubConfigurations("saber central block.components").size();
-  const eckit::mpi::Comm & globalSpaceComm = geom.getComm();
-  const size_t ntasks = globalSpaceComm.size();
 
-  if (parallelHybrid_ && ntasks % nComponents != 0) {
-    oops::Log::warning() << "Warning  : Number of MPI tasks not divisible "
-                         << "by number of Hybrid block components, running serially."
-                         << std::endl;
-    parallelHybrid_ = false;
-  }
+  std::vector<double> parallelCovRelativeCpuWeight =
+      conf.has("parallel covariance relative cpu weight") ?
+      conf.getDoubleVector("parallel covariance relative cpu weight") :
+  std::vector<double>(nComponents,
+                      1.0 / static_cast<double>(nComponents));
 
+  std::vector<size_t> ntasksPerComponent(nComponents, 0);
+  std::vector<size_t> globalTaskOffsetPerComponent(nComponents+1, 0);
   if (parallelHybrid_) {
     oops::Log::info() << "Info     : Creating Hybrid block in parallel" << std::endl;
+    // checks
+    ASSERT(nComponents == parallelCovRelativeCpuWeight.size());
+
+    // need to check to ensure that the total sum of PEs over components is consistent
+    // with the MPI size on the default communicator and that each component
+    // has a minimum MPI size of 1.
+    for (size_t component = 0; component < nComponents; ++component) {
+      ntasksPerComponent[component] =
+        std::round(parallelCovRelativeCpuWeight[component] * ntasks);
+      ASSERT(ntasksPerComponent[component] > 0);
+    }
+    int discrepencyPE =
+      std::accumulate(ntasksPerComponent.begin(), ntasksPerComponent.end(), 0) - ntasks;
+
+    for (size_t component = 0; component < nComponents && discrepencyPE != 0; ++component) {
+      if (discrepencyPE > 0 && ntasksPerComponent[component] >= 2) {
+        ntasksPerComponent[component] -= 1;
+        discrepencyPE -= 1;
+      } else if (discrepencyPE < 0) {
+        ntasksPerComponent[component] += 1;
+        discrepencyPE += 1;
+      }
+    }
+
+    ASSERT(std::accumulate(ntasksPerComponent.begin(),
+                           ntasksPerComponent.end(), 0) - ntasks == 0);
+
+    for (size_t component = 1; component < nComponents; ++component) {
+      globalTaskOffsetPerComponent[component] =
+        globalTaskOffsetPerComponent[component-1] + ntasksPerComponent[component-1];
+    }
+    globalTaskOffsetPerComponent[nComponents] = ntasks;
 
     const eckit::mpi::Comm & initialDefaultComm = eckit::mpi::comm();
-    ASSERT(initialDefaultComm.name() == globalSpaceComm.name());
+    ASSERT(initialDefaultComm.name() == defaultSpaceComm.name());
 
     // We split the space communicators only, the time parallelization is untouched
-    const size_t myTask = globalSpaceComm.rank();
-    const size_t tasksPerComponent = ntasks / nComponents;
-    myComponent_ = myTask / tasksPerComponent;
+    const size_t myTask = defaultSpaceComm.rank();
+
+    // Set myComponent_  tasksPerComponent
+    size_t tasksPerComponent;
+    for (size_t component = 0; component < nComponents; ++component) {
+      if ((myTask >= globalTaskOffsetPerComponent[component]) &&
+          (myTask < globalTaskOffsetPerComponent[component+1])) {
+        myComponent_ = component;
+        tasksPerComponent = ntasksPerComponent[component];
+      }
+    }
 
     oops::Log::info() << "Info     : Creating component " << myComponent_ + 1
                       << "/" << nComponents
@@ -172,7 +208,7 @@ SaberHybridBlockChain::SaberHybridBlockChain(const oops::Geometry<MODEL> & geom,
     if (eckit::mpi::hasComm(spaceCommName.c_str())) {
       eckit::mpi::deleteComm(spaceCommName.c_str());
     }
-    const auto & localSpaceComm = globalSpaceComm.split(myComponent_, spaceCommName.c_str());
+    const auto & localSpaceComm = defaultSpaceComm.split(myComponent_, spaceCommName.c_str());
 
     // Set up default MPI communicator for atlas
     eckit::mpi::setCommDefault(localSpaceComm.name().c_str());
@@ -197,20 +233,20 @@ SaberHybridBlockChain::SaberHybridBlockChain(const oops::Geometry<MODEL> & geom,
     for (size_t jtime = 0; jtime < fset4dXb.size(); jtime++) {
       util::redistributeToSubcommunicator(fset4dXb[jtime].fieldSet(),
                                           localFset4dXb[jtime].fieldSet(),
-                                          globalSpaceComm,
+                                          defaultSpaceComm,
                                           localSpaceComm,
                                           geom.functionSpace(),
                                           *localHybridFs_);
       util::redistributeToSubcommunicator(fset4dFg[jtime].fieldSet(),
                                           localFset4dFg[jtime].fieldSet(),
-                                          globalSpaceComm,
+                                          defaultSpaceComm,
                                           localSpaceComm,
                                           geom.functionSpace(),
                                           *localHybridFs_);
     }
-    globalSpaceComm.barrier();
+    defaultSpaceComm.barrier();
 
-    const auto cmp = conf.getSubConfigurations("components")[myComponent_];
+    const auto cmp = conf.getSubConfigurations("saber central block.components")[myComponent_];
 
     // Initialize component outer variables
     const oops::Variables cmpOuterVars(currentOuterVars);
@@ -260,19 +296,17 @@ SaberHybridBlockChain::SaberHybridBlockChain(const oops::Geometry<MODEL> & geom,
         SaberBlockChainFactory<MODEL>::create
          (parametricIfNotEnsemble(centralBlockParams.saberBlockName.value()),
           localHybridGeom,
-          dualResGeom,
           cmpOuterVars,
           localFset4dXb,
           localFset4dFg,
           localFset4dCmpEns,
-          fsetDualResEns,
           cmpCovarConf,
           cmpConf));
 
     ASSERT(hybridBlockChain_.size() > 0);
 
     // Restore previous default MPI communicator for atlas
-    eckit::mpi::setCommDefault(globalSpaceComm.name().c_str());
+    eckit::mpi::setCommDefault(defaultSpaceComm.name().c_str());
   } else {
     oops::Log::info() << "Info     : Creating Hybrid block serially" << std::endl;
     // Create block geometry (needed for ensemble reading)
@@ -331,12 +365,10 @@ SaberHybridBlockChain::SaberHybridBlockChain(const oops::Geometry<MODEL> & geom,
           (SaberBlockChainFactory<MODEL>::create
            (parametricIfNotEnsemble(centralBlockParams.saberBlockName.value()),
             *hybridGeom,
-            dualResGeom,
             cmpOuterVars,
             fset4dXb,
             fset4dFg,
             fset4dCmpEns,
-            fsetDualResEns,
             cmpCovarConf,
             cmpConf));
     }

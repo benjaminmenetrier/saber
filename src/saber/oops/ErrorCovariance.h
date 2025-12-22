@@ -140,36 +140,6 @@ ErrorCovariance<MODEL>::ErrorCovariance(const Geometry_ & geom,
                                          ensembleConf);
 
   covarConf.set("ensemble configuration", ensembleConf);
-  // Read dual resolution ensemble if needed
-  const auto & dualResParams = params.dualResParams.value();
-  const Geometry_ * dualResGeom = &geom;
-  std::unique_ptr<oops::FieldSets> fsetDualResEns;
-  if (dualResParams != boost::none) {
-    const auto & dualResGeomConf = dualResParams->geometry.value();
-    if (dualResGeomConf != boost::none) {
-      // Create dualRes geometry
-      dualResGeom = new Geometry_(*dualResGeomConf, geom.getComm());
-    }
-    // Background and first guess at dual resolution geometry
-    const State4D_ xbDualRes(*dualResGeom, xb);
-    const State4D_ fgDualRes(*dualResGeom, fg);
-    // Read dual resolution ensemble
-    eckit::LocalConfiguration dualResEnsembleConf;
-    fsetDualResEns = std::make_unique<oops::FieldSets>(readEnsemble(*dualResGeom,
-                     outerVars,
-                     xbDualRes.times(), xbDualRes.commTime(), xbDualRes.commEns(),
-                     dualResParams->toConfiguration(),
-                     iterativeEnsembleLoading,
-                     dualResEnsembleConf));
-    // Add dual resolution ensemble configuration
-    covarConf.set("dual resolution ensemble configuration", dualResEnsembleConf);
-  }
-  if (!fsetDualResEns) {
-    std::vector<util::DateTime> dates;
-    std::vector<int> ensmems;
-    fsetDualResEns = std::make_unique<oops::FieldSets>(dates,
-                                      xb.commTime(), ensmems, xb.commEns());
-  }
 
   // Add ensemble output
   const auto & outputEnsemble = params.outputEnsemble.value();
@@ -177,17 +147,16 @@ ErrorCovariance<MODEL>::ErrorCovariance(const Geometry_ & geom,
     covarConf.set("output ensemble", *outputEnsemble);
   }
 
+  // Build the block chain (Hybrid/Ensemble/Parametric) via factory
   const SaberBlockParametersBase & saberCentralBlockParams =
     params.saberCentralBlockParams.value().saberCentralBlockParameters;
   blockChain_ = SaberBlockChainFactory<MODEL>::create
        (parametricIfNotEnsemble(saberCentralBlockParams.saberBlockName.value()),
         geom,
-        *dualResGeom,
         outerVars,
         *fset4dXb,
         *fset4dFg,
         fsetEns,
-        *fsetDualResEns,
         covarConf,
         params.toConfiguration());
 
@@ -203,7 +172,7 @@ ErrorCovariance<MODEL>::~ErrorCovariance() {
   oops::Log::trace() << "ErrorCovariance<MODEL>::~ErrorCovariance done" << std::endl;
 }
 
-// -----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 
 template<typename MODEL>
 void ErrorCovariance<MODEL>::doRandomize(Increment4D_ & dx) const {
@@ -222,11 +191,14 @@ void ErrorCovariance<MODEL>::doRandomize(Increment4D_ & dx) const {
 
   // Create FieldSet4D, run randomize on it
   oops::FieldSet4D fset4d(dx.times(), dx.commTime(), dx.geometry().getComm());
+
+  // Draw a random sample from the covariance
   blockChain_->randomize(fset4d);
 
   // For backward compatibility in tests
   fset4dSum += fset4d;
-  // ATLAS fieldset to Increment_
+
+  // ATLAS fieldset to Increment
   for (size_t jtime = 0; jtime < dx.size(); ++jtime) {
     dx[jtime].fromFieldSet(fset4dSum[jtime].fieldSet());
   }
@@ -242,7 +214,6 @@ void ErrorCovariance<MODEL>::doMultiply(const Increment4D_ & dxi,
   oops::Log::trace() << "ErrorCovariance<MODEL>::doMultiply starting" << std::endl;
   util::Timer timer(classname(), "doMultiply");
 
-  // Copy input
   dxo = dxi;
   oops::FieldSet4D fset4d(dxo);
 
@@ -252,11 +223,12 @@ void ErrorCovariance<MODEL>::doMultiply(const Increment4D_ & dxi,
   oops::FieldSet4D fset4dSum = oops::copyFieldSet4D(fset4d);
   fset4dSum.zero();
 
-  // Apply SABER block chain
+  // Apply covariance multiplication
   blockChain_->multiply(fset4d);
 
   // For backward compatibility in tests
   fset4dSum += fset4d;
+
   // ATLAS fieldset to Increment
   for (size_t jtime = 0; jtime < dxo.size(); ++jtime) {
     dxo[jtime].fromFieldSet(fset4dSum[jtime].fieldSet());

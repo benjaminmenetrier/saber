@@ -68,10 +68,16 @@ BiperiodizationImpl::BiperiodizationImpl(const oops::GeometryData & outerGeometr
   const size_t physicalNy = outerNy - outerExtNy;
 
   if (innerExtNx == outerExtNx && innerExtNy == outerExtNy) {
+    // Same grid
+    sameGrid_ = true;
+
     // Copy grid
     innerGrid_ = outerGrid;
     oops::Log::info() << "Info     : Inner grid = outer grid" << std::endl;
   } else {
+    // Different grid
+    sameGrid_ = false;
+
     // Define inner grid
     const size_t innerNx = physicalNx + innerExtNx;
     const size_t innerNy = physicalNy + innerExtNy;
@@ -311,8 +317,7 @@ BiperiodizationImpl::BiperiodizationImpl(const oops::GeometryData & outerGeometr
   }
 
   // RecvCounts
-  recvCounts_.resize(comm_.size());
-  std::fill(recvCounts_.begin(), recvCounts_.end(), 0);
+  recvCounts_.resize(comm_.size(), 0);
   for (size_t jjRed = 0; jjRed < recvSize_; ++jjRed) {
     const size_t jt = redInnerTask[jjRed];
     ++recvCounts_[jt];
