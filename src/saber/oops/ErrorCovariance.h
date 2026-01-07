@@ -147,18 +147,14 @@ ErrorCovariance<MODEL>::ErrorCovariance(const Geometry_ & geom,
     covarConf.set("output ensemble", *outputEnsemble);
   }
 
-  // Build the block chain (Hybrid/Ensemble/Parametric) via factory
-  const SaberBlockParametersBase & saberCentralBlockParams =
-    params.saberCentralBlockParams.value().saberCentralBlockParameters;
-  blockChain_ = SaberBlockChainFactory<MODEL>::create
-       (parametricIfNotEnsemble(saberCentralBlockParams.saberBlockName.value()),
+  blockChain_ = SaberBlockChainFactory<MODEL>::create(
         geom,
         outerVars,
         *fset4dXb,
         *fset4dFg,
         fsetEns,
         covarConf,
-        params.toConfiguration());
+        params.blockChainParams.value());
 
   oops::Log::trace() << "ErrorCovariance::ErrorCovariance done" << std::endl;
 }

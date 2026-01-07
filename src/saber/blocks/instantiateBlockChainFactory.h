@@ -18,17 +18,17 @@
 namespace saber {
 
 // -----------------------------------------------------------------------------
-
-template <typename MODEL> void instantiateBlockChainFactory() {
+template <typename MODEL>
+void instantiateBlockChainFactory() {
   static SaberBlockChainMaker<MODEL, SaberEnsembleBlockChain>
-    makerEnsembleBlockChain_("Ensemble");
+    makerEnsembleBlockChain_("ensemble");
   static SaberBlockChainMaker<MODEL, SaberHybridBlockChain>
-    makerHybridBlockChain_("Hybrid");
+    makerHybridBlockChain_("hybrid");
   static SaberBlockChainMaker<MODEL, SaberParametricBlockChain>
-    makerParametricBlockChain_("Parametric");
+    makerParametricBlockChain_("parametric");
 #if defined(GSIBEC_FOUND)
   static SaberBlockChainMaker<MODEL, gsi::SaberGSIBlockChain>
-    makerGSIBlockChain_("GSI");
+    makerGSIBlockChain_("gsi hybrid covariance");
 #endif
 }
 
