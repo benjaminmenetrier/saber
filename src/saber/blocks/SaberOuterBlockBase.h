@@ -186,7 +186,7 @@ class SaberOuterBlockBase : public util::Printable,
  protected:
   const util::DateTime validTime_;
   const oops::GeometryData & outerGeometryData_;
-  const oops::Variables & outerVars_;
+  const oops::Variables outerVars_;
 
  private:
   const std::string blockName_;
