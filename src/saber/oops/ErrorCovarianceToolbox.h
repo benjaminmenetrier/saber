@@ -457,7 +457,7 @@ template <typename MODEL> class ErrorCovarianceToolbox : public oops::Applicatio
         bool runComponentsRecursively =
           covarConf.has("run components recursively") ?
           covarConf.getBool("run components recursively") :
-        false;
+          false;
         // Check for outer blocks (can't pass the correct geometry/variables in that case)
         if (!covarConf.has("saber outer blocks") && (runComponentsRecursively)) {
           std::vector<eckit::LocalConfiguration> confs;

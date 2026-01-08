@@ -323,8 +323,8 @@ SaberEnsembleBlockChain::SaberEnsembleBlockChain(const oops::Geometry<MODEL> & g
   if (covarConf.getBool("adjoint test")) {
     // Get tolerance
     const double localAdjointTolerance =
-       params.adjointTolerance.value().get_value_or(
-       covarConf.getDouble("adjoint tolerance"));
+      params.adjointTolerance.value().get_value_or(
+      covarConf.getDouble("adjoint tolerance"));
 
     // Create random FieldSets
     oops::FieldSet4D fset4d1(fset4dXb.times(), fset4dXb.commTime(), currentOuterGeom.comm());
