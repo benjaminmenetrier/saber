@@ -316,14 +316,20 @@ void SaberParametricBlockChain::multiply(oops::FieldSet4D & fset4d) const {
       // Univariate strategy
       for (const auto & group : groups_) {
         for (const auto & var : group.variables()) {
+          // Create an empty FieldSet4D
+          oops::FieldSet4D fset4dTmp({fset4d[0].validTime(), fset4d[0].commGeom()});
+
           // Get field
           auto field = fset4d[0][var.name()];
+
+          // Add field to empty FieldSet4D
+          fset4dTmp[0].add(field);
 
           // Rename field with the name of the group
           field.rename(group.name());
 
           // Apply localization
-          group.multiply(fset4d);
+          group.multiply(fset4dTmp);
 
           // Rename field with its initial name
           field.rename(var.name());
@@ -332,8 +338,14 @@ void SaberParametricBlockChain::multiply(oops::FieldSet4D & fset4d) const {
     } else if (strategy_ == "duplicated") {
       // Duplicated strategy
       for (const auto & group : groups_) {
+        // Create an empty FieldSet4D
+        oops::FieldSet4D fset4dTmp({fset4d[0].validTime(), fset4d[0].commGeom()});
+
         // Get reference field
         auto refField = fset4d[0][group.refVarName()];
+
+        // Add field to empty FieldSet4D
+        fset4dTmp[0].add(refField);
 
         // Rename field with the name of the group
         refField.rename(group.name());
@@ -369,7 +381,7 @@ void SaberParametricBlockChain::multiply(oops::FieldSet4D & fset4d) const {
         }
 
         // Apply localization
-        group.multiply(fset4d);
+        group.multiply(fset4dTmp);
 
         // Split field
         for (const auto & var : group.variables()) {
