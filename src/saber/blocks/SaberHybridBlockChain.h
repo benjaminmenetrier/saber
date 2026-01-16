@@ -40,6 +40,14 @@ namespace saber {
 
 // -----------------------------------------------------------------------------
 
+class CovarianceParameters : public oops::Parameters {
+  OOPS_CONCRETE_PARAMETERS(CovarianceParameters, oops::Parameters)
+ public:
+  oops::ConfigurationParameter saberBlockChainParams{this};
+};
+
+// -----------------------------------------------------------------------------
+
 class WeightParameters : public oops::Parameters {
   OOPS_CONCRETE_PARAMETERS(WeightParameters, oops::Parameters)
  public:
@@ -56,16 +64,16 @@ class ComponentParameters : public oops::Parameters {
   OOPS_CONCRETE_PARAMETERS(ComponentParameters, oops::Parameters)
  public:
   // Covariance
-  oops::RequiredParameter<ErrorCovarianceParameters> covariance{"covariance", this};
+  oops::RequiredParameter<CovarianceParameters> covariance{"covariance", this};
   // Weight
   oops::RequiredParameter<WeightParameters> weight{"weight", this};
 };
 
 // -----------------------------------------------------------------------------
 
-class SaberHybridBlockChainParameters: public oops::Parameters {
+class SaberHybridBlockChainParameters: public ErrorCovarianceParametersBase {
   OOPS_CONCRETE_PARAMETERS(SaberHybridBlockChainParameters,
-                           oops::Parameters)
+                           ErrorCovarianceParametersBase)
  public:
   // Optional outer blocks
   oops::OptionalParameter<std::vector<SaberOuterBlockParametersWrapper>>
@@ -86,14 +94,11 @@ class SaberHybridBlockChainParameters: public oops::Parameters {
 /// Hybrid covariance block chain implementation
 class SaberHybridBlockChain : public SaberBlockChainBase {
  public:
-  typedef SaberHybridBlockChainParameters Parameters_;
-
   template<typename MODEL>
   SaberHybridBlockChain(const oops::Geometry<MODEL> & geom,
                         const oops::Variables & outerVars,
                         oops::FieldSet4D & fset4dXb,
                         oops::FieldSet4D & fset4dFg,
-                        const eckit::Configuration & covarConf,
                         const eckit::Configuration & conf);
   ~SaberHybridBlockChain() = default;
 
@@ -144,15 +149,20 @@ SaberHybridBlockChain::SaberHybridBlockChain(const oops::Geometry<MODEL> & geom,
                        const oops::Variables & outerVars,
                        oops::FieldSet4D & fset4dXb,
                        oops::FieldSet4D & fset4dFg,
-                       const eckit::Configuration & covarConf,
                        const eckit::Configuration & conf)
   : outerFunctionSpace_(geom.functionSpace()), outerVariables_(outerVars),
     parallelHybrid_(false), myComponent_(0) {
   oops::Log::trace() << "SaberHybridBlockChain ctor starting" << std::endl;
 
-  // Deserialize parameters
-  Parameters_ params;
+  // Deserialize parameters and fill configuration with missing values
+  SaberHybridBlockChainParameters params;
   params.deserialize(conf);
+  eckit::LocalConfiguration fullConf;
+  params.serialize(fullConf);
+
+  // Extract ErrorCovarianceParametersBase from fullConf
+  ErrorCovarianceParametersBase paramsBase;
+  paramsBase.deserialize(fullConf);
 
   // Initialize current outer variables
   oops::Variables currentOuterVars(outerVars);
@@ -160,7 +170,7 @@ SaberHybridBlockChain::SaberHybridBlockChain(const oops::Geometry<MODEL> & geom,
   // Build common (for all hybrid components) outer blocks if they exist
   if (params.saberOuterBlocksParams.value()) {
     outerBlockChain_ = std::make_unique<SaberOuterBlockChain>(geom, outerVariables_,
-                          fset4dXb, fset4dFg, covarConf,
+                          fset4dXb, fset4dFg, fullConf,
                           *params.saberOuterBlocksParams.value());
     currentOuterVars = outerBlockChain_->innerVars();
   }
@@ -305,16 +315,9 @@ SaberHybridBlockChain::SaberHybridBlockChain(const oops::Geometry<MODEL> & geom,
     // Set covariance parameters
     const auto & cmpCovParams = cmpParams.covariance.value();
 
-    // Deserialize top ErrorCovarianceParametersBase
-    ErrorCovarianceParametersBase cmpModelSpaceCovarianceParams;
-    cmpModelSpaceCovarianceParams.deserialize(covarConf);
-    eckit::LocalConfiguration cmpModelSpaceCovarianceConf;
-    cmpModelSpaceCovarianceParams.serialize(cmpModelSpaceCovarianceConf);
-
-    // Merge with component ErrorCovarianceParameters
-    const eckit::LocalConfiguration cmpCovarConf =
-      util::mergeConfigs(cmpModelSpaceCovarianceConf, cmpCovParams.toConfiguration());
-
+    // Merge component configuration with full configuration base (order of arguments matters!)
+    const eckit::LocalConfiguration cmpMergedConf =
+      util::mergeConfigs(cmpCovParams.toConfiguration(), paramsBase.toConfiguration());
 
     // Add block chain
     hybridBlockChain_.push_back(
@@ -323,8 +326,7 @@ SaberHybridBlockChain::SaberHybridBlockChain(const oops::Geometry<MODEL> & geom,
           cmpOuterVars,
           localFset4dXb,
           localFset4dFg,
-          cmpCovarConf,
-          cmpCovParams.blockChainParams.value()));
+          cmpMergedConf));
 
     ASSERT(hybridBlockChain_.size() > 0);
 
@@ -363,15 +365,9 @@ SaberHybridBlockChain::SaberHybridBlockChain(const oops::Geometry<MODEL> & geom,
       // Set covariance parameters
       const auto & cmpCovParams = cmpParams.covariance.value();
 
-      // Deserialize top ErrorCovarianceParametersBase
-      ErrorCovarianceParametersBase cmpModelSpaceCovarianceParams;
-      cmpModelSpaceCovarianceParams.deserialize(covarConf);
-      eckit::LocalConfiguration cmpModelSpaceCovarianceConf;
-      cmpModelSpaceCovarianceParams.serialize(cmpModelSpaceCovarianceConf);
-
-      // Merge with component ErrorCovarianceParameters
-      const eckit::LocalConfiguration cmpCovarConf =
-        util::mergeConfigs(cmpModelSpaceCovarianceConf, cmpCovParams.toConfiguration());
+      // Merge component configuration with full configuration base (order of arguments matters!)
+      const eckit::LocalConfiguration cmpMergedConf =
+        util::mergeConfigs(cmpCovParams.toConfiguration(), paramsBase.toConfiguration());
 
       // Add block chain
       hybridBlockChain_.push_back
@@ -380,8 +376,7 @@ SaberHybridBlockChain::SaberHybridBlockChain(const oops::Geometry<MODEL> & geom,
             cmpOuterVars,
             fset4dXb,
             fset4dFg,
-            cmpCovarConf,
-            cmpCovParams.blockChainParams.value()));
+            cmpMergedConf));
     }
     ASSERT(hybridBlockChain_.size() > 0);
   }

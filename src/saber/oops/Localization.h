@@ -83,20 +83,14 @@ Localization<MODEL>::Localization(const Geometry_ & geom,
   fg.shallowCopy(fg_state.fieldSet());
   oops::FieldSet4D fg4d(fg);
 
-  // Fill covariance configuration
-  ErrorCovarianceParametersBase params;
-  params.deserialize(conf);
-  eckit::LocalConfiguration covarConf;
-  params.serialize(covarConf);
-
   // 3D localization always used here (4D aspects handled in oops::Localization),
   // so this parameter can be anything.
-  covarConf.set("time covariance", "univariate");
+  eckit::LocalConfiguration confUpdated(conf);
+  confUpdated.set("time covariance", "univariate");
 
   // Initialize localization blockchain
   loc_ = std::make_unique<SaberParametricBlockChain>(geom,
-              incVars, xb4d, fg4d,
-              covarConf, conf);
+              incVars, xb4d, fg4d, conf);
 
   oops::Log::trace() << "Localization:Localization done" << std::endl;
 }

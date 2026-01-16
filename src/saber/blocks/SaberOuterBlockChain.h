@@ -44,7 +44,7 @@ class SaberOuterBlockChain {
                        const oops::Variables & outerVars,
                        oops::FieldSet4D & fset4dXb,
                        oops::FieldSet4D & fset4dFg,
-                       const eckit::Configuration & covarConf,
+                       const eckit::Configuration & conf,
                        const std::vector<SaberOuterBlockParametersWrapper> & params,
                        oops::FieldSets * fsetEns = NULL,
                        const bool & centralDirectCalibration = false);
@@ -53,7 +53,7 @@ class SaberOuterBlockChain {
                        const oops::Variables & outerVars,
                        oops::FieldSet4D & fset4dXb,
                        oops::FieldSet4D & fset4dFg,
-                       const eckit::Configuration & covarConf,
+                       const eckit::Configuration & conf,
                        const std::vector<SaberOuterBlockParametersWrapper> & params);
 
   ~SaberOuterBlockChain() = default;
@@ -146,7 +146,7 @@ class SaberOuterBlockChain {
 
   /// @brief Block calibration. Used in standard constructor.
   template<typename MODEL>
-  void calibrateBlock(const eckit::Configuration & covarConf,
+  void calibrateBlock(const eckit::Configuration & conf,
                       const oops::FieldSet4D & fset4dXb,
                       const oops::Geometry<MODEL> & geom,
                       const bool & validModelGeom,
@@ -184,7 +184,7 @@ class SaberOuterBlockChain {
           oops::FieldSet4D & fset4dFg) const;
 
   /// @brief Inverse and adjoint test for last outer block. Used in constructors.
-  void testLastOuterBlock(const eckit::Configuration & covarConf,
+  void testLastOuterBlock(const eckit::Configuration & conf,
                           const SaberBlockParametersBase & saberOuterBlockParams,
                           const oops::GeometryData & outerGeometryData,
                           const oops::Variables & outerVars,
@@ -205,7 +205,7 @@ SaberOuterBlockChain::SaberOuterBlockChain(const oops::Geometry<MODEL> & geom,
                        const oops::Variables & outerVars,
                        oops::FieldSet4D & fset4dXb,
                        oops::FieldSet4D & fset4dFg,
-                       const eckit::Configuration & covarConf,
+                       const eckit::Configuration & conf,
                        const std::vector<saber::SaberOuterBlockParametersWrapper> & params,
                        oops::FieldSets * fsetEns,
                        const bool & centralDirectCalibration) {
@@ -213,11 +213,11 @@ SaberOuterBlockChain::SaberOuterBlockChain(const oops::Geometry<MODEL> & geom,
   oops::Log::info() << "Info     : Creating outer blocks" << std::endl;
 
   // In addition to other configuration option pass model data information for vader
-  // TODO(AS): check whether covarConf needs to be passed to the blocks (ideally not)
+  // TODO(AS): check whether conf needs to be passed to the blocks (ideally not)
   oops::ModelData<MODEL> modelData{geom};
   eckit::LocalConfiguration modelDataConf;
   modelDataConf.set("model data", modelData.modelData());  // Key here is vader::configModelVarsKey
-  eckit::LocalConfiguration outerBlockConf{covarConf};
+  eckit::LocalConfiguration outerBlockConf{conf};
   outerBlockConf.set("vader", modelDataConf);
 
   // Copy vector of parameters
@@ -256,7 +256,7 @@ SaberOuterBlockChain::SaberOuterBlockChain(const oops::Geometry<MODEL> & geom,
 
     if (saberOuterBlockParams.doCalibration()) {
       // Block calibration
-      calibrateBlock(covarConf,
+      calibrateBlock(conf,
                      fset4dXb,
                      geom,
                      validModelGeom,
@@ -276,7 +276,7 @@ SaberOuterBlockChain::SaberOuterBlockChain(const oops::Geometry<MODEL> & geom,
       outerBlocks_.back()->write();
     }
 
-    if (!covarConf.getBool("iterative ensemble loading")) {
+    if (!conf.getBool("iterative ensemble loading", false)) {
       // Check if the left inverse multiplication of this block on ensemble members if needed,
       // when either the central block or an inner outer block needs a direct calibration,
       // or if the final ensemble output is required
@@ -286,7 +286,7 @@ SaberOuterBlockChain::SaberOuterBlockChain(const oops::Geometry<MODEL> & geom,
           innerSaberOuterBlockParamWrapper.saberOuterBlockParameters;
         applyLeftInverse = applyLeftInverse || innerSaberOuterBlockParams.doCalibration();
       }
-      applyLeftInverse = applyLeftInverse || covarConf.has("output ensemble");
+      applyLeftInverse = applyLeftInverse || conf.has("output ensemble");
 
       if (applyLeftInverse) {
         // Left inverse multiplication on ensemble members
@@ -315,7 +315,7 @@ SaberOuterBlockChain::SaberOuterBlockChain(const oops::Geometry<MODEL> & geom,
                       fset4dFg);
 
     // Adjoint test and inverse test
-    testLastOuterBlock(covarConf,
+    testLastOuterBlock(conf,
                        saberOuterBlockParams,
                        currentOuterGeometryData,
                        currentOuterVars,
@@ -330,7 +330,7 @@ SaberOuterBlockChain::SaberOuterBlockChain(const oops::Geometry<MODEL> & geom,
 
 template<typename MODEL>
 void SaberOuterBlockChain::calibrateBlock(
-            const eckit::Configuration & covarConf,
+            const eckit::Configuration & conf,
             const oops::FieldSet4D & fset4dXb,
             const oops::Geometry<MODEL> & geom,
             const bool & validModelGeom,
@@ -339,7 +339,7 @@ void SaberOuterBlockChain::calibrateBlock(
             oops::FieldSets & fsetEns) {
   oops::Log::trace() << "calibrateBlock starting" << std::endl;
 
-  if (covarConf.getBool("iterative ensemble loading")) {
+  if (conf.getBool("iterative ensemble loading", false)) {
     // Iterative calibration
     oops::Log::info() << "Info     : Iterative calibration" << std::endl;
 
@@ -347,14 +347,14 @@ void SaberOuterBlockChain::calibrateBlock(
     outerBlocks_.back()->iterativeCalibrationInit();
 
     // Get ensemble size
-    const size_t nens = getNensFromConfig(covarConf);
+    const size_t nens = getNensFromConfig(conf);
 
     for (size_t ie = 0; ie < nens; ++ie) {
       // Read ensemble member
       oops::FieldSet3D fset(fset4dXb[0].validTime(), geom.getComm());
       readEnsembleMember(geom,
                          outerVars,
-                         covarConf,
+                         conf,
                          ie,
                          fset);
 

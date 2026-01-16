@@ -212,17 +212,6 @@ template <typename MODEL> class ProcessPerts : public oops::Application {
       incVars[i].setLevels(vlevs[i]);
     }
 
-    std::vector<util::DateTime> dates;
-    std::vector<int> ensmems;
-    oops::FieldSets fsetEns(dates, oops::mpi::myself(), ensmems, oops::mpi::myself());
-    eckit::LocalConfiguration covarConf;
-    covarConf.set("iterative ensemble loading", false);
-    covarConf.set("inverse test", false);
-    covarConf.set("adjoint test", false);
-    covarConf.set("square-root test", false);
-    covarConf.set("covariance model", "SABER");
-    covarConf.set("time covariance", "");
-
     // Yaml validation
     // TODO(Mayeul): Move this do an override of deserialize
     if (((params.ensemble.value() == boost::none) &&
@@ -286,20 +275,24 @@ template <typename MODEL> class ProcessPerts : public oops::Application {
 
     std::vector<std::unique_ptr<SaberParametricBlockChain>> saberFilterBlocks;
     for (const auto & [key, value] : filterCovBlockConfs) {
+      eckit::LocalConfiguration conf(value);
+      conf.set("covariance model", "SABER");
+      conf.set("time covariance", "");
       saberFilterBlocks.push_back(
         std::make_unique<SaberParametricBlockChain>(geom,
                                                     incVars, fsetXb, fsetFg,
-                                                    covarConf,
-                                                    value));
+                                                    conf));
     }
 
     std::vector<std::unique_ptr<SaberParametricBlockChain>> saberDiagnosticBlocks;
     for (const auto & [key, value] : diagBlockConfs) {
+      eckit::LocalConfiguration conf(value);
+      conf.set("covariance model", "SABER");
+      conf.set("time covariance", "");
       saberDiagnosticBlocks.push_back(
         std::make_unique<SaberParametricBlockChain>(geom,
                                                     incVars, fsetXb, fsetFg,
-                                                    covarConf,
-                                                    value));
+                                                    conf));
     }
 
     //  Loop over perturbations

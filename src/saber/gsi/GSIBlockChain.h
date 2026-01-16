@@ -29,8 +29,8 @@ namespace saber {
 
 namespace gsi {
 
-class SaberGSIBlockChainParameters: public oops::Parameters {
-  OOPS_CONCRETE_PARAMETERS(SaberGSIBlockChainParameters, Parameters)
+class SaberGSIBlockChainParameters: public ErrorCovarianceParametersBase {
+  OOPS_CONCRETE_PARAMETERS(SaberGSIBlockChainParameters, ErrorCovarianceParametersBase)
 
  public:
   // Central and outer blocks
@@ -49,7 +49,6 @@ class SaberGSIBlockChain : public SaberBlockChainBase {
                      const oops::Variables & outerVars,
                      oops::FieldSet4D & fset4dXb,
                      oops::FieldSet4D & fset4dFg,
-                     const eckit::Configuration & covarConf,
                      const eckit::Configuration & conf);
   ~SaberGSIBlockChain();
 
@@ -98,12 +97,15 @@ SaberGSIBlockChain::SaberGSIBlockChain(const oops::Geometry<MODEL> & geom,
                        const oops::Variables & outerVars,
                        oops::FieldSet4D & fset4dXb,
                        oops::FieldSet4D & fset4dFg,
-                       const eckit::Configuration & covarConf,
                        const eckit::Configuration & conf)
   : outerFunctionSpace_(geom.functionSpace()), outerVariables_(outerVars) {
   oops::Log::trace() << "SaberGSIBlockChain ctor starting" << std::endl;
+
+  // Deserialize parameters and fill configuration with missing values
   SaberGSIBlockChainParameters params;
   params.deserialize(conf);
+  eckit::LocalConfiguration fullConf;
+  params.serialize(fullConf);
 
   // Check that parallel time decomposition is not used for 4D covariances
   // (currently not supported)
@@ -115,8 +117,8 @@ SaberGSIBlockChain::SaberGSIBlockChain(const oops::Geometry<MODEL> & geom,
   // If needed create outer block chain
   if (params.saberOuterBlocksParams.value()) {
     outerBlockChain_ = std::make_unique<SaberOuterBlockChain>(geom, outerVariables_,
-                          fset4dXb, fset4dFg, covarConf,
-                          *params.saberOuterBlocksParams.value());
+                          fset4dXb, fset4dFg,
+                          fullConf, *params.saberOuterBlocksParams.value());
   }
 
   // Set outer variables and geometry data for central block (GSI covariance)
@@ -152,11 +154,11 @@ SaberGSIBlockChain::SaberGSIBlockChain(const oops::Geometry<MODEL> & geom,
   // Adjoint test
   // TODO(Anna): this code is similar to the code in CentralBlock::adjoint;
   // the test code need to be generalized so it can be called from different places.
-  if (covarConf.getBool("adjoint test")) {
+  if (fullConf.getBool("adjoint test")) {
     // Get tolerance
     const double localAdjointTolerance =
       params.saberCentralBlockParams.value().adjointTolerance.value().get_value_or(
-      covarConf.getDouble("adjoint tolerance"));
+      fullConf.getDouble("adjoint tolerance"));
 
     // Run test
     // Create random FieldSets

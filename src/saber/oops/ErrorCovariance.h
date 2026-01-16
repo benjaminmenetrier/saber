@@ -84,6 +84,8 @@ ErrorCovariance<MODEL>::ErrorCovariance(const Geometry_ & geom,
 {
   oops::Log::trace() << "ErrorCovariance::ErrorCovariance starting" << std::endl;
   util::Timer timer(classname(), "ErrorCovariance");
+
+  // Deserialize parameters
   ErrorCovarianceParameters params;
   params.deserialize(config);
 
@@ -113,18 +115,13 @@ ErrorCovariance<MODEL>::ErrorCovariance(const Geometry_ & geom,
     outerVars[i].setLevels(vlevs[i]);
   }
 
-  // Fill covariance configuration
-  eckit::LocalConfiguration covarConf;
-  params.serialize(covarConf);
-
   // Create blockchain
   blockChain_ = SaberBlockChainFactory<MODEL>::create(
         geom,
         outerVars,
         *fset4dXb,
         *fset4dFg,
-        covarConf,
-        params.blockChainParams.value());
+        config);
 
   oops::Log::trace() << "ErrorCovariance::ErrorCovariance done" << std::endl;
 }

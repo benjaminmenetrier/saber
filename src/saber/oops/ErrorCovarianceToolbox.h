@@ -69,7 +69,7 @@ template <typename MODEL> class ErrorCovarianceToolboxParameters :
   oops::RequiredParameter<eckit::LocalConfiguration> background{"background", this};
 
   /// Background error covariance model.
-  oops::RequiredParameter<eckit::LocalConfiguration> backgroundError{"background error", this};
+  oops::RequiredParameter<ErrorCovarianceParameters> backgroundError{"background error", this};
 
   /// Geometry parameters.
   oops::Parameter<bool> parallel{"parallel subwindows", true, this};
@@ -201,7 +201,8 @@ template <typename MODEL> class ErrorCovarianceToolbox : public oops::Applicatio
     // Setup time
     util::DateTime time = xx[0].validTime();
 
-    const eckit::LocalConfiguration covarConf(fullConfigUpdated, "background error");
+    // Covariance parameters
+    const eckit::LocalConfiguration covarConf = params.backgroundError.value().toConfiguration();
 
     // Dirac test
     const auto & diracParams = params.dirac.value();
@@ -240,16 +241,15 @@ template <typename MODEL> class ErrorCovarianceToolbox : public oops::Applicatio
     }
 
     // Background error covariance base parameters
-    ErrorCovarianceParametersBase covarParams;
-    covarParams.deserialize(covarConf);
-    const auto & randomizationSize = covarParams.randomizationSize.value();
-    if ((diracParams == boost::none) || (randomizationSize != boost::none)) {
+    if ((!diracParams) || (params.backgroundError.value().randomizationSize.value())) {
       // Background error covariance training
       std::unique_ptr<CovarianceBase_> Bmat(CovarianceFactory_::create(
                                             geom, vars, covarConf, xx, xx));
 
       // Randomization
-      randomization(params, geom, vars, xx, Bmat, ntasks);
+      if (params.backgroundError.value().randomizationSize.value()) {
+        randomization(params, geom, vars, xx, Bmat, ntasks);
+      }
     }
 
     return 0;
@@ -528,7 +528,11 @@ template <typename MODEL> class ErrorCovarianceToolbox : public oops::Applicatio
                      const State4D_ & xx,
                      const std::unique_ptr<CovarianceBase_> & Bmat,
                      const size_t & ntasks) const {
-    if (Bmat->randomizationSize() > 0) {
+    // Get randomization size
+    ASSERT(params.backgroundError.value().randomizationSize.value());
+    const size_t randomizationSize = *params.backgroundError.value().randomizationSize.value();
+
+    if (randomizationSize > 0) {
       oops::Log::info() << "Info     : " << std::endl;
       oops::Log::info() << "Info     : Generate perturbations:" << std::endl;
       oops::Log::info() << "Info     : -----------------------" << std::endl;
@@ -546,7 +550,7 @@ template <typename MODEL> class ErrorCovarianceToolbox : public oops::Applicatio
       const auto & outputStates = params.outputStates.value();
       const auto & outputVariance = params.outputVariance.value();
 
-      for (size_t jm = 0; jm < Bmat->randomizationSize(); ++jm) {
+      for (size_t jm = 0; jm < randomizationSize; ++jm) {
         // Generate member
         Bmat->randomize(dx);
 
@@ -593,9 +597,9 @@ template <typename MODEL> class ErrorCovarianceToolbox : public oops::Applicatio
         oops::Log::info() << "Info     : Write randomized variance:" << std::endl;
         oops::Log::info() << "Info     : --------------------------" << std::endl;
         oops::Log::info() << "Info     : " << std::endl;
-        if (Bmat->randomizationSize() > 1) {
+        if (randomizationSize > 1) {
           // Normalize variance
-          double rk_norm = 1.0/static_cast<double>(Bmat->randomizationSize());
+          double rk_norm = 1.0/static_cast<double>(randomizationSize);
           variance *= rk_norm;
         }
 
