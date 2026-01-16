@@ -80,8 +80,7 @@ class SaberEnsembleBlockChain : public SaberBlockChainBase {
                           const oops::Variables & outerVars,
                           oops::FieldSet4D & fset4dXb,
                           oops::FieldSet4D & fset4dFg,
-                          oops::FieldSets & fsetEns,
-                          const eckit::LocalConfiguration & covarConf,
+                          const eckit::Configuration & covarConf,
                           const eckit::Configuration & conf);
   ~SaberEnsembleBlockChain() = default;
 
@@ -111,7 +110,7 @@ class SaberEnsembleBlockChain : public SaberBlockChainBase {
   /// @brief Localization block chain (optional).
   std::unique_ptr<SaberParametricBlockChain> locBlockChain_;
   /// @brief Ensemble used in the ensemble covariance.
-  oops::FieldSets ensemble_;
+  std::unique_ptr<oops::FieldSets> ensemble_;
   /// @brief Control vector size.
   size_t ctlVecSize_;
   /// @brief Variables used in the ensemble covariance.
@@ -127,26 +126,30 @@ SaberEnsembleBlockChain::SaberEnsembleBlockChain(const oops::Geometry<MODEL> & g
                        const oops::Variables & outerVars,
                        oops::FieldSet4D & fset4dXb,
                        oops::FieldSet4D & fset4dFg,
-                       // TODO(AS): remove as argument: this should be read inside the
-                       // block.
-                       oops::FieldSets & fsetEns,
-                       const eckit::LocalConfiguration & covarConf,
+                       const eckit::Configuration & covarConf,
                        const eckit::Configuration & conf)
-  : outerFunctionSpace_(geom.functionSpace()), outerVariables_(outerVars),
-    ensemble_(fsetEns), ctlVecSize_(0) {
+  : outerFunctionSpace_(geom.functionSpace()), outerVariables_(outerVars), ctlVecSize_(0) {
   oops::Log::trace() << "SaberEnsembleBlockChain ctor starting" << std::endl;
+
+  // Deserialize parameters
   SaberEnsembleBlockChainParameters params;
   params.deserialize(conf);
 
+  // Read ensemble (for non-iterative ensemble loading)
+  ensemble_.reset(new oops::FieldSets(readEnsemble(geom,
+                           outerVars,
+                           fset4dXb.times(), fset4dXb.commTime(), fset4dXb.commEns(),
+                           covarConf)));
+
   // Check that there is an ensemble of at least 2 members.
-  if (ensemble_.ens_size() < 2) {
+  if (ensemble_->ens_size() < 2) {
     throw eckit::BadParameter("Ensemble for SaberEnsembleBlockChain has to have at least"
                               " two members.", Here());
   }
   // Create outer blocks if needed
   if (params.saberOuterBlocksParams.value()) {
     outerBlockChain_ = std::make_unique<SaberOuterBlockChain>(geom, outerVars,
-                          fset4dXb, fset4dFg, ensemble_, covarConf,
+                          fset4dXb, fset4dFg, covarConf,
                           *params.saberOuterBlocksParams.value());
   }
 
@@ -167,14 +170,10 @@ SaberEnsembleBlockChain::SaberEnsembleBlockChain(const oops::Geometry<MODEL> & g
     }
   }
 
-  // Ensemble configuration
-  eckit::LocalConfiguration ensembleConf
-    = covarConf.getSubConfiguration("ensemble configuration");
-
   // Check consistency if ensemble was read on non-MODEL geometry
-  if (ensembleConf.has("ensemble pert on other geometry")) {
+  if (covarConf.has("ensemble pert on other geometry")) {
     const auto & currentFspace = currentOuterGeom.functionSpace();
-    const auto & ensFspace = ensemble_[0].fieldSet()[0].functionspace();
+    const auto & ensFspace = (*ensemble_)[0].fieldSet()[0].functionspace();
     ASSERT(ensFspace.type() == currentFspace.type());
     ASSERT(util::getGridUid(ensFspace).compare(
                util::getGridUid(currentFspace)) == 0);
@@ -218,16 +217,16 @@ SaberEnsembleBlockChain::SaberEnsembleBlockChain(const oops::Geometry<MODEL> & g
   oops::Log::info() << "Info     : Apply inflation on ensemble members" << std::endl;
   // Apply local inflation
   if (!inflationField.empty()) {
-    ensemble_ *= inflationField;
+    *ensemble_ *= inflationField;
   }
   // Apply global inflation
-  ensemble_ *= inflationValue;
+  *ensemble_ *= inflationValue;
 
   // Ensemble transform
   // For ensemble transform and localization set ensemble size to zero (BUMP needs that)
   // TODO(AS): check if this is used/needed.
   eckit::LocalConfiguration covarConfUpdated(covarConf);
-  covarConfUpdated.set("ensemble configuration.ensemble size", 0);
+  covarConfUpdated.set("ensemble configuration.ensemble size", 0);  // TODO(Benjamin): remove this
   // Turn off adjoint test for backwards compatibility.
   // TODO(AS): revisit once the way parameters are passed around is refactored.
   covarConfUpdated.set("adjoint test", false);
@@ -236,15 +235,15 @@ SaberEnsembleBlockChain::SaberEnsembleBlockChain(const oops::Geometry<MODEL> & g
     oops::Log::info() << "Info     : Found ensemble transform " << std::endl;
     std::unique_ptr<SaberOuterBlockChain> ensTransBlockChain =
            std::make_unique<SaberOuterBlockChain>(geom,
-             currentOuterVars, fset4dXb, fset4dFg, ensemble_,
+             currentOuterVars, fset4dXb, fset4dFg,
              covarConfUpdated, ensTransParams);
 
     // Right inverse of ensemble transform on ensemble members
     oops::Log::info() << "Info     : Right inverse of ensemble transform on ensemble members"
                       << std::endl;
-    for (size_t itime = 0; itime < ensemble_.local_time_size(); ++itime) {
-      for (size_t iens = 0; iens < ensemble_.local_ens_size(); ++iens) {
-        ensTransBlockChain->rightInverseMultiply(ensemble_(itime, iens));
+    for (size_t itime = 0; itime < ensemble_->local_time_size(); ++itime) {
+      for (size_t iens = 0; iens < ensemble_->local_ens_size(); ++iens) {
+        ensTransBlockChain->rightInverseMultiply((*ensemble_)(itime, iens));
       }
     }
 
@@ -300,7 +299,6 @@ SaberEnsembleBlockChain::SaberEnsembleBlockChain(const oops::Geometry<MODEL> & g
                                                                    currentOuterVars,
                                                                    fset4dXb,
                                                                    fset4dFg,
-                                                                   ensemble_,
                                                                    covarConfUpdated,
                                                                    *params.localization.value());
     }
@@ -311,10 +309,10 @@ SaberEnsembleBlockChain::SaberEnsembleBlockChain(const oops::Geometry<MODEL> & g
   // Get control vector size
   if (locBlockChain_) {
     // With localization
-    ctlVecSize_ = ensemble_.ens_size()*locBlockChain_->ctlVecSize();
+    ctlVecSize_ = ensemble_->ens_size()*locBlockChain_->ctlVecSize();
   } else {
     // Without localization
-    ctlVecSize_ = ensemble_.ens_size();
+    ctlVecSize_ = ensemble_->ens_size();
   }
 
   // Adjoint test

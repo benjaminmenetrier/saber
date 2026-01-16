@@ -25,27 +25,23 @@ namespace saber {
 
 // -------------------------------------------------------------------------------------------------
 
-template <typename MODEL>
-class ModelSpaceCovarianceParametersBase : public oops::Parameters {
-  OOPS_CONCRETE_PARAMETERS(ModelSpaceCovarianceParametersBase, oops::Parameters)
+class ErrorCovarianceParametersBase : public oops::Parameters {
+  OOPS_CONCRETE_PARAMETERS(ErrorCovarianceParametersBase, oops::Parameters)
+
  public:
+  // Covariance model
   oops::OptionalParameter<std::string> covarianceModel{"covariance model", this};
+
+  // Randomization size
   oops::OptionalParameter<size_t> randomizationSize{"randomization size", this};
+
+  // Inverse parameters
   oops::Parameter<bool> fullInverse{"full inverse", false, this};
   oops::Parameter<int> fullInverseIterations{"full inverse iterations", 10, this};
   oops::Parameter<double> fullInverseAccuracy{"full inverse accuracy", 1.0e-3, this};
+
+  // Extra linear variable change
   oops::OptionalParameter<eckit::LocalConfiguration> variableChange{"linear variable change", this};
-};
-
-// -------------------------------------------------------------------------------------------------
-
-template <typename MODEL>
-class ErrorCovarianceParameters : public ModelSpaceCovarianceParametersBase<MODEL> {
-  OOPS_CONCRETE_PARAMETERS(ErrorCovarianceParameters,
-                           ModelSpaceCovarianceParametersBase<MODEL>)
-
- public:
-  oops::ConfigurationParameter blockChainParams{this};
 
   // Time covariance mode (by default duplicated multivariate)
   // Options: univariate, duplicated multivariate.
@@ -81,6 +77,16 @@ class ErrorCovarianceParameters : public ModelSpaceCovarianceParametersBase<MODE
   // Square-root test
   oops::Parameter<bool> sqrtTest{"square-root test", false, this};
   oops::Parameter<double> sqrtTolerance{"square-root tolerance", 1.0e-12, this};
+};
+
+// -------------------------------------------------------------------------------------------------
+
+class ErrorCovarianceParameters : public ErrorCovarianceParametersBase {
+  OOPS_CONCRETE_PARAMETERS(ErrorCovarianceParameters,
+                           ErrorCovarianceParametersBase)
+
+ public:
+  oops::ConfigurationParameter blockChainParams{this};
 };
 
 // -----------------------------------------------------------------------------

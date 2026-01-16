@@ -23,6 +23,7 @@
 #include "oops/base/Geometry.h"
 #include "oops/base/State4D.h"
 #include "oops/base/Variables.h"
+#include "oops/util/ConfigFunctions.h"
 #include "oops/util/FieldSetOperations.h"
 #include "oops/util/FieldSetSubCommunicators.h"
 #include "oops/util/Logger.h"
@@ -32,29 +33,10 @@
 #include "saber/blocks/SaberBlockChainBase.h"
 #include "saber/blocks/SaberBlockParametersBase.h"
 #include "saber/blocks/SaberOuterBlockChain.h"
+#include "saber/oops/ErrorCovarianceParameters.h"
 #include "saber/oops/Utilities.h"
 
 namespace saber {
-
-// -----------------------------------------------------------------------------
-class CovarianceParameters : public oops::Parameters {
-  OOPS_CONCRETE_PARAMETERS(CovarianceParameters, oops::Parameters)
- public:
-  oops::ConfigurationParameter saberBlockChainParams{this};
-
-  // Ensemble
-  oops::Parameter<bool> iterativeEnsembleLoading{"iterative ensemble loading", false, this};
-  oops::OptionalParameter<eckit::LocalConfiguration> ensemble{"ensemble", this};
-  oops::OptionalParameter<eckit::LocalConfiguration> ensemblePert{"ensemble pert", this};
-  oops::OptionalParameter<eckit::LocalConfiguration> ensembleBase{"ensemble base", this};
-  oops::OptionalParameter<eckit::LocalConfiguration> ensemblePairs{"ensemble pairs", this};
-
-  // Ensemble on non-MODEL geometry
-  oops::OptionalParameter<eckit::LocalConfiguration> ensemblePertOtherGeom{
-                                        "ensemble pert on other geometry", this};
-  oops::OptionalParameter<eckit::LocalConfiguration> ensembleGeom{
-                                        "ensemble geometry", this};
-};
 
 // -----------------------------------------------------------------------------
 
@@ -74,7 +56,7 @@ class ComponentParameters : public oops::Parameters {
   OOPS_CONCRETE_PARAMETERS(ComponentParameters, oops::Parameters)
  public:
   // Covariance
-  oops::RequiredParameter<CovarianceParameters> covariance{"covariance", this};
+  oops::RequiredParameter<ErrorCovarianceParameters> covariance{"covariance", this};
   // Weight
   oops::RequiredParameter<WeightParameters> weight{"weight", this};
 };
@@ -105,13 +87,13 @@ class SaberHybridBlockChainParameters: public oops::Parameters {
 class SaberHybridBlockChain : public SaberBlockChainBase {
  public:
   typedef SaberHybridBlockChainParameters Parameters_;
+
   template<typename MODEL>
   SaberHybridBlockChain(const oops::Geometry<MODEL> & geom,
                         const oops::Variables & outerVars,
                         oops::FieldSet4D & fset4dXb,
                         oops::FieldSet4D & fset4dFg,
-                        oops::FieldSets & fsetEns,
-                        const eckit::LocalConfiguration & covarConf,
+                        const eckit::Configuration & covarConf,
                         const eckit::Configuration & conf);
   ~SaberHybridBlockChain() = default;
 
@@ -162,19 +144,23 @@ SaberHybridBlockChain::SaberHybridBlockChain(const oops::Geometry<MODEL> & geom,
                        const oops::Variables & outerVars,
                        oops::FieldSet4D & fset4dXb,
                        oops::FieldSet4D & fset4dFg,
-                       oops::FieldSets & fsetEns,
-                       const eckit::LocalConfiguration & covarConf,
+                       const eckit::Configuration & covarConf,
                        const eckit::Configuration & conf)
   : outerFunctionSpace_(geom.functionSpace()), outerVariables_(outerVars),
     parallelHybrid_(false), myComponent_(0) {
   oops::Log::trace() << "SaberHybridBlockChain ctor starting" << std::endl;
-  SaberHybridBlockChainParameters params;
+
+  // Deserialize parameters
+  Parameters_ params;
   params.deserialize(conf);
+
+  // Initialize current outer variables
   oops::Variables currentOuterVars(outerVars);
+
   // Build common (for all hybrid components) outer blocks if they exist
   if (params.saberOuterBlocksParams.value()) {
     outerBlockChain_ = std::make_unique<SaberOuterBlockChain>(geom, outerVariables_,
-                          fset4dXb, fset4dFg, fsetEns, covarConf,
+                          fset4dXb, fset4dFg, covarConf,
                           *params.saberOuterBlocksParams.value());
     currentOuterVars = outerBlockChain_->innerVars();
   }
@@ -261,7 +247,7 @@ SaberHybridBlockChain::SaberHybridBlockChain(const oops::Geometry<MODEL> & geom,
     // Set up default MPI communicator for atlas
     eckit::mpi::setCommDefault(localSpaceComm.name().c_str());
 
-    // Create block geometry (needed for ensemble reading and local geometries)
+    // Create block geometry
     if (params.hybridGeometry.value() == boost::none) {
       throw eckit::UserError("Parallel hybrid block requires geometry key", Here());
     }
@@ -316,33 +302,29 @@ SaberHybridBlockChain::SaberHybridBlockChain(const oops::Geometry<MODEL> & geom,
     }
     hybridFieldWeightSqrt_.push_back(fsetWeight);
 
-    // Set covariance
-    const auto & cmpCovParams = cmpParams.covariance;
+    // Set covariance parameters
+    const auto & cmpCovParams = cmpParams.covariance.value();
 
-    // Read ensemble
-    eckit::LocalConfiguration cmpEnsembleConf;
-    const bool iterativeLoading = covarConf.getBool("iterative ensemble loading", false);
-    oops::FieldSets localFset4dCmpEns
-         = readEnsemble(localHybridGeom,
-                        cmpOuterVars,
-                        localFset4dXb.times(), localFset4dXb.commTime(), localFset4dXb.commEns(),
-                        cmpCovParams.value().toConfiguration(),
-                        iterativeLoading,
-                        cmpEnsembleConf);
+    // Deserialize top ErrorCovarianceParametersBase
+    ErrorCovarianceParametersBase cmpModelSpaceCovarianceParams;
+    cmpModelSpaceCovarianceParams.deserialize(covarConf);
+    eckit::LocalConfiguration cmpModelSpaceCovarianceConf;
+    cmpModelSpaceCovarianceParams.serialize(cmpModelSpaceCovarianceConf);
 
-    // Create internal configuration
-    eckit::LocalConfiguration cmpCovarConf(covarConf);
-    cmpCovarConf.set("ensemble configuration", cmpEnsembleConf);
+    // Merge with component ErrorCovarianceParameters
+    const eckit::LocalConfiguration cmpCovarConf =
+      util::mergeConfigs(cmpModelSpaceCovarianceConf, cmpCovParams.toConfiguration());
 
+
+    // Add block chain
     hybridBlockChain_.push_back(
         SaberBlockChainFactory<MODEL>::create
          (localHybridGeom,
           cmpOuterVars,
           localFset4dXb,
           localFset4dFg,
-          localFset4dCmpEns,
           cmpCovarConf,
-          cmpCovParams.value().saberBlockChainParams.value()));
+          cmpCovParams.blockChainParams.value()));
 
     ASSERT(hybridBlockChain_.size() > 0);
 
@@ -350,19 +332,19 @@ SaberHybridBlockChain::SaberHybridBlockChain(const oops::Geometry<MODEL> & geom,
     eckit::mpi::setCommDefault(defaultSpaceComm.name().c_str());
   } else {
     oops::Log::info() << "Info     : Creating Hybrid block serially" << std::endl;
-    // Create block geometry (needed for ensemble reading)
+    // Create block geometry
     const oops::Geometry<MODEL> * hybridGeom = &geom;
     if (params.hybridGeometry.value()) {
       hybridGeom = new oops::Geometry<MODEL>(
         *params.hybridGeometry.value(),
         geom.getComm());
     }
-    for (const auto & cmp : params.components.value()) {
+    for (const auto & cmpParams : params.components.value()) {
       // Initialize component outer variables
       const oops::Variables cmpOuterVars(currentOuterVars);
 
       // Set weight
-      const auto & weightParams = cmp.weight.value();
+      const auto & weightParams = cmpParams.weight.value();
       // Scalar weight
       hybridScalarWeightSqrt_.push_back(std::sqrt(weightParams.value));
       // File-base weight
@@ -378,33 +360,28 @@ SaberHybridBlockChain::SaberHybridBlockChain(const oops::Geometry<MODEL> & geom,
       }
       hybridFieldWeightSqrt_.push_back(fsetWeight);
 
-      // Set covariance
-      const auto & cmpCovParams = cmp.covariance;
+      // Set covariance parameters
+      const auto & cmpCovParams = cmpParams.covariance.value();
 
-      // Read ensemble
-      eckit::LocalConfiguration cmpEnsembleConf;
-      const bool iterativeLoading = covarConf.getBool("iterative ensemble loading", false);
-      oops::FieldSets fset4dCmpEns
-           = readEnsemble(*hybridGeom,
-                          cmpOuterVars,
-                          fset4dXb.times(), fset4dXb.commTime(), fset4dXb.commEns(),
-                          cmpCovParams.value().toConfiguration(),
-                          iterativeLoading,
-                          cmpEnsembleConf);
+      // Deserialize top ErrorCovarianceParametersBase
+      ErrorCovarianceParametersBase cmpModelSpaceCovarianceParams;
+      cmpModelSpaceCovarianceParams.deserialize(covarConf);
+      eckit::LocalConfiguration cmpModelSpaceCovarianceConf;
+      cmpModelSpaceCovarianceParams.serialize(cmpModelSpaceCovarianceConf);
 
-      // Create internal configuration
-      eckit::LocalConfiguration cmpCovarConf(covarConf);
-      cmpCovarConf.set("ensemble configuration", cmpEnsembleConf);
+      // Merge with component ErrorCovarianceParameters
+      const eckit::LocalConfiguration cmpCovarConf =
+        util::mergeConfigs(cmpModelSpaceCovarianceConf, cmpCovParams.toConfiguration());
 
+      // Add block chain
       hybridBlockChain_.push_back
           (SaberBlockChainFactory<MODEL>::create
            (*hybridGeom,
             cmpOuterVars,
             fset4dXb,
             fset4dFg,
-            fset4dCmpEns,
             cmpCovarConf,
-            cmpCovParams.value().saberBlockChainParams.value()));
+            cmpCovParams.blockChainParams.value()));
     }
     ASSERT(hybridBlockChain_.size() > 0);
   }

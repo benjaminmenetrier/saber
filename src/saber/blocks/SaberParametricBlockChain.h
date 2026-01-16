@@ -52,15 +52,14 @@ class SaberParametricBlockChain : public SaberBlockChainBase {
                             const oops::Variables & outerVars,
                             oops::FieldSet4D & fset4dXb,
                             oops::FieldSet4D & fset4dFg,
-                            oops::FieldSets & fsetEns,
-                            const eckit::LocalConfiguration & covarConf,
+                            const eckit::Configuration & covarConf,
                             const eckit::Configuration & conf);
   /// @brief Simpler, limited constructor using only generic GeometryData
   SaberParametricBlockChain(const oops::GeometryData & outerGeometryData,
                             const oops::Variables & outerVars,
                             oops::FieldSet4D & fset4dXb,
                             oops::FieldSet4D & fset4dFg,
-                            const eckit::LocalConfiguration & covarConf,
+                            const eckit::Configuration & covarConf,
                             const eckit::Configuration & conf);
   ~SaberParametricBlockChain() = default;
 
@@ -88,13 +87,13 @@ class SaberParametricBlockChain : public SaberBlockChainBase {
   ///        Used in constructors.
   std::tuple<oops::Variables, oops::Variables>
       initCentralBlock(const oops::GeometryData & outerGeom,
-                       const eckit::LocalConfiguration & covarConf,
+                       const eckit::Configuration & covarConf,
                        const SaberBlockParametersBase & saberCentralBlockParams,
                        const oops::FieldSet4D & fset4dXb,
                        const oops::FieldSet4D & fset4dFg);
 
   /// @brief Run adjoint and square-root tests on central block. Used in constructors.
-  void testCentralBlock(const eckit::LocalConfiguration & covarConf,
+  void testCentralBlock(const eckit::Configuration & covarConf,
                         const SaberBlockParametersBase & saberCentralBlockParams,
                         const oops::GeometryData & outerGeom,
                         const oops::Variables & activeVars) const;
@@ -119,18 +118,17 @@ SaberParametricBlockChain::SaberParametricBlockChain(const oops::Geometry<MODEL>
                        const oops::Variables & outerVars,
                        oops::FieldSet4D & fset4dXb,
                        oops::FieldSet4D & fset4dFg,
-                       // TODO(AS): read inside the block so there is no need to pass
-                       // as non-const
-                       oops::FieldSets & fsetEns,
-                       const eckit::LocalConfiguration & covarConf,
+                       const eckit::Configuration & covarConf,
                        const eckit::Configuration & conf)
   : outerFunctionSpace_(geom.functionSpace()), outerVariables_(outerVars),
   crossTimeCov_(covarConf.getString("time covariance") == "multivariate duplicated"),
   timeComm_(fset4dXb.commTime()), size4D_(fset4dXb.size()) {
   oops::Log::trace() << "SaberParametricBlockChain ctor starting" << std::endl;
 
+  // Deserialize parameters
   SaberParametricBlockChainParameters params;
   params.deserialize(conf);
+
   // Get central block parameters
   SaberCentralBlockParametersWrapper saberCentralBlockParamsWrapper
     = params.saberCentralBlockParams;
@@ -139,11 +137,18 @@ SaberParametricBlockChain::SaberParametricBlockChain(const oops::Geometry<MODEL>
 
   const bool centralDirectCalibration = saberCentralBlockParams.doCalibration();
 
+  // Read ensemble (for non-iterative ensemble loading)
+  oops::FieldSets fsetEns = readEnsemble(geom,
+                                         outerVars,
+                                         fset4dXb.times(), fset4dXb.commTime(), fset4dXb.commEns(),
+                                         covarConf);
+
   // If needed create outer block chain
   if (params.saberOuterBlocksParams.value()) {
     outerBlockChain_ = std::make_unique<SaberOuterBlockChain>(geom, outerVariables_,
-                          fset4dXb, fset4dFg, fsetEns, covarConf,
-                          *params.saberOuterBlocksParams.value(), centralDirectCalibration);
+                          fset4dXb, fset4dFg, covarConf,
+                          *params.saberOuterBlocksParams.value(),
+                          &fsetEns, centralDirectCalibration);
   }
 
   // Set outer geometry data for central block
@@ -169,8 +174,6 @@ SaberParametricBlockChain::SaberParametricBlockChain(const oops::Geometry<MODEL>
   const bool iterativeEnsembleLoading = covarConf.getBool("iterative ensemble loading");
 
   // Ensemble configuration
-  eckit::LocalConfiguration ensembleConf
-         = covarConf.getSubConfiguration("ensemble configuration");
   if (saberCentralBlockParams.doCalibration()) {
     // Block calibration
     if (iterativeEnsembleLoading) {
@@ -181,12 +184,12 @@ SaberParametricBlockChain::SaberParametricBlockChain(const oops::Geometry<MODEL>
       centralBlock_->iterativeCalibrationInit();
 
       // Get ensemble size
-      size_t nens = ensembleConf.getInt("ensemble size");
+      size_t nens = getNensFromConfig(covarConf);
 
       for (size_t ie = 0; ie < nens; ++ie) {
         // Read ensemble member
         oops::FieldSet3D fset(fset4dXb[0].validTime(), geom.getComm());
-        readEnsembleMember(geom, outerVariables_, ensembleConf, ie, fset);
+        readEnsembleMember(geom, outerVariables_, covarConf, ie, fset);
 
         // Apply outer blocks inverse (all of them)
         oops::Log::info() << "Info     : Apply outer blocks inverse (all of them)" << std::endl;
@@ -228,7 +231,7 @@ SaberParametricBlockChain::SaberParametricBlockChain(const oops::Geometry<MODEL>
       == util::getGridUid(currentOuterGeom.functionSpace()));
 
     // Get ensemble size
-    size_t ensembleSize = ensembleConf.getInt("ensemble size");
+    size_t ensembleSize = getNensFromConfig(covarConf);
 
     // Estimate mean
     oops::FieldSet3D fsetMean(fset4dXb[0].validTime(), geom.getComm());
@@ -236,7 +239,7 @@ SaberParametricBlockChain::SaberParametricBlockChain(const oops::Geometry<MODEL>
       for (size_t ie = 0; ie < ensembleSize; ++ie) {
         // Read member
         oops::FieldSet3D fsetMem(fset4dXb[0].validTime(), geom.getComm());
-        readEnsembleMember(geom, activeVars, ensembleConf, ie, fsetMem);
+        readEnsembleMember(geom, activeVars, covarConf, ie, fsetMem);
 
         // Update mean
         if (ie == 0) {
@@ -266,7 +269,7 @@ SaberParametricBlockChain::SaberParametricBlockChain(const oops::Geometry<MODEL>
       if (iterativeEnsembleLoading) {
         // Read ensemble member
         oops::FieldSet3D fset(fset4dXb[0].validTime(), geom.getComm());
-        readEnsembleMember(geom, activeVars, ensembleConf, ie, fset);
+        readEnsembleMember(geom, activeVars, covarConf, ie, fset);
 
         // Remove mean
         fset -= fsetMean;

@@ -31,7 +31,7 @@ SaberOuterBlockChain::SaberOuterBlockChain(
                      const oops::Variables & outerVars,
                      oops::FieldSet4D & fset4dXb,
                      oops::FieldSet4D & fset4dFg,
-                     const eckit::LocalConfiguration & covarConf,
+                     const eckit::Configuration & covarConf,
                      const std::vector<SaberOuterBlockParametersWrapper> & params) {
   oops::Log::trace() << "SaberOuterBlockChain generic ctor starting" << std::endl;
   oops::Log::info() << "Info     : Creating outer blocks" << std::endl;
@@ -109,7 +109,7 @@ SaberOuterBlockChain::SaberOuterBlockChain(
 std::tuple<const SaberBlockParametersBase&, oops::Variables, oops::Variables>
     SaberOuterBlockChain::initBlock(
             const SaberOuterBlockParametersWrapper & saberOuterBlockParamWrapper,
-            const eckit::LocalConfiguration & outerBlockConf,
+            const eckit::Configuration & outerBlockConf,
             const oops::GeometryData & outerGeometryData,
             const oops::Variables & outerVars,
             oops::FieldSet4D & fset4dXb,
@@ -222,7 +222,7 @@ void SaberOuterBlockChain::interpolateStates(
 // -----------------------------------------------------------------------------
 
 void SaberOuterBlockChain::testLastOuterBlock(
-                        const eckit::LocalConfiguration & covarConf,
+                        const eckit::Configuration & covarConf,
                         const SaberBlockParametersBase & saberOuterBlockParams,
                         const oops::GeometryData & outerGeometryData,
                         const oops::Variables & outerVars,

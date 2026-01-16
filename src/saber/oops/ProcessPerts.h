@@ -84,7 +84,7 @@ template <typename MODEL> class FilterParameters :
   OOPS_CONCRETE_PARAMETERS(FilterParameters, oops::Parameters)
 
  public:
-  typedef ErrorCovarianceParameters<MODEL>           ErrorCovarianceParameters_;
+  typedef ErrorCovarianceParameters ErrorCovarianceParameters_;
   /// Note that the parameters here are not actually used in the code
   /// They are here to express the intent of these variables.
   /// Later on in the code we use eckit::LocalConfiguration and check whether
@@ -108,7 +108,7 @@ template <typename MODEL> class OutputWriteParameters :
   OOPS_CONCRETE_PARAMETERS(OutputWriteParameters, oops::Parameters)
 
  public:
-  typedef ErrorCovarianceParameters<MODEL>                   ErrorCovarianceParameters_;
+  typedef ErrorCovarianceParameters ErrorCovarianceParameters_;
 
   // This is there to get ErrorCovarianceParameters and in particular
   // saber blocks that can be used for diagnostic purposes.
@@ -236,15 +236,10 @@ template <typename MODEL> class ProcessPerts : public oops::Application {
     }
 
     // Read input ensemble
-    const bool iterativeEnsembleLoading = false;
-    eckit::LocalConfiguration ensembleConf(fullConfig);
-    eckit::LocalConfiguration outputEnsConf;
     oops::FieldSets fsetEnsI = readEnsemble<MODEL>(geom,
                                                    incVars,
                                                    xx.times(), xx.commTime(), xx.commEns(),
-                                                   ensembleConf,
-                                                   iterativeEnsembleLoading,
-                                                   outputEnsConf);
+                                                   fullConfig);
     int nincrements = fsetEnsI.ens_size();
 
     const std::size_t nbands = params.bands.value().size();
@@ -294,7 +289,6 @@ template <typename MODEL> class ProcessPerts : public oops::Application {
       saberFilterBlocks.push_back(
         std::make_unique<SaberParametricBlockChain>(geom,
                                                     incVars, fsetXb, fsetFg,
-                                                    fsetEns,
                                                     covarConf,
                                                     value));
     }
@@ -304,7 +298,6 @@ template <typename MODEL> class ProcessPerts : public oops::Application {
       saberDiagnosticBlocks.push_back(
         std::make_unique<SaberParametricBlockChain>(geom,
                                                     incVars, fsetXb, fsetFg,
-                                                    fsetEns,
                                                     covarConf,
                                                     value));
     }

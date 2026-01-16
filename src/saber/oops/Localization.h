@@ -83,27 +83,20 @@ Localization<MODEL>::Localization(const Geometry_ & geom,
   fg.shallowCopy(fg_state.fieldSet());
   oops::FieldSet4D fg4d(fg);
 
-  oops::FieldSets emptyFsetEns({}, oops::mpi::myself(), {}, oops::mpi::myself());
-  // TODO(AS): revisit what configuration needs to be passed to SaberParametricBlockChain.
+  // Fill covariance configuration
+  ErrorCovarianceParametersBase params;
+  params.deserialize(conf);
   eckit::LocalConfiguration covarConf;
-  eckit::LocalConfiguration ensembleConf;
-  ensembleConf.set("ensemble size", 0);
-  covarConf.set("ensemble configuration", ensembleConf);
-  covarConf.set("adjoint test", conf.getBool("adjoint test", false));
-  covarConf.set("adjoint tolerance", conf.getDouble("adjoint tolerance", 1.0e-12));
-  covarConf.set("inverse test", conf.getBool("inverse test", false));
-  covarConf.set("inverse tolerance", conf.getDouble("inverse tolerance", 1.0e-12));
-  covarConf.set("square-root test", conf.getBool("square-root test", false));
-  covarConf.set("square-root tolerance", conf.getDouble("square-root tolerance", 1.0e-12));
-  covarConf.set("iterative ensemble loading", false);
+  params.serialize(covarConf);
 
   // 3D localization always used here (4D aspects handled in oops::Localization),
   // so this parameter can be anything.
   covarConf.set("time covariance", "univariate");
+
   // Initialize localization blockchain
   loc_ = std::make_unique<SaberParametricBlockChain>(geom,
               incVars, xb4d, fg4d,
-              emptyFsetEns, covarConf, conf);
+              covarConf, conf);
 
   oops::Log::trace() << "Localization:Localization done" << std::endl;
 }

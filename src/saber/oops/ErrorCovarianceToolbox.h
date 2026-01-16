@@ -106,7 +106,6 @@ template <typename MODEL> class ErrorCovarianceToolboxParameters :
 template <typename MODEL> class ErrorCovarianceToolbox : public oops::Application {
   typedef oops::ModelSpaceCovarianceBase<MODEL>           CovarianceBase_;
   typedef oops::CovarianceFactory<MODEL>                  CovarianceFactory_;
-  typedef ModelSpaceCovarianceParametersBase<MODEL>       CovarianceParametersBase_;
   typedef oops::Geometry<MODEL>                           Geometry_;
   typedef oops::Increment<MODEL>                          Increment_;
   typedef oops::Increment4D<MODEL>                        Increment4D_;
@@ -240,8 +239,8 @@ template <typename MODEL> class ErrorCovarianceToolbox : public oops::Applicatio
       dirac(covarConf, testConf, id, geom, vars, xx, dxi);
     }
 
-    // Background error covariance parameters
-    CovarianceParametersBase_ covarParams;
+    // Background error covariance base parameters
+    ErrorCovarianceParametersBase covarParams;
     covarParams.deserialize(covarConf);
     const auto & randomizationSize = covarParams.randomizationSize.value();
     if ((diracParams == boost::none) || (randomizationSize != boost::none)) {

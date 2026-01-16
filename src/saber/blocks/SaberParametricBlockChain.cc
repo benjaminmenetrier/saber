@@ -21,7 +21,7 @@ SaberParametricBlockChain::SaberParametricBlockChain(
                           const oops::Variables & outerVars,
                           oops::FieldSet4D & fset4dXb,
                           oops::FieldSet4D & fset4dFg,
-                          const eckit::LocalConfiguration & covarConf,
+                          const eckit::Configuration & covarConf,
                           const eckit::Configuration & conf)
   : outerFunctionSpace_(outerGeometryData.functionSpace()),
     outerVariables_(outerVars),
@@ -101,7 +101,7 @@ SaberParametricBlockChain::SaberParametricBlockChain(
 std::tuple<oops::Variables, oops::Variables>
     SaberParametricBlockChain::initCentralBlock(
         const oops::GeometryData & outerGeom,
-        const eckit::LocalConfiguration & covarConf,
+        const eckit::Configuration & covarConf,
         const SaberBlockParametersBase & saberCentralBlockParams,
         const oops::FieldSet4D & fset4dXb,
         const oops::FieldSet4D & fset4dFg) {
@@ -141,7 +141,7 @@ std::tuple<oops::Variables, oops::Variables>
 // -----------------------------------------------------------------------------
 
 void SaberParametricBlockChain::testCentralBlock(
-        const eckit::LocalConfiguration & covarConf,
+        const eckit::Configuration & covarConf,
         const SaberBlockParametersBase & saberCentralBlockParams,
         const oops::GeometryData & outerGeom,
         const oops::Variables & activeVars) const {
