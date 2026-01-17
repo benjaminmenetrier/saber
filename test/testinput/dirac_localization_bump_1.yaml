@@ -18,6 +18,7 @@ background:
   - air_horizontal_streamfunction
 background error:
   covariance model: hybrid
+  square-root test: false
   run components recursively: true
   components:
   - covariance:
@@ -79,6 +80,7 @@ background error:
     weight:
       value: 0.25
   - covariance:
+      square-root test: false
       covariance model: ensemble
       members from template:
         template:
@@ -93,13 +95,13 @@ background error:
         zero padding: 6
       localization:
         localization method: SABER
-        multivariate strategy: univariate
-        groups:
-        - group name: group1
-          variables:
-          - eastward_wind
-          - northward_wind
-          saber central block:
+        saber central block:
+          multivariate strategy: univariate
+          groups:
+          - group name: group1
+            variables:
+            - eastward_wind
+            - northward_wind
             saber block name: BUMP_NICAS
             read:
               general:
@@ -111,10 +113,9 @@ background error:
               drivers:
                 multivariate strategy: univariate
                 read local nicas: true
-        - group name: group2
-          variables:
-          - air_horizontal_streamfunction
-          saber central block:
+          - group name: group2
+            variables:
+            - air_horizontal_streamfunction
             saber block name: BUMP_NICAS
             read:
               general:
@@ -191,13 +192,13 @@ background error:
       saber central block:
         saber block name: Ensemble
         localization:
-          multivariate strategy: univariate
-          groups:
-          - group name: group1
-            variables:
-            - eastward_wind
-            - northward_wind
-            saber central block:
+          saber central block:
+            multivariate strategy: univariate
+            groups:
+            - group name: group1
+              variables:
+              - eastward_wind
+              - northward_wind
               saber block name: BUMP_NICAS
               read:
                 general:
@@ -209,10 +210,9 @@ background error:
                 drivers:
                   multivariate strategy: univariate
                   read local nicas: true
-          - group name: group2
-            variables:
-            - air_horizontal_streamfunction
-            saber central block:
+            - group name: group2
+              variables:
+              - air_horizontal_streamfunction
               saber block name: BUMP_NICAS
               read:
                 general:

@@ -39,7 +39,7 @@
 #include "oops/util/ParallelFieldSetIO.h"
 
 #include "saber/blocks/SaberBlockParametersBase.h"
-#include "saber/blocks/SaberCentralBlockBase.h"
+#include "saber/blocks/SaberCentralBlock.h"
 #include "saber/blocks/SaberOuterBlockBase.h"
 #include "saber/oops/ErrorCovarianceParameters.h"
 
@@ -51,9 +51,13 @@ namespace saber {
 
 // -----------------------------------------------------------------------------
 
-oops::Variables getActiveVars(const SaberBlockParametersBase & params,
+oops::Variables getActiveVars(const SaberCentralBlockParameters & params,
                               const oops::Variables & defaultVars);
 
+// -----------------------------------------------------------------------------
+
+oops::Variables getActiveVars(const SaberBlockParametersBase & params,
+                              const oops::Variables & defaultVars);
 // -----------------------------------------------------------------------------
 
 oops::Variables getUnionOfInnerActiveAndOuterVars(const SaberBlockParametersBase & params,

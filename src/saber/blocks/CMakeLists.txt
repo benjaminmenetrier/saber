@@ -19,6 +19,10 @@ SaberOuterBlockBase.h
 # SABER block chain base
 SaberBlockChainBase.h
 
+# SABER central block wrapper
+SaberCentralBlock.cc
+SaberCentralBlock.h
+
 # SABER ensemble block chain
 SaberEnsembleBlockChain.cc
 SaberEnsembleBlockChain.h
@@ -30,10 +34,6 @@ SaberOuterBlockChain.h
 # SABER parametric block chain
 SaberParametricBlockChain.cc
 SaberParametricBlockChain.h
-
-# SABER parametric block chain group
-SaberParametricBlockChainGroup.cc
-SaberParametricBlockChainGroup.h
 
 # Factories
 instantiateBlockChainFactory.h

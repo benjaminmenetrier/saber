@@ -1,0 +1,218 @@
+/*
+ * (C) Copyright 2025- UCAR
+ * (C) Crown Copyright 2024 Met Office
+ * (C) Copyright 2025 Meteorologisk Institutt
+ *
+ * This software is licensed under the terms of the Apache Licence Version 2.0
+ * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
+ */
+
+#pragma once
+
+#include <map>
+#include <memory>
+#include <string>
+#include <unordered_map>
+#include <utility>
+#include <vector>
+
+#include <Eigen/Dense>
+
+#include "atlas/field.h"
+
+#include "eckit/exception/Exceptions.h"
+#include "eckit/memory/NonCopyable.h"
+
+#include "oops/base/FieldSet3D.h"
+#include "oops/base/GeometryData.h"
+#include "oops/util/AssociativeContainers.h"
+#include "oops/util/FieldSetHelpers.h"
+#include "oops/util/Logger.h"
+#include "oops/util/parameters/ConfigurationParameter.h"
+#include "oops/util/parameters/Parameters.h"
+#include "oops/util/parameters/RequiredPolymorphicParameter.h"
+#include "oops/util/Printable.h"
+
+#include "saber/blocks/SaberCentralBlockBase.h"
+
+// Forward declaration
+namespace oops {
+  template <typename MODEL> class Geometry;
+  template <typename MODEL> class Increment;
+  class FieldSets;
+}
+
+namespace saber {
+
+// -----------------------------------------------------------------------------
+// for now just a placemaker with configuration parameter
+class SaberCentralBlockParameters : public oops::Parameters {
+  OOPS_CONCRETE_PARAMETERS(SaberCentralBlockParameters, Parameters)
+
+ public:
+  oops::ConfigurationParameter conf{this};
+};
+
+// -----------------------------------------------------------------------------
+
+class SaberCentralBlock : public util::Printable,
+                          private eckit::NonCopyable {
+ public:
+  SaberCentralBlock(const oops::GeometryData & geometryData,
+                    const bool levelsAreTopDown,
+                    const oops::Variables & outerVars,
+                    const eckit::Configuration & covarConf,
+                    const SaberCentralBlockParameters & params,
+                    const oops::FieldSet3D & xb,
+                    const oops::FieldSet3D & fg);
+  ~SaberCentralBlock() {};
+
+  // Application methods
+
+  // Block randomization
+  void randomize(oops::FieldSet3D &) const;
+
+  // Block multiplication
+  void multiply(oops::FieldSet3D &) const;
+
+  // Block filtering; by default calls multiply
+  void filter(oops::FieldSet3D & fset) const;
+
+  // Setup / calibration methods
+
+  // Read block data
+  void read() {
+    for (size_t i = 0; i < groups_.size(); ++i) {
+      if (doRead_[i]) {
+        groups_[i]->read();
+      }
+    }
+  }
+
+  // Direct calibration
+  void directCalibration(const oops::FieldSets & fsets) {
+    for (size_t i = 0; i < groups_.size(); ++i) { 
+      if (doCalibration_[i]) {
+        groups_[i]->directCalibration(fsets);
+      }
+    }
+  }
+
+  // Iterative calibration
+  void iterativeCalibrationInit() {
+    for (size_t i = 0; i < groups_.size(); ++i) {
+      if (doCalibration_[i]) {
+        groups_[i]->iterativeCalibrationInit();
+      }
+    }
+  }
+  void iterativeCalibrationUpdate(const oops::FieldSet3D & fset) {
+    for (size_t i = 0; i < groups_.size(); ++i) {
+      if (doCalibration_[i]) {
+        groups_[i]->iterativeCalibrationUpdate(fset);
+      }
+    }
+  }
+  void iterativeCalibrationFinal() {
+    for (size_t i = 0; i < groups_.size(); ++i) {
+      if (doCalibration_[i]) {
+        groups_[i]->iterativeCalibrationFinal();
+      }
+    }
+  }
+
+  // Write block data
+  void write() const {
+    for (size_t i = 0; i < groups_.size(); ++i) {
+      if (doWrite_[i]) {
+        groups_[i]->write();
+      }
+    }
+  }
+
+  // Square-root formulation
+  size_t ctlVecSize() const;
+  void multiplySqrt(const atlas::Field &, oops::FieldSet3D &, const size_t &) const;
+  void multiplySqrtAD(const oops::FieldSet3D &, atlas::Field &, const size_t &) const;
+
+  // Return date/time
+  const util::DateTime validTime() const {return validTime_;}
+
+  // Read model fields
+  template <typename MODEL>
+  void read(const oops::Geometry<MODEL> &,
+            const oops::Variables &);
+
+  // Write model fields
+  template <typename MODEL>
+  void write(const oops::Geometry<MODEL> &) const;
+
+  // Adjoint test
+  void adjointTest(const oops::GeometryData & geomdata,
+                   const oops::Variables & vars,
+                   const double & tol) const;
+  // Square-root test
+  void sqrtTest(const oops::GeometryData & geomdata,
+                const oops::Variables & vars,
+                const double & tol) const;
+
+  bool doCalibration() const {return std::any_of(doCalibration_.begin(), doCalibration_.end(), [](bool v) { return v; });}
+  bool doRead() const {return std::any_of(doRead_.begin(), doRead_.end(), [](bool v) { return v; });}
+  bool doWrite() const {return std::any_of(doWrite_.begin(), doWrite_.end(), [](bool v) { return v; });}
+
+ private:
+  const util::DateTime validTime_;
+  // Multivariate strategy
+  std::string strategy_;
+  // Groups of central blocks for different variable subsets
+  std::vector<std::unique_ptr<SaberCentralBlockBase>> groups_;
+  // Group variables
+  std::vector<oops::Variables> groupInputVars_;
+  // Group reference variable name (for fields summation)
+  std::vector<oops::Variable> groupRefVars_;
+  // Group names
+  std::vector<std::string> groupNames_;
+  // Group inner variables (containing only the reference variable, with the group name)
+  std::vector<oops::Variables> groupInnerVars_;
+  // Weights for the "duplicated and weighted" strategy
+  std::vector<Eigen::MatrixXd> wgtSqrt_;
+  // Level for 2D fields (for 3D and 2D fields summation)
+  std::unordered_map<std::string, size_t> lev2d_;
+
+  // groups need to be calibrated
+  std::vector<bool> doCalibration_;
+  // groups need to read MODEL data
+  std::vector<bool> doRead_;
+  // groups need to write MODEL data
+  std::vector<bool> doWrite_;
+
+  void print(std::ostream &) const {}
+};
+
+
+// -----------------------------------------------------------------------------
+
+template <typename MODEL>
+void SaberCentralBlock::read(const oops::Geometry<MODEL> & geom,
+                             const oops::Variables & vars) {
+  oops::Log::trace() << "SaberCentralBlock::read starting" << std::endl;
+  for (size_t i = 0; i < groups_.size(); ++i) {
+    groups_[i]->read(geom, vars);
+  }
+  oops::Log::trace() << "SaberCentralBlock::read done" << std::endl;
+}
+
+// -----------------------------------------------------------------------------
+
+template <typename MODEL>
+void SaberCentralBlock::write(const oops::Geometry<MODEL> & geom) const {
+  oops::Log::trace() << "SaberCentralBlock::write starting" << std::endl;
+  for (size_t i = 0; i < groups_.size(); ++i) {
+    groups_[i]->write(geom);
+  }
+  oops::Log::trace() << "SaberCentralBlock::write done" << std::endl;
+}
+
+// -----------------------------------------------------------------------------
+
+}  // namespace saber

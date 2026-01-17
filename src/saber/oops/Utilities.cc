@@ -15,6 +15,53 @@
 namespace saber {
 
 // -----------------------------------------------------------------------------
+// needs cleanup
+oops::Variables getActiveVars(const SaberCentralBlockParameters & cbparams,
+                              const oops::Variables & defaultVars) {
+  oops::Log::trace() << "getActiveVars starting" << std::endl;
+  eckit::LocalConfiguration conf = cbparams.toConfiguration();
+    std::vector<eckit::LocalConfiguration> groupConfs;
+  if (!conf.has("groups")) {
+    // Add group configuration
+    SaberCentralBlockParametersWrapper saberCentralBlockParamsWrapper;
+    saberCentralBlockParamsWrapper.deserialize(conf);
+    const SaberBlockParametersBase & params =
+      saberCentralBlockParamsWrapper.saberCentralBlockParameters;
+    return getActiveVars(params, defaultVars);
+  } else {
+    // Get group configurations from conf
+    groupConfs = conf.getSubConfigurations("groups");
+  }
+
+  oops::Variables activeVars_nomd;
+  for (const auto & groupConf : groupConfs) {
+    SaberCentralBlockParametersWrapper saberCentralBlockParamsWrapper;
+    saberCentralBlockParamsWrapper.deserialize(groupConf);
+    const SaberBlockParametersBase & params =
+      saberCentralBlockParamsWrapper.saberCentralBlockParameters;
+    if (params.mandatoryActiveVars().size() == 0) {
+      // No mandatory active variables for this block
+      activeVars_nomd += params.activeVars.value().get_value_or(defaultVars);
+    } else {
+      // Block with mandatory active variables
+      activeVars_nomd += params.activeVars.value().get_value_or(params.mandatoryActiveVars());
+      ASSERT(params.mandatoryActiveVars() <= activeVars_nomd);
+    }
+  }
+  // Copy the variables that exist in defaultVars from defaultVars (they have metadata
+  // associated with them)
+  oops::Variables activeVars;
+  for (auto & var : activeVars_nomd) {
+    if (defaultVars.has(var.name())) {
+      activeVars.push_back(defaultVars[var.name()]);
+    } else {
+      activeVars.push_back(var);
+    }
+  }
+  return activeVars;
+}
+
+// -----------------------------------------------------------------------------
 
 oops::Variables getActiveVars(const SaberBlockParametersBase & params,
                               const oops::Variables & defaultVars) {
@@ -40,6 +87,7 @@ oops::Variables getActiveVars(const SaberBlockParametersBase & params,
   }
   return activeVars;
 }
+
 
 // -----------------------------------------------------------------------------
 

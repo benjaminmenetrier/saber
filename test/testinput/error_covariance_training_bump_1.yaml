@@ -35,3 +35,4 @@ background error:
           filepath: testdata/error_covariance_training_bump_1/_MPI_-_OMP__vert_coord
 test:
   reference filename: testref/error_covariance_training_bump_1.ref
+  test output filename: testref/error_covariance_training_bump_1.out

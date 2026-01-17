@@ -36,13 +36,13 @@ background error:
     zero padding: 6
   localization:
     localization method: SABER
-    multivariate strategy: duplicated
-    groups:
-    - group name: group1
-      variables:
-      - eastward_wind
-      - northward_wind
-      saber central block:
+    saber central block:
+      multivariate strategy: duplicated
+      groups:
+      - group name: group1
+        variables:
+        - eastward_wind
+        - northward_wind
         saber block name: BUMP_NICAS
         active variables:
         - group1
@@ -69,11 +69,10 @@ background error:
             - groups:
               - group1
               value: 3.0
-    - group name: group2
-      variables:
-      - air_horizontal_streamfunction
-      - air_pressure_at_surface
-      saber central block:
+      - group name: group2
+        variables:
+        - air_horizontal_streamfunction
+        - air_pressure_at_surface
         saber block name: diffusion
         calibration:
           normalization:

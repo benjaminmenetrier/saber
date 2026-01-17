@@ -96,20 +96,20 @@ background error:
         zero padding: 6
       localization:
         localization method: SABER
-        multivariate strategy: duplicated and weighted
-        groups:
-        - group name: group1
-          variables:
-          - eastward_wind
-          - northward_wind
-          - air_horizontal_streamfunction
-          default off-diagonal weight: 0.3
-          specific off-diagonal weights:
-          - variables pair:
+        saber central block:
+          multivariate strategy: duplicated and weighted
+          groups:
+          - group name: group1
+            variables:
             - eastward_wind
             - northward_wind
-            value: 0.5
-          saber central block:
+            - air_horizontal_streamfunction
+            default off-diagonal weight: 0.3
+            specific off-diagonal weights:
+            - variables pair:
+              - eastward_wind
+              - northward_wind
+              value: 0.5
             saber block name: BUMP_NICAS
             read:
               general:
@@ -196,20 +196,20 @@ background error:
       saber central block:
         saber block name: Ensemble
         localization:
-          multivariate strategy: duplicated and weighted
-          groups:
-          - group name: group1
-            variables:
-            - eastward_wind
-            - northward_wind
-            - air_horizontal_streamfunction
-            default off-diagonal weight: 0.3
-            specific off-diagonal weights:
-            - variables pair:
+          saber central block:
+            multivariate strategy: duplicated and weighted
+            groups:
+            - group name: group1
+              variables:
               - eastward_wind
               - northward_wind
-              value: 0.5
-            saber central block:
+              - air_horizontal_streamfunction
+              default off-diagonal weight: 0.3
+              specific off-diagonal weights:
+              - variables pair:
+                - eastward_wind
+                - northward_wind
+                value: 0.5
               saber block name: BUMP_NICAS
               read:
                 general:
