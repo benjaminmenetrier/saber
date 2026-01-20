@@ -22,7 +22,7 @@ template <typename MODEL>
 void instantiateBlockChainFactory() {
   static SaberBlockChainMaker<MODEL, SaberEnsembleBlockChain>
     makerEnsembleBlockChain_("ensemble");
-  static SaberBlockChainMaker<MODEL, SaberHybridBlockChain>
+  static SaberBlockChainMaker<MODEL, SaberHybridBlockChain<MODEL>>
     makerHybridBlockChain_("hybrid");
   static SaberBlockChainMaker<MODEL, SaberParametricBlockChain>
     makerParametricBlockChain_("parametric");
