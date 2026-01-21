@@ -155,28 +155,28 @@ background error:
           nmembers: 25
           zero padding: 6
       localization:
-          saber central block:
-            saber block name: BUMP_NICAS
-            read:
-              general:
-                testing: true
-                universe length-scale: 10000.0e3
-              io:
-                data directory: testdata
-                files prefix: dirac_localization_bump_3/_MPI_-_OMP_
-              drivers:
-                multivariate strategy: crossed
-                read local nicas: true
-              model:
-                groups:
-                - group name: group1
-                  variables:
-                  - eastward_wind
-                  - northward_wind
-                - group name: group2
-                  variables:
-                  - air_pressure_at_surface
-                  - air_horizontal_streamfunction
+        saber central block:
+          saber block name: BUMP_NICAS
+          read:
+            general:
+              testing: true
+              universe length-scale: 10000.0e3
+            io:
+              data directory: testdata
+              files prefix: dirac_localization_bump_3/_MPI_-_OMP_
+            drivers:
+              multivariate strategy: crossed
+              read local nicas: true
+            model:
+              groups:
+              - group name: group1
+                variables:
+                - eastward_wind
+                - northward_wind
+              - group name: group2
+                variables:
+                - air_pressure_at_surface
+                - air_horizontal_streamfunction
     weight:
       value: 0.25
   - covariance:
@@ -199,39 +199,39 @@ background error:
           nmembers: 25
           zero padding: 6
       localization:
-          saber central block:
-            multivariate strategy: crossed
-            groups:
-            - group name: group1
-              variables:
-              - eastward_wind
-              - northward_wind
-              saber block name: BUMP_NICAS
-              read:
-                general:
-                  testing: true
-                  universe length-scale: 10000.0e3
-                io:
-                  data directory: testdata
-                  files prefix: dirac_localization_bump_3/_MPI_-_OMP_
-                drivers:
-                  multivariate strategy: univariate
-                  read local nicas: true
-            - group name: group2
-              variables:
-              - air_pressure_at_surface
-              - air_horizontal_streamfunction
-              saber block name: BUMP_NICAS
-              read:
-                general:
-                  testing: true
-                  universe length-scale: 10000.0e3
-                io:
-                  data directory: testdata
-                  files prefix: dirac_localization_bump_3/_MPI_-_OMP_
-                drivers:
-                  multivariate strategy: univariate
-                  read local nicas: true
+        saber central block:
+          multivariate strategy: crossed
+          groups:
+          - group name: group1
+            variables:
+            - eastward_wind
+            - northward_wind
+            saber block name: BUMP_NICAS
+            read:
+              general:
+                testing: true
+                universe length-scale: 10000.0e3
+              io:
+                data directory: testdata
+                files prefix: dirac_localization_bump_3/_MPI_-_OMP_
+              drivers:
+                multivariate strategy: univariate
+                read local nicas: true
+          - group name: group2
+            variables:
+            - air_pressure_at_surface
+            - air_horizontal_streamfunction
+            saber block name: BUMP_NICAS
+            read:
+              general:
+                testing: true
+                universe length-scale: 10000.0e3
+              io:
+                data directory: testdata
+                files prefix: dirac_localization_bump_3/_MPI_-_OMP_
+              drivers:
+                multivariate strategy: univariate
+                read local nicas: true
     weight:
       value: 0.25
 dirac:
@@ -248,4 +248,3 @@ output dirac:
   filepath: testdata/dirac_localization_bump_3/%MPI%_dirac_%id%
 test:
   reference filename: testref/dirac_localization_bump_3.ref
-  test output filename: testref/dirac_localization_bump_3.out

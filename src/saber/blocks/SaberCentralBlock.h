@@ -26,6 +26,7 @@
 #include "oops/util/AssociativeContainers.h"
 #include "oops/util/FieldSetHelpers.h"
 #include "oops/util/Logger.h"
+#include "oops/util/parameters/OptionalParameter.h"
 #include "oops/util/parameters/OptionalPolymorphicParameter.h"
 #include "oops/util/parameters/Parameters.h"
 #include "oops/util/parameters/RequiredPolymorphicParameter.h"
@@ -37,6 +38,15 @@
 namespace saber {
 
 // -----------------------------------------------------------------------------
+class OffDiagWeightParameters : public oops::Parameters {
+  OOPS_CONCRETE_PARAMETERS(OffDiagWeightParameters, Parameters)
+
+ public:
+  oops::RequiredParameter<std::vector<std::string>> varPair{"variables pair", this};
+  oops::RequiredParameter<double> weight{"value", this};
+};
+
+// -----------------------------------------------------------------------------
 class SaberCentralBlockGroupParameters : public oops::Parameters {
   OOPS_CONCRETE_PARAMETERS(SaberCentralBlockGroupParameters, Parameters)
 
@@ -45,6 +55,10 @@ class SaberCentralBlockGroupParameters : public oops::Parameters {
   oops::RequiredParameter<oops::Variables> variables{"variables", this};
   oops::RequiredPolymorphicParameter<SaberBlockParametersBase, SaberCentralBlockFactory>
     block{"saber block name", this};
+  // optional parameters specific to "duplicated and weighted" strategy
+  oops::Parameter<double> defOffDiagWeight{"default off-diagonal weight", 0.0, this};
+  oops::OptionalParameter<std::vector<OffDiagWeightParameters>>
+    offDiagWeights{"specific off-diagonal weights", this};
 };
 
 // -----------------------------------------------------------------------------
@@ -143,14 +157,6 @@ class SaberCentralBlock : public util::Printable {
   void multiplySqrt(const atlas::Field &, oops::FieldSet3D &, const size_t &) const;
   void multiplySqrtAD(const oops::FieldSet3D &, atlas::Field &, const size_t &) const;
 
-  const oops::Variables centralVars() const {
-    oops::Variables allVars;
-    for (const auto & groupVars : groupInnerVars_) {
-      allVars += groupVars;
-    }
-    return allVars;
-  }
-
   // Return date/time
   const util::DateTime validTime() const {return validTime_;}
 
@@ -165,11 +171,9 @@ class SaberCentralBlock : public util::Printable {
 
   // Adjoint test
   void adjointTest(const oops::GeometryData & geomdata,
-                   const oops::Variables & vars,
                    const double & tol) const;
   // Square-root test
   void sqrtTest(const oops::GeometryData & geomdata,
-                const oops::Variables & vars,
                 const double & tol) const;
 
   bool doCalibration() const {
@@ -185,6 +189,7 @@ class SaberCentralBlock : public util::Printable {
  private:
   const oops::GeometryData & geometryData_;
   const util::DateTime validTime_;
+  const SaberCentralBlockParameters params_;
   // Multivariate strategy
   std::string strategy_;
   // Groups of central blocks for different variable subsets

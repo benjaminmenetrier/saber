@@ -9,6 +9,7 @@
 
 #include "saber/blocks/SaberCentralBlock.h"
 
+#include "oops/util/FieldSetOperations.h"
 #include "oops/util/Random.h"
 
 using atlas::array::make_datatype;
@@ -18,6 +19,7 @@ using atlas::array::make_view;
 namespace saber {
 
 // -----------------------------------------------------------------------------
+
 bool SaberCentralBlockParameters::doCalibration() const {
   if (this->singleBlock.value()) {
     return this->singleBlock.value()->doCalibration();
@@ -51,35 +53,15 @@ bool SaberCentralBlockParameters::doRead() const {
 // -----------------------------------------------------------------------------
 
 SaberCentralBlock::SaberCentralBlock(const oops::GeometryData & outerGeom,
-                    const bool levelsAreTopDown,
-                    const oops::Variables & outerVars,
-                    const eckit::Configuration & covarConf,
-                    const SaberCentralBlockParameters & params,
-                    const oops::FieldSet3D & xb,
-                    const oops::FieldSet3D & fg)
-  : geometryData_(outerGeom), validTime_(xb.validTime()) {
+                                     const bool levelsAreTopDown,
+                                     const oops::Variables & outerVars,
+                                     const eckit::Configuration & covarConf,
+                                     const SaberCentralBlockParameters & params,
+                                     const oops::FieldSet3D & xb,
+                                     const oops::FieldSet3D & fg)
+  : geometryData_(outerGeom), validTime_(xb.validTime()), params_(params),
+    strategy_(params.strategy) {
   oops::Log::trace() << "SaberCentralBlock constructor starting" << std::endl;
-  eckit::LocalConfiguration conf = params.toConfiguration();
-  // Get strategy and group configurations
-  std::vector<eckit::LocalConfiguration> groupConfs;
-  if (!conf.has("groups")) {
-    // For backward compatibility, only one group is created in this case
-    strategy_ = "deprecated";
-
-    // Finalize group configuration
-    eckit::LocalConfiguration groupConf(conf);
-    groupConf.set("group name", "deprecated");
-    groupConf.set("variables", outerVars.variables());
-
-    // Add group configuration
-    groupConfs.push_back(groupConf);
-  } else {
-    // Get strategy
-    strategy_ = conf.getString("multivariate strategy");
-
-    // Get group configurations from conf
-    groupConfs = conf.getSubConfigurations("groups");
-  }
 
   // Check multivariate strategy:
   // - Univariate: localization of each group is applied to each variable of the group.
@@ -98,138 +80,161 @@ SaberCentralBlock::SaberCentralBlock(const oops::GeometryData & outerGeom,
 
   oops::Log::info() << "Info     : SaberCentralBlock using multivariate strategy: "
                     << strategy_ << std::endl;
-  // Loop over groups
-  for (const auto & groupConf : groupConfs) {
-    // Get group variables names
-    oops::Log::info() << "Info     : Creating central block group: "
-                      << groupConf.getString("group name") << std::endl;
-    const std::vector<std::string> varNames = groupConf.getStringVector("variables");
+  // Check if it's a single group
+  if (params.singleBlock.value() && (strategy_ != "deprecated")) {
+    throw eckit::UserError("SaberCentralBlock: single block can only be used with the "
+                           "'deprecated' strategy.", Here());
+  }
+  if (strategy_ == "deprecated" && params.groups.value() &&
+             (params.groups.value().get().size() > 1)) {
+    throw eckit::UserError("SaberCentralBlock: 'deprecated' strategy can only be used with "
+                           "a single block.", Here());
+  }
+  if (params.singleBlock.value() && params.groups.value()) {
+    throw eckit::UserError("SaberCentralBlock: please specify either a single block or multiple "
+                           "groups, not both.", Here());
+  }
 
-    // Define group variables
-    oops::Variables groupVars;
-    for (const auto & varName : varNames) {
-      groupVars.push_back(outerVars[varName]);
-    }
+  if (params.singleBlock.value()) {
+    // Single block case
+    oops::Log::info() << "Info     : Creating single central block." << std::endl;
+    groupInputVars_.push_back(outerVars);
+    groupNames_.push_back("single block");
+    groupInnerVars_.push_back(outerVars);
+    groupRefVars_.push_back(outerVars[0]);
+    doCalibration_.push_back(params.singleBlock.value()->doCalibration());
+    doRead_.push_back(params.singleBlock.value()->doRead());
+    forceWrite_.push_back(params.singleBlock.value()->forceWrite.value());
+    groups_.push_back(SaberCentralBlockFactory::create(outerGeom,
+                                                       groupInnerVars_.back(),
+                                                       covarConf,
+                                                       *(params.singleBlock.value()),
+                                                       xb,
+                                                       fg));
+  } else {
+    // Loop over groups
+    for (const auto & groupParams : params.groups.value().get()) {
+      // Get group variables names
+      oops::Log::info() << "Info     : Creating central block group: "
+                        << groupParams.groupName.value() << std::endl;
+      const oops::Variables varNames = groupParams.variables.value();
 
-    // Check group variables consistency
-    size_t levelsCheck = groupVars[0].getLevels();
-    oops::Variable refVar = groupVars[0];
-    for (const auto & var : groupVars) {
-      // Get number of levels
-      const size_t varLevels = var.getLevels();
+      // Define group variables
+      oops::Variables groupVars;
+      for (const auto & varName : varNames) {
+        groupVars.push_back(outerVars[varName.name()]);
+      }
 
-      if ((strategy_ == "univariate") || (strategy_ == "duplicated and weighted")) {
-        // All the fields of the group should have the same number of levels.
-        ASSERT(levelsCheck == varLevels);
-      } else if ((strategy_ == "duplicated") || (strategy_ == "crossed")) {
-        // All the fields of the group should have the same number of levels,
-        // or only one level if 3D and 2D fields are mixed (in this case, the reference
-        // field should be 3D).
-        if (varLevels > 1) {
-          if (levelsCheck == 1) {
-            levelsCheck = varLevels;
-            refVar = var;
-          } else {
-            ASSERT(levelsCheck == varLevels);
+      // Check group variables consistency
+      size_t levelsCheck = groupVars[0].getLevels();
+      oops::Variable refVar = groupVars[0];
+      for (const auto & var : groupVars) {
+        // Get number of levels
+        const size_t varLevels = var.getLevels();
+
+        if ((strategy_ == "univariate") || (strategy_ == "duplicated and weighted")) {
+          // All the fields of the group should have the same number of levels.
+          ASSERT(levelsCheck == varLevels);
+        } else if ((strategy_ == "duplicated") || (strategy_ == "crossed")) {
+          // All the fields of the group should have the same number of levels,
+          // or only one level if 3D and 2D fields are mixed (in this case, the reference
+          // field should be 3D).
+          if (varLevels > 1) {
+            if (levelsCheck == 1) {
+              levelsCheck = varLevels;
+              refVar = var;
+            } else {
+              ASSERT(levelsCheck == varLevels);
+            }
           }
         }
       }
-    }
-    // Create central block for this group
-    groupInputVars_.push_back(groupVars);
-    groupNames_.push_back(groupConf.getString("group name"));
-    if (strategy_ == "deprecated") {
-      // Inner variables are outer variables
-      groupInnerVars_.push_back(outerVars);
-    } else {
+      // Create central block for this group
+      groupInputVars_.push_back(groupVars);
+      groupNames_.push_back(groupParams.groupName.value());
       // Chain variables contain only the reference variable, with the group name
       groupInnerVars_.push_back(oops::Variables(
         {oops::Variable(groupNames_.back(), refVar.metaData(), refVar.getLevels())}));
-    }
-    groupRefVars_.push_back(refVar);
-    SaberCentralBlockParametersWrapper saberCentralBlockParamsWrapper;
-    saberCentralBlockParamsWrapper.deserialize(groupConf);
-    const SaberBlockParametersBase & saberCentralBlockParams =
-      saberCentralBlockParamsWrapper.saberCentralBlockParameters;
-    doCalibration_.push_back(saberCentralBlockParams.doCalibration());
-    doRead_.push_back(saberCentralBlockParams.doRead());
-    forceWrite_.push_back(saberCentralBlockParams.forceWrite.value());
-    groups_.push_back(SaberCentralBlockFactory::create(outerGeom,
-                                                   groupInnerVars_.back(),
-                                                   covarConf,
-                                                   saberCentralBlockParams,
-                                                   xb,
-                                                   fg));
+      groupRefVars_.push_back(refVar);
+      doCalibration_.push_back(groupParams.block.value().doCalibration());
+      doRead_.push_back(groupParams.block.value().doRead());
+      forceWrite_.push_back(groupParams.block.value().forceWrite.value());
+      groups_.push_back(SaberCentralBlockFactory::create(outerGeom,
+                                                         groupInnerVars_.back(),
+                                                         covarConf,
+                                                         groupParams.block.value(),
+                                                         xb,
+                                                         fg));
 
 
-    // Get the nearest 3D level for 2D variables
-    for (auto & var : groupVars) {
-      if ((refVar.getLevels() > 1) && (var.getLevels() == 1)) {
-        // Get field
-        const auto field = xb[var.name()];
+      // Get the nearest 3D level for 2D variables
+      for (auto & var : groupVars) {
+        if ((refVar.getLevels() > 1) && (var.getLevels() == 1)) {
+          // Get field
+          const auto field = xb[var.name()];
 
-        // 2D level only
-        const std::string nearest3dLevel = field.metadata().getString("nearest 3d level");
-        ASSERT((nearest3dLevel == "top") || (nearest3dLevel == "bottom"));
-        size_t lev2d;
-        if (levelsAreTopDown) {
-          lev2d = (nearest3dLevel == "top") ? 0 : refVar.getLevels()-1;
-        } else {
-           lev2d = (nearest3dLevel == "bottom") ? 0 : refVar.getLevels()-1;
-        }
-        lev2d_.insert({var.name(), lev2d});
-      }
-    }
-
-    // Strategy-specific setup
-    if (strategy_ == "duplicated and weighted") {
-      // Prepare weights for the "duplicated and weighted" strategy
-
-      // Allocation
-      const size_t nv = groupVars.size();
-      Eigen::MatrixXd wgt = Eigen::MatrixXd::Zero(nv, nv);
-
-      // Set default weights
-      const double defaultWeight = groupConf.getDouble("default off-diagonal weight", 0.0);
-      for (size_t jvarJ = 0; jvarJ < groupVars.size(); ++jvarJ) {
-        for (size_t jvarI = 0; jvarI < groupVars.size(); ++jvarI) {
-          if (jvarJ == jvarI) {
-            // Unit diagonal
-            wgt(jvarJ, jvarI) = 1.0;
+          // 2D level only
+          const std::string nearest3dLevel = field.metadata().getString("nearest 3d level");
+          ASSERT((nearest3dLevel == "top") || (nearest3dLevel == "bottom"));
+          size_t lev2d;
+          if (levelsAreTopDown) {
+            lev2d = (nearest3dLevel == "top") ? 0 : refVar.getLevels()-1;
           } else {
-            // Default off-diagonal weight
-            wgt(jvarJ, jvarI) = defaultWeight;
+             lev2d = (nearest3dLevel == "bottom") ? 0 : refVar.getLevels()-1;
+          }
+          lev2d_.insert({var.name(), lev2d});
+        }
+      }
+
+      // Strategy-specific setup
+      if (strategy_ == "duplicated and weighted") {
+        // Prepare weights for the "duplicated and weighted" strategy
+
+        // Allocation
+        const size_t nv = groupVars.size();
+        Eigen::MatrixXd wgt = Eigen::MatrixXd::Zero(nv, nv);
+
+        // Set default weights
+        const double defaultWeight = groupParams.defOffDiagWeight.value();
+        for (size_t jvarJ = 0; jvarJ < groupVars.size(); ++jvarJ) {
+          for (size_t jvarI = 0; jvarI < groupVars.size(); ++jvarI) {
+            if (jvarJ == jvarI) {
+              // Unit diagonal
+              wgt(jvarJ, jvarI) = 1.0;
+            } else {
+              // Default off-diagonal weight
+              wgt(jvarJ, jvarI) = defaultWeight;
+            }
           }
         }
-      }
 
-      // Set specific weights
-      if (groupConf.has("specific off-diagonal weights")) {
-        // Get specific weights
-        const std::vector<eckit::LocalConfiguration> specWeights =
-          groupConf.getSubConfigurations("specific off-diagonal weights");
+        // Set specific weights
+        if (groupParams.offDiagWeights.value()) {
+          for (const auto & specWeight : *groupParams.offDiagWeights.value()) {
+            // Get variables pair and weight
+            const std::vector<std::string> varPair = specWeight.varPair.value();
+            ASSERT(varPair.size() == 2);
+            const double weight = specWeight.weight.value();
 
-        for (const auto & specWeight : specWeights) {
-          // Get variables pair and weight
-          const std::vector<std::string> varPair = specWeight.getStringVector("variables pair");
-          ASSERT(varPair.size() == 2);
-          const double weight = specWeight.getDouble("value");
+            // Get variables pair indices
+            const size_t jvarJ = groupVars.find(varPair[0]);
+            const size_t jvarI = groupVars.find(varPair[1]);
 
-          // Get variables pair indices
-          const size_t jvarJ = groupVars.find(varPair[0]);
-          const size_t jvarI = groupVars.find(varPair[1]);
+            // Check that variables are different
+            ASSERT(jvarJ != jvarI);
 
-          // Check that variables are different
-          ASSERT(jvarJ != jvarI);
-
-          // Set weight symmetrically
-          wgt(jvarI, jvarJ) = weight;
-          wgt(jvarJ, jvarI) = weight;
+            // Set weight symmetrically
+            wgt(jvarI, jvarJ) = weight;
+            wgt(jvarJ, jvarI) = weight;
+          }
         }
-      }
 
-      // Cholesky decomposition
-      wgtSqrt_.push_back(wgt.llt().matrixL());
+        // Cholesky decomposition
+        wgtSqrt_.push_back(wgt.llt().matrixL());
+        oops::Log::info() << "Info     : Weights square-root matrix for group "
+                        << groupNames_.back() << " :" << std::endl;
+        oops::Log::info() << wgtSqrt_.back() << std::endl;
+      }
     }
   }
   oops::Log::trace() << "SaberCentralBlock::SaberCentralBlock done" << std::endl;
@@ -249,6 +254,7 @@ void SaberCentralBlock::filter(oops::FieldSet3D & fset3d) const {
 // -----------------------------------------------------------------------------
 
 void SaberCentralBlock::multiply(oops::FieldSet3D & fset3d) const {
+  oops::Log::trace() << "SaberCentralBlock::multiply starting" << std::endl;
   if (strategy_ == "deprecated") {
     // Deprecated mode
     groups_[0]->multiply(fset3d);
@@ -358,7 +364,6 @@ void SaberCentralBlock::multiply(oops::FieldSet3D & fset3d) const {
       }
     } else if ((strategy_ == "duplicated and weighted") || (strategy_ == "crossed")) {
       // Crossed strategy or duplicated and weighted strategy
-
       // Initialization
       atlas::Field ctlVec = atlas::Field("genericCtlVec", make_datatype<double>(),
         make_shape(ctlVecSize()));
@@ -366,15 +371,6 @@ void SaberCentralBlock::multiply(oops::FieldSet3D & fset3d) const {
 
       // Apply multiplySqrtAD
       multiplySqrtAD(fset3d, ctlVec, offset);
-
-      // Remove existing fields from output FieldSet4D
-      std::vector<std::string> varsToRemove;
-      for (size_t igroup = 0; igroup < groups_.size(); ++igroup) {
-        for (const auto & var : groupInputVars_[igroup]) {
-          varsToRemove.push_back(var.name());
-        }
-      }
-      util::removeFieldsFromFieldSet(fset3d.fieldSet(), varsToRemove);
 
       // Apply multiplySqrt
       multiplySqrt(ctlVec, fset3d, offset);
@@ -398,9 +394,13 @@ void SaberCentralBlock::randomize(oops::FieldSet3D & fset3d) const {
         for (const auto & var : groupInputVars_[igroup]) {
           // Create an empty FieldSet3D
           oops::FieldSet3D fset3dTmp({fset3d.validTime(), fset3d.commGeom()});
+
+          // Get field
           auto field = fset3d[var.name()];
+
           // Add field to empty FieldSet3D
           fset3dTmp.add(field);
+
           // Rename field with the name of the group
           field.rename(groupNames_[igroup]);
 
@@ -417,6 +417,8 @@ void SaberCentralBlock::randomize(oops::FieldSet3D & fset3d) const {
         const auto & group = groups_[igroup];
         // Create an empty FieldSet3D
         oops::FieldSet3D fset3dTmp({fset3d.validTime(), fset3d.commGeom()});
+
+        // Get reference field
         auto refField = fset3d[groupRefVars_[igroup].name()];
 
         // Add field to empty FieldSet3D
@@ -585,9 +587,13 @@ void SaberCentralBlock::multiplySqrt(const atlas::Field & cv,
         for (const auto & var : groupInputVars_[igroup]) {
           // Create an empty FieldSet3D
           oops::FieldSet3D fset3dTmp({fset3d.validTime(), fset3d.commGeom()});
+
+          // Get field
           auto field = fset3d[var.name()];
+
           // Add field to empty FieldSet3D
           fset3dTmp.add(field);
+
           // Rename field with the name of the group
           field.rename(groupNames_[igroup]);
 
@@ -607,6 +613,7 @@ void SaberCentralBlock::multiplySqrt(const atlas::Field & cv,
         const auto & group = groups_[igroup];
         // Create an empty FieldSet3D
         oops::FieldSet3D fset3dTmp({fset3d.validTime(), fset3d.commGeom()});
+
         // Get reference field
         auto refField = fset3d[groupRefVars_[igroup].name()];
 
@@ -663,7 +670,7 @@ void SaberCentralBlock::multiplySqrt(const atlas::Field & cv,
         const auto & group = groups_[igroup];
         // Get variables
         const auto vars = groupInputVars_[igroup];
-
+        util::zeroFieldSet(fset3d.fieldSet());
         for (size_t jvarI = 0; jvarI < vars.size(); ++jvarI) {
           // Get variable
           const auto varI = vars[jvarI];
@@ -680,7 +687,6 @@ void SaberCentralBlock::multiplySqrt(const atlas::Field & cv,
 
           // Get field
           const auto field = fset3dTmp[groupNames_[igroup]];
-
           // Get field view
           const auto view = make_view<double, 2>(field);
 
@@ -689,24 +695,7 @@ void SaberCentralBlock::multiplySqrt(const atlas::Field & cv,
             const auto varJ = vars[jvarJ];
 
             // Other field
-            atlas::Field otherField;
-
-            if (fset3d.has(varJ.name())) {
-              // Get other field
-              otherField = fset3d[varJ.name()];
-            } else {
-              // Create other field
-              otherField = field.functionspace().createField<double>(
-                atlas::option::name(varJ.name()) | atlas::option::levels(varJ.getLevels()));
-
-              // Get other field view
-              auto otherView = make_view<double, 2>(otherField);
-
-              otherView.assign(0.0);
-
-              // Add other field
-              fset3d.add(otherField);
-            }
+            atlas::Field otherField = fset3d[varJ.name()];
 
             // Get other field view
             auto otherView = make_view<double, 2>(otherField);
@@ -827,7 +816,6 @@ void SaberCentralBlock::multiplySqrtAD(const oops::FieldSet3D & fset3d,
           atlas::Field ctlVecTmp = atlas::Field("genericCtlVec", make_datatype<double>(),
             make_shape(group->ctlVecSize()));
           // Apply localization
-
           group->multiplySqrtAD(fset3dTmp, ctlVecTmp, 0);
 
           // Add control vector contribution
@@ -901,10 +889,18 @@ void SaberCentralBlock::multiplySqrtAD(const oops::FieldSet3D & fset3d,
 // -----------------------------------------------------------------------------
 
 void SaberCentralBlock::adjointTest(const oops::GeometryData & geometryData,
-                                        const oops::Variables & vars,
-                                        const double & adjointTolerance) const {
+                                    const double & globalAdjointTolerance) const {
   oops::Log::trace() << "SaberCentralBlock::adjointTest starting" << std::endl;
   for (size_t igroup = 0; igroup < groups_.size(); ++igroup) {
+    // Override adjoint tolerance if specified in the configuration
+    double adjointTolerance = globalAdjointTolerance;
+    if (params_.singleBlock.value() && params_.singleBlock.value()->adjointTolerance.value()) {
+      adjointTolerance = *params_.singleBlock.value()->adjointTolerance.value();
+    } else if (params_.groups.value() &&
+               params_.groups.value().get()[igroup].block.value().adjointTolerance.value()) {
+      adjointTolerance =
+        *params_.groups.value().get()[igroup].block.value().adjointTolerance.value();
+    }
     // Create random FieldSets
     oops::FieldSet3D fset1 = oops::randomFieldSet3D(validTime_,
                                                     geometryData.comm(),
@@ -945,10 +941,18 @@ void SaberCentralBlock::adjointTest(const oops::GeometryData & geometryData,
 // -----------------------------------------------------------------------------
 
 void SaberCentralBlock::sqrtTest(const oops::GeometryData & geometryData,
-                                     const oops::Variables & vars,
-                                     const double & sqrtTolerance) const {
+                                 const double & globalSqrtTolerance) const {
   oops::Log::trace() << "SaberOuterBlockBase::sqrtTest starting" << std::endl;
   for (size_t igroup = 0; igroup < groups_.size(); ++igroup) {
+    // Override square root tolerance if specified in the configuration
+    double sqrtTolerance = globalSqrtTolerance;
+    if (params_.singleBlock.value() && params_.singleBlock.value()->sqrtTolerance.value()) {
+      sqrtTolerance = *params_.singleBlock.value()->sqrtTolerance.value();
+    } else if (params_.groups.value() &&
+               params_.groups.value().get()[igroup].block.value().sqrtTolerance.value()) {
+      sqrtTolerance = *params_.groups.value().get()[igroup].block.value().sqrtTolerance.value();
+    }
+
     // Square-root test
     // Create FieldSet
     oops::FieldSet3D fset = oops::randomFieldSet3D(validTime_,

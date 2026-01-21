@@ -111,13 +111,11 @@ std::tuple<oops::Variables, oops::Variables>
   const oops::Variables currentOuterVars = outerBlockChain_ ?
                              outerBlockChain_->innerVars() : outerVariables_;
 
-  // Get active input variables
+  // Get active variables
   oops::Variables activeVars = getActiveVars(saberCentralBlockParams, currentOuterVars);
   // Check that active variables are present in variables
   for (const auto & var : activeVars) {
     if (!currentOuterVars.has(var)) {
-      oops::Log::info() << "Current outer variables: " << currentOuterVars << std::endl;
-      oops::Log::info() << "Active variables: " << activeVars << std::endl;
       throw eckit::UserError("Active variable " + var.name() + " is not present in "
                              "outer variables", Here());
     }
@@ -152,28 +150,20 @@ void SaberParametricBlockChain::testCentralBlock(
   oops::Log::trace() << "SaberParametricBlockChain::testCentralBlock starting" << std::endl;
   // Adjoint test
   if (conf.getBool("adjoint test")) {
-    // Get tolerance
-    const double localAdjointTolerance = conf.getDouble("adjoint tolerance");
-//      saberCentralBlockParams.adjointTolerance.value().get_value_or(
-//      conf.getDouble("adjoint tolerance"));
-
+    // Get tolerance (can be overridden from central block parameters)
+    const double adjointTolerance = conf.getDouble("adjoint tolerance");
     // Run test
     centralBlock_->adjointTest(outerGeom,
-                               activeVars,
-                               localAdjointTolerance);
+                               adjointTolerance);
   }
 
   // Square-root test
   if (conf.getBool("square-root test")) {
-    // Get tolerance
-    const double localSqrtTolerance = conf.getDouble("square-root tolerance");
-//      saberCentralBlockParams.sqrtTolerance.value().get_value_or(
-//      conf.getDouble("square-root tolerance"));
-
+    // Get tolerance (can be overridden from central block parameters)
+    const double sqrtTolerance = conf.getDouble("square-root tolerance");
     // Run test
     centralBlock_->sqrtTest(outerGeom,
-                            activeVars,
-                            localSqrtTolerance);
+                            sqrtTolerance);
   }
   oops::Log::trace() << "SaberParametricBlockChain::testCentralBlock done" << std::endl;
 }
