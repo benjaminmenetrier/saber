@@ -27,6 +27,9 @@ SaberCentralBlock.h
 SaberEnsembleBlockChain.cc
 SaberEnsembleBlockChain.h
 
+# SABER hybrid block chain
+SaberHybridBlockChain.h
+
 # SABER outer block chain
 SaberOuterBlockChain.cc
 SaberOuterBlockChain.h

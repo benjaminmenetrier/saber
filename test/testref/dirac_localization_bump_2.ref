@@ -70,6 +70,7 @@ Input Dirac increment:
              Level   2 ~> 100.0%
              Level   1 ~>  0.100E+01 vert. coord.
              Level   2 ~>  0.200E+01 vert. coord.
+Adjoint test for block BUMP_NICAS passed
 Square-root test for block BUMP_NICAS passed
 Adjoint test for block Ensemble passed
 Square-root test for block Ensemble passed
@@ -80,7 +81,6 @@ Square-root test for block Ensemble passed
              Level   2 ~> 100.0%
              Level   1 ~>  0.100E+01 vert. coord.
              Level   2 ~>  0.200E+01 vert. coord.
-Square-root test for block BUMP_NICAS passed
        Independent levels:  1[2]
           Subset Sc0 size:              762
           Domain area (% of Earth area): 0.100E+03%
@@ -88,6 +88,9 @@ Square-root test for block BUMP_NICAS passed
              Level   2 ~> 100.0%
              Level   1 ~>  0.100E+01 vert. coord.
              Level   2 ~>  0.200E+01 vert. coord.
+Adjoint test for block BUMP_NICAS passed
+Adjoint test for block BUMP_NICAS passed
+Square-root test for block BUMP_NICAS passed
 Square-root test for block BUMP_NICAS passed
 Adjoint test for block Ensemble passed
 Square-root test for block Ensemble passed
@@ -316,6 +319,7 @@ Localization(hybrid2_ensemble) * Increment:
              Level   2 ~> 100.0%
              Level   1 ~>  0.100E+01 vert. coord.
              Level   2 ~>  0.200E+01 vert. coord.
+Adjoint test for block BUMP_NICAS passed
 Square-root test for block BUMP_NICAS passed
 Adjoint test for block Ensemble passed
 Square-root test for block Ensemble passed
@@ -346,7 +350,6 @@ Covariance(hybrid3_SABER) * Increment:
              Level   2 ~> 100.0%
              Level   1 ~>  0.100E+01 vert. coord.
              Level   2 ~>  0.200E+01 vert. coord.
-Square-root test for block BUMP_NICAS passed
        Independent levels:  1[2]
           Subset Sc0 size:              762
           Domain area (% of Earth area): 0.100E+03%
@@ -354,6 +357,9 @@ Square-root test for block BUMP_NICAS passed
              Level   2 ~> 100.0%
              Level   1 ~>  0.100E+01 vert. coord.
              Level   2 ~>  0.200E+01 vert. coord.
+Adjoint test for block BUMP_NICAS passed
+Adjoint test for block BUMP_NICAS passed
+Square-root test for block BUMP_NICAS passed
 Square-root test for block BUMP_NICAS passed
 Adjoint test for block Ensemble passed
 Square-root test for block Ensemble passed

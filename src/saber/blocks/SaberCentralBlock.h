@@ -9,18 +9,16 @@
 
 #pragma once
 
-#include <map>
+#include <Eigen/Dense>
+
 #include <memory>
 #include <string>
 #include <unordered_map>
 #include <utility>
 #include <vector>
 
-#include <Eigen/Dense>
-
 #include "atlas/field.h"
 
-#include "eckit/exception/Exceptions.h"
 #include "eckit/memory/NonCopyable.h"
 
 #include "oops/base/FieldSet3D.h"
@@ -28,35 +26,47 @@
 #include "oops/util/AssociativeContainers.h"
 #include "oops/util/FieldSetHelpers.h"
 #include "oops/util/Logger.h"
-#include "oops/util/parameters/ConfigurationParameter.h"
+#include "oops/util/parameters/OptionalPolymorphicParameter.h"
 #include "oops/util/parameters/Parameters.h"
 #include "oops/util/parameters/RequiredPolymorphicParameter.h"
 #include "oops/util/Printable.h"
 
+#include "saber/blocks/SaberBlockParametersBase.h"
 #include "saber/blocks/SaberCentralBlockBase.h"
-
-// Forward declaration
-namespace oops {
-  template <typename MODEL> class Geometry;
-  template <typename MODEL> class Increment;
-  class FieldSets;
-}
 
 namespace saber {
 
 // -----------------------------------------------------------------------------
-// for now just a placemaker with configuration parameter
+class SaberCentralBlockGroupParameters : public oops::Parameters {
+  OOPS_CONCRETE_PARAMETERS(SaberCentralBlockGroupParameters, Parameters)
+
+ public:
+  oops::RequiredParameter<std::string> groupName{"group name", this};
+  oops::RequiredParameter<oops::Variables> variables{"variables", this};
+  oops::RequiredPolymorphicParameter<SaberBlockParametersBase, SaberCentralBlockFactory>
+    block{"saber block name", this};
+};
+
+// -----------------------------------------------------------------------------
 class SaberCentralBlockParameters : public oops::Parameters {
   OOPS_CONCRETE_PARAMETERS(SaberCentralBlockParameters, Parameters)
 
  public:
-  oops::ConfigurationParameter conf{this};
+  oops::Parameter<std::string> strategy{"multivariate strategy", "deprecated", this};
+  // Single block:
+  oops::OptionalPolymorphicParameter<SaberBlockParametersBase, SaberCentralBlockFactory>
+    singleBlock{"saber block name", this};
+  // Or multiple blocks:
+  oops::OptionalParameter<std::vector<SaberCentralBlockGroupParameters>>
+    groups{"groups", this};
+
+  bool doCalibration() const;
+  bool doRead() const;
 };
 
 // -----------------------------------------------------------------------------
 
-class SaberCentralBlock : public util::Printable,
-                          private eckit::NonCopyable {
+class SaberCentralBlock : public util::Printable {
  public:
   SaberCentralBlock(const oops::GeometryData & geometryData,
                     const bool levelsAreTopDown,
@@ -65,7 +75,7 @@ class SaberCentralBlock : public util::Printable,
                     const SaberCentralBlockParameters & params,
                     const oops::FieldSet3D & xb,
                     const oops::FieldSet3D & fg);
-  ~SaberCentralBlock() {};
+  ~SaberCentralBlock() = default;
 
   // Application methods
 
@@ -91,7 +101,7 @@ class SaberCentralBlock : public util::Printable,
 
   // Direct calibration
   void directCalibration(const oops::FieldSets & fsets) {
-    for (size_t i = 0; i < groups_.size(); ++i) { 
+    for (size_t i = 0; i < groups_.size(); ++i) {
       if (doCalibration_[i]) {
         groups_[i]->directCalibration(fsets);
       }
@@ -124,9 +134,7 @@ class SaberCentralBlock : public util::Printable,
   // Write block data
   void write() const {
     for (size_t i = 0; i < groups_.size(); ++i) {
-      if (doWrite_[i]) {
-        groups_[i]->write();
-      }
+      groups_[i]->write();
     }
   }
 
@@ -134,6 +142,14 @@ class SaberCentralBlock : public util::Printable,
   size_t ctlVecSize() const;
   void multiplySqrt(const atlas::Field &, oops::FieldSet3D &, const size_t &) const;
   void multiplySqrtAD(const oops::FieldSet3D &, atlas::Field &, const size_t &) const;
+
+  const oops::Variables centralVars() const {
+    oops::Variables allVars;
+    for (const auto & groupVars : groupInnerVars_) {
+      allVars += groupVars;
+    }
+    return allVars;
+  }
 
   // Return date/time
   const util::DateTime validTime() const {return validTime_;}
@@ -156,11 +172,18 @@ class SaberCentralBlock : public util::Printable,
                 const oops::Variables & vars,
                 const double & tol) const;
 
-  bool doCalibration() const {return std::any_of(doCalibration_.begin(), doCalibration_.end(), [](bool v) { return v; });}
-  bool doRead() const {return std::any_of(doRead_.begin(), doRead_.end(), [](bool v) { return v; });}
-  bool doWrite() const {return std::any_of(doWrite_.begin(), doWrite_.end(), [](bool v) { return v; });}
+  bool doCalibration() const {
+    return std::any_of(doCalibration_.begin(), doCalibration_.end(), [](bool v)
+      { return v; });
+  }
+  bool doRead() const {
+    return std::any_of(doRead_.begin(), doRead_.end(), [](bool v) { return v; });
+  }
+  bool forceWrite() const {
+    return std::any_of(forceWrite_.begin(), forceWrite_.end(), [](bool v) { return v; });}
 
  private:
+  const oops::GeometryData & geometryData_;
   const util::DateTime validTime_;
   // Multivariate strategy
   std::string strategy_;
@@ -184,7 +207,7 @@ class SaberCentralBlock : public util::Printable,
   // groups need to read MODEL data
   std::vector<bool> doRead_;
   // groups need to write MODEL data
-  std::vector<bool> doWrite_;
+  std::vector<bool> forceWrite_;
 
   void print(std::ostream &) const {}
 };

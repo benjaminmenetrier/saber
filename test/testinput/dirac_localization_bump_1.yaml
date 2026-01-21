@@ -131,6 +131,7 @@ background error:
       value: 0.25
   - covariance:
       covariance model: SABER
+      covariance type: ensemble
       adjoint test: true
       square-root test: true
       square-root tolerance: 1.0e-10
@@ -146,9 +147,7 @@ background error:
           pattern: '%mem%'
           nmembers: 25
           zero padding: 6
-      saber central block:
-        saber block name: Ensemble
-        localization:
+      localization:
           saber central block:
             saber block name: BUMP_NICAS
             read:
@@ -174,6 +173,7 @@ background error:
       value: 0.25
   - covariance:
       covariance model: SABER
+      covariance type: ensemble
       adjoint test: true
       square-root test: true
       square-root tolerance: 1.0e-10
@@ -189,9 +189,7 @@ background error:
           pattern: '%mem%'
           nmembers: 25
           zero padding: 6
-      saber central block:
-        saber block name: Ensemble
-        localization:
+      localization:
           saber central block:
             multivariate strategy: univariate
             groups:
@@ -244,3 +242,4 @@ output dirac:
   filepath: testdata/dirac_localization_bump_1/%MPI%_dirac_%id%
 test:
   reference filename: testref/dirac_localization_bump_1.ref
+  test output filename: testref/dirac_localization_bump_1.out

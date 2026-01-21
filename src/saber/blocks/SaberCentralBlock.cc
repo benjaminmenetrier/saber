@@ -17,6 +17,39 @@ using atlas::array::make_view;
 
 namespace saber {
 
+// -----------------------------------------------------------------------------
+bool SaberCentralBlockParameters::doCalibration() const {
+  if (this->singleBlock.value()) {
+    return this->singleBlock.value()->doCalibration();
+  }
+  if (this->groups.value()) {
+    for (const auto & groupParams : this->groups.value().get()) {
+      if (groupParams.block.value().doCalibration()) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+// -----------------------------------------------------------------------------
+
+bool SaberCentralBlockParameters::doRead() const {
+  if (this->singleBlock.value()) {
+    return this->singleBlock.value()->doRead();
+  }
+  if (this->groups.value()) {
+    for (const auto & groupParams : this->groups.value().get()) {
+      if (groupParams.block.value().doRead()) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+// -----------------------------------------------------------------------------
+
 SaberCentralBlock::SaberCentralBlock(const oops::GeometryData & outerGeom,
                     const bool levelsAreTopDown,
                     const oops::Variables & outerVars,
@@ -24,7 +57,7 @@ SaberCentralBlock::SaberCentralBlock(const oops::GeometryData & outerGeom,
                     const SaberCentralBlockParameters & params,
                     const oops::FieldSet3D & xb,
                     const oops::FieldSet3D & fg)
-  : validTime_(xb.validTime()) {
+  : geometryData_(outerGeom), validTime_(xb.validTime()) {
   oops::Log::trace() << "SaberCentralBlock constructor starting" << std::endl;
   eckit::LocalConfiguration conf = params.toConfiguration();
   // Get strategy and group configurations
@@ -70,7 +103,6 @@ SaberCentralBlock::SaberCentralBlock(const oops::GeometryData & outerGeom,
     // Get group variables names
     oops::Log::info() << "Info     : Creating central block group: "
                       << groupConf.getString("group name") << std::endl;
-                      oops::Log::info() << groupConf << std::endl;
     const std::vector<std::string> varNames = groupConf.getStringVector("variables");
 
     // Define group variables
@@ -111,8 +143,8 @@ SaberCentralBlock::SaberCentralBlock(const oops::GeometryData & outerGeom,
       groupInnerVars_.push_back(outerVars);
     } else {
       // Chain variables contain only the reference variable, with the group name
-      groupInnerVars_.push_back(
-        oops::Variables({oops::Variable(groupNames_.back(), refVar.metaData(), refVar.getLevels())}));
+      groupInnerVars_.push_back(oops::Variables(
+        {oops::Variable(groupNames_.back(), refVar.metaData(), refVar.getLevels())}));
     }
     groupRefVars_.push_back(refVar);
     SaberCentralBlockParametersWrapper saberCentralBlockParamsWrapper;
@@ -121,7 +153,7 @@ SaberCentralBlock::SaberCentralBlock(const oops::GeometryData & outerGeom,
       saberCentralBlockParamsWrapper.saberCentralBlockParameters;
     doCalibration_.push_back(saberCentralBlockParams.doCalibration());
     doRead_.push_back(saberCentralBlockParams.doRead());
-    doWrite_.push_back(saberCentralBlockParams.forceWrite.value());
+    forceWrite_.push_back(saberCentralBlockParams.forceWrite.value());
     groups_.push_back(SaberCentralBlockFactory::create(outerGeom,
                                                    groupInnerVars_.back(),
                                                    covarConf,
@@ -366,18 +398,17 @@ void SaberCentralBlock::randomize(oops::FieldSet3D & fset3d) const {
         for (const auto & var : groupInputVars_[igroup]) {
           // Create an empty FieldSet3D
           oops::FieldSet3D fset3dTmp({fset3d.validTime(), fset3d.commGeom()});
+          auto field = fset3d[var.name()];
+          // Add field to empty FieldSet3D
+          fset3dTmp.add(field);
+          // Rename field with the name of the group
+          field.rename(groupNames_[igroup]);
 
           // Apply localization
           group->randomize(fset3dTmp);
 
-          // Get field
-          auto field = fset3dTmp[var.name()];
-
           // Rename field with its initial name
           field.rename(var.name());
-
-          // Add field to output FieldSet3D
-          fset3d.add(field);
         }
       }
     } else if ((strategy_ == "duplicated") || (strategy_ == "crossed")) {
@@ -386,18 +417,19 @@ void SaberCentralBlock::randomize(oops::FieldSet3D & fset3d) const {
         const auto & group = groups_[igroup];
         // Create an empty FieldSet3D
         oops::FieldSet3D fset3dTmp({fset3d.validTime(), fset3d.commGeom()});
+        auto refField = fset3d[groupRefVars_[igroup].name()];
+
+        // Add field to empty FieldSet3D
+        fset3dTmp.add(refField);
+
+        // Rename field with the name of the group
+        refField.rename(groupNames_[igroup]);
 
         // Apply localization
         group->randomize(fset3dTmp);
 
-        // Get reference field
-        auto refField = fset3dTmp[groupNames_[igroup]];
-
         // Rename field with its initial name
         refField.rename(groupRefVars_[igroup].name());
-
-        // Add field to output FieldSet3D
-        fset3d.add(refField);
 
         // Get reference field view
         const auto refView = make_view<double, 2>(refField);
@@ -406,11 +438,7 @@ void SaberCentralBlock::randomize(oops::FieldSet3D & fset3d) const {
         for (const auto & var : groupInputVars_[igroup]) {
           if (var.name() != groupRefVars_[igroup].name()) {
             // Get field
-            auto field = refField.functionspace().createField<double>(
-              atlas::option::name(var.name()) | atlas::option::levels(var.getLevels()));
-
-            // Add field to output FieldSet3D
-            fset3d.add(field);
+            auto field = fset3d[var.name()];
 
             // Get field view
             auto view = make_view<double, 2>(field);
@@ -445,6 +473,7 @@ void SaberCentralBlock::randomize(oops::FieldSet3D & fset3d) const {
 
           // Create an empty FieldSet3D
           oops::FieldSet3D fset3dTmp({fset3d.validTime(), fset3d.commGeom()});
+          fset3dTmp.init(geometryData_.functionSpace(), groupInnerVars_[igroup]);
 
           // Apply localization
           group->randomize(fset3dTmp);
@@ -553,16 +582,14 @@ void SaberCentralBlock::multiplySqrt(const atlas::Field & cv,
       // Univariate strategy
       for (size_t igroup = 0; igroup < groups_.size(); ++igroup) {
         const auto & group = groups_[igroup];
-        oops::Log::info() << "Processing group " << groupNames_[igroup] << std::endl;
         for (const auto & var : groupInputVars_[igroup]) {
           // Create an empty FieldSet3D
           oops::FieldSet3D fset3dTmp({fset3d.validTime(), fset3d.commGeom()});
-
-          for (const auto & field : fset3d.fieldSet()) {
-            oops::Log::info() << "  Input field: " << field.name() << std::endl;
-          }
-          oops::Log::info() << "SaberCentralBlock::multiplySqrt processing variable "
-                            << groupNames_[igroup] << std::endl;
+          auto field = fset3d[var.name()];
+          // Add field to empty FieldSet3D
+          fset3dTmp.add(field);
+          // Rename field with the name of the group
+          field.rename(groupNames_[igroup]);
 
           // Apply localization
           group->multiplySqrt(cv, fset3dTmp, index);
@@ -570,14 +597,8 @@ void SaberCentralBlock::multiplySqrt(const atlas::Field & cv,
           // Update index
           index += group->ctlVecSize();
 
-          // Get field
-          auto field = fset3dTmp[groupNames_[igroup]];
-
           // Rename field with its initial name
           field.rename(var.name());
-
-          // Add field to output FieldSet3D
-          fset3d.add(field);
         }
       }
     } else if ((strategy_ == "duplicated") || (strategy_ == "crossed")) {
@@ -586,6 +607,14 @@ void SaberCentralBlock::multiplySqrt(const atlas::Field & cv,
         const auto & group = groups_[igroup];
         // Create an empty FieldSet3D
         oops::FieldSet3D fset3dTmp({fset3d.validTime(), fset3d.commGeom()});
+        // Get reference field
+        auto refField = fset3d[groupRefVars_[igroup].name()];
+
+        // Add field to empty FieldSet3D
+        fset3dTmp.add(refField);
+
+        // Rename field with the name of the group
+        refField.rename(groupNames_[igroup]);
 
         // Apply localization
         group->multiplySqrt(cv, fset3dTmp, index);
@@ -595,14 +624,8 @@ void SaberCentralBlock::multiplySqrt(const atlas::Field & cv,
           index += group->ctlVecSize();
         }
 
-        // Get reference field
-        auto refField = fset3dTmp[groupNames_[igroup]];
-
         // Rename field with its initial name
         refField.rename(groupRefVars_[igroup].name());
-        
-        // Add field to output FieldSet3D
-        fset3d.add(refField);
 
         // Get reference field view
         const auto refView = make_view<double, 2>(refField);
@@ -611,11 +634,7 @@ void SaberCentralBlock::multiplySqrt(const atlas::Field & cv,
         for (const auto & var : groupInputVars_[igroup]) {
           if (var.name() != groupRefVars_[igroup].name()) {
             // Get field
-            auto field = refField.functionspace().createField<double>(
-              atlas::option::name(var.name()) | atlas::option::levels(var.getLevels()));
-
-            // Add field to output FieldSet3D
-            fset3d.add(field);
+            auto field = fset3d[var.name()];
 
             // Get field view
             auto view = make_view<double, 2>(field);
@@ -651,6 +670,7 @@ void SaberCentralBlock::multiplySqrt(const atlas::Field & cv,
 
           // Create an empty FieldSet3D
           oops::FieldSet3D fset3dTmp({fset3d.validTime(), fset3d.commGeom()});
+          fset3dTmp.init(geometryData_.functionSpace(), groupInnerVars_[igroup]);
 
           // Apply localization
           group->multiplySqrt(cv, fset3dTmp, index);
@@ -729,17 +749,11 @@ void SaberCentralBlock::multiplySqrtAD(const oops::FieldSet3D & fset3d,
     if (strategy_ == "univariate") {
       // Univariate strategy
       for (size_t igroup = 0; igroup < groups_.size(); ++igroup) {
-        oops::Log::info() << "Processing group " << groupNames_[igroup] << std::endl;
         const auto & group = groups_[igroup];
         for (const auto & var : groupInputVars_[igroup]) {
           // Create an empty FieldSet3D
           oops::FieldSet3D fset3dTmp({fset3d.validTime(), fset3d.commGeom()});
 
-          for (const auto & field : fset3d.fieldSet()) {
-            oops::Log::info() << "  Input field: " << field.name() << std::endl;
-          }
-          oops::Log::info() << "SaberCentralBlock::multiplySqrtAD processing variable "
-                            << var.name() << " in group " << groupNames_[igroup] << std::endl;
           // Clone field
           auto field = fset3d[var.name()].clone();
 
@@ -813,6 +827,7 @@ void SaberCentralBlock::multiplySqrtAD(const oops::FieldSet3D & fset3d,
           atlas::Field ctlVecTmp = atlas::Field("genericCtlVec", make_datatype<double>(),
             make_shape(group->ctlVecSize()));
           // Apply localization
+
           group->multiplySqrtAD(fset3dTmp, ctlVecTmp, 0);
 
           // Add control vector contribution
@@ -885,43 +900,43 @@ void SaberCentralBlock::multiplySqrtAD(const oops::FieldSet3D & fset3d,
 
 // -----------------------------------------------------------------------------
 
-// -----------------------------------------------------------------------------
-
 void SaberCentralBlock::adjointTest(const oops::GeometryData & geometryData,
                                         const oops::Variables & vars,
                                         const double & adjointTolerance) const {
   oops::Log::trace() << "SaberCentralBlock::adjointTest starting" << std::endl;
+  for (size_t igroup = 0; igroup < groups_.size(); ++igroup) {
+    // Create random FieldSets
+    oops::FieldSet3D fset1 = oops::randomFieldSet3D(validTime_,
+                                                    geometryData.comm(),
+                                                    geometryData.functionSpace(),
+                                                    groupInnerVars_[igroup]);
+    oops::FieldSet3D fset2 = oops::randomFieldSet3D(validTime_,
+                                                    geometryData.comm(),
+                                                    geometryData.functionSpace(),
+                                                    groupInnerVars_[igroup]);
 
-  // Create random FieldSets
-  oops::FieldSet3D fset1 = oops::randomFieldSet3D(validTime_,
-                                                  geometryData.comm(),
-                                                  geometryData.functionSpace(),
-                                                  vars);
-  oops::FieldSet3D fset2 = oops::randomFieldSet3D(validTime_,
-                                                  geometryData.comm(),
-                                                  geometryData.functionSpace(),
-                                                  vars);
+    // Copy FieldSets
+    oops::FieldSet3D fset1Save(fset1);
+    oops::FieldSet3D fset2Save(fset2);
 
-  // Copy FieldSets
-  oops::FieldSet3D fset1Save(fset1);
-  oops::FieldSet3D fset2Save(fset2);
+    // Apply forward multiplication only (self-adjointness test)
+    groups_[igroup]->multiply(fset1);
+    groups_[igroup]->multiply(fset2);
 
-  // Apply forward multiplication only (self-adjointness test)
-  this->multiply(fset1);
-  this->multiply(fset2);
-
-  // Compute adjoint test
-  const double dp1 = fset1.dot_product_with(fset2Save, vars);
-  const double dp2 = fset2.dot_product_with(fset1Save, vars);
-  oops::Log::info() << std::setprecision(16) << "Info     : Adjoint test: (Ax)^t y = " << dp1
-                    << ": x^t (Ay) = " << dp2 << " : adjoint tolerance = "
-                    << adjointTolerance << std::endl;
-  oops::Log::test() << "Adjoint test for block " << groups_[0]->blockName();
-  if (std::abs(dp1-dp2)/std::abs(0.5*(dp1+dp2)) < adjointTolerance) {
-    oops::Log::test() << " passed" << std::endl;
-  } else {
-    oops::Log::test() << " failed" << std::endl;
-    throw eckit::Exception("Adjoint test failure for block " + groups_[0]->blockName(), Here());
+    // Compute adjoint test
+    const double dp1 = fset1.dot_product_with(fset2Save, groupInnerVars_[igroup]);
+    const double dp2 = fset2.dot_product_with(fset1Save, groupInnerVars_[igroup]);
+    oops::Log::info() << std::setprecision(16) << "Info     : Adjoint test: (Ax)^t y = " << dp1
+                      << ": x^t (Ay) = " << dp2 << " : adjoint tolerance = "
+                      << adjointTolerance << std::endl;
+    oops::Log::test() << "Adjoint test for block " << groups_[igroup]->blockName();
+    if (std::abs(dp1-dp2)/std::abs(0.5*(dp1+dp2)) < adjointTolerance) {
+      oops::Log::test() << " passed" << std::endl;
+    } else {
+      oops::Log::test() << " failed" << std::endl;
+      throw eckit::Exception("Adjoint test failure for block " +
+        groups_[igroup]->blockName(), Here());
+    }
   }
 
   oops::Log::trace() << "SaberCentralBlock::adjointTest done" << std::endl;
@@ -934,83 +949,80 @@ void SaberCentralBlock::sqrtTest(const oops::GeometryData & geometryData,
                                      const double & sqrtTolerance) const {
   oops::Log::trace() << "SaberOuterBlockBase::sqrtTest starting" << std::endl;
   for (size_t igroup = 0; igroup < groups_.size(); ++igroup) {
-    oops::Variables groupVars = groupInputVars_[igroup];
-    groupVars.intersection(vars);
+    // Square-root test
+    // Create FieldSet
+    oops::FieldSet3D fset = oops::randomFieldSet3D(validTime_,
+                                                   geometryData.comm(),
+                                                   geometryData.functionSpace(),
+                                                   groupInnerVars_[igroup]);
 
-  // Square-root test
+    // Copy FieldSet
+    oops::FieldSet3D fsetSave(fset);
 
-  // Create FieldSet
-  oops::FieldSet3D fset = oops::randomFieldSet3D(validTime_,
-                                                 geometryData.comm(),
-                                                  geometryData.functionSpace(),
-                                                  groupVars);
+    // Create control vector for this group
+    const size_t ctlVecSize = groups_[igroup]->ctlVecSize();
+    oops::Log::info() << "Control vector size for block " << groups_[igroup]->blockName() << ": "
+                      << ctlVecSize << std::endl;
+    atlas::Field ctlVec = atlas::Field("genericCtlVec",
+                                       atlas::array::make_datatype<double>(),
+                                       atlas::array::make_shape(ctlVecSize));
+    size_t seed = 7;  // To avoid impact on future random generator calls
+    util::NormalDistribution<double> dist(ctlVecSize, 0.0, 1.0, seed);
+    auto view = atlas::array::make_view<double, 1>(ctlVec);
+    for (size_t jnode = 0; jnode < ctlVecSize; ++jnode) {
+      view(jnode) = dist[jnode];
+    }
 
-  // Copy FieldSet
-  oops::FieldSet3D fsetSave(fset);
+    // Copy control vector
+    atlas::Field ctlVecSave = atlas::Field("genericCtlVec",
+                                           atlas::array::make_datatype<double>(),
+                                           atlas::array::make_shape(ctlVecSize));
+    auto viewSave = atlas::array::make_view<double, 1>(ctlVecSave);
+    viewSave.assign(view);
 
-  // Create control vector
-  oops::Log::info() << "Control vector size for block " << groups_[0]->blockName() << ": "
-                      << ctlVecSize() << std::endl;
-  atlas::Field ctlVec = atlas::Field("genericCtlVec",
-                                     atlas::array::make_datatype<double>(),
-                                     atlas::array::make_shape(ctlVecSize()));
-  size_t seed = 7;  // To avoid impact on future random generator calls
-  util::NormalDistribution<double> dist(ctlVecSize(), 0.0, 1.0, seed);
-  auto view = atlas::array::make_view<double, 1>(ctlVec);
-  for (size_t jnode = 0; jnode < ctlVecSize(); ++jnode) {
-    view(jnode) = dist[jnode];
+    // Apply square-root multiplication
+    groups_[igroup]->multiplySqrt(ctlVecSave, fset, 0);
+
+    // Apply square-root adjoint multiplication
+    groups_[igroup]->multiplySqrtAD(fsetSave, ctlVec, 0);
+
+    // Compute adjoint test
+    const double dp1 = fset.dot_product_with(fsetSave, groupInnerVars_[igroup]);
+    double dp2 = 0.0;
+    for (size_t jnode = 0; jnode < ctlVecSize; ++jnode) {
+      dp2 += view(jnode)*viewSave(jnode);
+    }
+    geometryData.comm().allReduceInPlace(dp2, eckit::mpi::sum());
+    oops::Log::info() << std::setprecision(16) << "Info     : Square-root test: y^t (Ux) = " << dp1
+                      << ": x^t (U^t y) = " << dp2 << " : square-root tolerance = "
+                      << sqrtTolerance << std::endl;
+    const bool adjComparison = (std::abs(dp1-dp2)/std::abs(0.5*(dp1+dp2)) < sqrtTolerance);
+
+    // Apply square-root multiplication
+    groups_[igroup]->multiplySqrt(ctlVec, fset, 0);
+
+    // Apply full multiplication
+    groups_[igroup]->multiply(fsetSave);
+
+    // Check that the fieldsets are similar within tolerance
+    const bool sqrtComparison = fset.compare_with(fsetSave, sqrtTolerance,
+                                                  util::ToleranceType::relative);
+    if (sqrtComparison) {
+      oops::Log::info() << "Info     : Square-root test passed: U U^t x == B x" << std::endl;
+    } else {
+      oops::Log::info() << "Info     : Square-root test failed: U U^t x != B x" << std::endl;
+    }
+
+    // Print results
+    oops::Log::test() << "Square-root test for block " << groups_[igroup]->blockName();
+    if (adjComparison && sqrtComparison) {
+      oops::Log::test() << " passed" << std::endl;
+    } else {
+      oops::Log::test() << " failed" << std::endl;
+      throw eckit::Exception("Square-root test failure for block "
+         + groups_[igroup]->blockName(), Here());
+    }
   }
-
-  // Copy control vector
-  atlas::Field ctlVecSave = atlas::Field("genericCtlVec",
-                                         atlas::array::make_datatype<double>(),
-                                         atlas::array::make_shape(ctlVecSize()));
-  auto viewSave = atlas::array::make_view<double, 1>(ctlVecSave);
-  viewSave.assign(view);
-
-  // Apply square-root multiplication
-  groups_[igroup]->multiplySqrt(ctlVecSave, fset, 0);
-
-  // Apply square-root adjoint multiplication
-  groups_[igroup]->multiplySqrtAD(fsetSave, ctlVec, 0);
-
-  // Compute adjoint test
-  const double dp1 = fset.dot_product_with(fsetSave, vars);
-  double dp2 = 0.0;
-  for (size_t jnode = 0; jnode < ctlVecSize(); ++jnode) {
-    dp2 += view(jnode)*viewSave(jnode);
-  }
-  geometryData.comm().allReduceInPlace(dp2, eckit::mpi::sum());
-  oops::Log::info() << std::setprecision(16) << "Info     : Square-root test: y^t (Ux) = " << dp1
-                    << ": x^t (U^t y) = " << dp2 << " : square-root tolerance = "
-                    << sqrtTolerance << std::endl;
-  const bool adjComparison = (std::abs(dp1-dp2)/std::abs(0.5*(dp1+dp2)) < sqrtTolerance);
-
-  // Apply square-root multiplication
-  groups_[igroup]->multiplySqrt(ctlVec, fset, 0);
-
-  // Apply full multiplication
-  groups_[igroup]->multiply(fsetSave);
-
-  // Check that the fieldsets are similar within tolerance
-  const bool sqrtComparison = fset.compare_with(fsetSave, sqrtTolerance,
-                                                util::ToleranceType::relative);
-  if (sqrtComparison) {
-    oops::Log::info() << "Info     : Square-root test passed: U U^t x == B x" << std::endl;
-  } else {
-    oops::Log::info() << "Info     : Square-root test failed: U U^t x != B x" << std::endl;
-  }
-
-  // Print results
-  oops::Log::test() << "Square-root test for block " << groups_[0]->blockName();
-  if (adjComparison && sqrtComparison) {
-    oops::Log::test() << " passed" << std::endl;
-  } else {
-    oops::Log::test() << " failed" << std::endl;
-    throw eckit::Exception("Square-root test failure for block " + groups_[0]->blockName(), Here());
-  }
-}
-
   oops::Log::trace() << "SaberCentralBlock::sqrtTest done" << std::endl;
 }
 

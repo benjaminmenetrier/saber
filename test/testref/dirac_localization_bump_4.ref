@@ -50,7 +50,6 @@ Input Dirac increment:
              Level   2 ~>  0.200E+01 vert. coord.
 Square-root test for block BUMP_NICAS passed
 Adjoint test for block Ensemble passed
-Square-root test for block Ensemble passed
        Independent levels:  1[2]
           Subset Sc0 size:              762
           Domain area (% of Earth area): 0.100E+03%
@@ -60,7 +59,6 @@ Square-root test for block Ensemble passed
              Level   2 ~>  0.200E+01 vert. coord.
 Square-root test for block BUMP_NICAS passed
 Adjoint test for block Ensemble passed
-Square-root test for block Ensemble passed
 Covariance(hybrid) * Increment:
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: L40x21 [840]
