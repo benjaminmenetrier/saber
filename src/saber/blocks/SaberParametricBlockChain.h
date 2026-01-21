@@ -159,17 +159,17 @@ SaberParametricBlockChain::SaberParametricBlockChain(const oops::Geometry<MODEL>
   const bool centralDirectCalibration = saberCentralBlockParams.doCalibration();
 
   // Read ensemble (for non-iterative ensemble loading)
-  oops::FieldSets fsetEns = readEnsemble(geom,
+  std::shared_ptr<oops::FieldSets> fsetEns = std::make_shared<oops::FieldSets>(readEnsemble(geom,
                                          outerVars,
                                          fset4dXb.times(), fset4dXb.commTime(), fset4dXb.commEns(),
-                                         fullConf);
+                                         fullConf));
 
   // If needed create outer block chain
   if (params.saberOuterBlocksParams.value()) {
     outerBlockChain_ = std::make_unique<SaberOuterBlockChain>(geom, outerVariables_,
                           fset4dXb, fset4dFg, fullConf,
                           *params.saberOuterBlocksParams.value(),
-                          &fsetEns, centralDirectCalibration);
+                          fsetEns, centralDirectCalibration);
   }
 
   // Set outer geometry data for central block
@@ -227,7 +227,7 @@ SaberParametricBlockChain::SaberParametricBlockChain(const oops::Geometry<MODEL>
     } else {
       // Direct calibration
       oops::Log::info() << "Info     : Direct calibration" << std::endl;
-      centralBlock_->directCalibration(fsetEns);
+      centralBlock_->directCalibration(*fsetEns);
     }
   } else if (saberCentralBlockParams.doRead()) {
     // Read data
@@ -302,7 +302,7 @@ SaberParametricBlockChain::SaberParametricBlockChain(const oops::Geometry<MODEL>
         dx.fromFieldSet(fset.fieldSet());
       } else {
         // ATLAS fieldset to Increment_
-        dx.fromFieldSet(fsetEns[ie].fieldSet());
+        dx.fromFieldSet((*fsetEns)[ie].fieldSet());
       }
 
       if (useModelWriter) {

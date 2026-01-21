@@ -46,7 +46,7 @@ class SaberOuterBlockChain {
                        oops::FieldSet4D & fset4dFg,
                        const eckit::Configuration & conf,
                        const std::vector<SaberOuterBlockParametersWrapper> & params,
-                       oops::FieldSets * fsetEns = NULL,
+                       std::shared_ptr<oops::FieldSets> fsetEns = NULL,
                        const bool & centralDirectCalibration = false);
   /// @brief Simpler, limited constructor using only generic GeometryData
   SaberOuterBlockChain(const oops::GeometryData & outerGeometryData,
@@ -207,7 +207,7 @@ SaberOuterBlockChain::SaberOuterBlockChain(const oops::Geometry<MODEL> & geom,
                        oops::FieldSet4D & fset4dFg,
                        const eckit::Configuration & conf,
                        const std::vector<saber::SaberOuterBlockParametersWrapper> & params,
-                       oops::FieldSets * fsetEns,
+                       std::shared_ptr<oops::FieldSets> fsetEns,
                        const bool & centralDirectCalibration) {
   oops::Log::trace() << "SaberOuterBlockChain ctor starting" << std::endl;
   oops::Log::info() << "Info     : Creating outer blocks" << std::endl;

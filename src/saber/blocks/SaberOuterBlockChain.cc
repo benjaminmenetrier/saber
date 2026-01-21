@@ -93,7 +93,6 @@ SaberOuterBlockChain::SaberOuterBlockChain(
                       fset4dXb,
                       fset4dFg);
 
-    std::cout << "TOTO: " << conf << std::endl;
     // Adjoint and inverse tests
     testLastOuterBlock(conf,
                        saberOuterBlockParams,
