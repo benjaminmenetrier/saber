@@ -227,7 +227,9 @@ SaberParametricBlockChain::SaberParametricBlockChain(const oops::Geometry<MODEL>
       oops::Log::info() << "Info     : Direct calibration" << std::endl;
       centralBlock_->directCalibration(*fsetEns);
     }
-  } else if (centralBlock_->doRead()) {
+  }
+
+  if (centralBlock_->doRead()) {
     // Read data
     oops::Log::info() << "Info     : Read data" << std::endl;
     centralBlock_->read();
