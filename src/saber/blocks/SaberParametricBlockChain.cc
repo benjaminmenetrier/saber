@@ -70,10 +70,6 @@ SaberParametricBlockChain::SaberParametricBlockChain(
     throw eckit::UserError("The generic constructor of the SABER parametric block chain "
                            "does not allow covariance calibration.", Here());
   }
-  if (fullConf.has("dual resolution ensemble configuration")) {
-    throw eckit::UserError("The generic constructor of the SABER parametric block chain "
-                           "does not allow dual resolution ensemble.", Here());
-  }
   if (fullConf.has("output ensemble")) {
     throw eckit::UserError("The generic constructor of the SABER parametric block chain "
                            "does not allow ensemble output.", Here());
