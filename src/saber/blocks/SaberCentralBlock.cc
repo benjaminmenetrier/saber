@@ -21,10 +21,14 @@ namespace saber {
 // -----------------------------------------------------------------------------
 
 bool SaberCentralBlockParameters::doCalibration() const {
+  oops::Log::trace() << "SaberCentralBlockParameters::doCalibration starting" << std::endl;
+
   if (this->singleBlock.value()) {
+    // Single block
     return this->singleBlock.value()->doCalibration();
   }
   if (this->groups.value()) {
+    // Multiple blocks
     for (const auto & groupParams : this->groups.value().get()) {
       if (groupParams.block.value().doCalibration()) {
         return true;
@@ -37,10 +41,14 @@ bool SaberCentralBlockParameters::doCalibration() const {
 // -----------------------------------------------------------------------------
 
 bool SaberCentralBlockParameters::doRead() const {
+  oops::Log::trace() << "SaberCentralBlockParameters::doRead starting" << std::endl;
+
   if (this->singleBlock.value()) {
+    // Single block
     return this->singleBlock.value()->doRead();
   }
   if (this->groups.value()) {
+    // Multiple blocks
     for (const auto & groupParams : this->groups.value().get()) {
       if (groupParams.block.value().doRead()) {
         return true;
@@ -149,9 +157,11 @@ SaberCentralBlock::SaberCentralBlock(const oops::GeometryData & outerGeom,
           }
         }
       }
+
       // Create central block for this group
       groupInputVars_.push_back(groupVars);
       groupNames_.push_back(groupParams.groupName.value());
+
       // Chain variables contain only the reference variable, with the group name
       groupInnerVars_.push_back(oops::Variables(
         {oops::Variable(groupNames_.back(), refVar.metaData(), refVar.getLevels())}));
@@ -237,6 +247,7 @@ SaberCentralBlock::SaberCentralBlock(const oops::GeometryData & outerGeom,
       }
     }
   }
+
   oops::Log::trace() << "SaberCentralBlock::SaberCentralBlock done" << std::endl;
 }
 
@@ -255,6 +266,7 @@ void SaberCentralBlock::filter(oops::FieldSet3D & fset3d) const {
 
 void SaberCentralBlock::multiply(oops::FieldSet3D & fset3d) const {
   oops::Log::trace() << "SaberCentralBlock::multiply starting" << std::endl;
+
   if (strategy_ == "deprecated") {
     // Deprecated mode
     groups_[0]->multiply(fset3d);
@@ -378,11 +390,15 @@ void SaberCentralBlock::multiply(oops::FieldSet3D & fset3d) const {
       throw eckit::Exception("invalid multivariate strategy", Here());
     }
   }
+
+  oops::Log::trace() << "SaberCentralBlock::multiply done" << std::endl;
 }
 
 // -----------------------------------------------------------------------------
 
 void SaberCentralBlock::randomize(oops::FieldSet3D & fset3d) const {
+  oops::Log::trace() << "SaberCentralBlock::randomize starting" << std::endl;
+
   if (strategy_ == "deprecated") {
     // Deprecated mode
     groups_[0]->randomize(fset3d);
@@ -525,11 +541,15 @@ void SaberCentralBlock::randomize(oops::FieldSet3D & fset3d) const {
       throw eckit::Exception("invalid multivariate strategy", Here());
     }
   }
+
+  oops::Log::trace() << "SaberCentralBlock::randomize done" << std::endl;
 }
 
 // -----------------------------------------------------------------------------
 
 size_t SaberCentralBlock::ctlVecSize() const {
+  oops::Log::trace() << "SaberCentralBlock::ctlVecSize starting" << std::endl;
+
   // Initialize control vector size
   size_t ctlVecSize = 0;
 
@@ -573,6 +593,7 @@ void SaberCentralBlock::multiplySqrt(const atlas::Field & cv,
                                      oops::FieldSet3D & fset3d,
                                      const size_t & offset) const {
   oops::Log::trace() << "SaberCentralBlock::multiplySqrt starting" << std::endl;
+
   if (strategy_ == "deprecated") {
     // Deprecated mode
     groups_[0]->multiplySqrt(cv, fset3d, offset);
@@ -713,6 +734,7 @@ void SaberCentralBlock::multiplySqrt(const atlas::Field & cv,
       throw eckit::Exception("invalid multivariate strategy", Here());
     }
   }
+
   oops::Log::trace() << "SaberCentralBlock::multiplySqrt done" << std::endl;
 }
 
@@ -722,6 +744,7 @@ void SaberCentralBlock::multiplySqrtAD(const oops::FieldSet3D & fset3d,
                                                atlas::Field & cv,
                                                const size_t & offset) const {
   oops::Log::trace() << "SaberCentralBlock::multiplySqrtAD starting" << std::endl;
+
   if (strategy_ == "deprecated") {
     // Deprecated mode
     groups_[0]->multiplySqrtAD(fset3d, cv, offset);
@@ -883,6 +906,7 @@ void SaberCentralBlock::multiplySqrtAD(const oops::FieldSet3D & fset3d,
       throw eckit::Exception("invalid multivariate strategy", Here());
     }
   }
+
   oops::Log::trace() << "SaberCentralBlock::multiplySqrtAD done" << std::endl;
 }
 
@@ -891,6 +915,7 @@ void SaberCentralBlock::multiplySqrtAD(const oops::FieldSet3D & fset3d,
 void SaberCentralBlock::adjointTest(const oops::GeometryData & geometryData,
                                     const double & globalAdjointTolerance) const {
   oops::Log::trace() << "SaberCentralBlock::adjointTest starting" << std::endl;
+
   for (size_t igroup = 0; igroup < groups_.size(); ++igroup) {
     // Override adjoint tolerance if specified in the configuration
     double adjointTolerance = globalAdjointTolerance;
@@ -943,6 +968,7 @@ void SaberCentralBlock::adjointTest(const oops::GeometryData & geometryData,
 void SaberCentralBlock::sqrtTest(const oops::GeometryData & geometryData,
                                  const double & globalSqrtTolerance) const {
   oops::Log::trace() << "SaberOuterBlockBase::sqrtTest starting" << std::endl;
+
   for (size_t igroup = 0; igroup < groups_.size(); ++igroup) {
     // Override square root tolerance if specified in the configuration
     double sqrtTolerance = globalSqrtTolerance;
@@ -1027,6 +1053,7 @@ void SaberCentralBlock::sqrtTest(const oops::GeometryData & geometryData,
          + groups_[igroup]->blockName(), Here());
     }
   }
+
   oops::Log::trace() << "SaberCentralBlock::sqrtTest done" << std::endl;
 }
 

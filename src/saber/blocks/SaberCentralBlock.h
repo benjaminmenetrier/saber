@@ -55,7 +55,7 @@ class SaberCentralBlockGroupParameters : public oops::Parameters {
   oops::RequiredParameter<oops::Variables> variables{"variables", this};
   oops::RequiredPolymorphicParameter<SaberBlockParametersBase, SaberCentralBlockFactory>
     block{"saber block name", this};
-  // optional parameters specific to "duplicated and weighted" strategy
+  // Optional parameters specific to "duplicated and weighted" strategy
   oops::Parameter<double> defOffDiagWeight{"default off-diagonal weight", 0.0, this};
   oops::OptionalParameter<std::vector<OffDiagWeightParameters>>
     offDiagWeights{"specific off-diagonal weights", this};
@@ -74,6 +74,7 @@ class SaberCentralBlockParameters : public oops::Parameters {
   oops::OptionalParameter<std::vector<SaberCentralBlockGroupParameters>>
     groups{"groups", this};
 
+  // Type of setup
   bool doCalibration() const;
   bool doRead() const;
 };
@@ -207,11 +208,11 @@ class SaberCentralBlock : public util::Printable {
   // Level for 2D fields (for 3D and 2D fields summation)
   std::unordered_map<std::string, size_t> lev2d_;
 
-  // groups need to be calibrated
+  // Groups need to be calibrated
   std::vector<bool> doCalibration_;
-  // groups need to read MODEL data
+  // Groups need to read MODEL data
   std::vector<bool> doRead_;
-  // groups need to write MODEL data
+  // Groups need to write MODEL data
   std::vector<bool> forceWrite_;
 
   void print(std::ostream &) const {}
