@@ -36,7 +36,7 @@
 #include "oops/util/parameters/Parameters.h"
 #include "oops/util/parameters/RequiredParameter.h"
 
-#include "saber/blocks/SaberOuterBlockChain.h"
+#include "saber/blocks/SaberParametricBlockChain.h"
 #include "saber/oops/ErrorCovarianceParameters.h"
 #include "saber/oops/Utilities.h"
 
@@ -91,8 +91,6 @@ template <typename MODEL> class FilterParameters :
   /// it is set to "false".
   oops::Parameter<bool> residualFromFilter{
     "use residual from filter", false, this};
-  oops::Parameter<bool> residualIncrementFromOtherBands{
-    "residual increment from previous bands", false, this};
 
   // This is a vector of outer blocks defining the filter.
   oops::OptionalParameter<std::vector<SaberOuterBlockParametersWrapper>> filter{"filter", this};
@@ -129,7 +127,7 @@ template <typename MODEL> class BandParameters :
   typedef FilterParameters<MODEL>                   FilterParameters_;
   typedef OutputWriteParameters<MODEL>              outputParameters_;
 
-  oops::RequiredParameter<FilterParameters_> band{"band", this};
+  oops::OptionalParameter<FilterParameters_> band{"band", this};
   oops::OptionalParameter<outputParameters_> output{"output", this};
 };
 
@@ -152,6 +150,8 @@ template <typename MODEL> class ProcessPertsParameters :
   oops::RequiredParameter<oops::Variables> inputVariables{"input variables", this};
 
   oops::RequiredParameter<std::vector<BandParameters_>> bands{"bands", this};
+
+  oops::Parameter<bool> recursiveFilters{"recursive filters", false, this};
 
   /// Where to read input ensemble: From states or perturbations
   oops::OptionalParameter<eckit::LocalConfiguration> ensemble{"ensemble", this};
@@ -207,19 +207,6 @@ template <typename MODEL> class ProcessPerts : public oops::Application {
       incVars[i].setLevels(vlevs[i]);
     }
 
-    std::vector<util::DateTime> dates;
-    std::vector<int> ensmems;
-    oops::FieldSets fsetEns(dates, oops::mpi::myself(), ensmems, oops::mpi::myself());
-    oops::FieldSets dualResFsetEns(dates, oops::mpi::myself(),
-                                            ensmems, oops::mpi::myself());
-    eckit::LocalConfiguration covarConf;
-    covarConf.set("iterative ensemble loading", false);
-    covarConf.set("inverse test", false);
-    covarConf.set("adjoint test", false);
-    covarConf.set("square-root test", false);
-    covarConf.set("covariance model", "SABER");
-    covarConf.set("time covariance", "");
-
     // Yaml validation
     // TODO(Mayeul): Move this do an override of deserialize
     if (((params.ensemble.value() == boost::none) &&
@@ -233,43 +220,41 @@ template <typename MODEL> class ProcessPerts : public oops::Application {
     }
 
     // Read input ensemble
-    const bool iterativeEnsembleLoading = false;
-    eckit::LocalConfiguration ensembleConf(fullConfig);
-    eckit::LocalConfiguration outputEnsConf;
     oops::FieldSets fsetEnsI = readEnsemble<MODEL>(geom,
                                                    incVars,
-                                                   xx, xx,
-                                                   ensembleConf,
-                                                   iterativeEnsembleLoading,
-                                                   outputEnsConf);
+                                                   xx.times(), xx.commTime(), xx.commEns(),
+                                                   fullConfig);
     int nincrements = fsetEnsI.ens_size();
 
     const std::size_t nbands = params.bands.value().size();
     const std::vector<eckit::LocalConfiguration> bandsConfs
       = fullConfig.getSubConfigurations("bands");
+    const bool recursiveFilters = params.recursiveFilters.value();
 
     // need to create a vectors of saber block chains to use later
     std::map<std::size_t, std::vector<SaberOuterBlockParametersWrapper>> diagBlockConfs;
     std::map<std::size_t, std::vector<SaberOuterBlockParametersWrapper>> filterCovBlockConfs;
     std::map<std::size_t, eckit::LocalConfiguration> genericWriteConfs;
     std::map<std::size_t, eckit::LocalConfiguration> modelWriteConfs;
-    std::vector<bool> calcResidualIncrement;
     std::vector<bool> calcComplement;
 
     std::size_t b(0);
     for (const auto & bandConf : bandsConfs) {
       eckit::LocalConfiguration bConf = bandConf.getSubConfiguration("band");
-      if (bConf.has("filter")) {
+      if (bandConf.has("band")) {
+        // Add filter for this band
+        eckit::LocalConfiguration bConf = bandConf.getSubConfiguration("band");
         for (const auto & outerBlockConf : bConf.getSubConfigurations("filter")) {
           SaberOuterBlockParametersWrapper cmpOuterBlockParamsWrapper;
           cmpOuterBlockParamsWrapper.deserialize(outerBlockConf);
           filterCovBlockConfs[b].push_back(cmpOuterBlockParamsWrapper);
         }
+        calcComplement.push_back(
+          bConf.getBool("use residual from filter", false));
+      } else {
+        // Last band without filter: complement of the sum of all previous bands
+        ASSERT(b == nbands-1);
       }
-      calcResidualIncrement.push_back(
-        bConf.getBool("residual increment from previous bands", false) );
-      calcComplement.push_back(
-        bConf.getBool("use residual from filter", false) );
 
       if (bandConf.has("output")) {
         eckit::LocalConfiguration oConf = bandConf.getSubConfiguration("output");
@@ -293,16 +278,17 @@ template <typename MODEL> class ProcessPerts : public oops::Application {
     }
 
     std::vector<std::unique_ptr<SaberOuterBlockChain>> saberFilterBlocks;
+    ErrorCovarianceParametersBase paramsBase;
     for (const auto & [key, value] : filterCovBlockConfs) {
       saberFilterBlocks.push_back(
         std::make_unique<SaberOuterBlockChain>(geom,
                                                incVars,
                                                fsetXb,
                                                fsetFg,
-                                               fsetEns,
-                                               covarConf,
+                                               paramsBase.toConfiguration(),
                                                value));
     }
+
     std::vector<std::unique_ptr<SaberOuterBlockChain>> saberDiagnosticBlocks;
     for (const auto & [key, value] : diagBlockConfs) {
       saberDiagnosticBlocks.push_back(
@@ -310,13 +296,13 @@ template <typename MODEL> class ProcessPerts : public oops::Application {
                                                incVars,
                                                fsetXb,
                                                fsetFg,
-                                               fsetEns,
-                                               covarConf,
+                                               paramsBase.toConfiguration(),
                                                value));
     }
 
     //  Loop over perturbations
     for (int jm = 0; jm < nincrements; ++jm) {
+      // Initialize work perturbation xI from ensemble perturbation x0
       oops::FieldSet3D fsetI(fsetEnsI[jm]);
       oops::FieldSet4D fset4dDxI(fsetI);
 
@@ -324,34 +310,45 @@ template <typename MODEL> class ProcessPerts : public oops::Application {
                         << "member " << jm+1
                         << ": " << fsetI.norm(fsetI.variables()) << std::endl;
 
+      // Initialize sum of filtered perturbations
       oops::FieldSet3D fsetSum(fsetI.validTime(), fsetI.commGeom());
       fsetSum.allocateOnly(fsetI.fieldSet());
       fsetSum.zero();
       oops::FieldSet4D fset4dDxSum(fsetSum);
 
       for (std::size_t b = 0; b < nbands; ++b) {
-        //  Copy perturbation
+        //  Copy work perturbation x = xI
         oops::FieldSet3D fset(fsetI.validTime(), fsetI.commGeom());
         fset.deepCopy(fsetI.fieldSet());
-
         oops::FieldSet4D fset4dDx(fset);
 
         // Apply filter blocks
         if (auto it{filterCovBlockConfs.find(b)}; it != std::end(filterCovBlockConfs)) {
+          // Get filter blocks index
           const std::size_t idx = std::distance(std::begin(filterCovBlockConfs), it);
+
+          // Apply filter G on input x: x' = Gx
           saberFilterBlocks[idx]->applyOuterBlocks(fset4dDx);
+
           if (calcComplement[b]) {
+            // Use filter complement: x' = (I-G)x
             fset4dDx[0] -= fset4dDxI[0];
             fset4dDx[0] *= -1.0;
           }
-        }
 
-        // residual increment
-        if (calcResidualIncrement[b]) {
+          if (recursiveFilters) {
+            // Recursive filters: xI = xI - x'
+            fset4dDxI[0] -= fset4dDx[0];
+          }
+
+          // Increment sum with the latest x'
+          fset4dDxSum += fset4dDx;
+        } else {
+          // Residual increment: x' = x0 - sum{previous x'}
+          fset4dDx[0].zero();
+          fset4dDx[0] += fsetEnsI[jm];
           fset4dDx[0] -= fset4dDxSum[0];
         }
-
-        fset4dDxSum += fset4dDx;
 
         oops::Log::test() << "Norm of band perturbation: "
                           << "member " << jm+1 << ": band " << b+1

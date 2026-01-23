@@ -15,6 +15,53 @@
 namespace saber {
 
 // -----------------------------------------------------------------------------
+// needs cleanup
+oops::Variables getActiveVars(const SaberCentralBlockParameters & cbparams,
+                              const oops::Variables & defaultVars) {
+  oops::Log::trace() << "getActiveVars starting" << std::endl;
+  eckit::LocalConfiguration conf = cbparams.toConfiguration();
+    std::vector<eckit::LocalConfiguration> groupConfs;
+  if (!conf.has("groups")) {
+    // Add group configuration
+    SaberCentralBlockParametersWrapper saberCentralBlockParamsWrapper;
+    saberCentralBlockParamsWrapper.deserialize(conf);
+    const SaberBlockParametersBase & params =
+      saberCentralBlockParamsWrapper.saberCentralBlockParameters;
+    return getActiveVars(params, defaultVars);
+  } else {
+    // Get group configurations from conf
+    groupConfs = conf.getSubConfigurations("groups");
+  }
+
+  oops::Variables activeVars_nomd;
+  for (const auto & groupConf : groupConfs) {
+    SaberCentralBlockParametersWrapper saberCentralBlockParamsWrapper;
+    saberCentralBlockParamsWrapper.deserialize(groupConf);
+    const SaberBlockParametersBase & params =
+      saberCentralBlockParamsWrapper.saberCentralBlockParameters;
+    if (params.mandatoryActiveVars().size() == 0) {
+      // No mandatory active variables for this block
+      activeVars_nomd += params.activeVars.value().get_value_or(defaultVars);
+    } else {
+      // Block with mandatory active variables
+      activeVars_nomd += params.activeVars.value().get_value_or(params.mandatoryActiveVars());
+      ASSERT(params.mandatoryActiveVars() <= activeVars_nomd);
+    }
+  }
+  // Copy the variables that exist in defaultVars from defaultVars (they have metadata
+  // associated with them)
+  oops::Variables activeVars;
+  for (auto & var : activeVars_nomd) {
+    if (defaultVars.has(var.name())) {
+      activeVars.push_back(defaultVars[var.name()]);
+    } else {
+      activeVars.push_back(var);
+    }
+  }
+  return activeVars;
+}
+
+// -----------------------------------------------------------------------------
 
 oops::Variables getActiveVars(const SaberBlockParametersBase & params,
                               const oops::Variables & defaultVars) {
@@ -40,6 +87,7 @@ oops::Variables getActiveVars(const SaberBlockParametersBase & params,
   }
   return activeVars;
 }
+
 
 // -----------------------------------------------------------------------------
 
@@ -111,5 +159,56 @@ void allocateMissingFields(oops::FieldSet3D & fset,
 
 // -----------------------------------------------------------------------------
 
+size_t getNensFromConfig(const eckit::Configuration & conf) {
+  size_t nens = 0;
+  for (const auto & ensType : {"ensemble", "ensemble pert", "ensemble base",
+    "ensemble pert on other geometry"}) {
+    if (conf.has(ensType)) {
+      eckit::LocalConfiguration ensTypeConf = conf.getSubConfiguration(ensType);
+
+      ASSERT(ensTypeConf.has("members from template") || ensTypeConf.has("members"));
+      ASSERT(!(ensTypeConf.has("members from template") && ensTypeConf.has("members")));
+      if (ensTypeConf.has("members")) {
+        const auto members = ensTypeConf.getSubConfigurations("members");
+        nens = members.size();
+      } else {
+        const auto members = ensTypeConf.getSubConfiguration("members from template");
+        ASSERT(members.has("nmembers"));
+        ASSERT(members.has("pattern"));
+        ASSERT(members.has("template"));
+        nens = members.getInt("nmembers");
+      }
+    }
+  }
+  return nens;
+}
+
+// -----------------------------------------------------------------------------
+
+eckit::LocalConfiguration getEnsSubconfig(const eckit::Configuration & conf, size_t iens) {
+  // expecting either `members` (list) or `members from template` (object with nmembers/template).
+  eckit::LocalConfiguration memConf;
+  if (conf.has("members")) {
+    const auto members = conf.getSubConfigurations("members");
+    if (!members.empty()) memConf = members[iens];
+  } else {
+    eckit::LocalConfiguration members = conf.getSubConfiguration("members from template");
+    memConf = members.getSubConfiguration("template");
+    const std::string pattern = members.getString("pattern");
+    const int zpad = members.getInt("zero padding", 0);
+    const std::vector<size_t> except = members.getUnsignedVector("except", {});
+    size_t index = members.getUnsigned("start", 1);
+    for (size_t jj = 0; jj <= iens; ++jj) {
+      // Check for excluded members
+      while (std::count(except.begin(), except.end(), index)) {
+        index++;
+      }
+      // Update counter
+      if (jj < iens) index++;
+    }
+    util::seekAndReplace(memConf, pattern, index, zpad);
+  }
+  return memConf;
+}
 
 }  // namespace saber

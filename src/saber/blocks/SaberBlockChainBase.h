@@ -52,13 +52,10 @@ class SaberBlockChainFactory {
  public:
   typedef oops::Geometry<MODEL> Geometry_;
 
-  static std::unique_ptr<SaberBlockChainBase> create(const std::string &,
-                                                     const Geometry_ &,
+  static std::unique_ptr<SaberBlockChainBase> create(const Geometry_ &,
                                                      const oops::Variables &,
                                                      oops::FieldSet4D &,
                                                      oops::FieldSet4D &,
-                                                     oops::FieldSets &,
-                                                     const eckit::LocalConfiguration &,
                                                      const eckit::Configuration &);
 
   virtual ~SaberBlockChainFactory() = default;
@@ -71,8 +68,6 @@ class SaberBlockChainFactory {
                                                     const oops::Variables &,
                                                     oops::FieldSet4D &,
                                                     oops::FieldSet4D &,
-                                                    oops::FieldSets &,
-                                                    const eckit::LocalConfiguration &,
                                                     const eckit::Configuration &) = 0;
 
   static std::map <std::string, SaberBlockChainFactory<MODEL> *> & getMakers() {
@@ -91,11 +86,8 @@ class SaberBlockChainMaker : public SaberBlockChainFactory<MODEL> {
                                             const oops::Variables & outerVars,
                                             oops::FieldSet4D & fset4dXb,
                                             oops::FieldSet4D & fset4dFg,
-                                            oops::FieldSets & fsetEns,
-                                            const eckit::LocalConfiguration & covarConf,
                                             const eckit::Configuration & conf) override {
-    return std::make_unique<T>(geom, outerVars, fset4dXb, fset4dFg,
-                               fsetEns, covarConf, conf);
+    return std::make_unique<T>(geom, outerVars, fset4dXb, fset4dFg, conf);
   }
 
  public:
@@ -114,15 +106,16 @@ SaberBlockChainFactory<MODEL>::SaberBlockChainFactory(const std::string & name) 
 
 template <typename MODEL>
 std::unique_ptr<SaberBlockChainBase>
-SaberBlockChainFactory<MODEL>::create(const std::string & name,
-                                      const Geometry_ & geom,
+SaberBlockChainFactory<MODEL>::create(const Geometry_ & geom,
                                       const oops::Variables & outerVars,
                                       oops::FieldSet4D & fset4dXb,
                                       oops::FieldSet4D & fset4dFg,
-                                      oops::FieldSets & fsetEns,
-                                      const eckit::LocalConfiguration & covarConf,
                                       const eckit::Configuration & conf) {
   oops::Log::trace() << "SaberBlockChainFactory<MODEL>::create starting" << std::endl;
+  std::string name = "parametric";
+  if (conf.has("covariance type")) {
+    name = conf.getString("covariance type");
+  }
   typename std::map<std::string, SaberBlockChainFactory<MODEL>*>::iterator jbc =
     getMakers().find(name);
   if (jbc == getMakers().end()) {
@@ -132,8 +125,7 @@ SaberBlockChainFactory<MODEL>::create(const std::string & name,
                               "Possible values:" + makerNameList, Here());
   }
   std::unique_ptr<SaberBlockChainBase> ptr =
-    jbc->second->make(geom, outerVars, fset4dXb, fset4dFg,
-                      fsetEns, covarConf, conf);
+    jbc->second->make(geom, outerVars, fset4dXb, fset4dFg, conf);
   oops::Log::trace() << "SaberBlockChainFactory<MODEL>::create done" << std::endl;
   return ptr;
 }

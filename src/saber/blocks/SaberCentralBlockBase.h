@@ -124,16 +124,6 @@ class SaberCentralBlockBase : public util::Printable,
   template <typename MODEL>
   void write(const oops::Geometry<MODEL> &) const;
 
-  // Adjoint test
-  void adjointTest(const oops::GeometryData &,
-                   const oops::Variables &,
-                   const double &) const;
-
-  // Square-root test
-  void sqrtTest(const oops::GeometryData &,
-                const oops::Variables &,
-                const double &) const;
-
  protected:
   const util::DateTime validTime_;
 

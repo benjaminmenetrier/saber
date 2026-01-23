@@ -88,7 +88,7 @@ class SaberOuterBlockBase : public util::Printable,
   // Read block data
   virtual void read()
     {throw eckit::NotImplemented("read not implemented yet for the block "
-      + this->blockName(), Here());}
+      + blockName_, Here());}
 
   // Read model fields
   virtual std::vector<std::pair<std::string, eckit::LocalConfiguration>> getReadConfs() const
