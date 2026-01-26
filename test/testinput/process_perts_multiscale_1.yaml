@@ -1,0 +1,87 @@
+geometry:
+  function space: StructuredColumns
+  grid:
+    type: regular_lonlat
+    N: 12
+  groups:
+  - variables: &vars
+    - air_horizontal_streamfunction
+    levels: 5
+  halo: 1
+background:
+  date: &date 2010-01-01T12:00:00Z
+  state variables: *vars
+bands:
+- band:
+    filter:
+    - saber block name: BUMP_NICASFilter
+      read:
+        general:
+          testing: true
+          universe length-scale: 10.0e6
+        io:
+          data directory: testdata
+          files prefix: process_perts_multiscale_1/_MPI_-_OMP__f1
+        drivers:
+          multivariate strategy: univariate
+          compute nicas: true
+          write local nicas: true
+        nicas:
+          filter mode: true
+          filter resolution: 4.0
+          explicit length-scales: true
+          horizontal length-scale:
+          - groups: *vars
+            value: 10.0e6
+          vertical length-scale:
+          - groups: *vars
+            value: 5.0
+  output:
+    model write:
+      filepath: testdata/process_perts_multiscale_1/filtered_pert_mb%MEM%_wb1
+      member pattern: '%MEM%'
+- band:
+    filter:
+    - saber block name: BUMP_NICASFilter
+      read:
+        general:
+          testing: true
+          universe length-scale: 5.0e6
+        io:
+          data directory: testdata
+          files prefix: process_perts_multiscale_1/_MPI_-_OMP__f2
+        drivers:
+          multivariate strategy: univariate
+          compute nicas: true
+          write local nicas: true
+        nicas:
+          filter mode: true
+          filter resolution: 4.0
+          explicit length-scales: true
+          horizontal length-scale:
+          - groups: *vars
+            value: 5.0e6
+          vertical length-scale:
+          - groups: *vars
+            value: 2.5
+  output:
+    model write:
+      filepath: testdata/process_perts_multiscale_1/filtered_pert_mb%MEM%_wb2
+      member pattern: '%MEM%'
+- output:
+    model write:
+      filepath: testdata/process_perts_multiscale_1/filtered_pert_mb%MEM%_wb3
+      member pattern: '%MEM%'
+recursive filters: true
+ensemble pert:
+  date: *date
+  members from template:
+    nmembers: 25
+    pattern: '%MEM%'
+    zero padding: 6
+    template:
+      filepath: testdata/randomization_multiscale_1/1-1_member_pert_%MEM%
+      variables: *vars
+input variables: *vars
+test:
+  reference filename: testref/process_perts_multiscale_1.ref

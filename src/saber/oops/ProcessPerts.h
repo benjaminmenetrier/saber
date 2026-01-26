@@ -278,7 +278,7 @@ template <typename MODEL> class ProcessPerts : public oops::Application {
     }
 
     std::vector<std::unique_ptr<SaberOuterBlockChain>> saberFilterBlocks;
-    ErrorCovarianceParametersBase paramsBase;
+    const ErrorCovarianceParametersBase paramsBase;
     for (const auto & [key, value] : filterCovBlockConfs) {
       saberFilterBlocks.push_back(
         std::make_unique<SaberOuterBlockChain>(geom,
@@ -304,7 +304,6 @@ template <typename MODEL> class ProcessPerts : public oops::Application {
     for (int jm = 0; jm < nincrements; ++jm) {
       // Initialize work perturbation xI from ensemble perturbation x0
       oops::FieldSet3D fsetI(fsetEnsI[jm]);
-      oops::FieldSet4D fset4dDxI(fsetI);
 
       oops::Log::test() << "Norm of perturbation: "
                         << "member " << jm+1
@@ -317,7 +316,7 @@ template <typename MODEL> class ProcessPerts : public oops::Application {
       oops::FieldSet4D fset4dDxSum(fsetSum);
 
       for (std::size_t b = 0; b < nbands; ++b) {
-        //  Copy work perturbation x = xI
+        // Copy work perturbation x = xI
         oops::FieldSet3D fset(fsetI.validTime(), fsetI.commGeom());
         fset.deepCopy(fsetI.fieldSet());
         oops::FieldSet4D fset4dDx(fset);
@@ -332,13 +331,13 @@ template <typename MODEL> class ProcessPerts : public oops::Application {
 
           if (calcComplement[b]) {
             // Use filter complement: x' = (I-G)x
-            fset4dDx[0] -= fset4dDxI[0];
+            fset4dDx[0] -= fsetI;
             fset4dDx[0] *= -1.0;
           }
 
           if (recursiveFilters) {
             // Recursive filters: xI = xI - x'
-            fset4dDxI[0] -= fset4dDx[0];
+            fsetI -= fset4dDx[0];
           }
 
           // Increment sum with the latest x'

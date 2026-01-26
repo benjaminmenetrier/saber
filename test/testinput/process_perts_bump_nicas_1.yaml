@@ -30,12 +30,10 @@ bands:
           filter resolution: 4.0
           explicit length-scales: true
           horizontal length-scale:
-          - groups:
-            - air_horizontal_streamfunction
+          - groups: *vars
             value: 4000.0e3
           vertical length-scale:
-          - groups:
-            - air_horizontal_streamfunction
+          - groups: *vars
             value: 3.0
   output:
     model write:

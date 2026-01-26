@@ -7,6 +7,7 @@
 
 #include "saber/blocks/SaberEnsembleBlockChain.h"
 
+#include "oops/util/RandomField.h"
 #include "saber/oops/Utilities.h"
 
 namespace saber {
@@ -14,110 +15,223 @@ namespace saber {
 // -----------------------------------------------------------------------------
 
 void SaberEnsembleBlockChain::multiply(oops::FieldSet4D & fset4d) const {
-  oops::Log::trace() << "saber::generic::SaberEnsembleBlockChain::multiply starting" << std::endl;
+  oops::Log::trace() << "saber::SaberEnsembleBlockChain::multiply starting" << std::endl;
 
-  // Outer blocks adjoint multiplication
-  if (outerBlockChain_) {
-    outerBlockChain_->applyOuterBlocksAD(fset4d);
-  }
-
-  // Central block: ensemble covariance
-  // Initialization
-  const oops::FieldSet4D fset4dInit = oops::copyFieldSet4D(fset4d);
-  fset4d.zero();
-  for (size_t ie = 0; ie < ensemble_->ens_size(); ++ie) {
-    // Copy initial FieldSet4D
-    oops::FieldSet4D fset4dMem = oops::copyFieldSet4D(fset4dInit);
-
-    if (locBlockChain_) {
-      // With localization
-      // First schur product
-      for (size_t it = 0; it < fset4dMem.size(); ++it) {
-        fset4dMem[it] *= (*ensemble_)(it, ie);
-      }
-      // Apply localization
-      locBlockChain_->multiply(fset4dMem);
-      // Second schur product
-      for (size_t it = 0; it < fset4dMem.size(); ++it) {
-        fset4dMem[it] *= (*ensemble_)(it, ie);
-      }
-      // Add up member contribution
-      fset4d += fset4dMem;
-    } else {
-      // No localization
-      // Compute weight
-      const double wgt = fset4dInit.dot_product_with(*ensemble_, ie, vars_);
-      // Copy ensemble member
-      fset4dMem.deepCopy(*ensemble_, ie);
-      // Apply weight
-      fset4dMem *= wgt;
-      // Add up member contribution
-      fset4d += fset4dMem;
+  if (strategy_ == "univariate") {
+    // Outer blocks adjoint multiplication
+    if (outerBlockChain_) {
+      outerBlockChain_->applyOuterBlocksAD(fset4d);
     }
-    // TODO(Algo): Add communication here when the code starts supporting
-    // ensemble members distributed across MPI tasks.
+
+    // Central block: ensemble covariance
+    // Initialization
+    const oops::FieldSet4D fset4dInit = oops::copyFieldSet4D(fset4d);
+    fset4d.zero();
+
+    for (const auto & scaleData : scaleDataVec_) {
+      // Copy initial FieldSet4D
+      oops::FieldSet4D fset4dScaleInit = oops::copyFieldSet4D(fset4dInit);
+
+      // Apply interpolator adjoint
+      if (scaleData.interpolator()) {
+        scaleData.interpolator()->applyOuterBlocksAD(fset4dScaleInit);
+      }
+
+      // Create scale FieldSet4D
+      oops::FieldSet4D fset4dScale = oops::copyFieldSet4D(fset4dScaleInit);
+      fset4dScale.zero();
+
+      for (size_t ie = 0; ie < scaleData.ensemble()->ens_size(); ++ie) {
+        // Copy initial FieldSet4D
+        oops::FieldSet4D fset4dMem = oops::copyFieldSet4D(fset4dScaleInit);
+
+        if (scaleData.localization()) {
+          // With localization
+
+          // First schur product
+          for (size_t it = 0; it < fset4dMem.size(); ++it) {
+            fset4dMem[it] *= (*scaleData.ensemble())(it, ie);
+          }
+
+          // Apply localization
+          scaleData.localization()->multiply(fset4dMem);
+
+          // Second schur product
+          for (size_t it = 0; it < fset4dMem.size(); ++it) {
+            fset4dMem[it] *= (*scaleData.ensemble())(it, ie);
+          }
+
+          // Add up member contribution
+          fset4dScale += fset4dMem;
+        } else {
+          // No localization
+
+          // Compute weight
+          const double wgt = fset4dScaleInit.dot_product_with(*scaleData.ensemble(), ie, vars_);
+
+          // Copy ensemble member
+          fset4dMem.deepCopy(*scaleData.ensemble(), ie);
+
+          // Apply weight
+          fset4dMem *= wgt;
+
+          // Add up member contribution
+          fset4dScale += fset4dMem;
+        }
+        // TODO(Algo): Add communication here when the code starts supporting
+        // ensemble members distributed across MPI tasks.
+      }
+
+      // Normalize result
+      const double rk = 1.0/static_cast<double>(scaleData.ensemble()->ens_size()-1);
+      fset4dScale *= rk;
+
+      // Apply interpolator
+      if (scaleData.interpolator()) {
+        scaleData.interpolator()->applyOuterBlocks(fset4dScale);
+      }
+
+      // Add up scale contribution
+      fset4d += fset4dScale;
+    }
+
+    // Outer blocks forward multiplication
+    if (outerBlockChain_) {
+      outerBlockChain_->applyOuterBlocks(fset4d);
+    }
+  } else if (strategy_ == "crossed") {
+    // Create control vector
+    atlas::Field cv = atlas::Field("genericCtlVec",
+                                       atlas::array::make_datatype<double>(),
+                                       atlas::array::make_shape(ctlVecSize()));
+
+    // Adjoint square-root multiply
+    multiplySqrtAD(fset4d, cv, 0);
+
+    // Square-root multiply
+    multiplySqrt(cv, fset4d, 0);
   }
 
-  // Normalize result
-  const double rk = 1.0/static_cast<double>(ensemble_->ens_size()-1);
-  fset4d *= rk;
-
-  // Outer blocks forward multiplication
-  if (outerBlockChain_) {
-    outerBlockChain_->applyOuterBlocks(fset4d);
-  }
-
-  oops::Log::trace() << "saber::generic::SaberEnsembleBlockChain::multiply done" << std::endl;
+  oops::Log::trace() << "saber::SaberEnsembleBlockChain::multiply done" << std::endl;
 }
 
 // -----------------------------------------------------------------------------
 
 void SaberEnsembleBlockChain::randomize(oops::FieldSet4D & fset4d) const {
+  oops::Log::trace() << "saber::SaberEnsembleBlockChain::randomize starting" << std::endl;
+
   // Central block: randomization with ensemble covariance
-  fset4d.deepCopy(*ensemble_, 0);
+  const auto & scaleData = scaleDataVec_[0];
+  fset4d.deepCopy(*scaleData.ensemble(), 0);
+  if (scaleData.interpolator()) {
+    scaleData.interpolator()->applyOuterBlocks(fset4d);
+  }
   fset4d.zero();
   std::unique_ptr<util::NormalDistribution<double>> normalDist;
 
-  for (unsigned int ie = 0; ie < ensemble_->ens_size(); ++ie) {
-    // Create empty FieldSet4D
-    oops::FieldSet4D fset4dMem(fset4d.times(), fset4d.commTime(), fset4d[0].commGeom());
+  if (strategy_ == "univariate") {
+    for (const auto & scaleData : scaleDataVec_) {
+      // Create scale FieldSet4D
+      oops::FieldSet4D fset4dScale(fset4d.times(), fset4d.commTime(), fset4d[0].commGeom());
 
-    // Copy ensemble member
-    fset4dMem.deepCopy(*ensemble_, ie);
+      // Copy ensemble member
+      fset4dScale.deepCopy(*scaleData.ensemble(), 0);
+      fset4dScale.zero();
 
-    if (locBlockChain_) {
-      // With localization
+      for (unsigned int ie = 0; ie < scaleData.ensemble()->ens_size(); ++ie) {
+        // Create empty FieldSet4D
+        // TODO(Benjamin): could be a oops::copyFieldSet4D(fset4dScale);
+        oops::FieldSet4D fset4dMem(fset4d.times(), fset4d.commTime(), fset4d[0].commGeom());
 
-      // Randomize localization
-      locBlockChain_->randomize(fset4dMem);
+        // Copy ensemble member
+        fset4dMem.deepCopy(*scaleData.ensemble(), ie);
 
-      // Schur product
-      for (size_t it = 0; it < fset4dMem.size(); ++it) {
-        fset4dMem[it] *= (*ensemble_)(it, ie);
+        if (scaleData.localization()) {
+          // With localization
+
+          // Randomize localization
+          scaleData.localization()->randomize(fset4dMem);
+
+          // Schur product
+          for (size_t it = 0; it < fset4dMem.size(); ++it) {
+            fset4dMem[it] *= (*scaleData.ensemble())(it, ie);
+          }
+        } else {
+          // No localization
+          if (!normalDist) {
+            normalDist = std::make_unique<util::NormalDistribution<double>>(
+              scaleData.ensemble()->ens_size(), 0.0, 1.0, seed_);
+          }
+
+          // Apply weight
+          fset4dMem *= (*normalDist)[ie];
+        }
+
+        // Add up member contribution
+        fset4dScale += fset4dMem;
       }
-    } else {
-      // No localization
-      if (!normalDist) {
-        normalDist.reset(new util::NormalDistribution<double>(ensemble_->ens_size(), 0.0, 1.0,
-          seed_));
+
+      // Normalize result
+      const double rk = 1.0/sqrt(static_cast<double>(scaleData.ensemble()->ens_size()-1));
+      fset4dScale *= rk;
+
+      // Apply interpolator
+      if (scaleData.interpolator()) {
+        scaleData.interpolator()->applyOuterBlocks(fset4dScale);
       }
 
-      // Apply weight
-      fset4dMem *= (*normalDist)[ie];
+      // Add up scale contribution
+      fset4d += fset4dScale;
     }
 
-    // Add up member contribution
-    fset4d += fset4dMem;
+    // Outer blocks forward multiplication
+    if (outerBlockChain_) {
+       outerBlockChain_->applyOuterBlocks(fset4d);
+    }
+  } else if (strategy_ == "crossed") {
+    // Create control vector
+    atlas::Field cv("genericCtlVec", atlas::array::make_datatype<double>(),
+      atlas::array::make_shape(ctlVecSize()));
+
+    // Sizes, sendcounts and displs
+    std::vector<int> sendcounts(comm_.size());
+    comm_.allGather(static_cast<int>(ctlVecSize()), sendcounts.begin(), sendcounts.end());
+    size_t ctlVecSizeGlb = 0;
+    for (const auto ctlVecSize : sendcounts) {
+      ctlVecSizeGlb += ctlVecSize;
+    }
+    std::vector<int> displs(comm_.size());
+    displs[0] = 0;
+    for (size_t jt = 0; jt < comm_.size()-1; ++jt) {
+      displs[jt+1] = displs[jt]+sendcounts[jt];
+    }
+
+    // Generate global random vector
+    std::vector<double> rand_vec_glb;
+    if (comm_.rank() == 0) {
+      util::NormalDistributionField dist(ctlVecSizeGlb, 0.0, 1.0);
+      rand_vec_glb.resize(ctlVecSizeGlb);
+      for (size_t jcv = 0; jcv < ctlVecSizeGlb; ++jcv) {
+        rand_vec_glb[jcv] = dist[jcv];
+      }
+    }
+
+    // Scatter random vector
+    std::vector<double> rand_vec(ctlVecSize());
+    comm_.scatterv(rand_vec_glb.begin(), rand_vec_glb.end(), sendcounts, displs,
+      rand_vec.begin(), rand_vec.end(), 0);
+
+    // Fill control vector
+    auto cvView = atlas::array::make_view<double, 1>(cv);
+    for (size_t jcv = 0; jcv < ctlVecSize(); ++jcv) {
+      cvView(jcv) = rand_vec[jcv];
+    }
+
+    // Square-root multiply
+    multiplySqrt(cv, fset4d, 0);
   }
 
-  // Normalize result
-  const double rk = 1.0/sqrt(static_cast<double>(ensemble_->ens_size()-1));
-  fset4d *= rk;
-
-  // Outer blocks forward multiplication
-  if (outerBlockChain_) {
-    outerBlockChain_->applyOuterBlocks(fset4d);
-  }
+  oops::Log::trace() << "saber::SaberEnsembleBlockChain::done starting" << std::endl;
 }
 
 // -----------------------------------------------------------------------------
@@ -125,52 +239,72 @@ void SaberEnsembleBlockChain::randomize(oops::FieldSet4D & fset4d) const {
 void SaberEnsembleBlockChain::multiplySqrt(const atlas::Field & cv,
                                            oops::FieldSet4D & fset4d,
                                            const size_t & offset) const {
-  oops::Log::trace() << "saber::generic::SaberEnsembleBlockChain::multiplySqrt starting"
-                     << std::endl;
+  oops::Log::trace() << "saber::SaberEnsembleBlockChain::multiplySqrt starting" << std::endl;
 
   // Initialization
   fset4d.zero();
   size_t index = offset;
 
-  // Central block: ensemble covariance square-root
-  for (unsigned int ie = 0; ie < ensemble_->ens_size(); ++ie) {
-    // Create empty FieldSet4D
-    oops::FieldSet4D fset4dMem(fset4d.times(), fset4d.commTime(), fset4d[0].commGeom());
-
-    if (locBlockChain_) {
-      // With localization
-      locBlockChain_->multiplySqrt(cv, fset4dMem, index);
-      index += locBlockChain_->ctlVecSize();
-
-      // Schur product
-      for (size_t it = 0; it < fset4dMem.size(); ++it) {
-        fset4dMem[it] *= (*ensemble_)(it, ie);
-      }
-    } else {
-      // No localization
-      const auto cvView = atlas::array::make_view<double, 1>(cv);
-      fset4dMem.deepCopy(*ensemble_, ie);
-
-      // Apply weight
-      fset4dMem *= cvView(index);
-      ++index;
+  for (const auto & scaleData : scaleDataVec_) {
+    if (strategy_ == "crossed") {
+      // Restart index (save control vector)
+      index = offset;
     }
 
-    // Add up member contribution
-    fset4d += fset4dMem;
-  }
+    // Create scale FieldSet4D
+    oops::FieldSet4D fset4dScale(fset4d.times(), fset4d.commTime(), fset4d[0].commGeom());
 
-  // Normalize result
-  const double rk = 1.0/std::sqrt(static_cast<double>(ensemble_->ens_size()-1));
-  fset4d *= rk;
+    // Copy ensemble member
+    fset4dScale.deepCopy(*scaleData.ensemble(), 0);
+    fset4dScale.zero();
+
+    // Central block: ensemble covariance square-root
+    for (unsigned int ie = 0; ie < scaleData.ensemble()->ens_size(); ++ie) {
+      // Create empty FieldSet4D
+      oops::FieldSet4D fset4dMem(fset4d.times(), fset4d.commTime(), fset4d[0].commGeom());
+
+      if (scaleData.localization()) {
+        // With localization
+        scaleData.localization()->multiplySqrt(cv, fset4dMem, index);
+        index += scaleData.localization()->ctlVecSize();
+
+        // Schur product
+        for (size_t it = 0; it < fset4dMem.size(); ++it) {
+          fset4dMem[it] *= (*scaleData.ensemble())(it, ie);
+        }
+      } else {
+        // No localization
+        const auto cvView = atlas::array::make_view<double, 1>(cv);
+        fset4dMem.deepCopy(*scaleData.ensemble(), ie);
+
+        // Apply weight
+        fset4dMem *= cvView(index);
+        ++index;
+      }
+
+      // Add up member contribution
+      fset4dScale += fset4dMem;
+    }
+
+    // Normalize result
+    const double rk = 1.0/std::sqrt(static_cast<double>(scaleData.ensemble()->ens_size()-1));
+    fset4dScale *= rk;
+
+    // Apply interpolator
+    if (scaleData.interpolator()) {
+      scaleData.interpolator()->applyOuterBlocks(fset4dScale);
+    }
+
+    // Add up scale contribution
+    fset4d += fset4dScale;
+  }
 
   // Outer blocks forward multiplication
   if (outerBlockChain_) {
     outerBlockChain_->applyOuterBlocks(fset4d);
   }
 
-  oops::Log::trace() << "saber::generic::SaberEnsembleBlockChain::multiplySqrt done"
-                     << std::endl;
+  oops::Log::trace() << "saber::SaberEnsembleBlockChain::multiplySqrt done" << std::endl;
 }
 
 // -----------------------------------------------------------------------------
@@ -178,8 +312,7 @@ void SaberEnsembleBlockChain::multiplySqrt(const atlas::Field & cv,
 void SaberEnsembleBlockChain::multiplySqrtAD(const oops::FieldSet4D & fset4d,
                                              atlas::Field & cv,
                                              const size_t & offset) const {
-  oops::Log::trace() << "saber::generic::SaberEnsembleBlockChain::multiplySqrtAD starting"
-                     << std::endl;
+  oops::Log::trace() << "saber::SaberEnsembleBlockChain::multiplySqrtAD starting" << std::endl;
 
   // Copy input FieldSet
   oops::FieldSet4D fset4dInit = oops::copyFieldSet4D(fset4d);
@@ -189,41 +322,68 @@ void SaberEnsembleBlockChain::multiplySqrtAD(const oops::FieldSet4D & fset4d,
     outerBlockChain_->applyOuterBlocksAD(fset4dInit);
   }
 
-  // Normalize initial fieldset
-  const double rk = 1.0/std::sqrt(static_cast<double>(ensemble_->ens_size()-1));
-  fset4dInit *= rk;
-
   // Initialization
   size_t index = offset;
 
-  // Central block: ensemble covariance square-root adjoint
-  for (unsigned int ie = 0; ie < ensemble_->ens_size(); ++ie) {
-    if (locBlockChain_) {
-      // Apply localization
+  // Get control vector view
+  auto cvView = atlas::array::make_view<double, 1>(cv);
 
-      // Copy initial fieldset
-      oops::FieldSet4D fset4dMem = oops::copyFieldSet4D(fset4dInit);
+  // Initialize control vector
+  cvView.assign(0.0);
 
-      // First schur product
-      for (size_t it = 0; it < fset4dMem.size(); ++it) {
-        fset4dMem[it] *= (*ensemble_)(it, ie);
+  for (const auto & scaleData : scaleDataVec_) {
+    if (strategy_ == "crossed") {
+      // Restart index (save control vector)
+      index = offset;
+    }
+
+    // Copy initial FieldSet4D
+    oops::FieldSet4D fset4dScaleInit = oops::copyFieldSet4D(fset4dInit);
+
+    // Apply interpolator adjoint
+    if (scaleData.interpolator()) {
+      scaleData.interpolator()->applyOuterBlocksAD(fset4dScaleInit);
+    }
+
+    // Normalize initial fieldset
+    const double rk = 1.0/std::sqrt(static_cast<double>(scaleData.ensemble()->ens_size()-1));
+    fset4dScaleInit *= rk;
+
+    // Central block: ensemble covariance square-root adjoint
+    if (scaleData.localization()) {
+      // Create scale control vector
+      atlas::Field cvScale("genericCtlVec", atlas::array::make_datatype<double>(),
+        atlas::array::make_shape(scaleData.localization()->ctlVecSize()));
+
+      // Get scale control vector view
+      auto cvScaleView = atlas::array::make_view<double, 1>(cvScale);
+
+      for (unsigned int ie = 0; ie < scaleData.ensemble()->ens_size(); ++ie) {
+        // Copy initial fieldset
+        oops::FieldSet4D fset4dMem = oops::copyFieldSet4D(fset4dScaleInit);
+
+        // First schur product
+        for (size_t it = 0; it < fset4dMem.size(); ++it) {
+          fset4dMem[it] *= (*scaleData.ensemble())(it, ie);
+        }
+
+        // Apply localization square-root adjoint
+        scaleData.localization()->multiplySqrtAD(fset4dMem, cvScale, 0);
+        for (size_t jcv = 0; jcv < scaleData.localization()->ctlVecSize(); ++jcv) {
+          cvView(index+jcv) += cvScaleView(jcv);
+        }
+        index += scaleData.localization()->ctlVecSize();
       }
-
-      // Apply localization square-root adjoint
-      locBlockChain_->multiplySqrtAD(fset4dMem, cv, index);
-      index += locBlockChain_->ctlVecSize();
     } else {
-      // No localization
-      auto cvView = atlas::array::make_view<double, 1>(cv);
-
-      // Compute weight
-      cvView(index) = fset4dInit.dot_product_with(*ensemble_, ie, vars_);
-      ++index;
+      for (unsigned int ie = 0; ie < scaleData.ensemble()->ens_size(); ++ie) {
+        // Compute weight
+        cvView(index) = fset4dScaleInit.dot_product_with(*scaleData.ensemble(), ie, vars_);
+        ++index;
+      }
     }
   }
 
-  oops::Log::trace() << "saber::generic::SaberEnsembleBlockChain::multiplySqrtAD done"
-                     << std::endl;
+  oops::Log::trace() << "saber::SaberEnsembleBlockChain::multiplySqrtAD done" << std::endl;
 }
 
 // -----------------------------------------------------------------------------
