@@ -83,4 +83,40 @@ SaberCentralBlockFactory::createParameters(const std::string &name) {
 
 // -----------------------------------------------------------------------------
 
+void SaberCentralBlockBase::randomize(oops::FieldSet3D & fset3d) const {
+  oops::Log::trace() << "SaberCentralBlockBase::randomize starting" << std::endl;
+
+  // Create control vector
+  atlas::Field cv("genericCtlVec", atlas::array::make_datatype<double>(),
+    atlas::array::make_shape(ctlVecSize()));
+
+  // Generate random control vector
+  randomCtlVec(cv, 0);
+
+  // Square-root multiply
+  multiplySqrt(cv, fset3d, 0);
+
+  oops::Log::trace() << "SaberCentralBlockBase::randomize done" << std::endl;
+}
+
+// -----------------------------------------------------------------------------
+
+void SaberCentralBlockBase::multiply(oops::FieldSet3D & fset3d) const {
+  oops::Log::trace() << "SaberCentralBlockBase::multiply starting" << std::endl;
+
+  // Create control vector
+  atlas::Field cv("genericCtlVec", atlas::array::make_datatype<double>(),
+    atlas::array::make_shape(ctlVecSize()));
+
+  // Square-root adjoint multiply
+  multiplySqrtAD(fset3d, cv, 0);
+
+  // Square-root multiply
+  multiplySqrt(cv, fset3d, 0);
+
+  oops::Log::trace() << "SaberCentralBlockBase::multiply done" << std::endl;
+}
+
+// -----------------------------------------------------------------------------
+
 }  // namespace saber

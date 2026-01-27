@@ -8,6 +8,7 @@
 #include "saber/blocks/SaberEnsembleBlockChain.h"
 
 #include "oops/util/RandomField.h"
+
 #include "saber/oops/Utilities.h"
 
 namespace saber {
@@ -193,45 +194,98 @@ void SaberEnsembleBlockChain::randomize(oops::FieldSet4D & fset4d) const {
     atlas::Field cv("genericCtlVec", atlas::array::make_datatype<double>(),
       atlas::array::make_shape(ctlVecSize()));
 
-    // Sizes, sendcounts and displs
-    std::vector<int> sendcounts(comm_.size());
-    comm_.allGather(static_cast<int>(ctlVecSize()), sendcounts.begin(), sendcounts.end());
-    size_t ctlVecSizeGlb = 0;
-    for (const auto ctlVecSize : sendcounts) {
-      ctlVecSizeGlb += ctlVecSize;
-    }
-    std::vector<int> displs(comm_.size());
-    displs[0] = 0;
-    for (size_t jt = 0; jt < comm_.size()-1; ++jt) {
-      displs[jt+1] = displs[jt]+sendcounts[jt];
-    }
-
-    // Generate global random vector
-    std::vector<double> rand_vec_glb;
-    if (comm_.rank() == 0) {
-      util::NormalDistributionField dist(ctlVecSizeGlb, 0.0, 1.0);
-      rand_vec_glb.resize(ctlVecSizeGlb);
-      for (size_t jcv = 0; jcv < ctlVecSizeGlb; ++jcv) {
-        rand_vec_glb[jcv] = dist[jcv];
-      }
-    }
-
-    // Scatter random vector
-    std::vector<double> rand_vec(ctlVecSize());
-    comm_.scatterv(rand_vec_glb.begin(), rand_vec_glb.end(), sendcounts, displs,
-      rand_vec.begin(), rand_vec.end(), 0);
-
-    // Fill control vector
-    auto cvView = atlas::array::make_view<double, 1>(cv);
-    for (size_t jcv = 0; jcv < ctlVecSize(); ++jcv) {
-      cvView(jcv) = rand_vec[jcv];
-    }
+    // Generate random control vector
+    randomCtlVec(cv, 0);
 
     // Square-root multiply
     multiplySqrt(cv, fset4d, 0);
   }
 
-  oops::Log::trace() << "saber::SaberEnsembleBlockChain::done starting" << std::endl;
+  oops::Log::trace() << "saber::SaberEnsembleBlockChain::randomize done" << std::endl;
+}
+
+// -----------------------------------------------------------------------------
+
+size_t SaberEnsembleBlockChain::ctlVecSize() const {
+  oops::Log::trace() << "saber::SaberEnsembleBlockChain::ctlVecSize starting" << std::endl;
+
+  // Initialize control vector size
+  size_t ctlVecSize = 0;
+
+  // Get control vector size
+  if (scaleDataVec_[0].localization()) {
+    // Check that all scales have a localization
+    for (const auto & scaleData : scaleDataVec_) {
+      ASSERT(scaleData.localization());
+    }
+
+    // Compute control vector size
+    if (strategy_ == "univariate") {
+      // Univariate strategy
+      for (const auto & scaleData : scaleDataVec_) {
+        ctlVecSize += scaleData.ensemble()->ens_size()*scaleData.localization()->ctlVecSize();
+      }
+    } else if (strategy_ == "crossed") {
+      // Crossed strategy
+      ctlVecSize = scaleDataVec_[0].ensemble()->ens_size()
+        *scaleDataVec_[0].localization()->ctlVecSize();
+
+      // Check that all the scales have the same control vector size
+      for (const auto & scaleData : scaleDataVec_) {
+        ASSERT(scaleData.localization()->ctlVecSize() ==
+          scaleDataVec_[0].localization()->ctlVecSize());
+      }
+    }
+  } else {
+    // Without localization
+    // Only one scale allowed
+    ASSERT(scaleDataVec_.size() == 1);
+
+    // Control vector size = number of members
+    ctlVecSize = scaleDataVec_[0].ensemble()->ens_size();
+  }
+
+  oops::Log::trace() << "saber::SaberEnsembleBlockChain::ctlVecSize done" << std::endl;
+  return ctlVecSize;
+}
+
+// -----------------------------------------------------------------------------
+
+void SaberEnsembleBlockChain::randomCtlVec(atlas::Field & cv,
+                                           const size_t & offset) const {
+  oops::Log::trace() << "saber::SaberEnsembleBlockChain::randomCtlVec starting" << std::endl;
+
+  // Initialization
+  size_t index = offset;
+
+  for (const auto & scaleData : scaleDataVec_) {
+    if (strategy_ == "crossed") {
+      // Restart index (save control vector)
+      index = offset;
+    }
+
+    // Central block: ensemble covariance square-root
+    for (unsigned int ie = 0; ie < scaleData.ensemble()->ens_size(); ++ie) {
+      if (scaleData.localization()) {
+        // With localization
+        scaleData.localization()->randomCtlVec(cv, index);
+        index += scaleData.localization()->ctlVecSize();
+      } else {
+        // No localization
+        double zz;
+        if (comm_.rank() == 0) {
+          util::NormalDistributionField dist(1, 0.0, 1.0);
+          zz = dist[0];
+        }
+        comm_.broadcast(zz, 0);
+        auto cvView = atlas::array::make_view<double, 1>(cv);
+        cvView(index) = zz;
+        ++index;
+      }
+    }
+  }
+
+  oops::Log::trace() << "saber::SaberEnsembleBlockChain::randomCtlVec done" << std::endl;
 }
 
 // -----------------------------------------------------------------------------

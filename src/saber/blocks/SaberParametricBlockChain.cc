@@ -190,7 +190,7 @@ void SaberParametricBlockChain::multiply(oops::FieldSet4D & fset4d) const {
     //             (Id)                 (x_3)   (Id)                      (C_3D ( x_1 + x_2 + x_3 ))
     // Reference in section 3.4.2. of https://rmets.onlinelibrary.wiley.com/doi/full/10.1002/qj.2325.
     // Local sum of x1, x2, ...
-    for (size_t jtime = 1; jtime < fset4d.size(); ++jtime) {
+    for (size_t jtime = 1; jtime < size4D_; ++jtime) {
       fset4d[0] += fset4d[jtime];
     }
     if (timeComm_.rank() > 0) {
@@ -214,7 +214,7 @@ void SaberParametricBlockChain::multiply(oops::FieldSet4D & fset4d) const {
   } else {
     // No cross-time covariances: apply central block to each of the
     // time slots.
-    for (size_t jtime = 0; jtime < fset4d.size(); ++jtime) {
+    for (size_t jtime = 0; jtime < size4D_; ++jtime) {
       centralBlock_->multiply(fset4d[jtime]);
     }
   }
@@ -230,7 +230,7 @@ void SaberParametricBlockChain::multiply(oops::FieldSet4D & fset4d) const {
 
 void SaberParametricBlockChain::randomize(oops::FieldSet4D & fset4d) const {
   // Create central FieldSet4D
-  for (size_t jtime = 0; jtime < fset4d.size(); ++jtime) {
+  for (size_t jtime = 0; jtime < size4D_; ++jtime) {
     fset4d[jtime].init(centralFunctionSpace_, centralVars_);
   }
 
@@ -248,7 +248,7 @@ void SaberParametricBlockChain::randomize(oops::FieldSet4D & fset4d) const {
     }
   } else {
     // No cross-time covariances
-    for (size_t jtime = 0; jtime < fset4d.size(); ++jtime) {
+    for (size_t jtime = 0; jtime < size4D_; ++jtime) {
       centralBlock_->randomize(fset4d[jtime]);
     }
   }
@@ -279,11 +279,31 @@ size_t SaberParametricBlockChain::ctlVecSize() const {
 
 // -----------------------------------------------------------------------------
 
+void SaberParametricBlockChain::randomCtlVec(atlas::Field & cv,
+                                             const size_t & offset) const {
+  if (crossTimeCov_) {
+    // Duplicated cross-time covariances
+    if (timeComm_.rank() == 0) {
+      // Central block square-root for rank 0
+      centralBlock_->randomCtlVec(cv, offset);
+    }
+  } else {
+    // No cross-time covariances
+    size_t index = offset;
+    for (size_t jtime = 0; jtime < size4D_; ++jtime) {
+      centralBlock_->randomCtlVec(cv, index);
+      index += centralBlock_->ctlVecSize();
+    }
+  }
+}
+
+// -----------------------------------------------------------------------------
+
 void SaberParametricBlockChain::multiplySqrt(const atlas::Field & cv,
                                              oops::FieldSet4D & fset4d,
                                              const size_t & offset) const {
   // Create central FieldSet4D
-  for (size_t jtime = 0; jtime < fset4d.size(); ++jtime) {
+  for (size_t jtime = 0; jtime < size4D_; ++jtime) {
     fset4d[jtime].init(centralFunctionSpace_, centralVars_);
   }
 
@@ -303,7 +323,7 @@ void SaberParametricBlockChain::multiplySqrt(const atlas::Field & cv,
   } else {
     // No cross-time covariances
     size_t index = offset;
-    for (size_t jtime = 0; jtime < fset4d.size(); ++jtime) {
+    for (size_t jtime = 0; jtime < size4D_; ++jtime) {
       centralBlock_->multiplySqrt(cv, fset4d[jtime], index);
       index += centralBlock_->ctlVecSize();
     }

@@ -53,10 +53,10 @@ class SaberCentralBlockBase : public util::Printable,
   // Application methods
 
   // Block randomization
-  virtual void randomize(oops::FieldSet3D &) const = 0;
+  virtual void randomize(oops::FieldSet3D &) const;
 
   // Block multiplication
-  virtual void multiply(oops::FieldSet3D &) const = 0;
+  virtual void multiply(oops::FieldSet3D &) const;
 
   // Block filtering; by default calls multiply
   virtual void filter(oops::FieldSet3D & fset) const {
@@ -102,6 +102,9 @@ class SaberCentralBlockBase : public util::Printable,
   // Square-root formulation
   virtual size_t ctlVecSize() const
     {throw eckit::NotImplemented("ctlVecSize not implemented yet for the block "
+      + blockName_, Here());}
+  virtual void randomCtlVec(atlas::Field &, const size_t &) const
+    {throw eckit::NotImplemented("randomCtlVec not implemented yet for the block "
       + blockName_, Here());}
   virtual void multiplySqrt(const atlas::Field &, oops::FieldSet3D &, const size_t &) const
     {throw eckit::NotImplemented("multiplySqrt not implemented yet for the block "

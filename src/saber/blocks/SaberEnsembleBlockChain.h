@@ -178,7 +178,9 @@ class SaberEnsembleBlockChain : public SaberBlockChainBase {
   /// @brief Multiply the increment by this B matrix.
   void multiply(oops::FieldSet4D &) const;
   /// @brief Get this B matrix square-root control vector size.
-  size_t ctlVecSize() const {return ctlVecSize_;}
+  size_t ctlVecSize() const;
+  /// @brief Generate a random control vector.
+  void randomCtlVec(atlas::Field &, const size_t &) const;
   /// @brief Multiply the control vector by this B matrix square-root.
   void multiplySqrt(const atlas::Field &, oops::FieldSet4D &, const size_t &) const;
   /// @brief Multiply the increment by this B matrix square-root adjoint.
@@ -200,10 +202,8 @@ class SaberEnsembleBlockChain : public SaberBlockChainBase {
   std::unique_ptr<SaberOuterBlockChain> outerBlockChain_;
   /// @brief Vector of data containers, one for each scale
   std::vector<ScaleData> scaleDataVec_;
-  /// @brief Multi-scales strategy
+  /// @brief Multiscales strategy
   std::string strategy_;
-  /// @brief Control vector size.
-  size_t ctlVecSize_;
   /// @brief Variables used in the ensemble covariance.
   /// TODO(AS): check whether this is needed or can be inferred from ensemble->
   oops::Variables vars_;
@@ -218,8 +218,7 @@ SaberEnsembleBlockChain::SaberEnsembleBlockChain(const oops::Geometry<MODEL> & g
                        oops::FieldSet4D & fset4dXb,
                        oops::FieldSet4D & fset4dFg,
                        const eckit::Configuration & conf)
-  : comm_(geom.getComm()), outerFunctionSpace_(geom.functionSpace()), outerVariables_(outerVars),
-    ctlVecSize_(0) {
+  : comm_(geom.getComm()), outerFunctionSpace_(geom.functionSpace()), outerVariables_(outerVars) {
   oops::Log::trace() << "SaberEnsembleBlockChain ctor starting" << std::endl;
 
   // Deserialize parameters and fill configuration with missing values
@@ -339,9 +338,9 @@ SaberEnsembleBlockChain::SaberEnsembleBlockChain(const oops::Geometry<MODEL> & g
       // Right inverse of ensemble transform on ensemble members
       oops::Log::info() << "Info     : Right inverse of ensemble transform on ensemble members"
                         << std::endl;
-      for (size_t itime = 0; itime < ensemble->local_time_size(); ++itime) {
-        for (size_t iens = 0; iens < ensemble->local_ens_size(); ++iens) {
-          ensTransBlockChain->rightInverseMultiply((*ensemble)(itime, iens));
+      for (size_t it = 0; it < ensemble->local_time_size(); ++it) {
+        for (size_t ie = 0; ie < ensemble->local_ens_size(); ++ie) {
+          ensTransBlockChain->rightInverseMultiply((*ensemble)(it, ie));
         }
       }
 
@@ -521,9 +520,8 @@ SaberEnsembleBlockChain::SaberEnsembleBlockChain(const oops::Geometry<MODEL> & g
     if (scaleDataVec_[0].filter()) {
       // Split ensemble into scales
 
-      // Allocate ensemble for each scale
+      // Create empty ensemble for each scale
       for (auto & scaleData : scaleDataVec_) {
-//        scaleData.ensemble() = std::make_unique<oops::FieldSets>(*ensemble);
         scaleData.ensemble() = std::make_unique<oops::FieldSets>(
                                  ensemble->times(),
                                  ensemble->commTime(),
@@ -533,60 +531,63 @@ SaberEnsembleBlockChain::SaberEnsembleBlockChain(const oops::Geometry<MODEL> & g
 
       // Process members sequentially
       for (size_t ie = 0; ie < ensemble->ens_size(); ++ie) {
-        // Initialize work perturbation xI from ensemble perturbation x0
-        oops::FieldSet3D fsetI((*ensemble)[ie]);
+        for (size_t it = 0; it < fset4dXb.size(); ++it) {
+          // Initialize work perturbation xI from ensemble perturbation x0
+          oops::FieldSet3D fsetI((*ensemble)(it, ie));
 
-        // Initialize sum of filtered perturbations
-        oops::FieldSet3D fsetSum(fsetI.validTime(), fsetI.commGeom());
-        fsetSum.allocateOnly(fsetI.fieldSet());
-        fsetSum.zero();
-        oops::FieldSet4D fset4dDxSum(fsetSum);
+          // Initialize sum of filtered perturbations
+          oops::FieldSet3D fsetSum(fsetI.validTime(), fsetI.commGeom());
+          fsetSum.allocateOnly(fsetI.fieldSet());
+          fsetSum.zero();
+          oops::FieldSet4D fset4dDxSum(fsetSum);
 
-        for (auto & scaleData : scaleDataVec_) {
-          // Copy work perturbation x = xI
-          oops::FieldSet3D fset(fsetI.validTime(), fsetI.commGeom());
-          fset.deepCopy(fsetI.fieldSet());
-          oops::FieldSet4D fset4dDx(fset);
+          for (auto & scaleData : scaleDataVec_) {
+            // Copy work perturbation x = xI
+            oops::FieldSet3D fset(fsetI.validTime(), fsetI.commGeom());
+            fset.deepCopy(fsetI.fieldSet());
+            oops::FieldSet4D fset4dDx(fset);
 
-          if (scaleData.filter()) {
-            // Apply filter G on input x: x' = Gx
-            scaleData.filter()->applyOuterBlocks(fset4dDx);
+            if (scaleData.filter()) {
+              // Apply filter G on input x: x' = Gx
+              scaleData.filter()->applyOuterBlocks(fset4dDx);
 
-            if (scaleData.params().residualFromFilter.value()) {
-              if (scaleData.interpolator()) {
-                // Interpolate to input ensemble resolution Gx -> SGx
-                scaleData.interpolator()->applyOuterBlocks(fset4dDx);
+              if (scaleData.params().residualFromFilter.value()) {
+                if (scaleData.interpolator()) {
+                  // Interpolate to input ensemble resolution Gx -> SGx
+                  scaleData.interpolator()->applyOuterBlocks(fset4dDx);
+                }
+
+                // Use filter complement: x' = (I-SG)x
+                fset4dDx[0] -= fsetI;
+                fset4dDx[0] *= -1.0;
               }
 
-              // Use filter complement: x' = (I-SG)x
-              fset4dDx[0] -= fsetI;
-              fset4dDx[0] *= -1.0;
-            }
+              if (params.recursiveFilters.value()) {
+                // Recursive filter: xI = xI - x'
+                if (scaleData.params().residualFromFilter.value() || (!scaleData.interpolator())) {
+                  // Filtered perturbation already at input ensemble resolution
+                  fsetI -= fset4dDx[0];
+                } else {
+                  // Interpolate perturbation to input ensemble resolution
+                  scaleData.interpolator()->applyOuterBlocks(fset4dDx);
 
-            if (params.recursiveFilters.value()) {
-              // Recursive filter: xI = xI - x'
-              if (scaleData.params().residualFromFilter.value() || (!scaleData.interpolator())) {
-                // Filtered perturbation already at input ensemble resolution
-                fsetI -= fset4dDx[0];
-              } else {
-                // Interpolate perturbation to input ensemble resolution
-                scaleData.interpolator()->applyOuterBlocks(fset4dDx);
-
-                // Subtract interpolated filtered perturbation
-                fsetI -= fset4dDx[0];
+                  // Subtract interpolated filtered perturbation
+                  fsetI -= fset4dDx[0];
+                }
               }
+
+              // Increment sum with the latest x'
+              fset4dDxSum += fset4dDx;
+            } else {
+              // Residual increment: x' = x0 - sum{previous x'}
+              fset4dDx[0].zero();
+              fset4dDx[0] += (*ensemble)(it, ie);
+              fset4dDx[0] -= fset4dDxSum[0];
             }
 
-            // Increment sum with the latest x'
-            fset4dDxSum += fset4dDx;
-          } else {
-            // Residual increment: x' = x0 - sum{previous x'}
-            fset4dDx[0].zero();
-            fset4dDx[0] += (*ensemble)[ie];
-            fset4dDx[0] -= fset4dDxSum[0];
+            // Copy into ensemble
+            scaleData.ensemble()->emplace_back(it, ie, fset4dDx[0]);
           }
-          // Copy into ensemble
-          scaleData.ensemble()->emplace_back(0, ie, fset4dDx[0]);
         }
       }
     } else {
@@ -614,7 +615,7 @@ SaberEnsembleBlockChain::SaberEnsembleBlockChain(const oops::Geometry<MODEL> & g
         for (size_t ie = 0; ie < scaleData.ensemble()->ens_size(); ++ie) {
           eckit::LocalConfiguration gConfMem(gConf);
           util::setMember(gConfMem, ie+1);
-          util::writeFieldSet(geom.getComm(), gConfMem, (*scaleData.ensemble())[ie].fieldSet());
+          util::writeFieldSet(comm_, gConfMem, (*scaleData.ensemble())(0, ie).fieldSet());
         }
       }
       if (oConf.has("model write")) {
@@ -625,7 +626,7 @@ SaberEnsembleBlockChain::SaberEnsembleBlockChain(const oops::Geometry<MODEL> & g
                                              scaleData.localization()->outerVariables(),
                                              fset4dXb.times()[0]);
           pert.zero();
-          pert.fromFieldSet((*scaleData.ensemble())[ie].fieldSet());
+          pert.fromFieldSet((*scaleData.ensemble())(0, ie).fieldSet());
 
           eckit::LocalConfiguration mConfMem(mConf);
           util::setMember(mConfMem, ie+1);
@@ -633,39 +634,6 @@ SaberEnsembleBlockChain::SaberEnsembleBlockChain(const oops::Geometry<MODEL> & g
         }
       }
     }
-  }
-
-  // Get control vector size
-  if (scaleDataVec_[0].localization()) {
-    // Check that all scales have a localization
-    for (const auto & scaleData : scaleDataVec_) {
-      ASSERT(scaleData.localization());
-    }
-
-    // Compute control vector size
-    if (strategy_ == "univariate") {
-      // Univariate strategy
-      for (const auto & scaleData : scaleDataVec_) {
-        ctlVecSize_ += scaleData.ensemble()->ens_size()*scaleData.localization()->ctlVecSize();
-      }
-    } else if (strategy_ == "crossed") {
-      // Crossed strategy
-      ctlVecSize_ = scaleDataVec_[0].ensemble()->ens_size()
-        *scaleDataVec_[0].localization()->ctlVecSize();
-
-      // Check that all the scales have the same control vector size
-      for (const auto & scaleData : scaleDataVec_) {
-        ASSERT(scaleData.localization()->ctlVecSize() ==
-          scaleDataVec_[0].localization()->ctlVecSize());
-      }
-    }
-  } else {
-    // Without localization
-    // Only one scale allowed
-    ASSERT(scaleDataVec_.size() == 1);
-
-    // Control vector size = number of members
-    ctlVecSize_ = scaleDataVec_[0].ensemble()->ens_size();
   }
 
   // Adjoint test
