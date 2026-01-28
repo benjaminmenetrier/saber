@@ -103,9 +103,7 @@ class SaberCentralBlockBase : public util::Printable,
   virtual size_t ctlVecSize() const
     {throw eckit::NotImplemented("ctlVecSize not implemented yet for the block "
       + blockName_, Here());}
-  virtual void randomCtlVec(atlas::Field &, const size_t &) const
-    {throw eckit::NotImplemented("randomCtlVec not implemented yet for the block "
-      + blockName_, Here());}
+  virtual void randomCtlVec(atlas::Field &, const size_t &) const;
   virtual void multiplySqrt(const atlas::Field &, oops::FieldSet3D &, const size_t &) const
     {throw eckit::NotImplemented("multiplySqrt not implemented yet for the block "
       + blockName_, Here());}

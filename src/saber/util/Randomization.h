@@ -15,9 +15,19 @@
 
 namespace util {
 
+// -----------------------------------------------------------------------------
+
+void randomCtlVec(const eckit::mpi::Comm &,
+                  const std::vector<int> &,
+                  std::vector<double> &);
+
+// -----------------------------------------------------------------------------
+
 void randomCtlVec(const eckit::mpi::Comm &,
                   const std::vector<int> &,
                   atlas::Field &);
+
+// -----------------------------------------------------------------------------
 
 }  // namespace util
 

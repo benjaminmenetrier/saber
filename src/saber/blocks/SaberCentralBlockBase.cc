@@ -28,9 +28,11 @@
 #include "oops/util/parameters/RequiredParameter.h"
 #include "oops/util/parameters/RequiredPolymorphicParameter.h"
 #include "oops/util/Printable.h"
-#include "oops/util/Random.h"
+#include "oops/util/RandomField.h"
 
 #include "saber/blocks/SaberBlockParametersBase.h"
+
+using atlas::array::make_view;
 
 namespace saber {
 
@@ -83,6 +85,7 @@ SaberCentralBlockFactory::createParameters(const std::string &name) {
 
 // -----------------------------------------------------------------------------
 
+// Default method based on random control vector generator and square-root implementations.
 void SaberCentralBlockBase::randomize(oops::FieldSet3D & fset3d) const {
   oops::Log::trace() << "SaberCentralBlockBase::randomize starting" << std::endl;
 
@@ -101,6 +104,7 @@ void SaberCentralBlockBase::randomize(oops::FieldSet3D & fset3d) const {
 
 // -----------------------------------------------------------------------------
 
+// Default method based on square-root and square-root adjoint implementations.
 void SaberCentralBlockBase::multiply(oops::FieldSet3D & fset3d) const {
   oops::Log::trace() << "SaberCentralBlockBase::multiply starting" << std::endl;
 
@@ -115,6 +119,26 @@ void SaberCentralBlockBase::multiply(oops::FieldSet3D & fset3d) const {
   multiplySqrt(cv, fset3d, 0);
 
   oops::Log::trace() << "SaberCentralBlockBase::multiply done" << std::endl;
+}
+
+// -----------------------------------------------------------------------------
+
+// Default method that will not generate the same results on different MPI layouts.
+// To achieve this, it should be overridden in the central block implementation.
+void SaberCentralBlockBase::randomCtlVec(atlas::Field & cv,
+                                         const size_t & offset) const {
+  oops::Log::trace() << "SaberCentralBlockBase::randomCtlVec starting" << std::endl;
+
+  // Generate random distribution
+  util::NormalDistributionField dist(ctlVecSize(), 0.0, 1.0);
+
+  // Fill local Field
+  auto view = make_view<double, 1>(cv);
+  for (size_t jcv = 0; jcv < ctlVecSize(); ++jcv) {
+    view(jcv+offset) = dist[jcv];
+  }
+
+  oops::Log::trace() << "SaberCentralBlockBase::randomCtlVec done" << std::endl;
 }
 
 // -----------------------------------------------------------------------------

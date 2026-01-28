@@ -405,7 +405,7 @@ std::vector<int> LayerRC::ctlVecRemoteIndex() const {
   for (size_t jx = 0; jx < nxPerTask_[myrank_]; ++jx) {
     for (size_t jy = 0; jy < ny_; ++jy) {
       for (size_t jz = 0; jz < nz_; ++jz) {
-        ctlVecRemoteIndex[index] = (jx*ny_+jy)*nz_+jz;
+        ctlVecRemoteIndex[index] = ((nxStart_[myrank_]+jx)*ny_+jy)*nz_+jz;
         ++index;
       }
     }

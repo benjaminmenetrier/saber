@@ -1508,6 +1508,9 @@ void FastLAM::setupRemoteIndex() {
     }
   }
 
+  // Check final size
+  ASSERT(remoteIndex_.size() == ctlVecSize_);
+
   oops::Log::trace() << classname() << "::setupRemoteIndex done" << std::endl;
 }
 

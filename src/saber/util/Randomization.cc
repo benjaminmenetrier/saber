@@ -14,16 +14,18 @@ using atlas::array::make_view;
 
 namespace util {
 
+// -----------------------------------------------------------------------------
+
 void randomCtlVec(const eckit::mpi::Comm & comm,
                   const std::vector<int> & remoteIndex,
-                  atlas::Field & field) {
+                  std::vector<double> & randVecLoc) {
   oops::Log::trace() << "util::randomCtlVec starting" << std::endl;
+
+  // Check sizes consistency
+  ASSERT(remoteIndex.size() == randVecLoc.size());
 
   // Local size
   const int nLoc = remoteIndex.size();
-
-  // Check local Field size
-  ASSERT(static_cast<int>(field.size()) == nLoc);
 
   // Counts
   std::vector<int> counts(comm.size());
@@ -61,9 +63,28 @@ void randomCtlVec(const eckit::mpi::Comm & comm,
   }
 
   // Scatter random vector
-  std::vector<double> randVecLoc(nLoc);
   comm.scatterv(randVecGlb.cbegin(), randVecGlb.cend(), counts, displs,
     randVecLoc.begin(), randVecLoc.end(), 0);
+
+  oops::Log::trace() << "util::randomCtlVec done" << std::endl;
+}
+
+// -----------------------------------------------------------------------------
+
+void randomCtlVec(const eckit::mpi::Comm & comm,
+                  const std::vector<int> & remoteIndex,
+                  atlas::Field & field) {
+  oops::Log::trace() << "util::randomCtlVec starting" << std::endl;
+
+  // Check sizes consistency
+  ASSERT(remoteIndex.size() == field.size());
+
+  // Local size
+  const int nLoc = remoteIndex.size();
+
+  // Create random vector
+  std::vector<double> randVecLoc(nLoc);
+  randomCtlVec(comm, remoteIndex, randVecLoc);
 
   // Fill local Field
   auto view = make_view<double, 1>(field);
@@ -73,6 +94,8 @@ void randomCtlVec(const eckit::mpi::Comm & comm,
 
   oops::Log::trace() << "util::randomCtlVec done" << std::endl;
 }
+
+// -----------------------------------------------------------------------------
 
 }  // namespace util
 
