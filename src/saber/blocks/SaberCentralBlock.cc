@@ -253,17 +253,6 @@ SaberCentralBlock::SaberCentralBlock(const oops::GeometryData & outerGeom,
 
 // -----------------------------------------------------------------------------
 
-void SaberCentralBlock::filter(oops::FieldSet3D & fset3d) const {
-  if (strategy_ == "deprecated") {
-    // Deprecated mode
-    groups_[0]->filter(fset3d);
-  } else {
-    throw eckit::Exception("Filter mode should disappear soon, no need to implement it.", Here());
-  }
-}
-
-// -----------------------------------------------------------------------------
-
 void SaberCentralBlock::multiply(oops::FieldSet3D & fset3d) const {
   oops::Log::trace() << "SaberCentralBlock::multiply starting" << std::endl;
 
