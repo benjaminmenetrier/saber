@@ -106,7 +106,6 @@ class ScaleData {
 
 // -----------------------------------------------------------------------------
 
-
 class InflationFieldParameters : public oops::Parameters {
   OOPS_CONCRETE_PARAMETERS(InflationFieldParameters, Parameters)
 
@@ -138,8 +137,8 @@ class SaberEnsembleBlockChainParameters: public ErrorCovarianceParametersBase {
   // Recursive filters
   oops::Parameter<bool> recursiveFilters{"recursive filters", false, this};
 
-  // Multi-scales strategy
-  oops::OptionalParameter<std::string> strategy{"multiscales strategy", this};
+  // Multi-scales strategy (separated or crossed)
+  oops::OptionalParameter<std::string> strategy{"multiscale strategy", this};
 
   // Ensemble transform parameters
   oops::OptionalParameter<std::vector<SaberOuterBlockParametersWrapper>>
@@ -375,10 +374,10 @@ SaberEnsembleBlockChain::SaberEnsembleBlockChain(const oops::Geometry<MODEL> & g
       ASSERT(scaleParams.localizationParams.value());
     }
 
-    // Get multi-scales strategy (univariate or crossed)
+    // Get multi-scales strategy (separated or crossed)
     ASSERT(params.strategy.value());
     strategy_ = *params.strategy.value();
-    ASSERT((strategy_ == "univariate") || (strategy_ == "crossed"));
+    ASSERT((strategy_ == "separated") || (strategy_ == "crossed"));
   } else {
     // No scale separation
     eckit::LocalConfiguration scaleConf;
@@ -394,7 +393,7 @@ SaberEnsembleBlockChain::SaberEnsembleBlockChain(const oops::Geometry<MODEL> & g
     scalesParams.push_back(scaleParams);
 
     // Set strategy
-    strategy_ = "univariate";
+    strategy_ = "separated";
   }
 
   // Loop over scales
@@ -402,30 +401,17 @@ SaberEnsembleBlockChain::SaberEnsembleBlockChain(const oops::Geometry<MODEL> & g
     // Create data container for this scale
     ScaleData scaleData(scaleParams);
 
-    // Consistency check 1: when multiple scales are required, all of them should have a filter
-    // except the last one (complement of the sum of all the previous ones), or all should have
-    // ensemble perturbations
+    // Consistency check when multiple scales are present
     if (scalesParams.size() > 1) {
-      if (scaleDataVec_.size() == scalesParams.size()-1) {
-        // Last scale, filter not needed but ensemble perturbations needed
-        if (scalesParams[0].filterParams.value()) {
-          ASSERT(!scaleParams.filterParams.value());
-        } else {
-          ASSERT(scaleParams.ensemblePert.value());
+      if (scalesParams[0].filterParams.value()) {
+        // First scale include a filter: all scales should have one too, except the last one
+        if (scaleDataVec_.size() < scalesParams.size()-1) {
+          ASSERT(scaleParams.filterParams.value());
         }
       } else {
-        // Previous scales, filter or ensemble perturbations needed
-        if (scalesParams[0].filterParams.value()) {
-          ASSERT(scaleParams.filterParams.value());
-        } else {
-          ASSERT(scaleParams.ensemblePert.value());
-        }
+        // First scale does not include a filter: all scales should read ensemble perturbations
+        ASSERT(scaleParams.ensemblePert.value());
       }
-    }
-
-    // Consistency check 2: interpolator requires a filter or ensemble perturbations.
-    if (scaleParams.interpolatorParams.value()) {
-      ASSERT(scaleParams.filterParams.value() || scaleParams.ensemblePert.value());
     }
 
     // Get interpolator outer geometry data
@@ -579,14 +565,17 @@ SaberEnsembleBlockChain::SaberEnsembleBlockChain(const oops::Geometry<MODEL> & g
               // Increment sum with the latest x'
               fset4dDxSum += fset4dDx;
             } else {
-              // Residual increment: x' = x0 - sum{previous x'}
+              // No filter on the last scale, use residual increment: x' = x0 - sum{previous x'}
               fset4dDx[0].zero();
               fset4dDx[0] += (*ensemble)(it, ie);
               fset4dDx[0] -= fset4dDxSum[0];
             }
 
-            // Copy into ensemble
+            // Copy perturbation into ensemble
             scaleData.ensemble()->emplace_back(it, ie, fset4dDx[0]);
+
+            // TODO(Benjamin): if last scale, remove members from initial ensemble sequentially,
+            // as there are not needed anymore
           }
         }
       }

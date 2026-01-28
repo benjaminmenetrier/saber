@@ -94,7 +94,7 @@ background error:
           drivers:
             multivariate strategy: univariate
             read local nicas: true
-  multiscales strategy: univariate
+  multiscale strategy: separated
 dirac:
   lon:
   - 0.0

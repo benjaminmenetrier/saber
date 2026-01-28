@@ -18,7 +18,7 @@ namespace saber {
 void SaberEnsembleBlockChain::multiply(oops::FieldSet4D & fset4d) const {
   oops::Log::trace() << "saber::SaberEnsembleBlockChain::multiply starting" << std::endl;
 
-  if (strategy_ == "univariate") {
+  if (strategy_ == "separated") {
     // Outer blocks adjoint multiplication
     if (outerBlockChain_) {
       outerBlockChain_->applyOuterBlocksAD(fset4d);
@@ -130,7 +130,7 @@ void SaberEnsembleBlockChain::randomize(oops::FieldSet4D & fset4d) const {
   fset4d.zero();
   std::unique_ptr<util::NormalDistribution<double>> normalDist;
 
-  if (strategy_ == "univariate") {
+  if (strategy_ == "separated") {
     for (const auto & scaleData : scaleDataVec_) {
       // Create scale FieldSet4D
       oops::FieldSet4D fset4dScale(fset4d.times(), fset4d.commTime(), fset4d[0].commGeom());
@@ -220,8 +220,8 @@ size_t SaberEnsembleBlockChain::ctlVecSize() const {
     }
 
     // Compute control vector size
-    if (strategy_ == "univariate") {
-      // Univariate strategy
+    if (strategy_ == "separated") {
+      // Separated strategy
       for (const auto & scaleData : scaleDataVec_) {
         ctlVecSize += scaleData.ensemble()->ens_size()*scaleData.localization()->ctlVecSize();
       }
