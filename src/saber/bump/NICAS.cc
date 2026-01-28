@@ -55,22 +55,6 @@ NICAS::~NICAS() {
 
 // -----------------------------------------------------------------------------
 
-void NICAS::randomize(oops::FieldSet3D & fset) const {
-  oops::Log::trace() << classname() << "::randomize starting" << std::endl;
-  bump_->randomizeNicas(fset);
-  oops::Log::trace() << classname() << "::randomize done" << std::endl;
-}
-
-// -----------------------------------------------------------------------------
-
-void NICAS::multiply(oops::FieldSet3D & fset) const {
-  oops::Log::trace() << classname() << "::multiply starting" << std::endl;
-  bump_->multiplyNicas(fset);
-  oops::Log::trace() << classname() << "::multiply done" << std::endl;
-}
-
-// -----------------------------------------------------------------------------
-
 void NICAS::filter(oops::FieldSet3D & fset) const {
   oops::Log::trace() << classname() << "::filter starting" << std::endl;
   bump_->filterNicas(fset);
@@ -137,6 +121,15 @@ void NICAS::iterativeCalibrationFinal() {
   oops::Log::trace() << classname() << "::iterativeCalibrationFinal starting" << std::endl;
   bump_->runDrivers();
   oops::Log::trace() << classname() << "::iterativeCalibrationFinal done" << std::endl;
+}
+
+// -----------------------------------------------------------------------------
+
+void NICAS::randomCtlVec(atlas::Field & cv,
+                         const size_t & offset) const {
+  oops::Log::trace() << classname() << "::randomCtlVec starting" << std::endl;
+  bump_->randomCv(cv, offset);
+  oops::Log::trace() << classname() << "::randomCtlVec done" << std::endl;
 }
 
 // -----------------------------------------------------------------------------

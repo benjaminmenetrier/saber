@@ -589,6 +589,63 @@ size_t SaberCentralBlock::ctlVecSize() const {
 
 // -----------------------------------------------------------------------------
 
+void SaberCentralBlock::randomCtlVec(atlas::Field & cv,
+                                     const size_t & offset) const {
+  oops::Log::trace() << "SaberCentralBlock::randomCtlVec starting" << std::endl;
+
+  if (strategy_ == "deprecated") {
+    // Deprecated mode
+    groups_[0]->randomCtlVec(cv, offset);
+  } else {
+    // Initialize index
+    size_t index = offset;
+
+    if (strategy_ == "univariate") {
+      // Univariate strategy
+      for (size_t igroup = 0; igroup < groups_.size(); ++igroup) {
+        const auto & group = groups_[igroup];
+        for (size_t jvar = 0; jvar < groupInputVars_[igroup].size(); ++jvar) {
+          // Apply localization
+          group->randomCtlVec(cv, index);
+
+          // Update index
+          index += group->ctlVecSize();
+        }
+      }
+    } else if ((strategy_ == "duplicated") || (strategy_ == "crossed")) {
+      // Duplicated strategy or crossed strategy
+      for (size_t igroup = 0; igroup < groups_.size(); ++igroup) {
+        const auto & group = groups_[igroup];
+        // Apply localization
+        group->randomCtlVec(cv, index);
+
+        if (strategy_ == "duplicated") {
+          // Update index
+          index += group->ctlVecSize();
+        }
+      }
+    } else if (strategy_ == "duplicated and weighted") {
+      // Duplicated and weighted strategy
+      for (size_t igroup = 0; igroup < groups_.size(); ++igroup) {
+        const auto & group = groups_[igroup];
+        for (size_t jvar = 0; jvar < groupInputVars_[igroup].size(); ++jvar) {
+          // Apply localization
+          group->randomCtlVec(cv, index);
+
+          // Update index
+          index += group->ctlVecSize();
+        }
+      }
+    } else {
+      throw eckit::Exception("invalid multivariate strategy", Here());
+    }
+  }
+
+  oops::Log::trace() << "SaberCentralBlock::randomCtlVec done" << std::endl;
+}
+
+// -----------------------------------------------------------------------------
+
 void SaberCentralBlock::multiplySqrt(const atlas::Field & cv,
                                      oops::FieldSet3D & fset3d,
                                      const size_t & offset) const {
@@ -708,6 +765,7 @@ void SaberCentralBlock::multiplySqrt(const atlas::Field & cv,
 
           // Get field
           const auto field = fset3dTmp[groupNames_[igroup]];
+
           // Get field view
           const auto view = make_view<double, 2>(field);
 
@@ -838,6 +896,7 @@ void SaberCentralBlock::multiplySqrtAD(const oops::FieldSet3D & fset3d,
           // Create temporary control vector
           atlas::Field ctlVecTmp = atlas::Field("genericCtlVec", make_datatype<double>(),
             make_shape(group->ctlVecSize()));
+
           // Apply localization
           group->multiplySqrtAD(fset3dTmp, ctlVecTmp, 0);
 
