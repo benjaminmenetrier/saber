@@ -150,8 +150,7 @@ size_t SaberEnsembleBlockChain::ctlVecSize() const {
 void SaberEnsembleBlockChain::multiplySqrt(const atlas::Field & cv,
                                            oops::FieldSet4D & fset4d,
                                            const size_t & offset) const {
-  oops::Log::trace() << "saber::generic::SaberEnsembleBlockChain::multiplySqrt starting"
-                     << std::endl;
+  oops::Log::trace() << "saber::SaberEnsembleBlockChain::multiplySqrt starting" << std::endl;
 
   // Initialization
   fset4d.zero();
@@ -194,8 +193,7 @@ void SaberEnsembleBlockChain::multiplySqrt(const atlas::Field & cv,
     outerBlockChain_->applyOuterBlocks(fset4d);
   }
 
-  oops::Log::trace() << "saber::generic::SaberEnsembleBlockChain::multiplySqrt done"
-                     << std::endl;
+  oops::Log::trace() << "saber::SaberEnsembleBlockChain::multiplySqrt done" << std::endl;
 }
 
 // -----------------------------------------------------------------------------
@@ -203,8 +201,7 @@ void SaberEnsembleBlockChain::multiplySqrt(const atlas::Field & cv,
 void SaberEnsembleBlockChain::multiplySqrtAD(const oops::FieldSet4D & fset4d,
                                              atlas::Field & cv,
                                              const size_t & offset) const {
-  oops::Log::trace() << "saber::generic::SaberEnsembleBlockChain::multiplySqrtAD starting"
-                     << std::endl;
+  oops::Log::trace() << "saber::SaberEnsembleBlockChain::multiplySqrtAD starting" << std::endl;
 
   // Copy input FieldSet
   oops::FieldSet4D fset4dInit = oops::copyFieldSet4D(fset4d);
@@ -247,8 +244,7 @@ void SaberEnsembleBlockChain::multiplySqrtAD(const oops::FieldSet4D & fset4d,
     }
   }
 
-  oops::Log::trace() << "saber::generic::SaberEnsembleBlockChain::multiplySqrtAD done"
-                     << std::endl;
+  oops::Log::trace() << "saber::SaberEnsembleBlockChain::multiplySqrtAD done" << std::endl;
 }
 
 // -----------------------------------------------------------------------------
