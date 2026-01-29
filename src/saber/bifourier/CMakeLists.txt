@@ -11,6 +11,10 @@ BiperiodizationImpl.cc
 
 if( FFTW_FOUND OR ( ECTRANS_FOUND AND ectrans_HAVE_ETRANS AND ectrans_HAVE_TRANSI ) )
     list(APPEND bifourier_src_files_list
+    # Bi-Fourier analytical filter
+    BifourierAnalyticalFilter.cc
+    BifourierAnalyticalFilter.h
+
     # Bi-Fourier AROME balance block
     BifourierAromeBalance.cc
     BifourierAromeBalance.h

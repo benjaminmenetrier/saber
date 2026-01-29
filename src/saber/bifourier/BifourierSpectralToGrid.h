@@ -29,6 +29,9 @@ class BifourierSpectralToGridParameters : public SaberBlockParametersBase {
   OOPS_CONCRETE_PARAMETERS(BifourierSpectralToGridParameters, SaberBlockParametersBase)
 
  public:
+  // Filter mode
+  oops::Parameter<bool> filter{"filter mode", false, this};
+
   // Transform parameters
   oops::Parameter<BifourierTransformParameters> transform{"transform",
     BifourierTransformParameters(), this};
@@ -61,7 +64,10 @@ class BifourierSpectralToGrid : public SaberOuterBlockBase {
 
   void multiply(oops::FieldSet3D &) const override;
   void multiplyAD(oops::FieldSet3D &) const override;
-  void leftInverseMultiply(oops::FieldSet3D &) const override;
+  void leftInverseMultiply(oops::FieldSet3D & fset) const override
+    {inverseMultiply(fset);}
+  void rightInverseMultiply(oops::FieldSet3D & fset) const override
+    {inverseMultiply(fset);}
 
   void read() override
     {}
@@ -73,11 +79,17 @@ class BifourierSpectralToGrid : public SaberOuterBlockBase {
   // Inner variables
   const oops::Variables innerVars_;
 
+  // Parameters
+  Parameters_ params_;
+
   // Spectral transform
   const BifourierTransformStore transStore_;
   const std::shared_ptr<BifourierTransformBase> trans_;
 
   // Private methods
+
+  // Inverse multiply
+  void inverseMultiply(oops::FieldSet3D &) const;
 
   // Print
   void print(std::ostream &) const override;

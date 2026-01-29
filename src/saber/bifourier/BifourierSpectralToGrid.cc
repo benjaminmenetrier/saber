@@ -25,7 +25,8 @@ BifourierSpectralToGrid::BifourierSpectralToGrid(const oops::GeometryData & oute
                                                  const oops::FieldSet3D & fg)
   : SaberOuterBlockBase(params, xb.validTime(), outerGeometryData, outerVars),
     innerVars_(outerVars),
-    trans_(transStore_.setupTransform(outerGeometryData, innerVars_, params.transform.value()))
+    params_(params),
+    trans_(transStore_.setupTransform(outerGeometryData, innerVars_, params_.transform.value()))
 {
   oops::Log::trace() << classname() << "::BifourierSpectralToGrid starting" << std::endl;
 
@@ -59,9 +60,16 @@ void BifourierSpectralToGrid::multiply(oops::FieldSet3D & fset) const {
 void BifourierSpectralToGrid::multiplyAD(oops::FieldSet3D & fset) const {
   oops::Log::trace() << classname() << "::multiplyAD starting" << std::endl;
 
-  // Inverse spectral transform, adjoint
+  // Temporary fieldset
   atlas::FieldSet fsetTmp;
-  trans_->sp2gpAdj(fset.fieldSet(), fsetTmp, innerVars_);
+
+  if (params_.filter.value()) {
+    // Direct spectral transform
+    trans_->gp2sp(fset.fieldSet(), fsetTmp, innerVars_);
+  } else {
+    // Inverse spectral transform, adjoint
+    trans_->sp2gpAdj(fset.fieldSet(), fsetTmp, innerVars_);
+  }
 
   // Remove outer variables
   util::removeFieldsFromFieldSet(fset.fieldSet(), innerVars_.variables());
@@ -74,8 +82,8 @@ void BifourierSpectralToGrid::multiplyAD(oops::FieldSet3D & fset) const {
 
 // -----------------------------------------------------------------------------
 
-void BifourierSpectralToGrid::leftInverseMultiply(oops::FieldSet3D & fset) const {
-  oops::Log::trace() << classname() << "::leftInverseMultiply starting" << std::endl;
+void BifourierSpectralToGrid::inverseMultiply(oops::FieldSet3D & fset) const {
+  oops::Log::trace() << classname() << "::inverseMultiply starting" << std::endl;
 
   // Direct spectral transform
   atlas::FieldSet fsetTmp;
@@ -87,7 +95,7 @@ void BifourierSpectralToGrid::leftInverseMultiply(oops::FieldSet3D & fset) const
   // Copy FieldSet
   trans_->copyFieldSet(fsetTmp, fset.fieldSet(), innerVars_);
 
-  oops::Log::trace() << classname() << "::leftInverseMultiply done" << std::endl;
+  oops::Log::trace() << classname() << "::inverseMultiply done" << std::endl;
 }
 
 // -----------------------------------------------------------------------------

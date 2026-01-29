@@ -25,5 +25,6 @@ dirac_bifourier_gridtospectral
 dirac_bifourier_vordivtouv_1
 dirac_bifourier_vordivtouv_2
 dirac_bifourier_vordivtouv_3
+process_perts_bifourier_1
 randomization_bifourier_covariance
 randomization_bifourier
