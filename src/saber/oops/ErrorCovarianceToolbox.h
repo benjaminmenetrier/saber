@@ -57,7 +57,7 @@ namespace saber {
 // -----------------------------------------------------------------------------
 
 /// \brief Top-level options taken by the ErrorCovarianceToolbox application.
-template <typename MODEL> class ErrorCovarianceToolboxParameters :
+class ErrorCovarianceToolboxParameters :
   public oops::Parameters {
   OOPS_CONCRETE_PARAMETERS(ErrorCovarianceToolboxParameters, oops::Parameters)
 
@@ -112,7 +112,6 @@ template <typename MODEL> class ErrorCovarianceToolbox : public oops::Applicatio
   typedef oops::State<MODEL>                              State_;
   typedef oops::State4D<MODEL>                            State4D_;
   typedef oops::Localization<MODEL>                       Localization_;
-  typedef ErrorCovarianceToolboxParameters<MODEL>         ErrorCovarianceToolboxParameters_;
 
  public:
 // -----------------------------------------------------------------------------
@@ -125,7 +124,7 @@ template <typename MODEL> class ErrorCovarianceToolbox : public oops::Applicatio
 // -----------------------------------------------------------------------------
   int execute(const eckit::Configuration & fullConfig) const override {
     // Deserialize parameters
-    ErrorCovarianceToolboxParameters_ params;
+    ErrorCovarianceToolboxParameters params;
     params.deserialize(fullConfig);
 
     // Define number of subwindows
@@ -522,7 +521,7 @@ template <typename MODEL> class ErrorCovarianceToolbox : public oops::Applicatio
     }
   }
 // -----------------------------------------------------------------------------
-  void randomization(const ErrorCovarianceToolboxParameters_ & params,
+  void randomization(const ErrorCovarianceToolboxParameters & params,
                      const Geometry_ & geom,
                      const oops::Variables & vars,
                      const State4D_ & xx,
