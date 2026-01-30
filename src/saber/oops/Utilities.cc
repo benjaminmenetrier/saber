@@ -168,17 +168,18 @@ size_t getNensFromConfig(const eckit::Configuration & conf) {
 
       ASSERT(ensTypeConf.has("members from template") || ensTypeConf.has("members"));
       ASSERT(!(ensTypeConf.has("members from template") && ensTypeConf.has("members")));
-      if (ensTypeConf.has("members")) {
-        const auto members = ensTypeConf.getSubConfigurations("members");
-        nens = members.size();
-      } else {
-        const auto members = ensTypeConf.getSubConfiguration("members from template");
-        ASSERT(members.has("nmembers"));
-        ASSERT(members.has("pattern"));
-        ASSERT(members.has("template"));
-        nens = members.getInt("nmembers");
-      }
+      nens = getNensFromConfig(ensTypeConf);
     }
+  }
+  if (conf.has("members")) {
+    const auto members = conf.getSubConfigurations("members");
+    nens = members.size();
+  } else if (conf.has("members from template")) {
+    const auto members = conf.getSubConfiguration("members from template");
+    ASSERT(members.has("nmembers"));
+    ASSERT(members.has("pattern"));
+    ASSERT(members.has("template"));
+    nens = members.getInt("nmembers");
   }
   return nens;
 }

@@ -126,7 +126,7 @@ class SaberHybridBlockChain : public SaberBlockChainBase {
   /// Function space
   const atlas::FunctionSpace & outerFunctionSpace_;
   /// Variables
-  const oops::Variables & outerVariables_;
+  const oops::Variables outerVariables_;
 
   /// Chain of outer blocks applied to all components of hybrid covariances.
   std::unique_ptr<SaberOuterBlockChain> outerBlockChain_;
@@ -395,6 +395,12 @@ template<typename MODEL>
 void SaberHybridBlockChain<MODEL>::randomize(oops::FieldSet4D & fset4d) const {
   oops::Log::trace() << "SaberHybridBlockChain::randomize starting" << std::endl;
   util::Timer timer("SaberHybridBlockChain", "randomize");
+
+  // Initialize FieldSet4D
+  for (size_t jtime = 0; jtime < fset4d.size(); ++jtime) {
+    fset4d[jtime].init(outerFunctionSpace_, outerVariables_);
+  }
+  fset4d.zero();
 
   if (parallelHybrid_) {
     // Run components of the central block in parallel
