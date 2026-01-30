@@ -197,9 +197,6 @@ template <typename MODEL> class ErrorCovarianceToolbox : public oops::Applicatio
     }
     const oops::Variables vars = tmpVars;
 
-    // Setup time
-    util::DateTime time = xx[0].validTime();
-
     // Covariance parameters
     const eckit::LocalConfiguration covarConf = params.backgroundError.value().toConfiguration();
 
