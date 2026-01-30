@@ -317,6 +317,7 @@ void readEnsembleMember(const oops::Geometry<MODEL> & geom,
     // Increment ensemble from increments on disk
     eckit::LocalConfiguration memConf = getEnsSubconfig(
       conf.getSubConfiguration("ensemble pert"), ie);
+
     // Read Increment
     oops::Increment<MODEL> dx(geom, vars, fset.validTime());
     dx.read(memConf);

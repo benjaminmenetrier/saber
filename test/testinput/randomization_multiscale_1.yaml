@@ -13,7 +13,8 @@ background:
   state variables:
   - air_horizontal_streamfunction
 background error:
-  covariance model: hybrid
+  covariance model: SABER
+  covariance type: hybrid
   run components recursively: true
   components:
   - covariance:
