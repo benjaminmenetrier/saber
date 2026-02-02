@@ -455,22 +455,29 @@ template <typename MODEL> class ErrorCovarianceToolbox : public oops::Applicatio
           false;
         // Check for outer blocks (can't pass the correct geometry/variables in that case)
         if (!covarConf.has("saber outer blocks") && (runComponentsRecursively)) {
+          // Deserialize base parameters
+          ErrorCovarianceParametersBase paramsBase;
+          paramsBase.deserialize(covarConf);
+
+          // Get components configurations list
           std::vector<eckit::LocalConfiguration> confs;
           covarConf.get("components", confs);
+
+          // Initialize component index
           size_t componentIndex(1);
+
           for (const auto & conf : confs) {
-            std::string idC(id + std::to_string(componentIndex));
+            // Prepare sub-covariance configuration
             eckit::LocalConfiguration componentConfig(conf, "covariance");
             componentConfig.set("covariance model", "SABER");
-            if (covarConf.has("adjoint test")) {
-              componentConfig.set("adjoint test", covarConf.getBool("adjoint test"));
-            }
-            if (covarConf.has("inverse test")) {
-              componentConfig.set("inverse test", covarConf.getBool("inverse test"));
-            }
-            if (covarConf.has("square-root test")) {
-              componentConfig.set("square-root test", covarConf.getBool("square-root test"));
-            }
+
+            // Merge configuration with full configuration (order of arguments matters!)
+            componentConfig = util::mergeConfigs(componentConfig, paramsBase.toConfiguration());
+
+            // Update ID
+            std::string idC(id + std::to_string(componentIndex));
+
+            // Call dirac function
             dirac(componentConfig, testConf, idC, geom, vars, xx, dxi);
             ++componentIndex;
           }
