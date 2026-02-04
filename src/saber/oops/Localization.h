@@ -17,6 +17,7 @@
 #include "eckit/config/Configuration.h"
 
 #include "oops/base/FieldSets.h"
+#include "oops/base/State.h"
 #include "oops/base/Variables.h"
 #include "oops/generic/LocalizationBase.h"
 #include "oops/util/Duration.h"
@@ -34,6 +35,7 @@ template<typename MODEL>
 class Localization : public oops::LocalizationBase<MODEL> {
   typedef oops::Geometry<MODEL>               Geometry_;
   typedef oops::Increment<MODEL>              Increment_;
+  typedef oops::State<MODEL>                  State_;
 
  public:
   Localization(const Geometry_ &,
@@ -72,10 +74,14 @@ Localization<MODEL>::Localization(const Geometry_ & geom,
   }
 
   // Create dummy xb and fg
-  oops::FieldSet3D fset3d(dummyTime, eckit::mpi::comm());
-  fset3d.deepCopy(util::createFieldSet(geom.geometry().functionSpace(), incVars, 0.0));
-  oops::FieldSet4D xb4d(fset3d);
-  oops::FieldSet4D fg4d(fset3d);
+  const State_ xb_state(geom, incVars, dummyTime);
+  oops::FieldSet3D xb(dummyTime, geom.getComm());
+  xb.shallowCopy(xb_state.fieldSet());
+  oops::FieldSet4D xb4d(xb);
+  const State_ fg_state(geom, incVars, dummyTime);
+  oops::FieldSet3D fg(dummyTime, geom.getComm());
+  fg.shallowCopy(fg_state.fieldSet());
+  oops::FieldSet4D fg4d(fg);
 
   // 3D localization always used here (4D aspects handled in oops::Localization),
   // so this parameter can be anything.
