@@ -165,7 +165,7 @@ background error:
               data directory: testdata
               files prefix: dirac_localization_bump_2/_MPI_-_OMP_
             drivers:
-              multivariate strategy: univariate
+              multivariate strategy: duplicated
               read local nicas: true
             model:
               groups:

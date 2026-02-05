@@ -104,20 +104,20 @@ Covariance(hybrid) * Increment:
     + mean   = 4.4010331747801907e-03
     + stddev = 4.3130606527148806e-02
   - northward_wind (2 levels):
-    + min    = -1.5139291552078732e-01
-    + max    = 1.4052237134771120e-01
-    + mean   = -4.6029312836992522e-04
-    + stddev = 1.2799878073433099e-02
+    + min    = -2.0185722069438308e-01
+    + max    = 1.8736316179694826e-01
+    + mean   = -6.1372417115990023e-04
+    + stddev = 1.7066504097910880e-02
   - air_pressure_at_surface (1 levels):
     + min    = -3.6069948330935041e-02
     + max    = 9.9359027193131055e-01
     + mean   = 4.6588207400540208e-03
     + stddev = 4.9405128744139687e-02
   - air_horizontal_streamfunction (2 levels):
-    + min    = -1.8188026518720185e-01
-    + max    = 7.2590821170670852e-02
-    + mean   = -8.0451467439271213e-04
-    + stddev = 1.0801157409959935e-02
+    + min    = -2.4250702024960247e-01
+    + max    = 9.6787761560894470e-02
+    + mean   = -1.0726862325236167e-03
+    + stddev = 1.4401543213280127e-02
        Independent levels:  1[2]
           Subset Sc0 size:              762
           Domain area (% of Earth area): 0.100E+03%
@@ -333,16 +333,20 @@ Covariance(hybrid3_SABER) * Increment:
     + mean   = 4.4010331747801907e-03
     + stddev = 4.3130606527148806e-02
   - northward_wind (2 levels):
-    + min    = 0.0000000000000000e+00
-    + max    = 0.0000000000000000e+00
+    + min    = -2.0185722069438308e-01
+    + max    = 1.8736316179694826e-01
+    + mean   = -6.1372417115990023e-04
+    + stddev = 1.7066504097910880e-02
   - air_pressure_at_surface (1 levels):
     + min    = -3.6069948330935041e-02
     + max    = 9.9359027193131055e-01
     + mean   = 4.6588207400540208e-03
     + stddev = 4.9405128744139687e-02
   - air_horizontal_streamfunction (2 levels):
-    + min    = 0.0000000000000000e+00
-    + max    = 0.0000000000000000e+00
+    + min    = -2.4250702024960247e-01
+    + max    = 9.6787761560894470e-02
+    + mean   = -1.0726862325236167e-03
+    + stddev = 1.4401543213280127e-02
        Independent levels:  1[2]
           Subset Sc0 size:              762
           Domain area (% of Earth area): 0.100E+03%
