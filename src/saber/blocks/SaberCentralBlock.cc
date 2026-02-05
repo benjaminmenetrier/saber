@@ -190,7 +190,7 @@ SaberCentralBlock::SaberCentralBlock(const oops::GeometryData & outerGeom,
           if (levelsAreTopDown) {
             lev2d = (nearest3dLevel == "top") ? 0 : refVar.getLevels()-1;
           } else {
-             lev2d = (nearest3dLevel == "bottom") ? 0 : refVar.getLevels()-1;
+            lev2d = (nearest3dLevel == "bottom") ? 0 : refVar.getLevels()-1;
           }
           lev2d_.insert({var.name(), lev2d});
         }
