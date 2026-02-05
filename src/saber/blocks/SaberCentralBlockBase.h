@@ -13,8 +13,6 @@
 #include <utility>
 #include <vector>
 
-#include "atlas/field.h"
-
 #include "eckit/exception/Exceptions.h"
 #include "eckit/memory/NonCopyable.h"
 
