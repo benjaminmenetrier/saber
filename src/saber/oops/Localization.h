@@ -17,7 +17,7 @@
 #include "eckit/config/Configuration.h"
 
 #include "oops/base/FieldSets.h"
-#include "oops/base/State4D.h"
+#include "oops/base/State.h"
 #include "oops/base/Variables.h"
 #include "oops/generic/LocalizationBase.h"
 #include "oops/util/Duration.h"
