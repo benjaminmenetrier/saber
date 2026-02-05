@@ -7,27 +7,12 @@
 
 #include "saber/blocks/SaberCentralBlockBase.h"
 
-#include <map>
-#include <memory>
-#include <string>
-#include <vector>
-
 #include "atlas/field.h"
 
-#include "eckit/exception/Exceptions.h"
-
-#include "oops/base/GeometryData.h"
 #include "oops/base/Variables.h"
-#include "oops/util/AssociativeContainers.h"
 #include "oops/util/FieldSetHelpers.h"
 #include "oops/util/FieldSetOperations.h"
 #include "oops/util/Logger.h"
-#include "oops/util/parameters/OptionalParameter.h"
-#include "oops/util/parameters/Parameter.h"
-#include "oops/util/parameters/Parameters.h"
-#include "oops/util/parameters/RequiredParameter.h"
-#include "oops/util/parameters/RequiredPolymorphicParameter.h"
-#include "oops/util/Printable.h"
 #include "oops/util/RandomField.h"
 
 #include "saber/blocks/SaberBlockParametersBase.h"

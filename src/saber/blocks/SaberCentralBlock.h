@@ -17,14 +17,7 @@
 #include <utility>
 #include <vector>
 
-#include "atlas/field.h"
-
-#include "eckit/memory/NonCopyable.h"
-
-#include "oops/base/FieldSet3D.h"
 #include "oops/base/GeometryData.h"
-#include "oops/util/AssociativeContainers.h"
-#include "oops/util/FieldSetHelpers.h"
 #include "oops/util/Logger.h"
 #include "oops/util/parameters/OptionalParameter.h"
 #include "oops/util/parameters/OptionalPolymorphicParameter.h"
@@ -34,6 +27,11 @@
 
 #include "saber/blocks/SaberBlockParametersBase.h"
 #include "saber/blocks/SaberCentralBlockBase.h"
+
+// Forward declarations
+namespace oops {
+  class FieldSet3D;
+}
 
 namespace saber {
 
