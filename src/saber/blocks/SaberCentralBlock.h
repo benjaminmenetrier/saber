@@ -75,7 +75,8 @@ class SaberCentralBlockParameters : public oops::Parameters {
 
  public:
   oops::Parameter<std::string> strategy{"multivariate strategy", "deprecated", this};
-  // Single block:v
+  // Single block:
+  oops::OptionalPolymorphicParameter<SaberBlockParametersBase, SaberCentralBlockFactory>
     singleBlock{"saber block name", this};
   // Or multiple blocks:
   oops::OptionalParameter<std::vector<SaberCentralBlockGroupParameters>>
