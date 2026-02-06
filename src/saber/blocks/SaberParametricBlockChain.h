@@ -57,9 +57,6 @@ class SaberParametricBlockChainParameters: public ErrorCovarianceParametersBase 
                         "ensemble pert on other geometry", this};
   oops::OptionalParameter<eckit::LocalConfiguration> ensembleGeom{
                         "ensemble geometry", this};
-
-  // Output ensemble
-  oops::OptionalParameter<eckit::LocalConfiguration> outputEnsemble{"output ensemble", this};
 };
 
 /// Chain of outer (optional) and not-ensemble central block. Can be used
