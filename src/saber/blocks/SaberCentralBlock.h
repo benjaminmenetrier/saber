@@ -17,6 +17,8 @@
 #include <utility>
 #include <vector>
 
+#include "oops/base/FieldSet4D.h"
+#include "oops/base/FieldSets.h"
 #include "oops/base/GeometryData.h"
 #include "oops/util/Logger.h"
 #include "oops/util/parameters/OptionalParameter.h"
@@ -27,6 +29,8 @@
 
 #include "saber/blocks/SaberBlockParametersBase.h"
 #include "saber/blocks/SaberCentralBlockBase.h"
+#include "saber/blocks/SaberOuterBlockChain.h"
+#include "saber/oops/Utilities.h"
 
 // Forward declarations
 namespace oops {
@@ -36,6 +40,7 @@ namespace oops {
 namespace saber {
 
 // -----------------------------------------------------------------------------
+
 class OffDiagWeightParameters : public oops::Parameters {
   OOPS_CONCRETE_PARAMETERS(OffDiagWeightParameters, Parameters)
 
@@ -45,6 +50,7 @@ class OffDiagWeightParameters : public oops::Parameters {
 };
 
 // -----------------------------------------------------------------------------
+
 class SaberCentralBlockGroupParameters : public oops::Parameters {
   OOPS_CONCRETE_PARAMETERS(SaberCentralBlockGroupParameters, Parameters)
 
@@ -60,6 +66,7 @@ class SaberCentralBlockGroupParameters : public oops::Parameters {
 };
 
 // -----------------------------------------------------------------------------
+
 class SaberCentralBlockParameters : public oops::Parameters {
   OOPS_CONCRETE_PARAMETERS(SaberCentralBlockParameters, Parameters)
 
@@ -75,6 +82,9 @@ class SaberCentralBlockParameters : public oops::Parameters {
   // Type of setup
   bool doCalibration() const;
   bool doRead() const;
+
+  // Get active variables
+  oops::Variables getActiveVars(const oops::Variables &) const;
 };
 
 // -----------------------------------------------------------------------------
@@ -168,6 +178,16 @@ class SaberCentralBlock : public util::Printable {
   template <typename MODEL>
   void write(const oops::Geometry<MODEL> &) const;
 
+  // Calibrate block
+  template <typename MODEL>
+  void calibrateBlock(const oops::Geometry<MODEL> &,
+                      const oops::Variables &,
+                      oops::FieldSet4D &,
+                      oops::FieldSet4D &,
+                      const eckit::Configuration &,
+                      std::shared_ptr<SaberOuterBlockChain>,
+                      std::shared_ptr<oops::FieldSets>);
+
   // Adjoint test
   void adjointTest(const oops::GeometryData & geomdata,
                    const double & tol) const;
@@ -216,7 +236,6 @@ class SaberCentralBlock : public util::Printable {
   void print(std::ostream &) const {}
 };
 
-
 // -----------------------------------------------------------------------------
 
 template <typename MODEL>
@@ -238,6 +257,58 @@ void SaberCentralBlock::write(const oops::Geometry<MODEL> & geom) const {
     groups_[i]->write(geom);
   }
   oops::Log::trace() << "SaberCentralBlock::write done" << std::endl;
+}
+
+// -----------------------------------------------------------------------------
+
+template<typename MODEL>
+void SaberCentralBlock::calibrateBlock(const oops::Geometry<MODEL> & geom,
+                                       const oops::Variables & outerVars,
+                                       oops::FieldSet4D & fset4dXb,
+                                       oops::FieldSet4D & fset4dFg,
+                                       const eckit::Configuration & conf,
+                                       std::shared_ptr<SaberOuterBlockChain> outerBlockChain,
+                                       std::shared_ptr<oops::FieldSets> fsetEns) {
+  oops::Log::trace() << "SaberCentralBlock::calibrateBlock starting" << std::endl;
+
+  // Iterative ensemble loading flag
+  const bool iterativeEnsembleLoading = conf.getBool("iterative ensemble loading");
+
+  // Block calibration
+  if (iterativeEnsembleLoading) {
+    // Iterative calibration
+    oops::Log::info() << "Info     : Iterative calibration" << std::endl;
+
+    // Initialization
+    this->iterativeCalibrationInit();
+
+    // Get ensemble size
+    size_t nens = getNensFromConfig(conf);
+
+    for (size_t ie = 0; ie < nens; ++ie) {
+      // Read ensemble member
+      oops::FieldSet3D fset(fset4dXb[0].validTime(), geom.getComm());
+      readEnsembleMember(geom, outerVars, conf, ie, fset);
+
+      // Apply outer blocks inverse (all of them)
+      oops::Log::info() << "Info     : Apply outer blocks inverse (all of them)" << std::endl;
+      if (outerBlockChain) outerBlockChain->leftInverseMultiply(fset);
+
+      // Use FieldSet in the central block
+      oops::Log::info() << "Info     : Use FieldSet in the central block" << std::endl;
+      this->iterativeCalibrationUpdate(fset);
+    }
+
+    // Finalization
+    oops::Log::info() << "Info     : Finalization" << std::endl;
+    this->iterativeCalibrationFinal();
+  } else {
+    // Direct calibration
+    oops::Log::info() << "Info     : Direct calibration" << std::endl;
+    this->directCalibration(*fsetEns);
+  }
+
+  oops::Log::trace() << "SaberCentralBlock::calibrateBlock done" << std::endl;
 }
 
 // -----------------------------------------------------------------------------

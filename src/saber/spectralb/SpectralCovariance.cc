@@ -63,7 +63,7 @@ SpectralCovariance::SpectralCovariance(const oops::GeometryData & geometryData,
                                        const oops::FieldSet3D & xb,
                                        const oops::FieldSet3D & fg)
   : SaberCentralBlockBase(params, xb.validTime()), params_(params),
-    activeVars_(getActiveVars(params, centralVars)),
+    activeVars_(params.getActiveVars(centralVars)),
     netCDFConf_(createNetCDFHeaderInput(params, activeVars_)),
     spectralVerticalCovariances_(),
     geometryData_(geometryData),

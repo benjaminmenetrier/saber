@@ -28,6 +28,7 @@
 #include "saber/blocks/SaberBlockParametersBase.h"
 #include "saber/blocks/SaberOuterBlockChain.h"
 #include "saber/blocks/SaberParametricBlockChain.h"
+#include "saber/oops/ErrorCovarianceParameters.h"
 #include "saber/oops/Utilities.h"
 
 namespace saber {

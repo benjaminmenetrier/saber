@@ -108,7 +108,8 @@ std::tuple<oops::Variables, oops::Variables>
                              outerBlockChain_->innerVars() : outerVariables_;
 
   // Get active variables
-  oops::Variables activeVars = getActiveVars(saberCentralBlockParams, currentOuterVars);
+  const oops::Variables activeVars = saberCentralBlockParams.getActiveVars(currentOuterVars);
+
   // Check that active variables are present in variables
   for (const auto & var : activeVars) {
     if (!currentOuterVars.has(var)) {
