@@ -40,7 +40,7 @@ SaberParametricBlockChain::SaberParametricBlockChain(
 
   // If needed create generic outer block chain
   if (params.saberOuterBlocksParams.value()) {
-    outerBlockChain_ = std::make_unique<SaberOuterBlockChain>(outerGeometryData,
+    outerBlockChain_ = std::make_shared<SaberOuterBlockChain>(outerGeometryData,
         outerVariables_,
         fset4dXb,
         fset4dFg,
