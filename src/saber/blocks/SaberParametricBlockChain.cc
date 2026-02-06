@@ -57,13 +57,12 @@ SaberParametricBlockChain::SaberParametricBlockChain(
 
   oops::Log::info() << "Info     : Creating central block: " << std::endl;
 
-  const auto[currentOuterVars, activeVars]
-              = initCentralBlock(currentOuterGeom,
-                                 levelsAreTopDown,
-                                 fullConf,
-                                 saberCentralBlockParams,
-                                 fset4dXb,
-                                 fset4dFg);
+  const auto currentOuterVars = initCentralBlock(currentOuterGeom,
+                                                 levelsAreTopDown,
+                                                 fullConf,
+                                                 saberCentralBlockParams,
+                                                 fset4dXb,
+                                                 fset4dFg);
 
   // Check block doesn't expect calibration, as this could be done with the standard ctor
   if (centralBlock_->doCalibration()) {
@@ -87,15 +86,14 @@ SaberParametricBlockChain::SaberParametricBlockChain(
     centralBlock_->write();
   }
 
-  testCentralBlock(fullConf, saberCentralBlockParams, currentOuterGeom, activeVars);
+  testCentralBlock(fullConf);
 
   oops::Log::trace() << "SaberParametricBlockChain generic ctor done" << std::endl;
 }
 
 // -----------------------------------------------------------------------------
 
-std::tuple<oops::Variables, oops::Variables>
-    SaberParametricBlockChain::initCentralBlock(
+oops::Variables SaberParametricBlockChain::initCentralBlock(
         const oops::GeometryData & outerGeom,
         const bool levelsAreTopDown,
         const eckit::Configuration & conf,
@@ -108,7 +106,7 @@ std::tuple<oops::Variables, oops::Variables>
                              outerBlockChain_->innerVars() : outerVariables_;
 
   // Get active variables
-  const oops::Variables activeVars = saberCentralBlockParams.getActiveVars(currentOuterVars);
+  oops::Variables activeVars = saberCentralBlockParams.getActiveVars(currentOuterVars);
 
   // Check that active variables are present in variables
   for (const auto & var : activeVars) {
@@ -131,27 +129,21 @@ std::tuple<oops::Variables, oops::Variables>
   centralFunctionSpace_ = outerGeom.functionSpace();
   centralVars_ = activeVars;
 
-  auto out = std::tuple<oops::Variables, oops::Variables>(currentOuterVars, activeVars);
-  oops::Log::trace() << "SaberParametricBlockChain::initCentralBlock exiting..."
-                     << std::endl;
-  return out;
+  oops::Log::trace() << "SaberParametricBlockChain::initCentralBlock exiting..." << std::endl;
+  return currentOuterVars;
 }
 
 // -----------------------------------------------------------------------------
 
 void SaberParametricBlockChain::testCentralBlock(
-        const eckit::Configuration & conf,
-        const SaberCentralBlockParameters & saberCentralBlockParams,
-        const oops::GeometryData & outerGeom,
-        const oops::Variables & activeVars) const {
+        const eckit::Configuration & conf) const {
   oops::Log::trace() << "SaberParametricBlockChain::testCentralBlock starting" << std::endl;
   // Adjoint test
   if (conf.getBool("adjoint test")) {
     // Get tolerance (can be overridden from central block parameters)
     const double adjointTolerance = conf.getDouble("adjoint tolerance");
     // Run test
-    centralBlock_->adjointTest(outerGeom,
-                               adjointTolerance);
+    centralBlock_->adjointTest(adjointTolerance);
   }
 
   // Square-root test
@@ -159,8 +151,7 @@ void SaberParametricBlockChain::testCentralBlock(
     // Get tolerance (can be overridden from central block parameters)
     const double sqrtTolerance = conf.getDouble("square-root tolerance");
     // Run test
-    centralBlock_->sqrtTest(outerGeom,
-                            sqrtTolerance);
+    centralBlock_->sqrtTest(sqrtTolerance);
   }
   oops::Log::trace() << "SaberParametricBlockChain::testCentralBlock done" << std::endl;
 }

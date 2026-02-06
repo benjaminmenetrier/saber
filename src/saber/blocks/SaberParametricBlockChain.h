@@ -105,19 +105,15 @@ class SaberParametricBlockChain : public SaberBlockChainBase {
  private:
   /// @brief Initialize central block, central function space and central variables.
   ///        Used in constructors.
-  std::tuple<oops::Variables, oops::Variables>
-      initCentralBlock(const oops::GeometryData & outerGeom,
-                       const bool levelsAreTopDown,
-                       const eckit::Configuration & conf,
-                       const SaberCentralBlockParameters & saberCentralBlockParams,
-                       const oops::FieldSet4D & fset4dXb,
-                       const oops::FieldSet4D & fset4dFg);
+  oops::Variables initCentralBlock(const oops::GeometryData & outerGeom,
+                                   const bool levelsAreTopDown,
+                                   const eckit::Configuration & conf,
+                                   const SaberCentralBlockParameters & saberCentralBlockParams,
+                                   const oops::FieldSet4D & fset4dXb,
+                                   const oops::FieldSet4D & fset4dFg);
 
   /// @brief Run adjoint and square-root tests on central block. Used in constructors.
-  void testCentralBlock(const eckit::Configuration & conf,
-                        const SaberCentralBlockParameters & saberCentralBlockParams,
-                        const oops::GeometryData & outerGeom,
-                        const oops::Variables & activeVars) const;
+  void testCentralBlock(const eckit::Configuration & conf) const;
 
   /// @brief Outer function space
   const atlas::FunctionSpace outerFunctionSpace_;
@@ -178,19 +174,18 @@ SaberParametricBlockChain::SaberParametricBlockChain(const oops::Geometry<MODEL>
   // Create central block
   oops::Log::info() << "Info     : Creating central block: " << std::endl;
 
-  const auto[currentOuterVars, activeVars]
-              = initCentralBlock(currentOuterGeom,
-                                 geom.levelsAreTopDown(),
-                                 fullConf,
-                                 saberCentralBlockParams,
-                                 fset4dXb,
-                                 fset4dFg);
+  const auto currentOuterVars = initCentralBlock(currentOuterGeom,
+                                                 geom.levelsAreTopDown(),
+                                                 fullConf,
+                                                 saberCentralBlockParams,
+                                                 fset4dXb,
+                                                 fset4dFg);
 
   // Read and add model fields
   centralBlock_->read(geom, currentOuterVars);
 
-  // Ensemble configuration
   if (centralBlock_->doCalibration()) {
+    // Calibration
     centralBlock_->calibrateBlock(geom,
                                   outerVariables_,
                                   fset4dXb,
@@ -214,7 +209,7 @@ SaberParametricBlockChain::SaberParametricBlockChain(const oops::Geometry<MODEL>
   }
 
   // Test central block
-  testCentralBlock(fullConf, saberCentralBlockParams, currentOuterGeom, activeVars);
+  testCentralBlock(fullConf);
 
   oops::Log::trace() << "SaberParametricBlockChain ctor done" << std::endl;
 }

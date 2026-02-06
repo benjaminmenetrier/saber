@@ -377,7 +377,7 @@ SaberEnsembleBlockChain::SaberEnsembleBlockChain(const oops::Geometry<MODEL> & g
     oops::FieldSet4D fset4dSave = oops::copyFieldSet4D(fset4d);
 
     // Create control vector
-    oops::Log::info() << "Control vector size for block Ensemble: "
+    oops::Log::info() << "Info     : Control vector size for block Ensemble: "
                       << ctlVecSize() << std::endl;
     atlas::Field ctlVec = atlas::Field("genericCtlVec",
                                        atlas::array::make_datatype<double>(),

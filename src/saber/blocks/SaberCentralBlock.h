@@ -59,6 +59,9 @@ class SaberCentralBlockGroupParameters : public oops::Parameters {
   oops::RequiredParameter<oops::Variables> variables{"variables", this};
   oops::RequiredPolymorphicParameter<SaberBlockParametersBase, SaberCentralBlockFactory>
     block{"saber block name", this};
+  oops::OptionalParameter<std::vector<SaberOuterBlockParametersWrapper>>
+    auxOuterBlocksParams{"auxiliary outer blocks", this};
+
   // Optional parameters specific to "duplicated and weighted" strategy
   oops::Parameter<double> defOffDiagWeight{"default off-diagonal weight", 0.0, this};
   oops::OptionalParameter<std::vector<OffDiagWeightParameters>>
@@ -72,8 +75,7 @@ class SaberCentralBlockParameters : public oops::Parameters {
 
  public:
   oops::Parameter<std::string> strategy{"multivariate strategy", "deprecated", this};
-  // Single block:
-  oops::OptionalPolymorphicParameter<SaberBlockParametersBase, SaberCentralBlockFactory>
+  // Single block:v
     singleBlock{"saber block name", this};
   // Or multiple blocks:
   oops::OptionalParameter<std::vector<SaberCentralBlockGroupParameters>>
@@ -114,52 +116,18 @@ class SaberCentralBlock : public util::Printable {
   // Setup / calibration methods
 
   // Read block data
-  void read() {
-    for (size_t i = 0; i < groups_.size(); ++i) {
-      if (doRead_[i]) {
-        groups_[i]->read();
-      }
-    }
-  }
+  void read();
 
   // Direct calibration
-  void directCalibration(const oops::FieldSets & fsets) {
-    for (size_t i = 0; i < groups_.size(); ++i) {
-      if (doCalibration_[i]) {
-        groups_[i]->directCalibration(fsets);
-      }
-    }
-  }
+  void directCalibration(const oops::FieldSets &);
 
   // Iterative calibration
-  void iterativeCalibrationInit() {
-    for (size_t i = 0; i < groups_.size(); ++i) {
-      if (doCalibration_[i]) {
-        groups_[i]->iterativeCalibrationInit();
-      }
-    }
-  }
-  void iterativeCalibrationUpdate(const oops::FieldSet3D & fset) {
-    for (size_t i = 0; i < groups_.size(); ++i) {
-      if (doCalibration_[i]) {
-        groups_[i]->iterativeCalibrationUpdate(fset);
-      }
-    }
-  }
-  void iterativeCalibrationFinal() {
-    for (size_t i = 0; i < groups_.size(); ++i) {
-      if (doCalibration_[i]) {
-        groups_[i]->iterativeCalibrationFinal();
-      }
-    }
-  }
+  void iterativeCalibrationInit();
+  void iterativeCalibrationUpdate(const oops::FieldSet3D &);
+  void iterativeCalibrationFinal();
 
   // Write block data
-  void write() const {
-    for (size_t i = 0; i < groups_.size(); ++i) {
-      groups_[i]->write();
-    }
-  }
+  void write() const;
 
   // Square-root formulation
   size_t ctlVecSize() const;
@@ -189,11 +157,10 @@ class SaberCentralBlock : public util::Printable {
                       std::shared_ptr<oops::FieldSets>);
 
   // Adjoint test
-  void adjointTest(const oops::GeometryData & geomdata,
-                   const double & tol) const;
+  void adjointTest(const double & tol) const;
+
   // Square-root test
-  void sqrtTest(const oops::GeometryData & geomdata,
-                const double & tol) const;
+  void sqrtTest(const double & tol) const;
 
   bool doCalibration() const {
     return std::any_of(doCalibration_.begin(), doCalibration_.end(), [](bool v)
@@ -206,32 +173,42 @@ class SaberCentralBlock : public util::Printable {
     return std::any_of(forceWrite_.begin(), forceWrite_.end(), [](bool v) { return v; });}
 
  private:
+  // Geometry data
   const oops::GeometryData & geometryData_;
+  // Outer variables
+  const oops::Variables outerVars_;
+  // Valid time
   const util::DateTime validTime_;
+  // Parameters
   const SaberCentralBlockParameters params_;
+
   // Multivariate strategy
   std::string strategy_;
-  // Groups of central blocks for different variable subsets
-  std::vector<std::unique_ptr<SaberCentralBlockBase>> groups_;
+
+  // Number of groups
+  size_t ngroup_;
   // Group variables
   std::vector<oops::Variables> groupInputVars_;
-  // Group reference variable name (for fields summation)
-  std::vector<oops::Variable> groupRefVars_;
   // Group names
   std::vector<std::string> groupNames_;
-  // Group inner variables (containing only the reference variable, with the group name)
+  // Group inner variables (containing a single variable with the group name and the metadata and
+  // levels of the reference variable)
   std::vector<oops::Variables> groupInnerVars_;
-  // Weights for the "duplicated and weighted" strategy
-  std::vector<Eigen::MatrixXd> wgtSqrt_;
-  // Level for 2D fields (for 3D and 2D fields summation)
-  std::unordered_map<std::string, size_t> lev2d_;
-
   // Groups need to be calibrated
   std::vector<bool> doCalibration_;
   // Groups need to read MODEL data
   std::vector<bool> doRead_;
   // Groups need to write MODEL data
   std::vector<bool> forceWrite_;
+  // Group auxiliary outer block chain
+  std::vector<std::unique_ptr<SaberOuterBlockChain>> groupAuxOuterBlockChains_;
+  // Group central block
+  std::vector<std::unique_ptr<SaberCentralBlockBase>> groupCentralBlocks_;
+
+  // Weights for the "duplicated and weighted" strategy
+  std::vector<Eigen::MatrixXd> wgtSqrt_;
+  // Level for 2D fields (for 3D and 2D fields summation)
+  std::unordered_map<std::string, size_t> lev2d_;
 
   void print(std::ostream &) const {}
 };
@@ -242,8 +219,8 @@ template <typename MODEL>
 void SaberCentralBlock::read(const oops::Geometry<MODEL> & geom,
                              const oops::Variables & vars) {
   oops::Log::trace() << "SaberCentralBlock::read starting" << std::endl;
-  for (size_t i = 0; i < groups_.size(); ++i) {
-    groups_[i]->read(geom, vars);
+  for (size_t igroup = 0; igroup < ngroup_; ++igroup) {
+    groupCentralBlocks_[igroup]->read(geom, vars);
   }
   oops::Log::trace() << "SaberCentralBlock::read done" << std::endl;
 }
@@ -253,8 +230,8 @@ void SaberCentralBlock::read(const oops::Geometry<MODEL> & geom,
 template <typename MODEL>
 void SaberCentralBlock::write(const oops::Geometry<MODEL> & geom) const {
   oops::Log::trace() << "SaberCentralBlock::write starting" << std::endl;
-  for (size_t i = 0; i < groups_.size(); ++i) {
-    groups_[i]->write(geom);
+  for (size_t igroup = 0; igroup < ngroup_; ++igroup) {
+    groupCentralBlocks_[igroup]->write(geom);
   }
   oops::Log::trace() << "SaberCentralBlock::write done" << std::endl;
 }
