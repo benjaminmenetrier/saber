@@ -128,7 +128,7 @@ BifourierAnalyticalFilter::BifourierAnalyticalFilter(const oops::GeometryData & 
     innerGeometryData_(outerGeometryData),
     comm_(outerGeometryData.comm()),
     innerVars_(outerVars),
-    activeVars_(getActiveVars(params, outerVars)),
+    activeVars_(params.getActiveVars(outerVars)),
     params_(params),
     trans_(transStore_.retrieveTransform(outerGeometryData)),
     spectralFilter_(createSpectralFilter(*trans_, params))
