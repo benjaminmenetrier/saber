@@ -104,7 +104,7 @@ oops::Variables SaberParametricBlockChain::initCentralBlock(
   // Set outer variables for central block
   const oops::Variables currentOuterVars = outerBlockChain_ ?
                              outerBlockChain_->innerVars() : outerVariables_;
-std::cout << "ok 1" << std::endl;
+
   // Get active variables
   oops::Variables activeVars = saberCentralBlockParams.getActiveVars(currentOuterVars);
 
@@ -115,8 +115,7 @@ std::cout << "ok 1" << std::endl;
                              "outer variables", Here());
     }
   }
-std::cout << "ok 2" << std::endl;
-std::cout << saberCentralBlockParams << std::endl;
+
   // Create central block
   centralBlock_ = std::make_unique<SaberCentralBlock>(outerGeom,
                                                       levelsAreTopDown,
@@ -125,7 +124,7 @@ std::cout << saberCentralBlockParams << std::endl;
                                                       saberCentralBlockParams,
                                                       fset4dXb[0],
                                                       fset4dFg[0]);
-std::cout << "ok 3" << std::endl;
+
   // Save central function space and variables
   centralFunctionSpace_ = outerGeom.functionSpace();
   centralVars_ = activeVars;
