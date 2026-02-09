@@ -156,6 +156,10 @@ class SaberCentralBlockParametersWrapper : public oops::Parameters {
  public:
   oops::RequiredPolymorphicParameter<SaberBlockParametersBase, SaberCentralBlockFactory>
     saberCentralBlockParameters{"saber block name", this};
+
+  const SaberBlockParametersBase & blockParams() const
+    {return this->saberCentralBlockParameters;
+  }
 };
 
 // -----------------------------------------------------------------------------

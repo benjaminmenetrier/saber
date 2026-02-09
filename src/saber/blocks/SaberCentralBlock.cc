@@ -32,7 +32,7 @@ bool SaberCentralBlockParameters::doCalibration() const {
   if (this->groups.value()) {
     // Multiple blocks
     for (const auto & groupParams : this->groups.value().get()) {
-      if (groupParams.block.value().doCalibration()) {
+      if (groupParams.centralBlockParams().doCalibration()) {
         return true;
       }
     }
@@ -52,7 +52,7 @@ bool SaberCentralBlockParameters::doRead() const {
   if (this->groups.value()) {
     // Multiple blocks
     for (const auto & groupParams : this->groups.value().get()) {
-      if (groupParams.block.value().doRead()) {
+      if (groupParams.centralBlockParams().doRead()) {
         return true;
       }
     }
@@ -66,48 +66,40 @@ bool SaberCentralBlockParameters::doRead() const {
 oops::Variables SaberCentralBlockParameters::getActiveVars(
   const oops::Variables & defaultVars) const {
   // Get groups configurations
-  eckit::LocalConfiguration conf = this->toConfiguration();
-  std::vector<eckit::LocalConfiguration> groupConfs;
-  if (!conf.has("groups")) {
-    // Add group configuration
+
+  if (this->singleBlock.value()) {
+    // Single block
     SaberCentralBlockParametersWrapper saberCentralBlockParamsWrapper;
-    saberCentralBlockParamsWrapper.deserialize(conf);
-    const SaberBlockParametersBase & params =
-      saberCentralBlockParamsWrapper.saberCentralBlockParameters;
-    return params.getActiveVars(defaultVars);
+    saberCentralBlockParamsWrapper.deserialize(this->toConfiguration());
+    return saberCentralBlockParamsWrapper.blockParams().getActiveVars(defaultVars);
   } else {
-    // Get group configurations from conf
-    groupConfs = conf.getSubConfigurations("groups");
-  }
-
-  oops::Variables activeVars_nomd;
-  for (const auto & groupConf : groupConfs) {
-    SaberCentralBlockParametersWrapper saberCentralBlockParamsWrapper;
-    saberCentralBlockParamsWrapper.deserialize(groupConf);
-    const SaberBlockParametersBase & params =
-      saberCentralBlockParamsWrapper.saberCentralBlockParameters;
-    if (params.mandatoryActiveVars().size() == 0) {
-      // No mandatory active variables for this block
-      activeVars_nomd += params.activeVars.value().get_value_or(defaultVars);
-    } else {
-      // Block with mandatory active variables
-      activeVars_nomd += params.activeVars.value().get_value_or(params.mandatoryActiveVars());
-      ASSERT(params.mandatoryActiveVars() <= activeVars_nomd);
+    // Multiple groups
+    oops::Variables activeVars_nomd;
+    for (const auto & groupParams : *this->groups.value()) {
+      const auto & params = groupParams.centralBlockParams();
+      if (params.mandatoryActiveVars().size() == 0) {
+        // No mandatory active variables for this block
+        activeVars_nomd += params.activeVars.value().get_value_or(defaultVars);
+      } else {
+        // Block with mandatory active variables
+        activeVars_nomd += params.activeVars.value().get_value_or(params.mandatoryActiveVars());
+        ASSERT(params.mandatoryActiveVars() <= activeVars_nomd);
+      }
     }
-  }
 
-  // Copy the variables that exist in defaultVars from defaultVars (they have metadata
-  // associated with them)
-  oops::Variables activeVars;
-  for (auto & var : activeVars_nomd) {
-    if (defaultVars.has(var.name())) {
-      activeVars.push_back(defaultVars[var.name()]);
-    } else {
-      activeVars.push_back(var);
+    // Copy the variables that exist in defaultVars from defaultVars (they have metadata
+    // associated with them)
+    oops::Variables activeVars;
+    for (auto & var : activeVars_nomd) {
+      if (defaultVars.has(var.name())) {
+        activeVars.push_back(defaultVars[var.name()]);
+      } else {
+        activeVars.push_back(var);
+      }
     }
-  }
 
-  return activeVars;
+    return activeVars;
+  }
 }
 
 // -----------------------------------------------------------------------------
@@ -228,9 +220,9 @@ SaberCentralBlock::SaberCentralBlock(const oops::GeometryData & outerGeom,
       groupNames_.push_back(groupParams.groupName.value());
       groupInnerVars_.push_back(oops::Variables(
         {oops::Variable(groupNames_.back(), refVar.metaData(), refVar.getLevels())}));
-      doCalibration_.push_back(groupParams.block.value().doCalibration());
-      doRead_.push_back(groupParams.block.value().doRead());
-      forceWrite_.push_back(groupParams.block.value().forceWrite.value());
+      doCalibration_.push_back(groupParams.centralBlockParams().doCalibration());
+      doRead_.push_back(groupParams.centralBlockParams().doRead());
+      forceWrite_.push_back(groupParams.centralBlockParams().forceWrite.value());
 
       if (groupParams.auxOuterBlocksParams.value()) {
         // Append group auxiliary outer block chain
@@ -260,7 +252,7 @@ SaberCentralBlock::SaberCentralBlock(const oops::GeometryData & outerGeom,
       groupCentralBlocks_.push_back(SaberCentralBlockFactory::create(currentOuterGeom,
                                                          currentOuterVars,
                                                          covarConf,
-                                                         groupParams.block.value(),
+                                                         groupParams.centralBlockParams(),
                                                          xb,
                                                          fg));
 
@@ -1097,10 +1089,11 @@ void SaberCentralBlock::adjointTest(const double & globalAdjointTolerance) const
     double adjointTolerance = globalAdjointTolerance;
     if (params_.singleBlock.value() && params_.singleBlock.value()->adjointTolerance.value()) {
       adjointTolerance = *params_.singleBlock.value()->adjointTolerance.value();
-    } else if (params_.groups.value() &&
-               params_.groups.value().get()[igroup].block.value().adjointTolerance.value()) {
-      adjointTolerance =
-        *params_.groups.value().get()[igroup].block.value().adjointTolerance.value();
+    } else if (params_.groups.value()) {
+      const auto & groupParams = params_.groups.value().get()[igroup];
+      if (groupParams.centralBlockParams().adjointTolerance.value()) {
+        adjointTolerance = *groupParams.centralBlockParams().adjointTolerance.value();
+      }
     }
 
     // Get geometry data
@@ -1148,9 +1141,10 @@ void SaberCentralBlock::adjointTest(const double & globalAdjointTolerance) const
     // Override adjoint tolerance if specified in the configuration
     double adjointTolerance = globalAdjointTolerance;
     for (size_t igroup = 0; igroup < ngroup_; ++igroup) {
-      if (params_.groups.value().get()[igroup].block.value().adjointTolerance.value()) {
+      const auto & groupParams = params_.groups.value().get()[igroup];
+      if (groupParams.centralBlockParams().adjointTolerance.value()) {
         adjointTolerance = std::max(adjointTolerance,
-          *params_.groups.value().get()[igroup].block.value().adjointTolerance.value());
+          *groupParams.centralBlockParams().adjointTolerance.value());
       }
     }
 
@@ -1201,9 +1195,11 @@ void SaberCentralBlock::sqrtTest(const double & globalSqrtTolerance) const {
     double sqrtTolerance = globalSqrtTolerance;
     if (params_.singleBlock.value() && params_.singleBlock.value()->sqrtTolerance.value()) {
       sqrtTolerance = *params_.singleBlock.value()->sqrtTolerance.value();
-    } else if (params_.groups.value() &&
-               params_.groups.value().get()[igroup].block.value().sqrtTolerance.value()) {
-      sqrtTolerance = *params_.groups.value().get()[igroup].block.value().sqrtTolerance.value();
+    } else if (params_.groups.value()) {
+      const auto & groupParams = params_.groups.value().get()[igroup];
+      if (groupParams.centralBlockParams().sqrtTolerance.value()) {
+        sqrtTolerance = *groupParams.centralBlockParams().sqrtTolerance.value();
+      }
     }
 
     // Get geometry data
@@ -1292,9 +1288,10 @@ void SaberCentralBlock::sqrtTest(const double & globalSqrtTolerance) const {
     // Override square root tolerance if specified in the configuration
     double sqrtTolerance = globalSqrtTolerance;
     for (size_t igroup = 0; igroup < ngroup_; ++igroup) {
-      if (params_.groups.value().get()[igroup].block.value().sqrtTolerance.value()) {
+      const auto & groupParams = params_.groups.value().get()[igroup];
+      if (groupParams.centralBlockParams().sqrtTolerance.value()) {
         sqrtTolerance = std::max(sqrtTolerance,
-          *params_.groups.value().get()[igroup].block.value().sqrtTolerance.value());
+          *groupParams.centralBlockParams().sqrtTolerance.value());
       }
     }
 

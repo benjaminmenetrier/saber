@@ -57,8 +57,9 @@ class SaberCentralBlockGroupParameters : public oops::Parameters {
  public:
   oops::RequiredParameter<std::string> groupName{"group name", this};
   oops::RequiredParameter<oops::Variables> variables{"variables", this};
-  oops::RequiredPolymorphicParameter<SaberBlockParametersBase, SaberCentralBlockFactory>
-    block{"saber block name", this};
+
+  oops::RequiredParameter<SaberCentralBlockParametersWrapper>
+    centralBlock{"saber central block", this};
   oops::OptionalParameter<std::vector<SaberOuterBlockParametersWrapper>>
     auxOuterBlocksParams{"auxiliary outer blocks", this};
 
@@ -66,6 +67,10 @@ class SaberCentralBlockGroupParameters : public oops::Parameters {
   oops::Parameter<double> defOffDiagWeight{"default off-diagonal weight", 0.0, this};
   oops::OptionalParameter<std::vector<OffDiagWeightParameters>>
     offDiagWeights{"specific off-diagonal weights", this};
+
+  // Direct access to central block parameters
+  const SaberBlockParametersBase & centralBlockParams() const
+    {return this->centralBlock.value().blockParams();}
 };
 
 // -----------------------------------------------------------------------------
