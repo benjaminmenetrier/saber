@@ -110,17 +110,18 @@ background error:
               - eastward_wind
               - northward_wind
               value: 0.5
-            saber block name: BUMP_NICAS
-            read:
-              general:
-                testing: true
-                universe length-scale: 10000.0e3
-              io:
-                data directory: testdata
-                files prefix: dirac_localization_bump_4/_MPI_-_OMP_
-              drivers:
-                multivariate strategy: univariate
-                read local nicas: true
+            saber central block:
+              saber block name: BUMP_NICAS
+              read:
+                general:
+                  testing: true
+                  universe length-scale: 10000.0e3
+                io:
+                  data directory: testdata
+                  files prefix: dirac_localization_bump_4/_MPI_-_OMP_
+                drivers:
+                  multivariate strategy: univariate
+                  read local nicas: true
     weight:
       value: 0.25
   - covariance:
@@ -208,17 +209,18 @@ background error:
               - eastward_wind
               - northward_wind
               value: 0.5
-            saber block name: BUMP_NICAS
-            read:
-              general:
-                testing: true
-                universe length-scale: 10000.0e3
-              io:
-                data directory: testdata
-                files prefix: dirac_localization_bump_4/_MPI_-_OMP_
-              drivers:
-                multivariate strategy: univariate
-                read local nicas: true
+            saber central block:
+              saber block name: BUMP_NICAS
+              read:
+                general:
+                  testing: true
+                  universe length-scale: 10000.0e3
+                io:
+                  data directory: testdata
+                  files prefix: dirac_localization_bump_4/_MPI_-_OMP_
+                drivers:
+                  multivariate strategy: univariate
+                  read local nicas: true
     weight:
       value: 0.25
 dirac:
