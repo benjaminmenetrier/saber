@@ -22,8 +22,7 @@ Diffusion::Diffusion(
     const Parameters_ & params,
     const oops::FieldSet3D & xb,
     const oops::FieldSet3D & fg)
-  : saber::SaberCentralBlockBase(params, xb.validTime()),
-    geom_(geometryData),
+  : saber::SaberCentralBlockBase(params, xb.validTime(), geometryData, centralVars),
     params_(params)
 {
   // Compute total number of levels
@@ -32,7 +31,7 @@ Diffusion::Diffusion(
     nlevs += var.getLevels();
   }
   // Compute control vector size
-  ctlVecSize_ = nlevs*geom_.functionSpace().size();
+  ctlVecSize_ = nlevs*geometryData.functionSpace().size();
 }
 
 // --------------------------------------------------------------------------------------

@@ -43,18 +43,18 @@ class Diffusion : public saber::SaberCentralBlockBase {
             const oops::FieldSet3D &);
 
   void randomize(oops::FieldSet3D & fset) const override
-    {diffusion::randomize(geom_, groups_, fset);}
+    {diffusion::randomize(geometryData(), groups_, fset);}
   void multiply(oops::FieldSet3D & fset) const override
-    {diffusion::multiply(geom_, groups_, fset);}
+    {diffusion::multiply(geometryData(), groups_, fset);}
 
   void read() override
-    {diffusion::read(geom_, groups_, params_);}
+    {diffusion::read(geometryData(), groups_, params_);}
   std::vector<std::pair<std::string, eckit::LocalConfiguration>> getReadConfs() const override
     {return diffusion::getReadConfs(params_);}
   void setReadFields(const std::vector<oops::FieldSet3D> & fvec) override
     {return diffusion::setReadFields(fvec, calibrateReadFields_);}
   void directCalibration(const oops::FieldSets &) override
-    {return diffusion::directCalibration(geom_, groups_, calibrateReadFields_, params_);}
+    {return diffusion::directCalibration(geometryData(), groups_, calibrateReadFields_, params_);}
 
   size_t ctlVecSize() const override
     {return ctlVecSize_;}
@@ -62,7 +62,6 @@ class Diffusion : public saber::SaberCentralBlockBase {
  private:
   void print(std::ostream &) const override {}
 
-  const oops::GeometryData & geom_;
   size_t ctlVecSize_;
   Parameters_ params_;
   std::queue<atlas::Field> calibrateReadFields_;

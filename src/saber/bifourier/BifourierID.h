@@ -55,7 +55,7 @@ class BifourierID : public SaberCentralBlockBase {
     {return trans_->ctlVecSize();}
   void randomCtlVec(atlas::Field & cv,
                     const size_t & offset) const override
-    {trans_->randomCtlVec(cv, activeVars_, offset);}
+    {trans_->randomCtlVec(cv, centralVars(), offset);}
   void multiplySqrt(const atlas::Field &,
                     oops::FieldSet3D &,
                     const size_t &) const override;
@@ -67,14 +67,8 @@ class BifourierID : public SaberCentralBlockBase {
     {}
 
  private:
-  // Model grid geometry data
-  const oops::GeometryData & gdata_;
-
   // Communicator
   const eckit::mpi::Comm & comm_;
-
-  // Active variables
-  const oops::Variables activeVars_;
 
   // Spectral transform
   const BifourierTransformStore transStore_;
