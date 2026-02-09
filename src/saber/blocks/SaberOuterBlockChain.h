@@ -87,33 +87,43 @@ class SaberOuterBlockChain {
     }
   }
 
-  /// @brief Forward multiplication by all outer blocks.
-  void applyOuterBlocks(oops::FieldSet4D & fset4d) const {
-    for (size_t jtime = 0; jtime < fset4d.size(); ++jtime) {
-      for (auto it = outerBlocks_.rbegin(); it != outerBlocks_.rend(); ++it) {
-        if (it->second) {
-          // Right-inverse mode
-          it->first.get()->rightInverseMultiply(fset4d[jtime]);
-        } else {
-          // Direct mode
-          it->first.get()->multiply(fset4d[jtime]);
-        }
+  /// @brief Forward multiplication by all outer blocks, 3D.
+  void applyOuterBlocks(oops::FieldSet3D & fset3d) const {
+    for (auto it = outerBlocks_.rbegin(); it != outerBlocks_.rend(); ++it) {
+      if (it->second) {
+        // Right-inverse mode
+        it->first.get()->rightInverseMultiply(fset3d);
+      } else {
+        // Direct mode
+        it->first.get()->multiply(fset3d);
       }
     }
   }
 
-  /// @brief Adjoint multiplication by all outer blocks.
+  /// @brief Adjoint multiplication by all outer blocks, 3D.
+  void applyOuterBlocksAD(oops::FieldSet3D & fset3d) const {
+    for (auto it = outerBlocks_.begin(); it != outerBlocks_.end(); ++it) {
+      if (it->second) {
+        // Right-inverse mode
+        throw eckit::Exception("not implemented yet, but it should be", Here());
+      } else {
+        // Direct mode
+        it->first.get()->multiplyAD(fset3d);
+      }
+    }
+  }
+
+  /// @brief Forward multiplication by all outer blocks, 4D.
+  void applyOuterBlocks(oops::FieldSet4D & fset4d) const {
+    for (size_t jtime = 0; jtime < fset4d.size(); ++jtime) {
+      this->applyOuterBlocks(fset4d[jtime]);
+    }
+  }
+
+  /// @brief Adjoint multiplication by all outer blocks, 4D.
   void applyOuterBlocksAD(oops::FieldSet4D & fset4d) const {
     for (size_t jtime = 0; jtime < fset4d.size(); ++jtime) {
-      for (auto it = outerBlocks_.begin(); it != outerBlocks_.end(); ++it) {
-        if (it->second) {
-          // Right-inverse mode
-          throw eckit::Exception("not implemented yet, but it should be", Here());
-        } else {
-          // Direct mode
-          it->first.get()->multiplyAD(fset4d[jtime]);
-        }
-      }
+      this->applyOuterBlocksAD(fset4d[jtime]);
     }
   }
 

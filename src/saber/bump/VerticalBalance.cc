@@ -34,7 +34,7 @@ VerticalBalance::VerticalBalance(const oops::GeometryData & outerGeometryData,
   : SaberOuterBlockBase(params, xb.validTime(), outerGeometryData, outerVars),
     innerGeometryData_(outerGeometryData),
     innerVars_(outerVars),
-    activeVars_(getActiveVars(params, outerVars)),
+    activeVars_(params.getActiveVars(outerVars)),
     bumpParams_(params.calibrationParams.value() != boost::none ? *params.calibrationParams.value()
       : *params.readParams.value()),
     bump_(new BUMP(outerGeometryData, activeVars_, covarConf, bumpParams_,

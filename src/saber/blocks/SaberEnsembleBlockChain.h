@@ -28,6 +28,7 @@
 #include "saber/blocks/SaberBlockParametersBase.h"
 #include "saber/blocks/SaberOuterBlockChain.h"
 #include "saber/blocks/SaberParametricBlockChain.h"
+#include "saber/oops/ErrorCovarianceParameters.h"
 #include "saber/oops/Utilities.h"
 
 namespace saber {
@@ -368,7 +369,7 @@ SaberEnsembleBlockChain::SaberEnsembleBlockChain(const oops::Geometry<MODEL> & g
     oops::FieldSet4D fset4dSave = oops::copyFieldSet4D(fset4d);
 
     // Create control vector
-    oops::Log::info() << "Control vector size for block Ensemble: "
+    oops::Log::info() << "Info     : Control vector size for block Ensemble: "
                       << ctlVecSize() << std::endl;
     atlas::Field cv = atlas::Field("genericCtlVec",
                                    atlas::array::make_datatype<double>(),
