@@ -60,7 +60,9 @@ Square-root test for block Ensemble passed
              Level   1 ~>  0.100E+01 vert. coord.
              Level   2 ~>  0.200E+01 vert. coord.
 Adjoint test for block BUMP_NICAS passed
+Adjoint test for the multivariate central block passed
 Square-root test for block BUMP_NICAS passed
+Square-root test for the multivariate central block passed
 Adjoint test for block Ensemble passed
 Square-root test for block Ensemble passed
 Covariance(hybrid) * Increment:
@@ -256,7 +258,9 @@ Covariance(hybrid3_SABER) * Increment:
              Level   1 ~>  0.100E+01 vert. coord.
              Level   2 ~>  0.200E+01 vert. coord.
 Adjoint test for block BUMP_NICAS passed
+Adjoint test for the multivariate central block passed
 Square-root test for block BUMP_NICAS passed
+Square-root test for the multivariate central block passed
 Adjoint test for block Ensemble passed
 Square-root test for block Ensemble passed
 Covariance(hybrid4_SABER) * Increment:

@@ -42,10 +42,13 @@ class SaberCentralBlockBase : public util::Printable,
                               private eckit::NonCopyable {
  public:
   explicit SaberCentralBlockBase(const SaberBlockParametersBase & params,
-                                 const util::DateTime & validTime)
+                                 const util::DateTime & validTime,
+                                 const oops::GeometryData & geometryData,
+                                 const oops::Variables & centralVars)
     : validTime_(validTime),
-      blockName_(params.saberBlockName)
-    {}
+      blockName_(params.saberBlockName),
+      geometryData_(geometryData),
+      centralVars_(centralVars) {}
   virtual ~SaberCentralBlockBase() {}
 
   // Application methods
@@ -108,6 +111,15 @@ class SaberCentralBlockBase : public util::Printable,
   // Return block name
   const std::string blockName() const {return blockName_;}
 
+  // Return date/time
+  const util::DateTime validTime() const {return validTime_;}
+
+  // Return geometry data
+  const oops::GeometryData & geometryData() const {return geometryData_;}
+
+  // Return central variables
+  const oops::Variables & centralVars() const {return centralVars_;}
+
   // Read model fields
   template <typename MODEL>
   void read(const oops::Geometry<MODEL> &,
@@ -122,6 +134,9 @@ class SaberCentralBlockBase : public util::Printable,
 
  private:
   const std::string blockName_;
+  const oops::GeometryData & geometryData_;
+  const oops::Variables centralVars_;
+
   virtual void print(std::ostream &) const = 0;
 };
 
@@ -136,6 +151,10 @@ class SaberCentralBlockParametersWrapper : public oops::Parameters {
  public:
   oops::RequiredPolymorphicParameter<SaberBlockParametersBase, SaberCentralBlockFactory>
     saberCentralBlockParameters{"saber block name", this};
+
+  const SaberBlockParametersBase & blockParams() const
+    {return this->saberCentralBlockParameters;
+  }
 };
 
 // -----------------------------------------------------------------------------
