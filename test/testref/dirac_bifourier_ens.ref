@@ -37,8 +37,8 @@ Inner inverse test for block BifourierSpectralToGrid passed: U Uinv (U x) == (U 
 Outer inverse test for block BifourierSpectralToGrid passed: Uinv U (Uinv x) == (Uinv x)
 Covariance norms: 
 - allVars: 
-  + correlation square-root: 7.1544394431007285e-01
-  + standard-deviation:      3.1622776601683795e+00
+  + correlation square-root: 7.7277331216893563e-01
+  + standard-deviation:      3.3166247903553998e+00
 Adjoint test for block BifourierCovariance passed
 Adjoint test for the multivariate central block passed
 Square-root test for block BifourierCovariance passed
@@ -50,27 +50,27 @@ Covariance(SABER) * Increment:
   Geometry: structured [3723]
   Fields:
   - geographical_x_wind (10 levels):
-    + min    = -6.2977961411985941e-03
-    + max    = 1.6678324040516151e-04
-    + mean   = -2.5729603792256251e-06
-    + stddev = 7.2549421138316765e-05
+    + min    = -6.2977961411984484e-03
+    + max    = 1.6678324040515975e-04
+    + mean   = -2.5729603792255968e-06
+    + stddev = 7.2549421138315680e-05
   - geographical_y_wind (10 levels):
-    + min    = -9.3949111542452951e-04
-    + max    = 3.2037407231096104e-03
-    + mean   = 5.3418054697120486e-07
-    + stddev = 3.7020056578011991e-05
+    + min    = -9.3949111542450793e-04
+    + max    = 3.2037407231095346e-03
+    + mean   = 5.3418054697119491e-07
+    + stddev = 3.7020056578011415e-05
   - air_temperature (10 levels):
-    + min    = -2.0690911244902253e-03
-    + max    = 1.2125447284214863e-01
-    + mean   = 3.8208786353117621e-05
-    + stddev = 1.2636749151594549e-03
+    + min    = -2.0690911244902058e-03
+    + max    = 1.2125447284214583e-01
+    + mean   = 3.8208786353116998e-05
+    + stddev = 1.2636749151594296e-03
   - log_of_air_pressure_at_surface (1 levels):
-    + min    = -8.1467621458758370e-07
-    + max    = 9.5971381874990376e-06
-    + mean   = 3.3461802409636365e-08
-    + stddev = 3.6829175929057619e-07
+    + min    = -1.5433524326923420e-06
+    + max    = 6.4501386286210973e-06
+    + mean   = 4.9440996920711444e-08
+    + stddev = 3.7994010838946683e-07
   - water_vapor_mixing_ratio_wrt_moist_air (10 levels):
-    + min    = -9.5729114603358214e-06
-    + max    = 6.4264087963111594e-06
-    + mean   = -2.1910583037652351e-09
-    + stddev = 1.4915171865958579e-07
+    + min    = -9.5729114603355978e-06
+    + max    = 6.4264087963110112e-06
+    + mean   = -2.1910583037652169e-09
+    + stddev = 1.4915171865958405e-07

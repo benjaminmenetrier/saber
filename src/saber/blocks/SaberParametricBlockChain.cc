@@ -18,7 +18,6 @@ namespace saber {
 // outer geometry cannot be a MODEL geometry.
 SaberParametricBlockChain::SaberParametricBlockChain(
                           const oops::GeometryData & outerGeometryData,
-                          const bool levelsAreTopDown,
                           const oops::Variables & outerVars,
                           oops::FieldSet4D & fset4dXb,
                           oops::FieldSet4D & fset4dFg,
@@ -58,7 +57,6 @@ SaberParametricBlockChain::SaberParametricBlockChain(
   oops::Log::info() << "Info     : Creating central block: " << std::endl;
 
   const auto currentOuterVars = initCentralBlock(currentOuterGeom,
-                                                 levelsAreTopDown,
                                                  fullConf,
                                                  saberCentralBlockParams,
                                                  fset4dXb,
@@ -95,7 +93,6 @@ SaberParametricBlockChain::SaberParametricBlockChain(
 
 oops::Variables SaberParametricBlockChain::initCentralBlock(
         const oops::GeometryData & outerGeom,
-        const bool levelsAreTopDown,
         const eckit::Configuration & conf,
         const SaberCentralBlockParameters & saberCentralBlockParams,
         const oops::FieldSet4D & fset4dXb,
@@ -118,7 +115,6 @@ oops::Variables SaberParametricBlockChain::initCentralBlock(
 
   // Create central block
   centralBlock_ = std::make_unique<SaberCentralBlock>(outerGeom,
-                                                      levelsAreTopDown,
                                                       activeVars,
                                                       conf,
                                                       saberCentralBlockParams,
