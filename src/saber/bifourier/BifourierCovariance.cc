@@ -343,10 +343,32 @@ void BifourierCovariance::directCalibration(const oops::FieldSets & fsetEns) {
       // Get correlation square-root view
       auto corSqrtView = make_view<double, 3>(corSqrtField);
 
-      // Get horizontal length-scale profile and vertical length-scale
+      // Get horizontal vertical length-scale
+      std::vector<double> vcoord(nz, 0.0);
       double Lv = 0.0;
       for (const auto & profile : params_.calibration.value()->profiles.value()) {
         if (profile.variable.value() == var.name()) {
+          // Get vertical coordinate
+          const std::string vcoordName = profile.vcoord.value();
+          if (vcoordName == "model levels") {
+            // Use model levels
+            std::iota(vcoord.begin(), vcoord.end(), 0);
+          } else {
+            // Get 1D vertical coordinate field from geometry data
+            const atlas::Field vcoordField = geometryData().fieldSet()[vcoordName];
+
+            // Check number of levels
+            ASSERT(vcoordField.shape(0) == static_cast<int>(nz));
+
+            // Get vertical coordinate view
+            const auto vcoordView = make_view<double, 1>(vcoordField);
+
+            // Copy vertical coordinate
+            for (size_t jz = 0; jz < nz; ++jz) {
+              vcoord[jz] = vcoordView(jz);
+            }
+          }
+
           // Copy vertical length-scale
           Lv = profile.Lv.value();
         }
@@ -357,7 +379,7 @@ void BifourierCovariance::directCalibration(const oops::FieldSets & fsetEns) {
       Eigen::MatrixXd vertCor(nz, nz);
       for (size_t jzI = 0; jzI < nz; ++jzI) {
         for (size_t jzJ = 0; jzJ < nz; ++jzJ) {
-          const double normDist = std::abs(static_cast<double>(jzI)-static_cast<double>(jzJ))/Lv;
+          const double normDist = std::abs(vcoord[jzI]-vcoord[jzJ])/Lv;
           vertCor(jzI, jzJ) = oops::gc99(normDist);
         }
       }

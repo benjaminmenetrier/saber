@@ -54,6 +54,9 @@ class ProfileParameters : public oops::Parameters {
   // Horizontal length-scales
   oops::RequiredParameter<std::vector<double>> Lh{"horizontal length-scales", this};
 
+  // Vertical coordinate
+  oops::Parameter<std::string> vcoord{"vertical coordinate", "model levels", this};
+
   // Vertical length-scale
   oops::RequiredParameter<double> Lv{"vertical length-scale", this};
 
