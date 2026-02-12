@@ -213,14 +213,8 @@ class SaberCentralBlock : public util::Printable {
 
   // Weights for the "duplicated and weighted" strategy
   std::vector<Eigen::MatrixXd> wgtSqrt_;
-  // Level for 2D fields (for 3D and 2D fields summation)
-  std::unordered_map<std::string, int> lev2d_;
-
-
-  // Need for an extra first level for 2D variables
-  std::vector<bool> addExtraFirstLevel_;
-  // Need for an extra last level for 2D variables
-  std::vector<bool> addExtraLastLevel_;
+  // First level (for 3D and 2D fields summation)
+  std::unordered_map<std::string, int> firstLevel_;
 
   void print(std::ostream &) const {}
 };
