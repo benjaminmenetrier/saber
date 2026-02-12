@@ -104,7 +104,6 @@ class SaberCentralBlockParameters : public oops::Parameters {
 class SaberCentralBlock : public util::Printable {
  public:
   SaberCentralBlock(const oops::GeometryData & geometryData,
-                    const bool levelsAreTopDown,
                     const oops::Variables & outerVars,
                     const eckit::Configuration & covarConf,
                     const SaberCentralBlockParameters & params,

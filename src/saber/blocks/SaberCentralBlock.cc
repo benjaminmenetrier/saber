@@ -105,7 +105,6 @@ oops::Variables SaberCentralBlockParameters::getActiveVars(
 // -----------------------------------------------------------------------------
 
 SaberCentralBlock::SaberCentralBlock(const oops::GeometryData & outerGeom,
-                                     const bool levelsAreTopDown,
                                      const oops::Variables & outerVars,
                                      const eckit::Configuration & covarConf,
                                      const SaberCentralBlockParameters & params,
@@ -240,8 +239,8 @@ SaberCentralBlock::SaberCentralBlock(const oops::GeometryData & outerGeom,
           // Find first level
           const std::string nearest3dLevel = field.metadata().getString("nearest 3d level");
           ASSERT((nearest3dLevel == "top") || (nearest3dLevel == "bottom"));
-          if ((levelsAreTopDown && (nearest3dLevel == "top")) ||
-            (!levelsAreTopDown && (nearest3dLevel == "bottom"))) {
+          if ((outerGeom.levelsAreTopDown() && (nearest3dLevel == "top")) ||
+            (!outerGeom.levelsAreTopDown() && (nearest3dLevel == "bottom"))) {
             lev2d = extraLevel ? -1 : 0;
           } else {
             lev2d = extraLevel ? refVar.getLevels() : refVar.getLevels()-1;
