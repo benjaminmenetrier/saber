@@ -73,7 +73,6 @@ class SaberParametricBlockChain : public SaberBlockChainBase {
                             const eckit::Configuration & conf);
   /// @brief Simpler, limited constructor using only generic GeometryData
   SaberParametricBlockChain(const oops::GeometryData & outerGeometryData,
-                            const bool levelsAreTopDown,
                             const oops::Variables & outerVars,
                             oops::FieldSet4D & fset4dXb,
                             oops::FieldSet4D & fset4dFg,
@@ -102,7 +101,6 @@ class SaberParametricBlockChain : public SaberBlockChainBase {
   /// @brief Initialize central block, central function space and central variables.
   ///        Used in constructors.
   oops::Variables initCentralBlock(const oops::GeometryData & outerGeom,
-                                   const bool levelsAreTopDown,
                                    const eckit::Configuration & conf,
                                    const SaberCentralBlockParameters & saberCentralBlockParams,
                                    const oops::FieldSet4D & fset4dXb,
@@ -171,7 +169,6 @@ SaberParametricBlockChain::SaberParametricBlockChain(const oops::Geometry<MODEL>
   oops::Log::info() << "Info     : Creating central block: " << std::endl;
 
   const auto currentOuterVars = initCentralBlock(currentOuterGeom,
-                                                 geom.levelsAreTopDown(),
                                                  fullConf,
                                                  saberCentralBlockParams,
                                                  fset4dXb,
