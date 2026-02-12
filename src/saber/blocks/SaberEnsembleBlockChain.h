@@ -477,7 +477,6 @@ SaberEnsembleBlockChain::SaberEnsembleBlockChain(const oops::Geometry<MODEL> & g
         // constructor, but other models usually don't have this ability to create a
         // Geometry on any mesh.
         scaleData.localization() = std::make_unique<SaberParametricBlockChain>(filterOuterGeomData,
-                                                                     geom.levelsAreTopDown(),
                                                                      currentOuterVars,
                                                                      fset4dXb,
                                                                      fset4dFg,
