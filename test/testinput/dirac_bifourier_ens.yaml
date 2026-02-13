@@ -16,8 +16,6 @@ geometry:
   partitioner: checkerboard
   groups:
   - variables:
-    - air_upward_absolute_vorticity
-    - air_horizontal_divergence
     - geographical_x_wind
     - geographical_y_wind
     - air_temperature
@@ -28,7 +26,7 @@ geometry:
     levels: 1
 background:
   date: 2010-01-01T12:00:00Z
-  state variables:
+  state variables: &vars
   - geographical_x_wind
   - geographical_y_wind
   - air_temperature
@@ -46,12 +44,7 @@ background error:
       template:
         date: 2010-01-01T12:00:00Z
         filepath: testdata/randomization_bifourier/_MPI_-_OMP__member_%mem%
-        state variables:
-        - geographical_x_wind
-        - geographical_y_wind
-        - air_temperature
-        - log_of_air_pressure_at_surface
-        - water_vapor_mixing_ratio_wrt_moist_air
+        state variables: *vars
       pattern: '%mem%'
       nmembers: 25
       zero padding: 6
@@ -60,12 +53,7 @@ background error:
       multivariate strategy: duplicated
       groups:
       - group name: allVars
-        variables: 
-        - geographical_x_wind
-        - geographical_y_wind
-        - air_temperature
-        - log_of_air_pressure_at_surface
-        - water_vapor_mixing_ratio_wrt_moist_air
+        variables: *vars
         variables on extra levels:
         - log_of_air_pressure_at_surface
         saber central block:

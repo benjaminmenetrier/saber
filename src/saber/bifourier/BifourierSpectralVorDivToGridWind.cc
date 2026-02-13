@@ -100,7 +100,7 @@ BifourierSpectralVorDivToGridWind::BifourierSpectralVorDivToGridWind(
       outerGeometryData.comm()));
   } else {
     // Retrieve spectral transform
-    trans_ = transStore_.retrieveTransform(outerGeometryData);
+    trans_ = transStore_.retrieveTransform(outerGeometryData, outerVars);
 
     // Set inner GeometryData
     // TODO(Benjamin): avoid this

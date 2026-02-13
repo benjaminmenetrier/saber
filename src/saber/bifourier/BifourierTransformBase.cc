@@ -1873,7 +1873,8 @@ void BifourierTransformBase::setupParallelizationFinal() {
     const size_t covRedColor = myJwGlb_[jwGlb] ? 1 : 0;
 
     // Communicator name
-    const std::string covRedCommName = "covRed_" + std::to_string(jwGlb);
+    const std::string covRedCommName = "covRed_" + specUid_ + "_" + "L" + std::to_string(nvz_)
+      + "_" + std::to_string(jwGlb);
 
     // Split communicator
     covRedComm_.push_back(&comm_.split(covRedColor, covRedCommName.c_str()));
@@ -1882,7 +1883,8 @@ void BifourierTransformBase::setupParallelizationFinal() {
     const size_t covBcastColor = myJwGlb_[jwGlb] || myrank_ == 0 ? 1 : 0;
 
     // Communicator name
-    const std::string covBcastCommName = "covBcast_" + std::to_string(jwGlb);
+    const std::string covBcastCommName = "covBcast_" + specUid_ + "_" + "L" + std::to_string(nvz_)
+      + "_" + std::to_string(jwGlb);
 
     // Split communicator=
     covBcastComm_.push_back(&comm_.split(covBcastColor, covBcastCommName.c_str()));
@@ -1948,7 +1950,7 @@ void BifourierTransformBase::setupLocalSpectralSpace() {
 
   // Print UIDs
   oops::Log::info() << "Info     : - UIDs: " << gridUid_ << " / " << specUid_ << std::endl;
-
+  oops::Log::info() << "Info     : - Number of levels for all variables: " << nvz_ << std::endl;
   // Allocate vectors
   jkVec_.resize(ns_);
   jlVec_.resize(ns_);

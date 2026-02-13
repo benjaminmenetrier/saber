@@ -42,7 +42,7 @@ BifourierCovariance::BifourierCovariance(const oops::GeometryData & geometryData
     params_(params),
     Lf_(params_.calibration.value() != boost::none ?
       params_.calibration.value()->filteringScale.value() : 0),
-    trans_(transStore_.retrieveTransform(geometryData))
+    trans_(transStore_.retrieveTransform(geometryData, centralVars))
 {
   oops::Log::trace() << classname() << "::BifourierCovariance starting" << std::endl;
   oops::Log::trace() << classname() << "::BifourierCovariance done" << std::endl;
