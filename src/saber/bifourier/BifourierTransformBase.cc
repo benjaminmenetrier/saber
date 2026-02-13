@@ -70,7 +70,7 @@ BifourierTransformBase::BifourierTransformBase(const oops::GeometryData & gdata,
                                                const BifourierTransformParameters & params) :
     gdata_(gdata),
     comm_(gdata_.comm()),
-    myrank_(comm_.rank()),
+      myrank_(comm_.rank()),
     params_(params),
     gridUid_(gridUid),
     dwGlb_(params_.dwGlb.value())
@@ -113,6 +113,30 @@ BifourierTransformBase::BifourierTransformBase(const oops::GeometryData & gdata,
   }
 
   oops::Log::trace() << classname() << "::BifourierTransformBase done" << std::endl;
+}
+
+// -----------------------------------------------------------------------------
+
+size_t BifourierTransformBase::sGlbToTask(const size_t & jsGlb) const {
+  ASSERT(jsGlb < nsGlb_);
+  for (size_t jt = 0; jt < comm_.size()-1; ++jt) {
+    if (jsGlb < nsDispl_[jt+1]) {
+      return jt;
+    }
+  }
+  return comm_.size()-1;
+}
+
+// -----------------------------------------------------------------------------
+
+size_t BifourierTransformBase::sGlbToS(const size_t & jsGlb) const {
+  ASSERT(jsGlb < nsGlb_);
+  for (size_t jt = 0; jt < comm_.size()-1; ++jt) {
+    if (jsGlb < nsDispl_[jt+1]) {
+      return jsGlb-nsDispl_[jt+1];
+    }
+  }
+  return jsGlb-nsDispl_[comm_.size()-1];
 }
 
 // -----------------------------------------------------------------------------
@@ -245,14 +269,13 @@ void BifourierTransformBase::gp2sp(const atlas::FieldSet & gpFset,
   }
   ASSERT(nvz == nvz_);
 
-  // Create recv vectors
-  std::vector<double> recvVec;
+  // Create recv vector
+  std::vector<double> recvVec(gridRecvSize_*nvz_);
 
   // Ghost points
   const auto ghostView = make_view<int, 1>(gdata_.functionSpace().ghost());
 
   // Serialize from grid-point FieldSet
-  recvVec.resize(gridRecvSize_*nvz_);
   size_t zOffset = 0;
   for (const auto & var : activeVars) {
     // Get number of vertical levels
@@ -363,8 +386,8 @@ void BifourierTransformBase::sp2gp(const atlas::FieldSet & spFset,
   }
   ASSERT(nvz == nvz_);
 
-  // Create recv vectors
-  std::vector<double> recvVec;
+  // Create recv vector
+  std::vector<double> recvVec(recvSize()*nvz_);
 
   // Reserialize from spectral FieldSet
   std::vector<double> sendVec(eqchSendSize_*nvz_);
@@ -405,7 +428,6 @@ void BifourierTransformBase::sp2gp(const atlas::FieldSet & spFset,
   }
 
   // Communication
-  recvVec.resize(recvSize()*nvz_);
   comm_.allToAllv(sendVec.data(), eqchSendCounts_.data(), eqchSendDispls_.data(),
     recvVec.data(), recvCounts().data(), recvDispls().data());
 
@@ -481,8 +503,8 @@ void BifourierTransformBase::gp2spAdj(const atlas::FieldSet & spFset,
   }
   ASSERT(nvz == nvz_);
 
-  // Create recv vectors
-  std::vector<double> recvVec;
+  // Create recv vector
+  std::vector<double> recvVec(recvSize()*nvz_);
 
   // Reserialize from spectral FieldSet
   std::vector<double> sendVec(eqchSendSize_*nvz_);
@@ -523,7 +545,6 @@ void BifourierTransformBase::gp2spAdj(const atlas::FieldSet & spFset,
   }
 
   // Communication
-  recvVec.resize(recvSize()*nvz_);
   comm_.allToAllv(sendVec.data(), eqchSendCounts_.data(), eqchSendDispls_.data(),
     recvVec.data(), recvCounts().data(), recvDispls().data());
 
@@ -599,14 +620,13 @@ void BifourierTransformBase::sp2gpAdj(const atlas::FieldSet & gpFset,
   }
   ASSERT(nvz == nvz_);
 
-  // Create vectors
-  std::vector<double> recvVec;
+  // Create recv vector
+  std::vector<double> recvVec(gridRecvSize_*nvz_);
 
   // Ghost points
   const auto ghostView = make_view<int, 1>(gdata_.functionSpace().ghost());
 
   // Serialize from grid-point FieldSet
-  recvVec.resize(gridRecvSize_*nvz_);
   size_t zOffset = 0;
   for (const auto & var : activeVars) {
     // Get number of vertical levels
@@ -1772,6 +1792,12 @@ void BifourierTransformBase::setupParallelizationInit() {
     }
   }
 
+  // Displacement
+  nsDispl_.resize(comm_.size());
+  for (size_t jt = 0; jt < comm_.size(); ++jt) {
+    nsDispl_[jt] = static_cast<int>(jt ? nsDispl_[jt-1] + nsPerTask_[jt-1] : 0);
+  }
+
   // Save local size
   ns_ = sToSGlb_.size();
 
@@ -1873,7 +1899,7 @@ void BifourierTransformBase::setupParallelizationFinal() {
     const size_t covRedColor = myJwGlb_[jwGlb] ? 1 : 0;
 
     // Communicator name
-    const std::string covRedCommName = "covRed_" + specUid_ + "_" + "L" + std::to_string(nvz_)
+    const std::string covRedCommName = "covRed_" + gridUid_ + "_" + "L" + std::to_string(nvz_)
       + "_" + std::to_string(jwGlb);
 
     // Split communicator
@@ -1883,7 +1909,7 @@ void BifourierTransformBase::setupParallelizationFinal() {
     const size_t covBcastColor = myJwGlb_[jwGlb] || myrank_ == 0 ? 1 : 0;
 
     // Communicator name
-    const std::string covBcastCommName = "covBcast_" + specUid_ + "_" + "L" + std::to_string(nvz_)
+    const std::string covBcastCommName = "covBcast_" + gridUid_ + "_" + "L" + std::to_string(nvz_)
       + "_" + std::to_string(jwGlb);
 
     // Split communicator=
@@ -1951,6 +1977,7 @@ void BifourierTransformBase::setupLocalSpectralSpace() {
   // Print UIDs
   oops::Log::info() << "Info     : - UIDs: " << gridUid_ << " / " << specUid_ << std::endl;
   oops::Log::info() << "Info     : - Number of levels for all variables: " << nvz_ << std::endl;
+
   // Allocate vectors
   jkVec_.resize(ns_);
   jlVec_.resize(ns_);

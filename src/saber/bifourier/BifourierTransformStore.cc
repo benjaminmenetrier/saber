@@ -140,7 +140,7 @@ std::shared_ptr<BifourierTransformBase> BifourierTransformStore::retrieveTransfo
   for (auto it = transforms().begin(); it != transforms().end(); ++it) {
     if (((*it)->specUid() == specUid) && ((*it)->nvz() == nvz)) {
       oops::Log::info() << "Info     : Retrieved Bifourier transform with spectral UID: " << specUid
-        << " for " << nvz << "levels" << std::endl;
+        << " for " << nvz << " levels" << std::endl;
 
       oops::Log::trace() << classname() << "::setupTransform done" << std::endl;
       return (*it);

@@ -44,6 +44,10 @@ if( FFTW_FOUND OR ( ECTRANS_FOUND AND ectrans_HAVE_ETRANS AND ectrans_HAVE_TRANS
     BifourierID.cc
     BifourierID.h
 
+    # Bi-Fourier spectral converter block
+    BifourierSpectralConverter.cc
+    BifourierSpectralConverter.h
+
     # Bi-Fourier spectral to grid block
     BifourierSpectralToGrid.cc
     BifourierSpectralToGrid.h

@@ -1,5 +1,5 @@
 # Dirac test for an ensemble B with a multiscale bifourier localization matrix
-geometry:
+geometry: &geom
   function space: StructuredColumns
   grid:
     type : regional
@@ -49,17 +49,39 @@ background error:
       nmembers: 25
       zero padding: 6
   scales:
-  - filter:
+  - interpolator:
+    - saber block name: BifourierGridToSpectral
+    - saber block name: BifourierSpectralConverter
+      skip inverse test: true
+      geometry:
+        function space: StructuredColumns
+        grid:
+          type : regional
+          nx : 37
+          ny : 26
+          dx : 5.0e3
+          dy : 5.0e3
+          lonlat(centre) : [9.9, 56.3]
+          projection :  
+            type : lambert_conformal_conic
+            latitude0  : 56.3
+            longitude0 : 0.0
+          y_numbering: 1
+          partitioner: checkerboard
     - saber block name: BifourierSpectralToGrid
-      right-inverse of a following block: true
+    filter:
+    - saber block name: BifourierGridToSpectral
     - saber block name: BifourierAnalyticalFilter
       waveband peak: 2
       waveband max: 5
       active variables: *vars
+    - saber block name: BifourierSpectralConverter
+      skip inverse test: true
+      geometry: *geom
     - saber block name: BifourierSpectralToGrid
     output:
       model write:
-        filepath: testdata/dirac_bifourier_multiscale/filtered_pert_mb%MEM%_wb1
+        filepath: testdata/dirac_bifourier_multiscale_2/filtered_pert_mb%MEM%_wb1
         member pattern: '%MEM%'
     localization:
       saber central block:
@@ -88,7 +110,7 @@ background error:
     - saber block name: BifourierSpectralToGrid
     output:
       model write:
-        filepath: testdata/dirac_bifourier_multiscale/filtered_pert_mb%MEM%_wb2
+        filepath: testdata/dirac_bifourier_multiscale_2/filtered_pert_mb%MEM%_wb2
         member pattern: '%MEM%'
     localization:
       saber central block:
@@ -119,7 +141,7 @@ dirac:
   - air_temperature
 output dirac:
   mpi pattern: "%MPI%"
-  filepath: testdata/dirac_bifourier_multiscale/%MPI%_dirac_%id%
+  filepath: testdata/dirac_bifourier_multiscale_2/%MPI%_dirac_%id%
 test:
-  reference filename: testref/dirac_bifourier_multiscale.ref
+  reference filename: testref/dirac_bifourier_multiscale_2.ref
 

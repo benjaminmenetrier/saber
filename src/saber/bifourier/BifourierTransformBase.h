@@ -108,6 +108,24 @@ class BifourierTransformBase : public util::Printable,
 
   // Non-virtual methods
 
+  // Spectral element
+  enum Quad {
+    ReRe = 0,
+    ReIm = 1,
+    ImRe = 2,
+    ImIm = 3
+  };
+  struct spElem {
+    size_t jk;
+    size_t jl;
+    Quad jq;
+    double kstar;
+    size_t jwGlb;
+    size_t jsXDerivativeOffset;
+    size_t jsYDerivativeOffset;
+    size_t jt;
+  };
+
   // Accessors
 
   // Geometry data
@@ -171,6 +189,10 @@ class BifourierTransformBase : public util::Printable,
   // Meridional truncation
   const size_t & N() const
     {return N_;}
+
+  // Return vector of spectral elements
+  const std::vector<spElem> & spVec() const
+    {return spVec_;}
 
   // Return jk for this wavenumber
   const size_t & jk(const size_t & js) const
@@ -245,6 +267,12 @@ class BifourierTransformBase : public util::Printable,
     {return nvz_;}
 
   // Public methods
+
+  // Return task from global js
+  size_t sGlbToTask(const size_t &) const;
+
+  // Return local js from global js
+  size_t sGlbToS(const size_t &) const;
 
   // Run tests
   void test(const oops::Variables &) const;
@@ -402,22 +430,6 @@ class BifourierTransformBase : public util::Printable,
   std::vector<size_t> ellips_;
 
   // Mapping and normalization
-  enum Quad {
-    ReRe = 0,
-    ReIm = 1,
-    ImRe = 2,
-    ImIm = 3
-  };
-  struct spElem {
-    size_t jk;
-    size_t jl;
-    Quad jq;
-    double kstar;
-    size_t jwGlb;
-    size_t jsXDerivativeOffset;
-    size_t jsYDerivativeOffset;
-    size_t jt;
-  };
   double jwGlbTol_;
   std::vector<spElem> spVec_;
   std::vector<size_t> spNormKL_;
@@ -451,6 +463,7 @@ class BifourierTransformBase : public util::Printable,
   // Local spectral space
   std::vector<bool> truncMask_;
   std::vector<size_t> nsPerTask_;
+  std::vector<size_t> nsDispl_;
   size_t ns_;
   size_t nsGlb_;
   std::vector<int> sCounts_;
