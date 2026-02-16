@@ -70,11 +70,10 @@ background error:
           - log_of_air_pressure_at_surface
           saber central block:
             saber block name: BifourierCovariance
-            calibration:
-              profiles:
-              - variable: allVars
-                horizontal length-scales: [50.0e3, 50.0e3, 50.0e3, 50.0e3, 50.0e3, 50.0e3, 50.0e3, 50.0e3, 50.0e3, 50.0e3, 50.0e3]
-                vertical length-scale: 4.0
+            profiles:
+            - variable: allVars
+              horizontal length-scales: [50.0e3, 50.0e3, 50.0e3, 50.0e3, 50.0e3, 50.0e3, 50.0e3, 50.0e3, 50.0e3, 50.0e3, 50.0e3]
+              vertical length-scale: 4.0
           auxiliary outer blocks:
           - saber block name: BifourierSpectralToGrid
   - filter:
@@ -98,11 +97,10 @@ background error:
           - log_of_air_pressure_at_surface
           saber central block:
             saber block name: BifourierCovariance
-            calibration:
-              profiles:
-              - variable: allVars
-                horizontal length-scales: [10.0e3, 10.0e3, 10.0e3, 10.0e3, 10.0e3, 10.0e3, 10.0e3, 10.0e3, 10.0e3, 10.0e3, 10.0e3]
-                vertical length-scale: 1.5
+            profiles:
+            - variable: allVars
+              horizontal length-scales: [10.0e3, 10.0e3, 10.0e3, 10.0e3, 10.0e3, 10.0e3, 10.0e3, 10.0e3, 10.0e3, 10.0e3, 10.0e3]
+              vertical length-scale: 1.5
           auxiliary outer blocks:
           - saber block name: BifourierSpectralToGrid
   multiscale strategy: separated

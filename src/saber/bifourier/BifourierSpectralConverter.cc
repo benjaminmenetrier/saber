@@ -81,7 +81,7 @@ BifourierSpectralConverter::BifourierSpectralConverter(const oops::GeometryData 
         (innerSpVec[innerJsGlb].jl == outerSpVec[outerJsGlb].jl) &&
         (innerSpVec[innerJsGlb].jq == outerSpVec[outerJsGlb].jq)) {
         ASSERT(outerToInnerJsGlb[outerJsGlb] == -1);
-        outerToInnerJsGlb[outerJsGlb] = innerJsGlb; 
+        outerToInnerJsGlb[outerJsGlb] = innerJsGlb;
       }
     }
   }

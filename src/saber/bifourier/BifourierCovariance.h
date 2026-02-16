@@ -37,9 +37,6 @@ class BifourierCovarianceReadParameters : public oops::Parameters {
  public:
   // Input file
   oops::RequiredParameter<std::string> inputFile{"input file", this};
-
-  // Read covariance flag
-  oops::Parameter<bool> readCovariance{"read covariance", false, this};
 };
 
 // -----------------------------------------------------------------------------
@@ -84,9 +81,6 @@ class BifourierCovarianceCalibrationParameters : public oops::Parameters {
 
   // Sub-ensembles size
   oops::Parameter<size_t> subEnsSize{"sub-ensembles size", 0, this};
-
-  // User-defined vertical profile for each variable
-  oops::Parameter<std::vector<ProfileParameters>> profiles{"profiles", {}, this};
 };
 
 // -----------------------------------------------------------------------------
@@ -114,6 +108,9 @@ class BifourierCovarianceParameters : public SaberBlockParametersBase {
   // Calibration parameters
   oops::OptionalParameter<BifourierCovarianceCalibrationParameters> calibration{"calibration",
     this};
+
+  // User-defined vertical profile for each variable
+  oops::OptionalParameter<std::vector<ProfileParameters>> profiles{"profiles", this};
 
   // Standard-deviation inflation factor
   oops::Parameter<double> inflation{"inflation", 1.0, this};

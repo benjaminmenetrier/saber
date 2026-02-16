@@ -32,6 +32,51 @@ Input Dirac increment:
 - Adjoint test (forward) passed
 - Adjoint test (inverse) passed
 - Derivatives / direct Laplacian consistency test passed
+Adjoint test for block BifourierSpectralToGrid passed
+Inner inverse test for block BifourierSpectralToGrid passed: U Uinv (U x) == (U x)
+Outer inverse test for block BifourierSpectralToGrid passed: Uinv U (Uinv x) == (Uinv x)
+- Regional grid size: 37x26
+- Cell sizes: 5.0000000000000000e+00 km x 5.0000000000000000e+00 km
+- Mean latitude: 5.6289831946322792e+01 deg
+- Spectral sizes: 19x14
+- Truncation parameters MxN: 18x12
+- Maximum total wave number: 18
+- Spectral array global size: 669
+- Direct-inverse test passed
+- Inverse-direct test passed
+- Parseval identity test passed
+- Adjoint test (forward) passed
+- Adjoint test (inverse) passed
+- Derivatives / direct Laplacian consistency test passed
+Adjoint test for block BifourierSpectralConverter passed
+skipping inverse test for block BifourierSpectralConverter
+Adjoint test for block BifourierGridToSpectral passed
+Inner inverse test for block BifourierGridToSpectral passed: U Uinv (U x) == (U x)
+Outer inverse test for block BifourierGridToSpectral passed: Uinv U (Uinv x) == (Uinv x)
+- Regional grid size: 37x26
+- Cell sizes: 5.0000000000000000e+00 km x 5.0000000000000000e+00 km
+- Mean latitude: 5.6289831946322792e+01 deg
+- Spectral sizes: 19x14
+- Truncation parameters MxN: 18x12
+- Maximum total wave number: 18
+- Spectral array global size: 669
+- Direct-inverse test passed
+- Inverse-direct test passed
+- Parseval identity test passed
+- Adjoint test (forward) passed
+- Adjoint test (inverse) passed
+- Derivatives / direct Laplacian consistency test passed
+Adjoint test for block BifourierSpectralToGrid passed
+Inner inverse test for block BifourierSpectralToGrid passed: U Uinv (U x) == (U x)
+Outer inverse test for block BifourierSpectralToGrid passed: Uinv U (Uinv x) == (Uinv x)
+Covariance norms: 
+- allVars: 
+  + correlation square-root: 1.3967455122825305e+00
+  + standard-deviation:      3.3166247903553998e+00
+Adjoint test for block BifourierCovariance passed
+Adjoint test for the multivariate central block passed
+Square-root test for block BifourierCovariance passed
+Square-root test for the multivariate central block passed
 - Regional grid size: 73x51
 - Cell sizes: 2.5000000000000000e+00 km x 2.5000000000000000e+00 km
 - Mean latitude: 5.6289831946322792e+01 deg
@@ -50,17 +95,6 @@ Inner inverse test for block BifourierSpectralToGrid passed: U Uinv (U x) == (U 
 Outer inverse test for block BifourierSpectralToGrid passed: Uinv U (Uinv x) == (Uinv x)
 Covariance norms: 
 - allVars: 
-  + correlation square-root: 1.4078772323623472e+00
-  + standard-deviation:      3.3166247903553998e+00
-Adjoint test for block BifourierCovariance passed
-Adjoint test for the multivariate central block passed
-Square-root test for block BifourierCovariance passed
-Square-root test for the multivariate central block passed
-Adjoint test for block BifourierSpectralToGrid passed
-Inner inverse test for block BifourierSpectralToGrid passed: U Uinv (U x) == (U x)
-Outer inverse test for block BifourierSpectralToGrid passed: Uinv U (Uinv x) == (Uinv x)
-Covariance norms: 
-- allVars: 
   + correlation square-root: 4.2279102000591856e-01
   + standard-deviation:      3.3166247903553998e+00
 Adjoint test for block BifourierCovariance passed
@@ -74,27 +108,27 @@ Covariance(SABER) * Increment:
   Geometry: structured [3723]
   Fields:
   - geographical_x_wind (10 levels):
-    + min    = -3.4488030637281472e-03
-    + max    = 3.4406695774243974e-04
-    + mean   = -4.3897562750150236e-06
-    + stddev = 6.6243528572576681e-05
+    + min    = -3.4487022368843226e-03
+    + max    = 3.6377315620882784e-04
+    + mean   = -4.1943876879315227e-06
+    + stddev = 6.5958968595811827e-05
   - geographical_y_wind (10 levels):
-    + min    = -1.2185604872275943e-03
-    + max    = 2.1893719521847250e-03
-    + mean   = -2.6122871560156747e-07
-    + stddev = 3.3516648975248868e-05
+    + min    = -1.2185858061258071e-03
+    + max    = 2.1893860814942612e-03
+    + mean   = -2.1544556562057945e-07
+    + stddev = 3.3462692325255528e-05
   - air_temperature (10 levels):
-    + min    = -1.1944270775694941e-03
-    + max    = 1.2639970639733189e-01
-    + mean   = 1.1872101199206807e-04
-    + stddev = 1.5138056160925548e-03
+    + min    = -1.2346042911816940e-03
+    + max    = 1.2639769009575114e-01
+    + mean   = 1.1679878758124777e-04
+    + stddev = 1.5098904857949512e-03
   - log_of_air_pressure_at_surface (1 levels):
-    + min    = -9.1813899659973506e-07
-    + max    = 4.4387677496712452e-06
-    + mean   = 1.2426462300731539e-07
-    + stddev = 6.6961667713554756e-07
+    + min    = -7.5204040686999749e-07
+    + max    = 4.4535702924674972e-06
+    + mean   = 1.3104078174873156e-07
+    + stddev = 6.6214999457037660e-07
   - water_vapor_mixing_ratio_wrt_moist_air (10 levels):
-    + min    = -8.7714757852349063e-06
-    + max    = 3.7485645353814272e-06
-    + mean   = -2.5559413194372949e-08
-    + stddev = 2.1886310487906649e-07
+    + min    = -8.7705444225722052e-06
+    + max    = 3.7455479303833552e-06
+    + mean   = -2.5258135624953962e-08
+    + stddev = 2.1785856634189787e-07

@@ -45,6 +45,219 @@ BifourierCovariance::BifourierCovariance(const oops::GeometryData & geometryData
     trans_(transStore_.retrieveTransform(geometryData, centralVars))
 {
   oops::Log::trace() << classname() << "::BifourierCovariance starting" << std::endl;
+
+  if (params_.profiles.value()) {
+    // User-defined vertical profile for each variable
+
+    // Index fields views
+    const atlas::functionspace::StructuredColumns fs(trans_->geometryData().functionSpace());
+    const auto indexIView = make_indexview<int, 1>(fs.index_i());
+    const auto indexJView = make_indexview<int, 1>(fs.index_j());
+
+    // Define fieldsets
+    atlas::FieldSet horCorGpFset;
+    atlas::FieldSet horCorSpFset;
+
+    for (const auto & var : centralVars) {
+      // Get number of levels
+      const size_t nz = var.getLevels();
+
+      // Get horizontal length-scale profile
+      std::vector<double> Lh;
+      for (const auto & profile : *params_.profiles.value()) {
+        if (profile.variable.value() == var.name()) {
+          // Check profile size
+          ASSERT(profile.Lh.value().size() == nz);
+
+          // Allocate profiles
+          ASSERT(Lh.size() == 0);
+          Lh.resize(nz);
+
+          // Copy horizontal length-scale profile
+          Lh = profile.Lh.value();
+        }
+      }
+      ASSERT(Lh.size() == nz);
+
+      // Create horizontal grid-point correlation field
+      auto horCorField = fs.createField<double>(atlas::option::name(var.name())
+        | atlas::option::levels(nz));
+
+      // Get horizontal grid-point correlation view
+      auto horCorView = make_view<double, 2>(horCorField);
+
+      // Compute horizontal grid-point correlation
+      for (int jnode = 0; jnode < fs.size(); ++jnode) {
+        const double distI = indexIView(jnode) < static_cast<int>(trans_->nx()/2) ?
+          static_cast<double>(indexIView(jnode))*trans_->dx() :
+          static_cast<double>(trans_->nx()-indexIView(jnode))*trans_->dx();
+        const double distJ = indexJView(jnode) < static_cast<int>(trans_->ny()/2) ?
+          static_cast<double>(indexJView(jnode))*trans_->dy() :
+          static_cast<double>(trans_->ny()-indexJView(jnode))*trans_->dy();
+        const double dist = std::sqrt(distI*distI+distJ*distJ);
+        for (size_t jzI = 0; jzI < nz; ++jzI) {
+          const double normDist = dist/Lh[jzI];
+          horCorView(jnode, jzI) = oops::gc99(normDist);
+        }
+      }
+
+      // Add field
+      horCorGpFset.add(horCorField);
+    }
+
+    // Direct spectral transform of the horizontal grid-point correlation
+    trans_->gp2sp(horCorGpFset, horCorSpFset, centralVars);
+
+    for (const auto & var : centralVars) {
+      // Get number of levels
+      const size_t nz = var.getLevels();
+
+      // Create correlation square-root
+      atlas::Field corSqrtField("corSqrt", make_datatype<double>(),
+        make_shape(trans_->nw(), nz, nz));
+
+      // Get correlation square-root view
+      auto corSqrtView = make_view<double, 3>(corSqrtField);
+
+      // Get horizontal vertical length-scale
+      std::vector<double> vcoord(nz, 0.0);
+      double Lv = 0.0;
+      for (const auto & profile : *params_.profiles.value()) {
+        if (profile.variable.value() == var.name()) {
+          // Get vertical coordinate
+          const std::string vcoordName = profile.vcoord.value();
+          if (vcoordName == "model levels") {
+            // Use model levels
+            std::iota(vcoord.begin(), vcoord.end(), 0);
+          } else {
+            // Get 1D vertical coordinate field from geometry data
+            const atlas::Field vcoordField = geometryData.fieldSet()[vcoordName];
+
+            // Check number of levels
+            ASSERT(vcoordField.shape(0) == static_cast<int>(nz));
+
+            // Get vertical coordinate view
+            const auto vcoordView = make_view<double, 1>(vcoordField);
+
+            // Copy vertical coordinate
+            for (size_t jz = 0; jz < nz; ++jz) {
+              vcoord[jz] = vcoordView(jz);
+            }
+          }
+
+          // Copy vertical length-scale
+          Lv = profile.Lv.value();
+        }
+      }
+      ASSERT(Lv > 0.0);
+
+      // Compute vertical correlation matrix
+      Eigen::MatrixXd vertCor(nz, nz);
+      for (size_t jzI = 0; jzI < nz; ++jzI) {
+        for (size_t jzJ = 0; jzJ < nz; ++jzJ) {
+          const double normDist = std::abs(vcoord[jzI]-vcoord[jzJ])/Lv;
+          vertCor(jzI, jzJ) = oops::gc99(normDist);
+        }
+      }
+
+      // Compute eigendecomposition of the vertical correlation matrix
+      Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> es;
+      es.compute(vertCor);
+
+      // Get horizontal correlation in spectral space
+      const auto horCorSpView = make_view<double, 2>(horCorSpFset[var.name()]);
+
+      // Create horizontal spectral variance field
+      atlas::Field horSpecVarField("horSpecVar", make_datatype<double>(),
+        make_shape(trans_->nw(), nz, 1));
+
+      // Get horizontal spectral variance view
+      auto horSpecVarView = make_view<double, 3>(horSpecVarField);
+
+      // Set horizontal spectral variance to zero
+      horSpecVarView.assign(0.0);
+
+      // Compute horizontal spectral variance
+      for (size_t js = 0; js < trans_->ns(); ++js) {
+        if (trans_->jq(js) == 0) {
+          const size_t jw = trans_->jw(js);
+          for (size_t jzI = 0; jzI < nz; ++jzI) {
+            horSpecVarView(jw, jzI, 0) += horCorSpView(js, jzI);
+          }
+        }
+      }
+
+      // Reduce horizontal spectral variance
+      trans_->reduceCov(horSpecVarField);
+
+      // Compute horizontal spectral standard-deviation
+      for (size_t jw = 0; jw < trans_->nw(); ++jw) {
+        for (size_t jzI = 0; jzI < nz; ++jzI) {
+          horSpecVarView(jw, jzI, 0) *= trans_->spNormSumInv(jw);
+          horSpecVarView(jw, jzI, 0) = std::max(horSpecVarView(jw, jzI, 0), 0.0);
+          horSpecVarView(jw, jzI, 0) = std::sqrt(horSpecVarView(jw, jzI, 0));
+        }
+      }
+
+      // Compute correlation square-root
+      for (size_t jw = 0; jw < trans_->nw(); ++jw) {
+        for (size_t jzI = 0; jzI < nz; ++jzI) {
+          for (size_t jzJ = 0; jzJ < nz; ++jzJ) {
+            corSqrtView(jw, jzI, jzJ) = horSpecVarView(jw, jzI, 0)*es.eigenvectors().col(jzJ)[jzI]
+              *std::sqrt(es.eigenvalues()[jzJ]);
+          }
+        }
+      }
+
+      // Create covariance field
+      createField3D("cov", trans_->nw(), var, data_);
+
+      // Get covariance view
+      auto covView = getView3D("cov", var, data_);
+
+      // Compute covariance matrix
+      for (size_t jw = 0; jw < trans_->nw(); ++jw) {
+        for (size_t jzI = 0; jzI < nz; ++jzI) {
+          for (size_t jzJ = 0; jzJ < nz; ++jzJ) {
+            for (size_t jz3 = 0; jz3 < nz; ++jz3) {
+              covView(jw, jzI, jzJ) += corSqrtView(jw, jzI, jz3)*corSqrtView(jw, jzJ, jz3);
+            }
+          }
+        }
+      }
+    }
+
+    // Compute square-root
+    computeSquareRoot();
+
+    // Update the standard-deviation
+    for (const auto & var : centralVars) {
+      // Get number of levels
+      const size_t nz = var.getLevels();
+
+      // Get standard-deviation profile if present (default = 1.0)
+      std::vector<double> stdDev(nz, 1.0);
+      for (const auto & profile : *params_.profiles.value()) {
+        if (profile.variable.value() == var.name()) {
+          if (profile.stdDev.value() != boost::none) {
+            stdDev = *profile.stdDev.value();
+          }
+        }
+      }
+
+      // Get standard-deviation view
+      auto stdDevView = getViewProfile("stdDev", var, data_);
+
+      // Copy standard-deviation
+      for (size_t jzI = 0; jzI < nz; ++jzI) {
+        stdDevView(jzI) = stdDev[jzI];
+      }
+    }
+
+    // Print norms
+    print(oops::Log::test());
+  }
+
   oops::Log::trace() << classname() << "::BifourierCovariance done" << std::endl;
 }
 
@@ -270,268 +483,60 @@ void BifourierCovariance::directCalibration(const oops::FieldSets & fsetEns) {
   // Check ensemble size
   const size_t ne = fsetEns.ens_size();
 
-  if (ne == 0) {
-    // User-defined vertical profile for each variable
+  // Ensemble-based calibration
+  ASSERT(ne > 2);
 
-    // Index fields views
-    const atlas::functionspace::StructuredColumns fs(trans_->geometryData().functionSpace());
-    const auto indexIView = make_indexview<int, 1>(fs.index_i());
-    const auto indexJView = make_indexview<int, 1>(fs.index_j());
+  for (const auto & var : centralVars()) {
+    // Get number of levels
+    const size_t nz = var.getLevels();
 
-    // Define fieldsets
-    atlas::FieldSet horCorGpFset;
-    atlas::FieldSet horCorSpFset;
+    // Create covariance field
+    createField3D("cov", trans_->nw(), var, data_);
 
-    for (const auto & var : centralVars()) {
-      // Get number of levels
-      const size_t nz = var.getLevels();
+    // Get covariance view
+    auto covView = getView3D("cov", var, data_);
 
-      // Get horizontal length-scale profile
-      std::vector<double> Lh;
-      for (const auto & profile : params_.calibration.value()->profiles.value()) {
-        if (profile.variable.value() == var.name()) {
-          // Check profile size
-          ASSERT(profile.Lh.value().size() == nz);
+    // Loop over ensemble members
+    for (size_t je = 0; je < ne; ++je) {
+      // Get view
+      const auto view = getView2D(var, fsetEns[je]);
 
-          // Allocate profiles
-          ASSERT(Lh.size() == 0);
-          Lh.resize(nz);
-
-          // Copy horizontal length-scale profile
-          Lh = profile.Lh.value();
-        }
-      }
-      ASSERT(Lh.size() == nz);
-
-      // Create horizontal grid-point correlation field
-      auto horCorField = fs.createField<double>(atlas::option::name(var.name())
-        | atlas::option::levels(nz));
-
-      // Get horizontal grid-point correlation view
-      auto horCorView = make_view<double, 2>(horCorField);
-
-      // Compute horizontal grid-point correlation
-      for (int jnode = 0; jnode < fs.size(); ++jnode) {
-        const double distI = indexIView(jnode) < static_cast<int>(trans_->nx()/2) ?
-          static_cast<double>(indexIView(jnode))*trans_->dx() :
-          static_cast<double>(trans_->nx()-indexIView(jnode))*trans_->dx();
-        const double distJ = indexJView(jnode) < static_cast<int>(trans_->ny()/2) ?
-          static_cast<double>(indexJView(jnode))*trans_->dy() :
-          static_cast<double>(trans_->ny()-indexJView(jnode))*trans_->dy();
-        const double dist = std::sqrt(distI*distI+distJ*distJ);
-        for (size_t jzI = 0; jzI < nz; ++jzI) {
-          const double normDist = dist/Lh[jzI];
-          horCorView(jnode, jzI) = oops::gc99(normDist);
-        }
-      }
-
-      // Add field
-      horCorGpFset.add(horCorField);
-    }
-
-    // Direct spectral transform of the horizontal grid-point correlation
-    trans_->gp2sp(horCorGpFset, horCorSpFset, centralVars());
-
-    for (const auto & var : centralVars()) {
-      // Get number of levels
-      const size_t nz = var.getLevels();
-
-      // Create correlation square-root
-      atlas::Field corSqrtField("corSqrt", make_datatype<double>(),
-        make_shape(trans_->nw(), nz, nz));
-
-      // Get correlation square-root view
-      auto corSqrtView = make_view<double, 3>(corSqrtField);
-
-      // Get horizontal vertical length-scale
-      std::vector<double> vcoord(nz, 0.0);
-      double Lv = 0.0;
-      for (const auto & profile : params_.calibration.value()->profiles.value()) {
-        if (profile.variable.value() == var.name()) {
-          // Get vertical coordinate
-          const std::string vcoordName = profile.vcoord.value();
-          if (vcoordName == "model levels") {
-            // Use model levels
-            std::iota(vcoord.begin(), vcoord.end(), 0);
-          } else {
-            // Get 1D vertical coordinate field from geometry data
-            const atlas::Field vcoordField = geometryData().fieldSet()[vcoordName];
-
-            // Check number of levels
-            ASSERT(vcoordField.shape(0) == static_cast<int>(nz));
-
-            // Get vertical coordinate view
-            const auto vcoordView = make_view<double, 1>(vcoordField);
-
-            // Copy vertical coordinate
-            for (size_t jz = 0; jz < nz; ++jz) {
-              vcoord[jz] = vcoordView(jz);
-            }
-          }
-
-          // Copy vertical length-scale
-          Lv = profile.Lv.value();
-        }
-      }
-      ASSERT(Lv > 0.0);
-
-      // Compute vertical correlation matrix
-      Eigen::MatrixXd vertCor(nz, nz);
-      for (size_t jzI = 0; jzI < nz; ++jzI) {
-        for (size_t jzJ = 0; jzJ < nz; ++jzJ) {
-          const double normDist = std::abs(vcoord[jzI]-vcoord[jzJ])/Lv;
-          vertCor(jzI, jzJ) = oops::gc99(normDist);
-        }
-      }
-
-      // Compute eigendecomposition of the vertical correlation matrix
-      Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> es;
-      es.compute(vertCor);
-
-      // Get horizontal correlation in spectral space
-      const auto horCorSpView = make_view<double, 2>(horCorSpFset[var.name()]);
-
-      // Create horizontal spectral variance field
-      atlas::Field horSpecVarField("horSpecVar", make_datatype<double>(),
-        make_shape(trans_->nw(), nz, 1));
-
-      // Get horizontal spectral variance view
-      auto horSpecVarView = make_view<double, 3>(horSpecVarField);
-
-      // Set horizontal spectral variance to zero
-      horSpecVarView.assign(0.0);
-
-      // Compute horizontal spectral variance
+      // Update covariance (lower triangle)
       for (size_t js = 0; js < trans_->ns(); ++js) {
-        if (trans_->jq(js) == 0) {
-          const size_t jw = trans_->jw(js);
-          for (size_t jzI = 0; jzI < nz; ++jzI) {
-            horSpecVarView(jw, jzI, 0) += horCorSpView(js, jzI);
-          }
-        }
-      }
-
-      // Reduce horizontal spectral variance
-      trans_->reduceCov(horSpecVarField);
-
-      // Compute horizontal spectral standard-deviation
-      for (size_t jw = 0; jw < trans_->nw(); ++jw) {
-        for (size_t jzI = 0; jzI < nz; ++jzI) {
-          horSpecVarView(jw, jzI, 0) *= trans_->spNormSumInv(jw);
-          horSpecVarView(jw, jzI, 0) = std::max(horSpecVarView(jw, jzI, 0), 0.0);
-          horSpecVarView(jw, jzI, 0) = std::sqrt(horSpecVarView(jw, jzI, 0));
-        }
-      }
-
-      // Compute correlation square-root
-      for (size_t jw = 0; jw < trans_->nw(); ++jw) {
-        for (size_t jzI = 0; jzI < nz; ++jzI) {
-          for (size_t jzJ = 0; jzJ < nz; ++jzJ) {
-            corSqrtView(jw, jzI, jzJ) = horSpecVarView(jw, jzI, 0)*es.eigenvectors().col(jzJ)[jzI]
-              *std::sqrt(es.eigenvalues()[jzJ]);
-          }
-        }
-      }
-
-      // Create covariance field
-      createField3D("cov", trans_->nw(), var, data_);
-
-      // Get covariance view
-      auto covView = getView3D("cov", var, data_);
-
-      // Compute covariance matrix
-      for (size_t jw = 0; jw < trans_->nw(); ++jw) {
-        for (size_t jzI = 0; jzI < nz; ++jzI) {
-          for (size_t jzJ = 0; jzJ < nz; ++jzJ) {
-            for (size_t jz3 = 0; jz3 < nz; ++jz3) {
-              covView(jw, jzI, jzJ) += corSqrtView(jw, jzI, jz3)*corSqrtView(jw, jzJ, jz3);
-            }
-          }
-        }
-      }
-    }
-  } else {
-    // Ensemble-based calibration
-    ASSERT(ne > 2);
-
-    for (const auto & var : centralVars()) {
-      // Get number of levels
-      const size_t nz = var.getLevels();
-
-      // Create covariance field
-      createField3D("cov", trans_->nw(), var, data_);
-
-      // Get covariance view
-      auto covView = getView3D("cov", var, data_);
-
-      // Loop over ensemble members
-      for (size_t je = 0; je < ne; ++je) {
-        // Get view
-        const auto view = getView2D(var, fsetEns[je]);
-
-        // Update covariance (lower triangle)
-        for (size_t js = 0; js < trans_->ns(); ++js) {
-          for (size_t jw = 0; jw < trans_->nw(); ++jw) {
-            if (trans_->includeWavenumber(js, jw)) {
-              const double factor = trans_->spNorm(js);
-              for (size_t jzI = 0; jzI < nz; ++jzI) {
-                for (size_t jzJ = 0; jzJ < jzI+1; ++jzJ) {
-                  covView(jw, jzI, jzJ) += factor*view(js, jzJ)*view(js, jzI);
-                }
+        for (size_t jw = 0; jw < trans_->nw(); ++jw) {
+          if (trans_->includeWavenumber(js, jw)) {
+            const double factor = trans_->spNorm(js);
+            for (size_t jzI = 0; jzI < nz; ++jzI) {
+              for (size_t jzJ = 0; jzJ < jzI+1; ++jzJ) {
+                covView(jw, jzI, jzJ) += factor*view(js, jzJ)*view(js, jzI);
               }
             }
           }
         }
       }
+    }
 
-      // Transpose lower triangle
-      for (size_t jw = 0; jw < trans_->nw(); ++jw) {
-        for (size_t jzI = 0; jzI < nz; ++jzI) {
-          for (size_t jzJ = 0; jzJ < jzI; ++jzJ) {
-            covView(jw, jzJ, jzI) = covView(jw, jzI, jzJ);
-          }
+    // Transpose lower triangle
+    for (size_t jw = 0; jw < trans_->nw(); ++jw) {
+      for (size_t jzI = 0; jzI < nz; ++jzI) {
+        for (size_t jzJ = 0; jzJ < jzI; ++jzJ) {
+          covView(jw, jzJ, jzI) = covView(jw, jzI, jzJ);
         }
       }
-
-      // Get covariance field
-      auto covField = getField("cov", var, data_);
-
-      // Reduce and normalize covariance
-      trans_->reduceNormalizeCov(ne-1, covField);
-
-      // Filter covariance
-      trans_->filterCov(Lf_, covField);
     }
+
+    // Get covariance field
+    auto covField = getField("cov", var, data_);
+
+    // Reduce and normalize covariance
+    trans_->reduceNormalizeCov(ne-1, covField);
+
+    // Filter covariance
+    trans_->filterCov(Lf_, covField);
   }
 
   // Compute square-root
   computeSquareRoot();
-
-  if (ne == 0) {
-    // Update the standard-deviation
-    for (const auto & var : centralVars()) {
-      // Get number of levels
-      const size_t nz = var.getLevels();
-
-      // Get standard-deviation profile if present (default = 1.0)
-      std::vector<double> stdDev(nz, 1.0);
-      for (const auto & profile : params_.calibration.value()->profiles.value()) {
-        if (profile.variable.value() == var.name()) {
-          if (profile.stdDev.value() != boost::none) {
-            stdDev = *profile.stdDev.value();
-          }
-        }
-      }
-
-      // Get standard-deviation view
-      auto stdDevView = getViewProfile("stdDev", var, data_);
-
-      // Copy standard-deviation
-      for (size_t jzI = 0; jzI < nz; ++jzI) {
-        stdDevView(jzI) = stdDev[jzI];
-      }
-    }
-  }
 
   // Print norms
   print(oops::Log::test());
