@@ -399,6 +399,8 @@ SaberEnsembleBlockChain::SaberEnsembleBlockChain(const oops::Geometry<MODEL> & g
 
   // Loop over scales
   for (const auto & scaleParams : scalesParams) {
+    oops::Log::info() << "Info     : Scale " << (scaleDataVec_.size()+1) << " setup" << std::endl;
+
     // Create data container for this scale
     ScaleData scaleData(scaleParams);
 
@@ -426,6 +428,8 @@ SaberEnsembleBlockChain::SaberEnsembleBlockChain(const oops::Geometry<MODEL> & g
 
     // Interpolator outer block chain
     if (scaleParams.interpolatorParams.value()) {
+      oops::Log::info() << "Info     : Interpolator setup" << std::endl;
+
       // Initialize interpolator outer block chain
       scaleData.interpolator() = std::make_unique<SaberOuterBlockChain>(
         interpolatorOuterGeomData,
@@ -445,6 +449,8 @@ SaberEnsembleBlockChain::SaberEnsembleBlockChain(const oops::Geometry<MODEL> & g
 
     // Filter outer block chain
     if (scaleParams.filterParams.value()) {
+      oops::Log::info() << "Info     : Filter setup" << std::endl;
+
       // Create configuration without tests for filters
       const ErrorCovarianceParametersBase defaultParamsBase;
 
@@ -467,6 +473,8 @@ SaberEnsembleBlockChain::SaberEnsembleBlockChain(const oops::Geometry<MODEL> & g
 
     // Localization
     if (scaleParams.localizationParams.value()) {
+      oops::Log::info() << "Info     : Localization setup" << std::endl;
+
       // Merge localization configuration with full configuration (order of arguments matters!)
       const eckit::LocalConfiguration locMergedConf =
         util::mergeConfigs(*scaleParams.localizationParams.value(), paramsBase.toConfiguration());
@@ -504,16 +512,13 @@ SaberEnsembleBlockChain::SaberEnsembleBlockChain(const oops::Geometry<MODEL> & g
 
     // Add scale data
     scaleDataVec_.emplace_back(std::move(scaleData));
-
-    // Print info
-    oops::Log::info() << "Info     : Scale " << scaleDataVec_.size()
-      << ": interpolator and filter done" << std::endl;
   }
 
   // Prepare ensembles
   if (params.scales.value()) {
     if (scaleDataVec_[0].filter()) {
       // Split ensemble into scales
+      oops::Log::info() << "Info     : Split ensemble into scales" << std::endl;
 
       // Create empty ensemble for each scale
       for (auto & scaleData : scaleDataVec_) {
@@ -525,7 +530,17 @@ SaberEnsembleBlockChain::SaberEnsembleBlockChain(const oops::Geometry<MODEL> & g
       }
 
       // Process members sequentially
+      oops::Log::info() << "Info     : Ensemble member : ";
       for (size_t ie = 0; ie < ensemble->ens_size(); ++ie) {
+        // Print ensemble member index
+        oops::Log::info() << (ie+1);
+        if (ie < ensemble->ens_size()-1) {
+          oops::Log::info() << " ";
+        } else {
+          oops::Log::info() << std::endl;
+        }
+
+        // Loop over subwindows
         for (size_t it = 0; it < fset4dXb.size(); ++it) {
           // Initialize work perturbation xI from ensemble perturbation x0
           oops::FieldSet3D fsetI((*ensemble)(it, ie));

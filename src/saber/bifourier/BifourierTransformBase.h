@@ -124,6 +124,7 @@ class BifourierTransformBase : public util::Printable,
     size_t jsXDerivativeOffset;
     size_t jsYDerivativeOffset;
     size_t jt;
+    size_t js;
   };
 
   // Accessors
@@ -165,6 +166,10 @@ class BifourierTransformBase : public util::Printable,
   // Spectral field size on each task
   const std::vector<size_t> & nsPerTask() const
     {return nsPerTask_;}
+
+  // Global to local index
+  const size_t sToSGlb(const size_t js) const
+     {return sToSGlb_[js];}
 
   // Communication vectors
   const std::vector<int> & sCounts() const
@@ -463,7 +468,6 @@ class BifourierTransformBase : public util::Printable,
   // Local spectral space
   std::vector<bool> truncMask_;
   std::vector<size_t> nsPerTask_;
-  std::vector<size_t> nsDispl_;
   size_t ns_;
   size_t nsGlb_;
   std::vector<int> sCounts_;

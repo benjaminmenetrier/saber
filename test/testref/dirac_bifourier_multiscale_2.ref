@@ -49,7 +49,7 @@ Outer inverse test for block BifourierSpectralToGrid passed: Uinv U (Uinv x) == 
 - Adjoint test (inverse) passed
 - Derivatives / direct Laplacian consistency test passed
 Adjoint test for block BifourierSpectralConverter passed
-skipping inverse test for block BifourierSpectralConverter
+Skipping inverse test for block BifourierSpectralConverter
 Adjoint test for block BifourierGridToSpectral passed
 Inner inverse test for block BifourierGridToSpectral passed: U Uinv (U x) == (U x)
 Outer inverse test for block BifourierGridToSpectral passed: Uinv U (Uinv x) == (Uinv x)

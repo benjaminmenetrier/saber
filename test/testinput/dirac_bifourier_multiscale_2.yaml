@@ -67,7 +67,7 @@ background error:
             latitude0  : 56.3
             longitude0 : 0.0
           y_numbering: 1
-          partitioner: checkerboard
+        partitioner: checkerboard
     - saber block name: BifourierSpectralToGrid
     filter:
     - saber block name: BifourierGridToSpectral

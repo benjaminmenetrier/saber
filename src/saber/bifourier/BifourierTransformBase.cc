@@ -119,24 +119,15 @@ BifourierTransformBase::BifourierTransformBase(const oops::GeometryData & gdata,
 
 size_t BifourierTransformBase::sGlbToTask(const size_t & jsGlb) const {
   ASSERT(jsGlb < nsGlb_);
-  for (size_t jt = 0; jt < comm_.size()-1; ++jt) {
-    if (jsGlb < nsDispl_[jt+1]) {
-      return jt;
-    }
-  }
-  return comm_.size()-1;
+  return spVec_[jsGlb].jt;
 }
 
 // -----------------------------------------------------------------------------
 
 size_t BifourierTransformBase::sGlbToS(const size_t & jsGlb) const {
-  ASSERT(jsGlb < nsGlb_);
-  for (size_t jt = 0; jt < comm_.size()-1; ++jt) {
-    if (jsGlb < nsDispl_[jt+1]) {
-      return jsGlb-nsDispl_[jt+1];
-    }
-  }
-  return jsGlb-nsDispl_[comm_.size()-1];
+  const size_t jt = sGlbToTask(jsGlb);
+  ASSERT(jt == myrank_);
+  return spVec_[jsGlb].js;
 }
 
 // -----------------------------------------------------------------------------
@@ -1788,14 +1779,9 @@ void BifourierTransformBase::setupParallelizationInit() {
 
     if (jt == myrank_) {
       // Add local spectral coefficient
+      spVec_[jsGlb].js = sToSGlb_.size();
       sToSGlb_.push_back(jsGlb);
     }
-  }
-
-  // Displacement
-  nsDispl_.resize(comm_.size());
-  for (size_t jt = 0; jt < comm_.size(); ++jt) {
-    nsDispl_[jt] = static_cast<int>(jt ? nsDispl_[jt-1] + nsPerTask_[jt-1] : 0);
   }
 
   // Save local size

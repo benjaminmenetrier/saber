@@ -75,8 +75,8 @@ BifourierSpectralConverter::BifourierSpectralConverter(const oops::GeometryData 
   std::vector<int> outerToInnerJsGlb(outerTrans_->nsGlb(), -1);
   const auto & innerSpVec = innerTrans_->spVec();
   const auto & outerSpVec = outerTrans_->spVec();
-  for (size_t outerJsGlb = 0; outerJsGlb < outerSpVec.size(); ++outerJsGlb) {
-    for (size_t innerJsGlb = 0; innerJsGlb < innerSpVec.size(); ++innerJsGlb) {
+  for (size_t outerJsGlb = 0; outerJsGlb < outerTrans_->nsGlb(); ++outerJsGlb) {
+    for (size_t innerJsGlb = 0; innerJsGlb < innerTrans_->nsGlb(); ++innerJsGlb) {
       if ((innerSpVec[innerJsGlb].jk == outerSpVec[outerJsGlb].jk) &&
         (innerSpVec[innerJsGlb].jl == outerSpVec[outerJsGlb].jl) &&
         (innerSpVec[innerJsGlb].jq == outerSpVec[outerJsGlb].jq)) {
@@ -86,37 +86,56 @@ BifourierSpectralConverter::BifourierSpectralConverter(const oops::GeometryData 
     }
   }
 
+  // Order outer indices by task
+  std::vector<int> outerTask;
+  for (size_t outerJsGlb = 0; outerJsGlb < outerTrans_->nsGlb(); ++outerJsGlb) {
+    outerTask.push_back(outerTrans_->sGlbToTask(outerJsGlb));
+  }
+  std::vector<size_t> outerOrder(outerTrans_->nsGlb());
+  std::iota(outerOrder.begin(), outerOrder.end(), 0);
+  std::stable_sort(outerOrder.begin(), outerOrder.end(),
+    [&](size_t i, size_t j){return outerTask[i] < outerTask[j];});
+
   // Prepare spectral converter communications
   std::vector<int> sendOuterIndexGlb;
   sendCounts_.resize(comm_.size());
   recvCounts_.resize(comm_.size());
   std::fill(sendCounts_.begin(), sendCounts_.end(), 0);
   std::fill(recvCounts_.begin(), recvCounts_.end(), 0);
-  for (size_t outerJsGlb = 0; outerJsGlb < outerSpVec.size(); ++outerJsGlb) {
-    if (outerToInnerJsGlb[outerJsGlb] >= 0) {
+  for (size_t outerJsGlb = 0; outerJsGlb < outerTrans_->nsGlb(); ++outerJsGlb) {
+    // Get ordered index
+    const size_t orderedOuterJsGlb = outerOrder[outerJsGlb];
+
+    if (outerToInnerJsGlb[orderedOuterJsGlb] >= 0) {
       // Get inner jsGlb
-      const size_t innerJsGlb = outerToInnerJsGlb[outerJsGlb];
+      const size_t innerJsGlb = outerToInnerJsGlb[orderedOuterJsGlb];
 
       // Get inner and outer tasks
       const size_t innerTask = innerTrans_->sGlbToTask(innerJsGlb);
-      const size_t outerTask = outerTrans_->sGlbToTask(outerJsGlb);
+      const size_t outerTask = outerTrans_->sGlbToTask(orderedOuterJsGlb);
 
-      // Save coefficients to send
       if (innerTask == myrank_) {
+        // Save coefficients to send
         const size_t innerJs = innerTrans_->sGlbToS(innerJsGlb);
         sendIndex_.push_back(innerJs);
-        sendOuterIndexGlb.push_back(outerJsGlb);
+        sendOuterIndexGlb.push_back(orderedOuterJsGlb);
+
+        // Update send counts
+        ++sendCounts_[outerTask];
       }
 
-      // Update counts
-      ++sendCounts_[innerTask];
-      ++recvCounts_[outerTask];
+      if (outerTask == myrank_) {
+        // Update receive counts
+        ++recvCounts_[innerTask];
+      }
     }
   }
 
   // Sizes
-  sendSize_ = sendCounts_[myrank_];
-  recvSize_ = recvCounts_[myrank_];
+  sendSize_ = 0;
+  for (const auto & n : sendCounts_) sendSize_ += n;
+  recvSize_ = 0;
+  for (const auto & n : recvCounts_) recvSize_ += n;
 
   // Displacements
   sendDispls_.resize(comm_.size());
@@ -126,7 +145,7 @@ BifourierSpectralConverter::BifourierSpectralConverter(const oops::GeometryData 
     recvDispls_[jt] = static_cast<int>(jt ? recvDispls_[jt-1] + recvCounts_[jt-1] : 0);
   }
 
-  // Communicate global index
+  // Communicate receive global index
   std::vector<int> recvOuterIndexGlb(recvSize_);
   comm_.allToAllv(sendOuterIndexGlb.data(), sendCounts_.data(), sendDispls_.data(),
     recvOuterIndexGlb.data(), recvCounts_.data(), recvDispls_.data());
@@ -154,7 +173,7 @@ void BifourierSpectralConverter::multiply(oops::FieldSet3D & fset) const {
   oops::Log::trace() << classname() << "::multiply starting" << std::endl;
 
   // Create buffers
-  std::vector<double> sendVec(sendSize_*innerTrans_->nvz());
+  std::vector<double> sendVec(sendSize_*innerTrans_->nvz(), 0.0);
   std::vector<double> recvVec(recvSize_*outerTrans_->nvz());
 
   // Reserialize from spectral FieldSet
