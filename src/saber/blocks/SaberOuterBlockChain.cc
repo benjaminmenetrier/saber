@@ -254,7 +254,7 @@ void SaberOuterBlockChain::testLastOuterBlock(
   if (conf.getBool("inverse test")) {
     oops::Log::info() << "Info     : Inverse test" << std::endl;
     if (skipInverseTest) {
-      oops::Log::test() << "skipping inverse test for block "
+      oops::Log::test() << "Skipping inverse test for block "
                         << outerBlocks_.back().first->blockName() << std::endl;
     } else {
       // Get inner and outer tolerances
