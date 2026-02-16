@@ -454,6 +454,10 @@ SaberEnsembleBlockChain::SaberEnsembleBlockChain(const oops::Geometry<MODEL> & g
 
       // Filter should not change the variables
       ASSERT(scaleData.filter()->innerVars() == currentOuterVars);
+
+      // Check geometry data consistency
+      ASSERT(util::getGridUid(scaleData.filter()->innerGeometryData().functionSpace())
+        == util::getGridUid(interpolatorOuterGeomData.functionSpace()));
     }
 
     // Localization
@@ -498,7 +502,7 @@ SaberEnsembleBlockChain::SaberEnsembleBlockChain(const oops::Geometry<MODEL> & g
 
     // Print info
     oops::Log::info() << "Info     : Scale " << scaleDataVec_.size()
-      << ": filter and interpolator done" << std::endl;
+      << ": interpolator and filter done" << std::endl;
   }
 
   // Prepare ensembles
@@ -537,33 +541,39 @@ SaberEnsembleBlockChain::SaberEnsembleBlockChain(const oops::Geometry<MODEL> & g
               // Apply filter G on input x: x' = Gx
               scaleData.filter()->applyOuterBlocks(fset4dDx);
 
-              if (scaleData.params().residualFromFilter.value()) {
+              if (scaleData.params().residualFromFilter.value()
+                || params.recursiveFilters.value()) {
                 if (scaleData.interpolator()) {
-                  // Interpolate to input ensemble resolution Gx -> SGx
+                  // Interpolate filtered perturbation to ensemble resolution Gx -> SGx
                   scaleData.interpolator()->applyOuterBlocks(fset4dDx);
                 }
 
-                // Use filter complement: x' = (I-SG)x
-                fset4dDx[0] -= fsetI;
-                fset4dDx[0] *= -1.0;
-              }
+                if (scaleData.params().residualFromFilter.value()) {
+                  // Use filter complement: x' = (I-SG)x
+                  fset4dDx[0] -= fsetI;
+                  fset4dDx[0] *= -1.0;
+                }
 
-              if (params.recursiveFilters.value()) {
-                // Recursive filter: xI = xI - x'
-                if (scaleData.params().residualFromFilter.value() || (!scaleData.interpolator())) {
-                  // Filtered perturbation already at input ensemble resolution
-                  fsetI -= fset4dDx[0];
-                } else {
-                  // Interpolate perturbation to input ensemble resolution
-                  scaleData.interpolator()->applyOuterBlocks(fset4dDx);
-
-                  // Subtract interpolated filtered perturbation
+                if (params.recursiveFilters.value()) {
+                  // Recursive filter: xI = xI - x'
                   fsetI -= fset4dDx[0];
                 }
-              }
 
-              // Increment sum with the latest x'
-              fset4dDxSum += fset4dDx;
+                // Increment sum with the latest x'
+                fset4dDxSum += fset4dDx;
+              } else if (scaleData.interpolator()) {
+                // Deep-copy of the filtered perturbation
+                oops::FieldSet4D fset4dDxCopy(fset4dDx);
+
+                // Interpolate copy of the filtered perturbation to ensemble resolution Gx -> SGx
+                scaleData.interpolator()->applyOuterBlocks(fset4dDxCopy);
+
+                // Increment sum with the latest x'
+                fset4dDxSum += fset4dDxCopy;
+              } else {
+                // Increment sum with the latest x'
+                fset4dDxSum += fset4dDx;
+              }
             } else {
               // No filter on the last scale, use residual increment: x' = x0 - sum{previous x'}
               fset4dDx[0].zero();
@@ -597,11 +607,17 @@ SaberEnsembleBlockChain::SaberEnsembleBlockChain(const oops::Geometry<MODEL> & g
   // Perturbations output
   for (const auto & scaleData : scaleDataVec_) {
     if (scaleData.params().output.value()) {
+      // Get number of filtered perturbations to write
+      size_t ne = scaleData.ensemble()->ens_size();
+      if (scaleData.params().output.value()->getBool("only first perturbation", false)) {
+        ne = 1;
+      }
+
       // Write filtered perturbations
       const eckit::LocalConfiguration oConf = *scaleData.params().output.value();
       if (oConf.has("generic write")) {
         const eckit::LocalConfiguration gConf = oConf.getSubConfiguration("generic write");
-        for (size_t ie = 0; ie < scaleData.ensemble()->ens_size(); ++ie) {
+        for (size_t ie = 0; ie < ne; ++ie) {
           eckit::LocalConfiguration gConfMem(gConf);
           util::setMember(gConfMem, ie+1);
           util::writeFieldSet(comm_, gConfMem, (*scaleData.ensemble())(0, ie).fieldSet());
@@ -609,7 +625,7 @@ SaberEnsembleBlockChain::SaberEnsembleBlockChain(const oops::Geometry<MODEL> & g
       }
       if (oConf.has("model write")) {
         const eckit::LocalConfiguration mConf = oConf.getSubConfiguration("model write");
-        for (size_t ie = 0; ie < scaleData.ensemble()->ens_size(); ++ie) {
+        for (size_t ie = 0; ie < ne; ++ie) {
           // Should be on the model geometry!
           auto pert = oops::Increment<MODEL>(geom,
                                              scaleData.localization()->outerVariables(),
