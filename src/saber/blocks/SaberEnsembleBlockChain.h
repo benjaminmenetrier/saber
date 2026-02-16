@@ -541,10 +541,12 @@ SaberEnsembleBlockChain::SaberEnsembleBlockChain(const oops::Geometry<MODEL> & g
               // Apply filter G on input x: x' = Gx
               scaleData.filter()->applyOuterBlocks(fset4dDx);
 
-              if ((scaleData.params().residualFromFilter.value()
-                || params.recursiveFilters.value()) && scaleData.interpolator()) {
-                // Interpolate filtered perturbation to ensemble resolution Gx -> SGx
-                scaleData.interpolator()->applyOuterBlocks(fset4dDx);
+              if (scaleData.params().residualFromFilter.value()
+                || params.recursiveFilters.value()) {
+                if (scaleData.interpolator()) {
+                  // Interpolate filtered perturbation to ensemble resolution Gx -> SGx
+                  scaleData.interpolator()->applyOuterBlocks(fset4dDx);
+                }
 
                 if (scaleData.params().residualFromFilter.value()) {
                   // Use filter complement: x' = (I-SG)x
