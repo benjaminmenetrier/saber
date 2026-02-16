@@ -551,8 +551,8 @@ SaberEnsembleBlockChain::SaberEnsembleBlockChain(const oops::Geometry<MODEL> & g
                 fset4dDx[0] -= fsetI;
                 fset4dDx[0] *= -1.0;
 
-                // Recursive filter: xI = xI - x'
                 if (params.recursiveFilters.value()) {
+                  // Recursive filter: xI = xI - x'
                   fsetI -= fset4dDx[0];
                 }
 
