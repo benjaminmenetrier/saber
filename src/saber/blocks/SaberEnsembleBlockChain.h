@@ -402,10 +402,10 @@ SaberEnsembleBlockChain::SaberEnsembleBlockChain(const oops::Geometry<MODEL> & g
     // Create data container for this scale
     ScaleData scaleData(scaleParams);
 
-    // Consistency check when multiple scales are present
+    // Consistency check 1: filter or not filter?
     if (scalesParams.size() > 1) {
       if (scalesParams[0].filterParams.value()) {
-        // First scale include a filter: all scales should have one too, except the last one
+        // First scale include a filter: all scales should have one too, except the last one maybe
         if (scaleDataVec_.size() < scalesParams.size()-1) {
           ASSERT(scaleParams.filterParams.value());
         }
@@ -413,6 +413,11 @@ SaberEnsembleBlockChain::SaberEnsembleBlockChain(const oops::Geometry<MODEL> & g
         // First scale does not include a filter: all scales should read ensemble perturbations
         ASSERT(scaleParams.ensemblePert.value());
       }
+    }
+
+    // Consistency check 2: residual from filter is incompatible with interpolator
+    if (scaleData.params().residualFromFilter.value()) {
+      ASSERT(!scaleData.interpolator());
     }
 
     // Get interpolator outer geometry data
@@ -541,16 +546,10 @@ SaberEnsembleBlockChain::SaberEnsembleBlockChain(const oops::Geometry<MODEL> & g
               // Apply filter G on input x: x' = Gx
               scaleData.filter()->applyOuterBlocks(fset4dDx);
 
-              if ((scaleData.params().residualFromFilter.value()
-                || params.recursiveFilters.value()) && scaleData.interpolator()) {
-                // Interpolate filtered perturbation to ensemble resolution Gx -> SGx
-                scaleData.interpolator()->applyOuterBlocks(fset4dDx);
-
-                if (scaleData.params().residualFromFilter.value()) {
-                  // Use filter complement: x' = (I-SG)x
-                  fset4dDx[0] -= fsetI;
-                  fset4dDx[0] *= -1.0;
-                }
+              if (scaleData.params().residualFromFilter.value()) {
+                // Use filter complement: x' = (I-G)x
+                fset4dDx[0] -= fsetI;
+                fset4dDx[0] *= -1.0;
 
                 if (params.recursiveFilters.value()) {
                   // Recursive filter: xI = xI - x'
@@ -559,18 +558,23 @@ SaberEnsembleBlockChain::SaberEnsembleBlockChain(const oops::Geometry<MODEL> & g
 
                 // Increment sum with the latest x'
                 fset4dDxSum += fset4dDx;
-              } else if (scaleData.interpolator()) {
-                // Deep-copy of the filtered perturbation
-                oops::FieldSet4D fset4dDxCopy(fset4dDx);
-
-                // Interpolate copy of the filtered perturbation to ensemble resolution Gx -> SGx
-                scaleData.interpolator()->applyOuterBlocks(fset4dDxCopy);
-
-                // Increment sum with the latest x'
-                fset4dDxSum += fset4dDxCopy;
               } else {
+                // If needed, interpolate copy of the filtered perturbation to ensemble resolution
+                std::unique_ptr<oops::FieldSet4D> fset4dDxUPtr{};
+                oops::FieldSet4D * fset4dDxPtr = &fset4dDx;
+                if (scaleData.interpolator()) {
+                  fset4dDxUPtr = std::unique_ptr<oops::FieldSet4D>(new oops::FieldSet4D(fset4dDx));
+                  fset4dDxPtr = fset4dDxUPtr.get();
+                  scaleData.interpolator()->applyOuterBlocks(*fset4dDxPtr);
+                }
+
+                if (params.recursiveFilters.value()) {
+                  // Recursive filter: xI = xI - x'
+                  fsetI -= (*fset4dDxPtr)[0];
+                }
+
                 // Increment sum with the latest x'
-                fset4dDxSum += fset4dDx;
+                fset4dDxSum += *fset4dDxPtr;
               }
             } else {
               // No filter on the last scale, use residual increment: x' = x0 - sum{previous x'}
