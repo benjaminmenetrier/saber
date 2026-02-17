@@ -46,32 +46,61 @@ BifourierSpectralConverter::BifourierSpectralConverter(const oops::GeometryData 
   const atlas::StructuredGrid & outerGrid = outerFs.grid();
   const atlas::util::Config outerGridConfig = outerGrid.spec();
 
-  // Get domain
-  const atlas::Domain domain(outerGridConfig.getSubConfiguration("domain"));
-
-  // Get projection
-  const atlas::Projection projection(outerGridConfig.getSubConfiguration("projection"));
-
-  // Get xSpace and ySpace configurations
+  // Get xSpace and ySpace properties
   atlas::util::Config xSpaceConfig = outerGridConfig.getSubConfiguration("xspace");
   atlas::util::Config ySpaceConfig = outerGridConfig.getSubConfiguration("yspace");
-
-  // Update xSpace and ySpace configurations
   const int outerNx = xSpaceConfig.getInt("N");
   const int outerNy = ySpaceConfig.getInt("N");
+  const double outerStartX = xSpaceConfig.getDouble("start");
+  const double outerStartY = ySpaceConfig.getDouble("start");
+  const double outerEndX = xSpaceConfig.getDouble("end");
+  const double outerEndY = ySpaceConfig.getDouble("end");
+  const double outerDx = (outerEndX-outerStartX)/static_cast<double>(outerNx-1);
+  const double outerDy = (outerEndY-outerStartY)/static_cast<double>(outerNy-1);
+
+  // Get domain size, assuming a periodic domain
+  const double Lx = static_cast<double>(outerNx)*outerDx;
+  const double Ly = static_cast<double>(outerNy)*outerDy;
+
+  // Update xSpace and ySpace properties
   const int innerNx = params.nx.value();
   const int innerNy = params.ny.value();
-  xSpaceConfig.set("N", innerNx);
-  ySpaceConfig.set("N", innerNy);
+  const double innerDx = Lx/static_cast<double>(innerNx);
+  const double innerDy = Ly/static_cast<double>(innerNy);
+  const double innerStartX = outerStartX;
+  const double innerStartY = outerStartY;
+  const double innerEndX = innerStartX+innerDx*static_cast<double>(innerNx-1);
+  const double innerEndY = innerStartY+innerDy*static_cast<double>(innerNy-1);
 
   // Check consistency
   const double ratioNx = static_cast<double>(outerNx)/static_cast<double>(innerNx);
   const double ratioNy = static_cast<double>(outerNy)/static_cast<double>(innerNy);
   ASSERT(oops::is_close_relative(ratioNx, ratioNy, 1.0e-12));
 
+  // Update xSpace and ySpace configurations
+  xSpaceConfig.set("N", innerNx);
+  ySpaceConfig.set("N", innerNy);
+  xSpaceConfig.set("start", innerStartX);
+  ySpaceConfig.set("start", innerStartY);
+  xSpaceConfig.set("end", innerEndX);
+  ySpaceConfig.set("end", innerEndY);
+
+  // Get and update domain configuration
+  atlas::util::Config domainConfig = outerGridConfig.getSubConfiguration("domain");
+  domainConfig.set("xmin", innerStartX);
+  domainConfig.set("ymin", innerStartY);
+  domainConfig.set("xmax", innerEndX);
+  domainConfig.set("ymax", innerEndY);
+
+  // Get projection (same for outer and inner geometries)
+  const atlas::Projection projection(outerGridConfig.getSubConfiguration("projection"));
+
   // Create new xSpace and ySpace
   const atlas::StructuredGrid::XSpace xspace(xSpaceConfig);
   const atlas::StructuredGrid::YSpace yspace(ySpaceConfig);
+
+  // Create new domain
+  const atlas::Domain domain(domainConfig);
 
   // Create inner grid
   const atlas::StructuredGrid innerGrid(xspace, yspace, projection, domain);
@@ -94,6 +123,12 @@ BifourierSpectralConverter::BifourierSpectralConverter(const oops::GeometryData 
   // Create inner spectral GeometryData
   innerGeometryData_ = std::make_unique<oops::GeometryData>(innerTrans_->spFspace(),
     outerGeometryData.fieldSet(), outerGeometryData.levelsAreTopDown(), comm_);
+
+  // Check domain size
+  ASSERT(oops::is_close_relative(static_cast<double>(innerTrans_->nx())*innerTrans_->dx(),
+    static_cast<double>(outerTrans_->nx())*outerTrans_->dx(), 1.0e-12));
+  ASSERT(oops::is_close_relative(static_cast<double>(innerTrans_->ny())*innerTrans_->dy(),
+    static_cast<double>(outerTrans_->ny())*outerTrans_->dy(), 1.0e-12));
 
   // Prepare spectral converter mapping
   std::vector<int> outerToInnerJsGlb(outerTrans_->nsGlb(), -1);
