@@ -167,9 +167,17 @@ class BifourierTransformBase : public util::Printable,
   const std::vector<size_t> & nsPerTask() const
     {return nsPerTask_;}
 
-  // Global to local index
-  const size_t sToSGlb(const size_t js) const
-     {return sToSGlb_[js];}
+  // Return jk from the global js
+  size_t sGlbToK(const size_t & jsGlb) const
+    {return spVec_[jsGlb].jk;}
+
+  // Return jl from the global js
+  size_t sGlbToL(const size_t & jsGlb) const
+    {return spVec_[jsGlb].jl;}
+
+  // Return jq from the global js
+  size_t sGlbToQ(const size_t & jsGlb) const
+    {return spVec_[jsGlb].jq;}
 
   // Communication vectors
   const std::vector<int> & sCounts() const
@@ -195,20 +203,16 @@ class BifourierTransformBase : public util::Printable,
   const size_t & N() const
     {return N_;}
 
-  // Return vector of spectral elements
-  const std::vector<spElem> & spVec() const
-    {return spVec_;}
-
   // Return jk for this wavenumber
-  const size_t & jk(const size_t & js) const
+  const size_t & k(const size_t & js) const
     {return jkVec_[js];}
 
   // Return jl for this wavenumber
-  const size_t & jl(const size_t & js) const
+  const size_t & l(const size_t & js) const
     {return jlVec_[js];}
 
   // Return jq for this wavenumber
-  const size_t & jq(const size_t & js) const
+  const size_t & q(const size_t & js) const
     {return jqVec_[js];}
 
   // Return kstar for this wavenumber

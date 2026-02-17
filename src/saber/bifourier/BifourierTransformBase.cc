@@ -1790,15 +1790,12 @@ void BifourierTransformBase::setupParallelizationInit() {
   // Communication vectors and mapping
   sCounts_.resize(comm_.size());
   sDispls_.resize(comm_.size());
-  if (myrank_ == 0) {
-    sMapping_.resize(nsGlb_);
-  }
+  sMapping_.resize(nsGlb_);
   for (size_t jt = 0; jt < comm_.size(); ++jt) {
     sCounts_[jt] = nsPerTask_[jt];
     sDispls_[jt] = static_cast<int>(jt ? sDispls_[jt-1] + sCounts_[jt-1] : 0);
   }
-  comm_.gatherv(sToSGlb_.cbegin(), sToSGlb_.cend(), sMapping_.begin(), sMapping_.end(),
-    sCounts_, sDispls_, 0);
+  comm_.allGatherv(sToSGlb_.cbegin(), sToSGlb_.cend(), sMapping_.data(), sCounts_.data(), sDispls_.data());
 
   // Compute spectral imbalance
   const double sImb = static_cast<double>(*std::max_element(nsPerTask_.begin(), nsPerTask_.end()))

@@ -123,7 +123,7 @@ BifourierSpectralVorDivToGridWind::BifourierSpectralVorDivToGridWind(
     // Get js for (jk, jl) = (0, 0)
     jsZero_ = -1;
     for (size_t js = 0; js < trans_->ns(); ++js) {
-      if ((trans_->jk(js) == 0) && (trans_->jl(js) == 0)) {
+      if ((trans_->k(js) == 0) && (trans_->l(js) == 0)) {
         jsZero_ = js;
       }
     }

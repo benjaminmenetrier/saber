@@ -179,7 +179,7 @@ BifourierCovariance::BifourierCovariance(const oops::GeometryData & geometryData
 
       // Compute horizontal spectral variance
       for (size_t js = 0; js < trans_->ns(); ++js) {
-        if (trans_->jq(js) == 0) {
+        if (trans_->q(js) == 0) {
           const size_t jw = trans_->jw(js);
           for (size_t jzI = 0; jzI < nz; ++jzI) {
             horSpecVarView(jw, jzI, 0) += horCorSpView(js, jzI);
@@ -1036,7 +1036,7 @@ void BifourierCovariance::computeSquareRoot() {
     std::vector<double> variance(nz, 0.0);
     for (size_t jz2 = 0; jz2 < nz; ++jz2) {
       for (size_t js = 0; js < trans_->ns(); ++js) {
-        if (trans_->jq(js) == 0) {
+        if (trans_->q(js) == 0) {
           const size_t jw = trans_->jw(js);
           for (size_t jz1 = 0; jz1 < nz; ++jz1) {
             variance[jz2] += corSqrtView(jw, jz2, jz1)*corSqrtView(jw, jz2, jz1)

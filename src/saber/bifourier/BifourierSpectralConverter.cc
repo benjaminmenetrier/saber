@@ -71,30 +71,46 @@ BifourierSpectralConverter::BifourierSpectralConverter(const oops::GeometryData 
     static_cast<double>(outerTrans_->ny()-1)*outerTrans_->dy(), 1.0e-12));
 
   // Prepare spectral converter mapping
-  // TODO(Benjamin): optimize the double loop
   std::vector<int> outerToInnerJsGlb(outerTrans_->nsGlb(), -1);
-  const auto & innerSpVec = innerTrans_->spVec();
-  const auto & outerSpVec = outerTrans_->spVec();
-  for (size_t outerJsGlb = 0; outerJsGlb < outerTrans_->nsGlb(); ++outerJsGlb) {
+  if (outerTrans_->nsGlb() >= innerTrans_->nsGlb()) {
+    // Zero-padding case
+    size_t outerJsGlb = 0;
     for (size_t innerJsGlb = 0; innerJsGlb < innerTrans_->nsGlb(); ++innerJsGlb) {
-      if ((innerSpVec[innerJsGlb].jk == outerSpVec[outerJsGlb].jk) &&
-        (innerSpVec[innerJsGlb].jl == outerSpVec[outerJsGlb].jl) &&
-        (innerSpVec[innerJsGlb].jq == outerSpVec[outerJsGlb].jq)) {
+      // Increment outer jsGlb
+      while ((innerTrans_->sGlbToK(innerJsGlb) != outerTrans_->sGlbToK(outerJsGlb)) &&
+        (innerTrans_->sGlbToL(innerJsGlb) != outerTrans_->sGlbToL(outerJsGlb))) {
+        ++outerJsGlb;
+      }
+
+      // Check jq
+      if (innerTrans_->sGlbToQ(innerJsGlb) == outerTrans_->sGlbToQ(outerJsGlb)) {
         ASSERT(outerToInnerJsGlb[outerJsGlb] == -1);
         outerToInnerJsGlb[outerJsGlb] = innerJsGlb;
       }
+
+      // Increment outer jsGlb
+      ++outerJsGlb;
+    }
+  } else {
+    // Truncation case
+    size_t innerJsGlb = 0;
+    for (size_t outerJsGlb = 0; outerJsGlb < outerTrans_->nsGlb(); ++outerJsGlb) {
+      // Increment inner jsGlb
+      while ((innerTrans_->sGlbToK(innerJsGlb) != outerTrans_->sGlbToK(outerJsGlb)) &&
+        (innerTrans_->sGlbToL(innerJsGlb) != outerTrans_->sGlbToL(outerJsGlb))) {
+        ++innerJsGlb;
+      }
+
+      // Check jq
+      if (innerTrans_->sGlbToQ(innerJsGlb) == outerTrans_->sGlbToQ(outerJsGlb)) {
+        ASSERT(outerToInnerJsGlb[outerJsGlb] == -1);
+        outerToInnerJsGlb[outerJsGlb] = innerJsGlb;
+      }
+
+      // Increment inner jsGlb
+      ++innerJsGlb;
     }
   }
-
-  // Order outer indices by task
-  std::vector<int> outerTask;
-  for (size_t outerJsGlb = 0; outerJsGlb < outerTrans_->nsGlb(); ++outerJsGlb) {
-    outerTask.push_back(outerTrans_->sGlbToTask(outerJsGlb));
-  }
-  std::vector<size_t> outerOrder(outerTrans_->nsGlb());
-  std::iota(outerOrder.begin(), outerOrder.end(), 0);
-  std::stable_sort(outerOrder.begin(), outerOrder.end(),
-    [&](size_t i, size_t j){return outerTask[i] < outerTask[j];});
 
   // Prepare spectral converter communications
   std::vector<int> sendOuterIndexGlb;
@@ -104,7 +120,7 @@ BifourierSpectralConverter::BifourierSpectralConverter(const oops::GeometryData 
   std::fill(recvCounts_.begin(), recvCounts_.end(), 0);
   for (size_t outerJsGlb = 0; outerJsGlb < outerTrans_->nsGlb(); ++outerJsGlb) {
     // Get ordered index
-    const size_t orderedOuterJsGlb = outerOrder[outerJsGlb];
+    const size_t orderedOuterJsGlb = outerTrans_->sMapping()[outerJsGlb];
 
     if (outerToInnerJsGlb[orderedOuterJsGlb] >= 0) {
       // Get inner jsGlb

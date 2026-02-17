@@ -60,7 +60,7 @@ auto createSpectralFilter(const BifourierTransformBase & trans,
 
     for (size_t js = 0; js < trans.ns(); ++js) {
       // Total wavenumber
-      const double kstar = trans.rkstar(trans.jk(js), trans.jl(js), trans.M(), trans.N(),
+      const double kstar = trans.rkstar(trans.k(js), trans.l(js), trans.M(), trans.N(),
         trans.nwGlb());
 
       // Response function
@@ -78,7 +78,7 @@ auto createSpectralFilter(const BifourierTransformBase & trans,
 
     for (size_t js = 0; js < trans.ns(); ++js) {
       // Total wavenumber
-      const double kstar = trans.rkstar(trans.jk(js), trans.jl(js), trans.M(), trans.N(),
+      const double kstar = trans.rkstar(trans.k(js), trans.l(js), trans.M(), trans.N(),
         trans.nwGlb());
 
       // Response function
@@ -96,7 +96,7 @@ auto createSpectralFilter(const BifourierTransformBase & trans,
 
     for (size_t js = 0; js < trans.ns(); ++js) {
       // Total wavenumber
-      const double kstar = trans.rkstar(trans.jk(js), trans.jl(js), trans.M(), trans.N(),
+      const double kstar = trans.rkstar(trans.k(js), trans.l(js), trans.M(), trans.N(),
         trans.nwGlb());
 
       // Response function

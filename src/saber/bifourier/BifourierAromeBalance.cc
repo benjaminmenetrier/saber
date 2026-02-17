@@ -63,7 +63,7 @@ BifourierAromeBalance::BifourierAromeBalance(const oops::GeometryData & outerGeo
     const double zly = 2.0*static_cast<double>(nwGlb)*trans_->dy();
     const double zfact1 = zcc*(zly/(2.0*M_PI))*(zly/(2.0*M_PI));
     for (size_t js = 0; js < trans_->ns(); ++js) {
-      const double kstar = trans_->rkstar(trans_->jk(js), trans_->jl(js), M, N, nwGlb);
+      const double kstar = trans_->rkstar(trans_->k(js), trans_->l(js), M, N, nwGlb);
       if (kstar > 0.0) {
         fact1_[js] = zfact1/(kstar*kstar);
       } else {
@@ -281,9 +281,9 @@ void BifourierAromeBalance::read() {
 
     // Copy fact1
     for (size_t js = 0; js < trans_->ns(); ++js) {
-      const size_t jk = trans_->jk(js);
-      const size_t jl = trans_->jl(js);
-      const size_t jq = trans_->jq(js);
+      const size_t jk = trans_->k(js);
+      const size_t jl = trans_->l(js);
+      const size_t jq = trans_->q(js);
       jIAL = IALIndexView(jk, jl, jq);
       fact1FromFile[js] = fact1IAL[jIAL];
     }
@@ -457,9 +457,9 @@ void BifourierAromeBalance::write() const {
 
       // Copy fact1
       for (size_t js = 0; js < trans_->ns(); ++js) {
-        const size_t jk = trans_->jk(js);
-        const size_t jl = trans_->jl(js);
-        const size_t jq = trans_->jq(js);
+        const size_t jk = trans_->k(js);
+        const size_t jl = trans_->l(js);
+        const size_t jq = trans_->q(js);
         jIAL = IALIndexView(jk, jl, jq);
         fact1IAL[jIAL] = fact1_[js];
       }
