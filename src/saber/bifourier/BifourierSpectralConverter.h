@@ -29,8 +29,17 @@ class BifourierSpectralConverterParameters : public SaberBlockParametersBase {
   OOPS_CONCRETE_PARAMETERS(BifourierSpectralConverterParameters, SaberBlockParametersBase)
 
  public:
-  // Geometry
-  oops::RequiredParameter<eckit::LocalConfiguration> geomConf{"geometry", this};
+  // Number of grid-points in X direction
+  oops::RequiredParameter<int> nx{"nx", this};
+
+  // Number of grid-points in Y direction
+  oops::RequiredParameter<int> ny{"ny", this};
+
+  // Partitioner
+  oops::Parameter<std::string> partitioner{"partitioner", "checkerboard", this};
+
+  // Halo
+  oops::Parameter<int> halo{"halo", 0, this};
 
   // Transform parameters
   oops::Parameter<BifourierTransformParameters> transform{"transform",

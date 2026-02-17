@@ -1,6 +1,6 @@
 Input Dirac increment:
 - Valid time: 2010-01-01T12:00:00Z
-  Geometry: structured [3723]
+  Geometry: structured [3848]
   Fields:
   - geographical_x_wind (10 levels):
     + min    = 0.0000000000000000e+00
@@ -11,18 +11,18 @@ Input Dirac increment:
   - air_temperature (10 levels):
     + min    = 0.0000000000000000e+00
     + max    = 1.0000000000000000e+00
-    + mean   = 2.6860059092130003e-05
-    + stddev = 5.1826691088793144e-03
+    + mean   = 2.5987525987525989e-05
+    + stddev = 5.0977961892907635e-03
   - log_of_air_pressure_at_surface (1 levels):
     + min    = 0.0000000000000000e+00
     + max    = 0.0000000000000000e+00
   - water_vapor_mixing_ratio_wrt_moist_air (10 levels):
     + min    = 0.0000000000000000e+00
     + max    = 0.0000000000000000e+00
-- Regional grid size: 73x51
+- Regional grid size: 74x52
 - Cell sizes: 2.5000000000000000e+00 km x 2.5000000000000000e+00 km
-- Mean latitude: 5.6289831946322792e+01 deg
-- Spectral sizes: 37x26
+- Mean latitude: 5.6289536019444682e+01 deg
+- Spectral sizes: 38x27
 - Truncation parameters MxN: 36x25
 - Maximum total wave number: 36
 - Spectral array global size: 2815
@@ -37,7 +37,7 @@ Inner inverse test for block BifourierSpectralToGrid passed: U Uinv (U x) == (U 
 Outer inverse test for block BifourierSpectralToGrid passed: Uinv U (Uinv x) == (Uinv x)
 Covariance norms: 
 - allVars: 
-  + correlation square-root: 7.7277331216893563e-01
+  + correlation square-root: 7.6323886576243916e-01
   + standard-deviation:      3.3166247903553998e+00
 Adjoint test for block BifourierCovariance passed
 Adjoint test for the multivariate central block passed
@@ -47,30 +47,30 @@ Adjoint test for block Ensemble passed
 Square-root test for block Ensemble passed
 Covariance(SABER) * Increment:
 - Valid time: 2010-01-01T12:00:00Z
-  Geometry: structured [3723]
+  Geometry: structured [3848]
   Fields:
   - geographical_x_wind (10 levels):
-    + min    = -6.2977961411984484e-03
-    + max    = 1.6678324040515975e-04
-    + mean   = -2.5729603792255968e-06
-    + stddev = 7.2549421138315680e-05
+    + min    = -2.5931397768674475e-03
+    + max    = 1.6530747198609025e-04
+    + mean   = -1.0232356842039904e-06
+    + stddev = 3.7270278837621308e-05
   - geographical_y_wind (10 levels):
-    + min    = -9.3949111542450793e-04
-    + max    = 3.2037407231095346e-03
-    + mean   = 5.3418054697119491e-07
-    + stddev = 3.7020056578011415e-05
+    + min    = -2.2471564944107790e-03
+    + max    = 5.5817428836576642e-04
+    + mean   = -2.3739979799028274e-07
+    + stddev = 2.2264249718148841e-05
   - air_temperature (10 levels):
-    + min    = -2.0690911244902058e-03
-    + max    = 1.2125447284214583e-01
-    + mean   = 3.8208786353116998e-05
-    + stddev = 1.2636749151594296e-03
+    + min    = -4.1354536418052035e-03
+    + max    = 3.9479701524967908e-02
+    + mean   = 9.3730262274789660e-06
+    + stddev = 3.9165511576332051e-04
   - log_of_air_pressure_at_surface (1 levels):
-    + min    = -1.5433524326923420e-06
-    + max    = 6.4501386286210973e-06
-    + mean   = 4.9440996920711444e-08
-    + stddev = 3.7994010838946683e-07
+    + min    = -9.9271863698174558e-07
+    + max    = 4.9285746970490057e-06
+    + mean   = 2.9065659522281343e-08
+    + stddev = 2.5946137536117223e-07
   - water_vapor_mixing_ratio_wrt_moist_air (10 levels):
-    + min    = -9.5729114603355978e-06
-    + max    = 6.4264087963110112e-06
-    + mean   = -2.1910583037652169e-09
-    + stddev = 1.4915171865958405e-07
+    + min    = -2.6906749317035067e-06
+    + max    = 7.3044427262920486e-06
+    + mean   = 1.9816277214834637e-09
+    + stddev = 8.9396500570964279e-08

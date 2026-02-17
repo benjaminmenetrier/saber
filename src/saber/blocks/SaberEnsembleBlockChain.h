@@ -255,7 +255,7 @@ SaberEnsembleBlockChain::SaberEnsembleBlockChain(const oops::Geometry<MODEL> & g
   oops::Variables currentOuterVars = outerBlockChain_ ?
                                      outerBlockChain_->innerVars() : outerVars;
   const oops::GeometryData & currentOuterGeom = outerBlockChain_ ?
-                                     outerBlockChain_->innerGeometryData() : geom.generic();
+                                   outerBlockChain_->innerGeometryData() : geom.generic();
 
   // Get active variables
   const oops::Variables activeVars = currentOuterVars;
@@ -361,6 +361,9 @@ SaberEnsembleBlockChain::SaberEnsembleBlockChain(const oops::Geometry<MODEL> & g
 
       // Update outer variables
       currentOuterVars = outerBlockChain_->innerVars();
+
+      // Check that the geometry is still the same
+      ASSERT(&currentOuterGeom == &(outerBlockChain_->innerGeometryData()));
     }
   }
 

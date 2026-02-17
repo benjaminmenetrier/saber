@@ -37,21 +37,55 @@ BifourierSpectralConverter::BifourierSpectralConverter(const oops::GeometryData 
 {
   oops::Log::trace() << classname() << "::BifourierSpectralConverter starting" << std::endl;
 
+  // Retrieve outer spectral transform
+  outerTrans_ = transStore_.retrieveTransform(outerGeometryData, outerVars);
+
+  // Get outer geometry configuration
+  const atlas::functionspace::StructuredColumns outerFs(
+    outerTrans_->geometryData().functionSpace());
+  const atlas::StructuredGrid & outerGrid = outerFs.grid();
+  const atlas::util::Config outerGridConfig = outerGrid.spec();
+
+  // Get domain
+  const atlas::Domain domain(outerGridConfig.getSubConfiguration("domain"));
+
+  // Get projection
+  const atlas::Projection projection(outerGridConfig.getSubConfiguration("projection"));
+
+  // Get xSpace and ySpace configurations
+  atlas::util::Config xSpaceConfig = outerGridConfig.getSubConfiguration("xspace");
+  atlas::util::Config ySpaceConfig = outerGridConfig.getSubConfiguration("yspace");
+
+  // Update xSpace and ySpace configurations
+  const int outerNx = xSpaceConfig.getInt("N");
+  const int outerNy = ySpaceConfig.getInt("N");
+  const int innerNx = params.nx.value();
+  const int innerNy = params.ny.value();
+  xSpaceConfig.set("N", innerNx);
+  ySpaceConfig.set("N", innerNy);
+
+  // Check consistency
+  const double ratioNx = static_cast<double>(outerNx)/static_cast<double>(innerNx);
+  const double ratioNy = static_cast<double>(outerNy)/static_cast<double>(innerNy);
+  ASSERT(oops::is_close_relative(ratioNx, ratioNy, 1.0e-12));
+
+  // Create new xSpace and ySpace
+  const atlas::StructuredGrid::XSpace xspace(xSpaceConfig);
+  const atlas::StructuredGrid::YSpace yspace(ySpaceConfig);
+
+  // Create inner grid
+  const atlas::StructuredGrid innerGrid(xspace, yspace, projection, domain);
+
+  // Create inner partitioner
+  const atlas::grid::Partitioner partitioner(params.partitioner.value());
+
+  // Create inner grid-point FunctionSpace
+  const atlas::functionspace::StructuredColumns innerGpFs(innerGrid, partitioner,
+    atlas::option::halo(params.halo.value()));
+
   // Inner geometry data
-  atlas::Grid grid;
-  atlas::grid::Partitioner partitioner;
-  atlas::Mesh mesh;
-  atlas::FunctionSpace functionSpace;
-  atlas::FieldSet fset;
-  util::setupFunctionSpace(comm_,
-                           params.geomConf.value(),
-                           grid,
-                           partitioner,
-                           mesh,
-                           functionSpace,
-                           fset);
-  innerGpGeometryData_ = std::make_unique<oops::GeometryData>(functionSpace, fset,
-    outerGeometryData.levelsAreTopDown(), comm_);
+  innerGpGeometryData_ = std::make_unique<oops::GeometryData>(innerGpFs,
+    outerGeometryData.fieldSet(), outerGeometryData.levelsAreTopDown(), comm_);
 
   // Create inner spectral transform
   innerTrans_ = transStore_.setupTransform(*innerGpGeometryData_, innerVars_,
@@ -60,15 +94,6 @@ BifourierSpectralConverter::BifourierSpectralConverter(const oops::GeometryData 
   // Create inner spectral GeometryData
   innerGeometryData_ = std::make_unique<oops::GeometryData>(innerTrans_->spFspace(),
     outerGeometryData.fieldSet(), outerGeometryData.levelsAreTopDown(), comm_);
-
-  // Retrieve outer spectral transform
-  outerTrans_ = transStore_.retrieveTransform(outerGeometryData, outerVars);
-
-  // Check domain size (assuming that the projection is the same)
-  ASSERT(oops::is_close_relative(static_cast<double>(innerTrans_->nx()-1)*innerTrans_->dx(),
-    static_cast<double>(outerTrans_->nx()-1)*outerTrans_->dx(), 1.0e-12));
-  ASSERT(oops::is_close_relative(static_cast<double>(innerTrans_->ny()-1)*innerTrans_->dy(),
-    static_cast<double>(outerTrans_->ny()-1)*outerTrans_->dy(), 1.0e-12));
 
   // Prepare spectral converter mapping
   std::vector<int> outerToInnerJsGlb(outerTrans_->nsGlb(), -1);
