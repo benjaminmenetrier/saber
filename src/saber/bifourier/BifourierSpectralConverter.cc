@@ -122,7 +122,7 @@ BifourierSpectralConverter::BifourierSpectralConverter(const oops::GeometryData 
 
   // Create inner spectral GeometryData
   innerGeometryData_ = std::make_unique<oops::GeometryData>(innerTrans_->spFspace(),
-    outerGeometryData.fieldSet(), outerGeometryData.levelsAreTopDown(), comm_);
+    outerGeometryData.fieldSet(), outerGeometryData.levelsAreTopDown(), comm_, false);
 
   // Check domain size
   ASSERT(oops::is_close_relative(static_cast<double>(innerTrans_->nx())*innerTrans_->dx(),

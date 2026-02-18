@@ -95,18 +95,12 @@ BifourierSpectralVorDivToGridWind::BifourierSpectralVorDivToGridWind(
       params_.transform.value());
 
     // Create inner GeometryData
-    innerGeometryData_.reset(new oops::GeometryData(trans_->spFspace(),
+    innerGeometryData_ = std::make_unique<oops::GeometryData>(trans_->spFspace(),
       outerGeometryData.fieldSet(), outerGeometryData.levelsAreTopDown(),
-      outerGeometryData.comm()));
+      outerGeometryData.comm(), false);
   } else {
     // Retrieve spectral transform
     trans_ = transStore_.retrieveTransform(outerGeometryData, outerVars);
-
-    // Set inner GeometryData
-    // TODO(Benjamin): avoid this
-    innerGeometryData_.reset(new oops::GeometryData(trans_->geometryData().functionSpace(),
-      trans_->geometryData().fieldSet(), trans_->geometryData().levelsAreTopDown(),
-      trans_->geometryData().comm()));
   }
 
   // Prepare biperiodization if needed
@@ -251,6 +245,16 @@ BifourierSpectralVorDivToGridWind::BifourierSpectralVorDivToGridWind(
   }
 
   oops::Log::trace() << classname() << "::BifourierSpectralVorDivToGridWind done" << std::endl;
+}
+
+// -----------------------------------------------------------------------------
+
+const oops::GeometryData & BifourierSpectralVorDivToGridWind::innerGeometryData() const {
+  if (innerGeometryData_) {
+    return *innerGeometryData_;
+  } else {
+    return trans_->geometryData();
+  }
 }
 
 // -----------------------------------------------------------------------------

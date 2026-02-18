@@ -31,8 +31,9 @@ BifourierSpectralToGrid::BifourierSpectralToGrid(const oops::GeometryData & oute
   oops::Log::trace() << classname() << "::BifourierSpectralToGrid starting" << std::endl;
 
   // Create inner GeometryData
-  innerGeometryData_.reset(new oops::GeometryData(trans_->spFspace(), outerGeometryData.fieldSet(),
-    outerGeometryData.levelsAreTopDown(), outerGeometryData.comm()));
+  innerGeometryData_ = std::make_unique<oops::GeometryData>(trans_->spFspace(),
+    outerGeometryData.fieldSet(), outerGeometryData.levelsAreTopDown(), outerGeometryData.comm(),
+    false);
 
   oops::Log::trace() << classname() << "::BifourierSpectralToGrid done" << std::endl;
 }

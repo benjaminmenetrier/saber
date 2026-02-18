@@ -1953,7 +1953,7 @@ void BifourierTransformBase::setupLocalSpectralSpace() {
     // Define global index field
     globalIndexView(js) = static_cast<int64_t>(jsGlb);
   }
-  spFspace_.reset(new atlas::functionspace::PointCloud(flds));
+  spFspace_ = std::make_unique<atlas::functionspace::PointCloud>(flds);
 
   // Generate spectral UID
   specUid_ = generateSpectralUid(*spFspace_, comm_);
