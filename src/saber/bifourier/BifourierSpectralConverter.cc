@@ -103,14 +103,18 @@ BifourierSpectralConverter::BifourierSpectralConverter(const oops::GeometryData 
   const atlas::Domain domain(domainConfig);
 
   // Create inner grid
-  const atlas::StructuredGrid innerGrid(xspace, yspace, projection, domain);
-
-  // Create inner partitioner
-  const atlas::grid::Partitioner partitioner(params.partitioner.value());
+  atlas::StructuredGrid innerGrid(xspace, yspace, projection, domain);
 
   // Create inner grid-point FunctionSpace
-  const atlas::functionspace::StructuredColumns innerGpFs(innerGrid, partitioner,
-    atlas::option::halo(params.halo.value()));
+  eckit::LocalConfiguration innerGeomConfig;
+  innerGeomConfig.set("function space", "StructuredColumns");
+  innerGeomConfig.set("grid", innerGrid.spec());
+  innerGeomConfig.set("partitioner", outerFs.distribution());
+  atlas::grid::Partitioner partitioner;
+  atlas::Mesh mesh;
+  atlas::functionspace::StructuredColumns innerGpFs;
+  atlas::FieldSet fields;
+  util::setupFunctionSpace(comm_, innerGeomConfig, innerGrid, partitioner, mesh, innerGpFs, fields);
 
   // Inner geometry data
   innerGpGeometryData_ = std::make_unique<oops::GeometryData>(innerGpFs,
