@@ -64,8 +64,7 @@ background error:
       active variables: *vars
     - saber block name: BifourierSpectralConverter
       skip inverse test: true
-      nx: 74
-      ny: 52
+      inner grid-point function space from background variable: air_temperature
     - saber block name: BifourierSpectralToGrid
     output:
       only first perturbation: true

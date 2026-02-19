@@ -40,81 +40,89 @@ BifourierSpectralConverter::BifourierSpectralConverter(const oops::GeometryData 
   // Retrieve outer spectral transform
   outerTrans_ = transStore_.retrieveTransform(outerGeometryData, outerVars);
 
-  // Get outer geometry configuration
-  const atlas::functionspace::StructuredColumns outerFs(
-    outerTrans_->geometryData().functionSpace());
-  const atlas::StructuredGrid & outerGrid = outerFs.grid();
-  const atlas::util::Config outerGridConfig = outerGrid.spec();
-
-  // Get xSpace and ySpace properties
-  atlas::util::Config xSpaceConfig = outerGridConfig.getSubConfiguration("xspace");
-  atlas::util::Config ySpaceConfig = outerGridConfig.getSubConfiguration("yspace");
-  const int outerNx = xSpaceConfig.getInt("N");
-  const int outerNy = ySpaceConfig.getInt("N");
-  const double outerStartX = xSpaceConfig.getDouble("start");
-  const double outerStartY = ySpaceConfig.getDouble("start");
-  const double outerEndX = xSpaceConfig.getDouble("end");
-  const double outerEndY = ySpaceConfig.getDouble("end");
-  const double outerDx = (outerEndX-outerStartX)/static_cast<double>(outerNx-1);
-  const double outerDy = (outerEndY-outerStartY)/static_cast<double>(outerNy-1);
-
-  // Get domain size, assuming a periodic domain
-  const double Lx = static_cast<double>(outerNx)*outerDx;
-  const double Ly = static_cast<double>(outerNy)*outerDy;
-
-  // Update xSpace and ySpace properties
-  const int innerNx = params.nx.value();
-  const int innerNy = params.ny.value();
-  const double innerDx = Lx/static_cast<double>(innerNx);
-  const double innerDy = Ly/static_cast<double>(innerNy);
-  const double innerStartX = outerStartX;
-  const double innerStartY = outerStartY;
-  const double innerEndX = innerStartX+innerDx*static_cast<double>(innerNx-1);
-  const double innerEndY = innerStartY+innerDy*static_cast<double>(innerNy-1);
-
-  // Check consistency
-  const double ratioNx = static_cast<double>(outerNx)/static_cast<double>(innerNx);
-  const double ratioNy = static_cast<double>(outerNy)/static_cast<double>(innerNy);
-  ASSERT(oops::is_close_relative(ratioNx, ratioNy, 1.0e-12));
-
-  // Update xSpace and ySpace configurations
-  xSpaceConfig.set("N", innerNx);
-  ySpaceConfig.set("N", innerNy);
-  xSpaceConfig.set("start", innerStartX);
-  ySpaceConfig.set("start", innerStartY);
-  xSpaceConfig.set("end", innerEndX);
-  ySpaceConfig.set("end", innerEndY);
-
-  // Get and update domain configuration
-  atlas::util::Config domainConfig = outerGridConfig.getSubConfiguration("domain");
-  domainConfig.set("xmin", innerStartX);
-  domainConfig.set("ymin", innerStartY);
-  domainConfig.set("xmax", innerEndX);
-  domainConfig.set("ymax", innerEndY);
-
-  // Get projection (same for outer and inner geometries)
-  const atlas::Projection projection(outerGridConfig.getSubConfiguration("projection"));
-
-  // Create new xSpace and ySpace
-  const atlas::StructuredGrid::XSpace xspace(xSpaceConfig);
-  const atlas::StructuredGrid::YSpace yspace(ySpaceConfig);
-
-  // Create new domain
-  const atlas::Domain domain(domainConfig);
-
-  // Create inner grid
-  atlas::StructuredGrid innerGrid(xspace, yspace, projection, domain);
-
   // Create inner grid-point FunctionSpace
-  eckit::LocalConfiguration innerGeomConfig;
-  innerGeomConfig.set("function space", "StructuredColumns");
-  innerGeomConfig.set("grid", innerGrid.spec());
-  innerGeomConfig.set("partitioner", outerFs.distribution());
-  atlas::grid::Partitioner partitioner;
-  atlas::Mesh mesh;
   atlas::functionspace::StructuredColumns innerGpFs;
-  atlas::FieldSet fields;
-  util::setupFunctionSpace(comm_, innerGeomConfig, innerGrid, partitioner, mesh, innerGpFs, fields);
+  if (params.fspaceFromBkgVar.value()) {
+    // Use the function space of a field of the background
+    innerGpFs = xb[*params.fspaceFromBkgVar.value()].functionspace();
+  } else {
+    // Get outer geometry configuration
+    const atlas::functionspace::StructuredColumns outerFs(
+      outerTrans_->geometryData().functionSpace());
+    const atlas::StructuredGrid & outerGrid = outerFs.grid();
+    const atlas::util::Config outerGridConfig = outerGrid.spec();
+
+    // Get xSpace and ySpace properties
+    atlas::util::Config xSpaceConfig = outerGridConfig.getSubConfiguration("xspace");
+    atlas::util::Config ySpaceConfig = outerGridConfig.getSubConfiguration("yspace");
+    const int outerNx = xSpaceConfig.getInt("N");
+    const int outerNy = ySpaceConfig.getInt("N");
+    const double outerStartX = xSpaceConfig.getDouble("start");
+    const double outerStartY = ySpaceConfig.getDouble("start");
+    const double outerEndX = xSpaceConfig.getDouble("end");
+    const double outerEndY = ySpaceConfig.getDouble("end");
+    const double outerDx = (outerEndX-outerStartX)/static_cast<double>(outerNx-1);
+    const double outerDy = (outerEndY-outerStartY)/static_cast<double>(outerNy-1);
+
+    // Get domain size, assuming a periodic domain
+    const double Lx = static_cast<double>(outerNx)*outerDx;
+    const double Ly = static_cast<double>(outerNy)*outerDy;
+
+    // Update xSpace and ySpace properties
+    ASSERT(params.nx.value() && params.ny.value());
+    const int innerNx = *params.nx.value();
+    const int innerNy = *params.ny.value();
+    const double innerDx = Lx/static_cast<double>(innerNx);
+    const double innerDy = Ly/static_cast<double>(innerNy);
+    const double innerStartX = outerStartX;
+    const double innerStartY = outerStartY;
+    const double innerEndX = innerStartX+innerDx*static_cast<double>(innerNx-1);
+    const double innerEndY = innerStartY+innerDy*static_cast<double>(innerNy-1);
+
+    // Check consistency
+    const double ratioNx = static_cast<double>(outerNx)/static_cast<double>(innerNx);
+    const double ratioNy = static_cast<double>(outerNy)/static_cast<double>(innerNy);
+    ASSERT(oops::is_close_relative(ratioNx, ratioNy, 1.0e-12));
+
+    // Update xSpace and ySpace configurations
+    xSpaceConfig.set("N", innerNx);
+    ySpaceConfig.set("N", innerNy);
+    xSpaceConfig.set("start", innerStartX);
+    ySpaceConfig.set("start", innerStartY);
+    xSpaceConfig.set("end", innerEndX);
+    ySpaceConfig.set("end", innerEndY);
+
+    // Get and update domain configuration
+    atlas::util::Config domainConfig = outerGridConfig.getSubConfiguration("domain");
+    domainConfig.set("xmin", innerStartX);
+    domainConfig.set("ymin", innerStartY);
+    domainConfig.set("xmax", innerEndX);
+    domainConfig.set("ymax", innerEndY);
+
+    // Get projection (same for outer and inner geometries)
+    const atlas::Projection projection(outerGridConfig.getSubConfiguration("projection"));
+
+    // Create new xSpace and ySpace
+    const atlas::StructuredGrid::XSpace xspace(xSpaceConfig);
+    const atlas::StructuredGrid::YSpace yspace(ySpaceConfig);
+
+    // Create new domain
+    const atlas::Domain domain(domainConfig);
+
+    // Create inner grid
+    atlas::StructuredGrid innerGrid(xspace, yspace, projection, domain);
+
+    // Create a new function space
+    eckit::LocalConfiguration innerGeomConfig;
+    innerGeomConfig.set("function space", "StructuredColumns");
+    innerGeomConfig.set("grid", innerGrid.spec());
+    innerGeomConfig.set("partitioner", params.partitioner.value());
+    atlas::grid::Partitioner partitioner;
+    atlas::Mesh mesh;
+    atlas::FieldSet fields;
+    util::setupFunctionSpace(comm_, innerGeomConfig, innerGrid, partitioner, mesh, innerGpFs,
+      fields);
+  }
 
   // Inner geometry data
   innerGpGeometryData_ = std::make_unique<oops::GeometryData>(innerGpFs,

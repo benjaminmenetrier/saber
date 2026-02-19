@@ -29,17 +29,18 @@ class BifourierSpectralConverterParameters : public SaberBlockParametersBase {
   OOPS_CONCRETE_PARAMETERS(BifourierSpectralConverterParameters, SaberBlockParametersBase)
 
  public:
+  // Background variable used to define the inner grid-poind function space
+  oops::OptionalParameter<std::string> fspaceFromBkgVar{
+    "inner grid-point function space from background variable", this};
+
   // Number of grid-points in X direction
-  oops::RequiredParameter<int> nx{"nx", this};
+  oops::OptionalParameter<int> nx{"nx", this};
 
   // Number of grid-points in Y direction
-  oops::RequiredParameter<int> ny{"ny", this};
+  oops::OptionalParameter<int> ny{"ny", this};
 
   // Partitioner
   oops::Parameter<std::string> partitioner{"partitioner", "checkerboard", this};
-
-  // Halo
-  oops::Parameter<int> halo{"halo", 0, this};
 
   // Transform parameters
   oops::Parameter<BifourierTransformParameters> transform{"transform",
