@@ -126,7 +126,7 @@ BifourierSpectralConverter::BifourierSpectralConverter(const oops::GeometryData 
 
   // Inner geometry data
   innerGpGeometryData_ = std::make_unique<oops::GeometryData>(innerGpFs,
-    outerGeometryData.fieldSet(), outerGeometryData.levelsAreTopDown(), comm_);
+    outerGeometryData.fieldSet(), outerGeometryData.levelsAreTopDown(), comm_, false);
 
   // Create inner spectral transform
   innerTrans_ = transStore_.setupTransform(*innerGpGeometryData_, innerVars_,
