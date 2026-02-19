@@ -1714,6 +1714,7 @@ void BifourierTransformBase::setupParallelizationInit() {
   std::vector<int> jlVec;
   std::vector<size_t> jwGlbVec;
   std::vector<size_t> nklPerTaskTarget(comm_.size(), 0);
+  const size_t lastTask = params_.noWavenumberOnLastTask.value() ? comm_.size()-1 : comm_.size();
   size_t index = 0;
   for (size_t jk = 0; jk < ellips_.size(); ++jk) {
     for (size_t jl = 0; jl <= ellips_[jk]; ++jl) {
@@ -1722,7 +1723,7 @@ void BifourierTransformBase::setupParallelizationInit() {
       jwGlbVec.push_back(ikstar(jk, jl, M_, N_, nwGlb_));
       ++nklPerTaskTarget[index];
       ++index;
-      if (index == comm_.size()) index = 0;
+      if (index == lastTask) index = 0;
     }
   }
 
@@ -1799,9 +1800,14 @@ void BifourierTransformBase::setupParallelizationInit() {
     sDispls_.data());
 
   // Compute spectral imbalance
-  const double sImb = static_cast<double>(*std::max_element(nsPerTask_.begin(), nsPerTask_.end()))
-    / static_cast<double>(*std::min_element(nsPerTask_.begin(), nsPerTask_.end()));
-  oops::Log::info() << "Info     : - Spectral imbalance (max/min): " << sImb << std::endl;
+  const size_t nsMin = *std::min_element(nsPerTask_.begin(), nsPerTask_.end());
+  const size_t nsMax = *std::max_element(nsPerTask_.begin(), nsPerTask_.end());
+  if (nsMin > 0) {
+    const double sImb = static_cast<double>(nsMax)/static_cast<double>(nsMin);
+    oops::Log::info() << "Info     : - Spectral imbalance (max/min): " << sImb << std::endl;
+  } else {
+    oops::Log::info() << "Info     : - Some tasks have no wavenumber" << std::endl;
+  }
 
   oops::Log::trace() << classname() << "::setupParallelizationInit done" << std::endl;
 }
@@ -1812,8 +1818,8 @@ void BifourierTransformBase::setupParallelizationFinal() {
   oops::Log::trace() << classname() << "::setupParallelizationFinal starting" << std::endl;
 
   // Get min and max jwGlb
-  nwStartPerTask_.resize(comm_.size(), nwGlb_-1);
-  nwEndPerTask_.resize(comm_.size(), 0);
+  nwStartPerTask_.resize(comm_.size(), nwGlb_);
+  std::vector<size_t> nwEndPerTask(comm_.size(), 0);
   for (size_t jsGlb = 0; jsGlb < nsGlb_; ++jsGlb) {
     // Get task
     const size_t jt = spVec_[jsGlb].jt;
@@ -1823,7 +1829,7 @@ void BifourierTransformBase::setupParallelizationFinal() {
 
     // Update min and max global total wavenumber
     nwStartPerTask_[jt] = std::min(nwStartPerTask_[jt], jwGlb);
-    nwEndPerTask_[jt] = std::max(nwEndPerTask_[jt], jwGlb);
+    nwEndPerTask[jt] = std::max(nwEndPerTask[jt], jwGlb);
 
     if (dwGlb_ > 0.0) {
       // Get jkstar
@@ -1835,16 +1841,26 @@ void BifourierTransformBase::setupParallelizationFinal() {
           && (jkstar <= static_cast<double>(jwGlb)+dwGlb_)) {
           // Update min and max global total wavenumber
           nwStartPerTask_[jt] = std::min(nwStartPerTask_[jt], jwGlb);
-          nwEndPerTask_[jt] = std::max(nwEndPerTask_[jt], jwGlb);
+          nwEndPerTask[jt] = std::max(nwEndPerTask[jt], jwGlb);
         }
       }
     }
   }
 
   // Define nwPerTask_
-  nwPerTask_.resize(comm_.size());
+  nwPerTask_.resize(comm_.size(), 0);
   for (size_t jt = 0; jt < comm_.size(); ++jt) {
-    nwPerTask_[jt] = nwEndPerTask_[jt] - nwStartPerTask_[jt] + 1;
+    if ((nwStartPerTask_[jt] == nwGlb_) && (nwEndPerTask[jt] == 0)) {
+      // No total wavenumber on this task
+      if (jt == 0) {
+        nwStartPerTask_[jt] = 0;
+      } else {
+        nwStartPerTask_[jt] = nwStartPerTask_[jt-1]+nwPerTask_[jt-1];
+      }
+    } else {
+      // Normal task
+      nwPerTask_[jt] = nwEndPerTask[jt] - nwStartPerTask_[jt] + 1;
+    }
   }
 
   // Local number of total wavenumbers
@@ -1869,15 +1885,21 @@ void BifourierTransformBase::setupParallelizationFinal() {
   }
 
   // Compute total wavenumber imbalance
-  const double wImb = static_cast<double>(*std::max_element(nwPerTask_.begin(), nwPerTask_.end()))
-    / static_cast<double>(*std::min_element(nwPerTask_.begin(), nwPerTask_.end()));
-  oops::Log::info() << "Info     : - Total wavenumber imbalance (max/min): " << wImb << std::endl;
+  const size_t nwMin = *std::min_element(nwPerTask_.begin(), nwPerTask_.end());
+  const size_t nwMax = *std::max_element(nwPerTask_.begin(), nwPerTask_.end());
+  if (nwMin > 0) {
+    const double wImb = static_cast<double>(nwMax)/static_cast<double>(nwMin);
+    oops::Log::info() << "Info     : - Total wavenumber imbalance (max/min): " << wImb << std::endl;
+  } else {
+    oops::Log::info() << "Info     : - Some tasks have no total wavenumber" << std::endl;
+  }
 
   // Prepare covariance communicators
   myJwGlb_.resize(nwGlb_);
   for (size_t jwGlb = 0; jwGlb < nwGlb_; ++jwGlb) {
     // Define used global wavenumbers
-    myJwGlb_[jwGlb] = (nwStartPerTask_[myrank_] <= jwGlb) && (jwGlb <= nwEndPerTask_[myrank_]);
+    myJwGlb_[jwGlb] = (nwStartPerTask_[myrank_] <= jwGlb)
+      && (jwGlb < nwStartPerTask_[myrank_]+nwPerTask_[myrank_]);
 
     // Define color of the reduction communicator
     const size_t covRedColor = myJwGlb_[jwGlb] ? 1 : 0;

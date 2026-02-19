@@ -44,6 +44,9 @@ class BifourierTransformParameters : public oops::Parameters {
   // Sub-ellipses half-width for calibration (AROME default is 1.5)
   oops::Parameter<double> dwGlb{"sub-ellipses half-width", -1.0, this};
 
+  // No wavenumber on last task for tests
+  oops::Parameter<bool> noWavenumberOnLastTask{"no wavenumber on last task", false, this};
+
   // Skip tests
   oops::Parameter<bool> skipTests{"skip tests", false, this};
 
@@ -247,14 +250,6 @@ class BifourierTransformBase : public util::Printable,
   const size_t & nwRoot() const
     {return nwRoot_;}
 
-  // Vector of minimum global nw
-  const std::vector<size_t> & nwStartPerTask() const
-    {return nwStartPerTask_;}
-
-  // Vector of maximum global nw
-  const std::vector<size_t> & nwEndPerTask() const
-    {return nwEndPerTask_;}
-
   // Vector of nw
   const std::vector<size_t> & nwPerTask() const
     {return nwPerTask_;}
@@ -266,10 +261,6 @@ class BifourierTransformBase : public util::Printable,
   // Starting global nw
   const size_t & nwStart() const
     {return nwStartPerTask_[myrank_];}
-
-  // Ending global nw
-  const size_t & nwEnd() const
-    {return nwEndPerTask_[myrank_];}
 
   // Total number of levels (sum of all levels of all active variables)
   const size_t & nvz() const
@@ -487,7 +478,6 @@ class BifourierTransformBase : public util::Printable,
   size_t nw_;
   size_t nwRoot_;
   std::vector<size_t> nwStartPerTask_;
-  std::vector<size_t> nwEndPerTask_;
   std::vector<size_t> nwPerTask_;
   std::vector<size_t> nwRootPerTask_;
   std::vector<int> wCounts_;

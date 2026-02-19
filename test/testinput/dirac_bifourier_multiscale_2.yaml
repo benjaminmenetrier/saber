@@ -55,6 +55,8 @@ background error:
       skip inverse test: true
       nx: 37
       ny: 26
+      transform:
+        no wavenumber on last task: true
     - saber block name: BifourierSpectralToGrid
     filter:
     - saber block name: BifourierGridToSpectral
