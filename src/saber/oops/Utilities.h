@@ -86,6 +86,15 @@ eckit::LocalConfiguration getEnsSubconfig(const eckit::Configuration & conf, siz
 
 // -----------------------------------------------------------------------------
 
+oops::FieldSets readEnsemble(const oops::GeometryData & geomData,
+                             const oops::Variables & modelvars,
+                             const std::vector<util::DateTime> & times,
+                             const eckit::mpi::Comm & commTime,
+                             const eckit::mpi::Comm & commEns,
+                             const eckit::Configuration & inputConf);
+
+// -----------------------------------------------------------------------------
+
 template<typename MODEL>
 oops::FieldSets readEnsemble(const oops::Geometry<MODEL> & geom,
                              const oops::Variables & modelvars,
