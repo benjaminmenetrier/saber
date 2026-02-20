@@ -1714,7 +1714,8 @@ void BifourierTransformBase::setupParallelizationInit() {
   std::vector<int> jlVec;
   std::vector<size_t> jwGlbVec;
   std::vector<size_t> nklPerTaskTarget(comm_.size(), 0);
-  const size_t lastTask = params_.noWavenumberOnLastTask.value() ? comm_.size()-1 : comm_.size();
+  const size_t lastTask = params_.noWavenumberOnLastTask.value() && (comm_.size() > 1) ?
+    comm_.size()-1 : comm_.size();
   size_t index = 0;
   for (size_t jk = 0; jk < ellips_.size(); ++jk) {
     for (size_t jl = 0; jl <= ellips_[jk]; ++jl) {

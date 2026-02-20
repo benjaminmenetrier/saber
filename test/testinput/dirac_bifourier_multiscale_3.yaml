@@ -1,4 +1,4 @@
-# Dirac test for an ensemble B with a multiscale bifourier localization matrix, with ensemble at lower resolution
+# Dirac test for an ensemble B with a multiscale bifourier localization matrix, with ensemble at lower resolution read with the generic reader
 geometry:
   function space: StructuredColumns
   grid:
@@ -39,15 +39,6 @@ background error:
   square-root test: true
   square-root tolerance: 1.0e-8
   inverse test: true
-  ensemble:
-    members from template:
-      template:
-        date: 2010-01-01T12:00:00Z
-        filepath: testdata/randomization_bifourier/_MPI_-_OMP__member_%mem%
-        state variables: *vars
-      pattern: '%mem%'
-      nmembers: 25
-      zero padding: 6
   scales:
   - interpolator:
     - saber block name: BifourierGridToSpectral
@@ -58,20 +49,14 @@ background error:
       transform:
         no wavenumber on last task: true
     - saber block name: BifourierSpectralToGrid
-    filter:
-    - saber block name: BifourierGridToSpectral
-    - saber block name: BifourierAnalyticalFilter
-      waveband peak: 2
-      waveband max: 5
-      active variables: *vars
-    - saber block name: BifourierSpectralConverter
-      skip inverse test: true
-      inner grid-point function space from background variable: air_temperature
-    - saber block name: BifourierSpectralToGrid
-    output:
-      generic write:
-        filepath: testdata/dirac_bifourier_multiscale_2/filtered_pert_mb%MEM%_wb1
-        member pattern: '%MEM%'
+    generic ensemble:
+      members from template:
+        template:
+          date: 2010-01-01T12:00:00Z
+          filepath: testdata/dirac_bifourier_multiscale_2/filtered_pert_mb%MEM%_wb1
+          state variables: *vars
+        pattern: '%MEM%'
+        nmembers: 25
     localization:
       saber central block:
         multivariate strategy: duplicated
@@ -88,18 +73,14 @@ background error:
               vertical length-scale: 4.0
           auxiliary outer blocks:
           - saber block name: BifourierSpectralToGrid
-  - filter:
-    - saber block name: BifourierSpectralToGrid
-      right-inverse of a following block: true
-    - saber block name: BifourierAnalyticalFilter
-      waveband min: 2
-      waveband peak: 5
-      active variables: *vars
-    - saber block name: BifourierSpectralToGrid
-    output:
-      generic write:
-        filepath: testdata/dirac_bifourier_multiscale_2/filtered_pert_mb%MEM%_wb2
-        member pattern: '%MEM%'
+  - generic ensemble:
+      members from template:
+        template:
+          date: 2010-01-01T12:00:00Z
+          filepath: testdata/dirac_bifourier_multiscale_2/filtered_pert_mb%MEM%_wb2
+          state variables: *vars
+        pattern: '%MEM%'
+        nmembers: 25
     localization:
       saber central block:
         multivariate strategy: duplicated
@@ -128,7 +109,7 @@ dirac:
   - air_temperature
 output dirac:
   mpi pattern: "%MPI%"
-  filepath: testdata/dirac_bifourier_multiscale_2/%MPI%_dirac_%id%
+  filepath: testdata/dirac_bifourier_multiscale_3/%MPI%_dirac_%id%
 test:
-  reference filename: testref/dirac_bifourier_multiscale_2.ref
+  reference filename: testref/dirac_bifourier_multiscale_3.ref
 
