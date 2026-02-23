@@ -10,7 +10,7 @@ geometry:
   halo: 1
 background:
   date: 2010-01-01T12:00:00Z
-  state variables:
+  state variables: &vars
   - air_horizontal_streamfunction
 background error:
   covariance model: SABER
@@ -18,6 +18,7 @@ background error:
   adjoint test: true
   square-root test: true
   square-root tolerance: 1.0e-11
+  sub-ensembles size: 5
   ensemble pert:
     members from template:
       template:
@@ -34,12 +35,24 @@ background error:
       read:
         general:
           testing: true
+          universe length-scale: 10.0e6
         io:
           data directory: testdata
-          files prefix: process_perts_multiscale_1/_MPI_-_OMP__f1
+          files prefix: dirac_multiscale_1/_MPI_-_OMP__f1
         drivers:
           multivariate strategy: univariate
-          read local nicas: true
+          compute nicas: true
+          write local nicas: true
+        nicas:
+          filter mode: true
+          filter resolution: 4.0
+          explicit length-scales: true
+          horizontal length-scale:
+          - groups: *vars
+            value: 10.0e6
+          vertical length-scale:
+          - groups: *vars
+            value: 5.0
     output:
       model write:
         filepath: testdata/dirac_multiscale_1/filtered_pert_mb%mem%_wb1
@@ -65,12 +78,24 @@ background error:
       read:
         general:
           testing: true
+          universe length-scale: 5.0e6
         io:
           data directory: testdata
-          files prefix: process_perts_multiscale_1/_MPI_-_OMP__f2
+          files prefix: dirac_multiscale_1/_MPI_-_OMP__f2
         drivers:
           multivariate strategy: univariate
-          read local nicas: true
+          compute nicas: true
+          write local nicas: true
+        nicas:
+          filter mode: true
+          filter resolution: 4.0
+          explicit length-scales: true
+          horizontal length-scale:
+          - groups: *vars
+            value: 5.0e6
+          vertical length-scale:
+          - groups: *vars
+            value: 2.5
     output:
       model write:
         filepath: testdata/dirac_multiscale_1/filtered_pert_mb%mem%_wb2

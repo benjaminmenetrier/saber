@@ -23,7 +23,7 @@ background error:
       members from template:
         template:
           date: 2010-01-01T12:00:00Z
-          filepath: testdata/process_perts_multiscale_1/filtered_pert_mb%mem%_wb1
+          filepath: testdata/dirac_multiscale_1/filtered_pert_mb%mem%_wb1
           state variables:
           - air_horizontal_streamfunction
         pattern: "%mem%"
@@ -48,7 +48,7 @@ background error:
       members from template:
         template:
           date: 2010-01-01T12:00:00Z
-          filepath: testdata/process_perts_multiscale_1/filtered_pert_mb%mem%_wb2
+          filepath: testdata/dirac_multiscale_1/filtered_pert_mb%mem%_wb2
           state variables:
           - air_horizontal_streamfunction
         pattern: "%mem%"
@@ -73,7 +73,7 @@ background error:
       members from template:
         template:
           date: 2010-01-01T12:00:00Z
-          filepath: testdata/process_perts_multiscale_1/filtered_pert_mb%mem%_wb3
+          filepath: testdata/dirac_multiscale_1/filtered_pert_mb%mem%_wb3
           state variables:
           - air_horizontal_streamfunction
         pattern: "%mem%"
