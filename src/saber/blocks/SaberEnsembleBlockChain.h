@@ -164,6 +164,10 @@ class SaberEnsembleBlockChainParameters: public ErrorCovarianceParametersBase {
                         "ensemble pert on other geometry", this};
   oops::OptionalParameter<eckit::LocalConfiguration> ensembleGeom{
                         "ensemble geometry", this};
+
+  // Sub-ensembles size: if subEnsSize = p, it means that sets of members {0,...,p-1}, {p,...,2p-1},
+  // etc. are distinct sub-ensembles. The mean of each sub-ensemble is subtracted.
+  oops::OptionalParameter<size_t> subEnsSize{"sub-ensembles size", this};
 };
 
 /// Chain of outer (optional) and an ensemble "block".
@@ -218,11 +222,13 @@ class SaberEnsembleBlockChain : public SaberBlockChainBase {
 
 template<typename MODEL>
 SaberEnsembleBlockChain::SaberEnsembleBlockChain(const oops::Geometry<MODEL> & geom,
-                       const oops::Variables & outerVars,
-                       oops::FieldSet4D & fset4dXb,
-                       oops::FieldSet4D & fset4dFg,
-                       const eckit::Configuration & conf)
-  : comm_(geom.getComm()), outerFunctionSpace_(geom.functionSpace()), outerVariables_(outerVars) {
+                                                 const oops::Variables & outerVars,
+                                                 oops::FieldSet4D & fset4dXb,
+                                                 oops::FieldSet4D & fset4dFg,
+                                                 const eckit::Configuration & conf)
+  : comm_(geom.getComm()),
+    outerFunctionSpace_(geom.functionSpace()),
+    outerVariables_(outerVars) {
   oops::Log::trace() << "SaberEnsembleBlockChain ctor starting" << std::endl;
 
   // Deserialize parameters and fill configuration with missing values
@@ -246,6 +252,41 @@ SaberEnsembleBlockChain::SaberEnsembleBlockChain(const oops::Geometry<MODEL> & g
   if (ensemble->ens_size() == 1) {
     throw eckit::BadParameter("Ensemble for SaberEnsembleBlockChain has to have at least"
                               " two members (or no member)", Here());
+  }
+
+  // Remove specific means for sub-ensembles
+  if (params.subEnsSize.value()) {
+    // Sub-ensemble size
+    const size_t subEnsSize = *params.subEnsSize.value();
+
+    // Consistency checks
+    ASSERT(subEnsSize > 1);
+    ASSERT(ensemble->ens_size()%subEnsSize == 0);
+
+    // Loop over sub-ensembles
+    for (size_t jsub=0; jsub < ensemble->ens_size()/subEnsSize; ++jsub) {
+      // Member index offset
+      const size_t offset = jsub*subEnsSize;
+
+      for (size_t it = 0; it < fset4dXb.size(); ++it) {
+        // Initialize mean with first member of the sub-ensemble
+        oops::FieldSet3D mean((*ensemble)(it, offset));
+
+        // Accumule other members of the sub-ensemble
+        for (size_t ie = 1; ie < subEnsSize; ++ie) {
+          mean += (*ensemble)(it, offset+ie);
+        }
+
+        // Normalize mean
+        const double rk = 1.0/static_cast<double>(subEnsSize);
+        mean *= rk;
+
+        // Subtract mean
+        for (size_t ie = 0; ie < subEnsSize; ++ie) {
+          (*ensemble)(it, offset+ie) -= mean;
+        }
+      }
+    }
   }
 
   // Create outer blocks if needed
@@ -608,8 +649,10 @@ SaberEnsembleBlockChain::SaberEnsembleBlockChain(const oops::Geometry<MODEL> & g
             // Copy perturbation into ensemble
             scaleData.ensemble()->emplace_back(it, ie, fset4dDx[0]);
 
-            // TODO(Benjamin): if last scale, remove members from initial ensemble sequentially,
-            // as there are not needed anymore
+            if (&scaleData == &scaleDataVec_.back()) {
+              // Remove member from initial ensemble as there are not needed anymore
+              ensemble->clear(it, ie);
+            }
           }
         }
       }
