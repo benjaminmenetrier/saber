@@ -173,7 +173,7 @@ void SaberEnsembleBlockChain::randomize(oops::FieldSet4D & fset4d) const {
       }
 
       // Normalize result
-      const double rk = 1.0/sqrt(static_cast<double>(scaleData.ensemble()->ens_size()-1));
+      const double rk = 1.0/std::sqrt(static_cast<double>(scaleData.ensemble()->ens_size()-1));
       fset4dScale *= rk;
 
       // Apply interpolator
