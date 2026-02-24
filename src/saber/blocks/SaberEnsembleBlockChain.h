@@ -556,10 +556,22 @@ SaberEnsembleBlockChain::SaberEnsembleBlockChain(const oops::Geometry<MODEL> & g
                                                                      fset4dFg,
                                                                      locMergedConf);
       }
+    } else {
+      // No localization, only authorized if no scales are specified
+      oops::Log::info() << "Info     : No localization" << std::endl;
+      ASSERT(!params.scales.value());
     }
 
     // Add scale data
     scaleDataVec_.emplace_back(std::move(scaleData));
+  }
+
+  if (strategy_ == "crossed") {
+    // Check that localization control vector size is the same for all scales
+    const size_t ctlVecSize = scaleDataVec_[0].localization()->ctlVecSize();
+    for (auto & scaleData : scaleDataVec_) {
+      ASSERT(scaleData.localization()->ctlVecSize() == ctlVecSize);
+    }
   }
 
   // Prepare ensembles

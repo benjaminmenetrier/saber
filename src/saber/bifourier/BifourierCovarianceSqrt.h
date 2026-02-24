@@ -10,47 +10,43 @@
 
 #include "atlas/field.h"
 
-#include "oops/base/FieldSets.h"
 #include "oops/base/GeometryData.h"
 #include "oops/base/Variable.h"
 
 #include "saber/bifourier/BifourierCovarianceImpl.h"
-#include "saber/blocks/SaberCentralBlockBase.h"
+#include "saber/blocks/SaberOuterBlockBase.h"
 
 namespace saber {
 namespace bifourier {
 
 // -----------------------------------------------------------------------------
 
-class BifourierCovariance : public SaberCentralBlockBase {
+class BifourierCovarianceSqrt : public SaberOuterBlockBase {
  public:
   static const std::string classname()
-    {return "saber::bifourier::BifourierCovariance";}
+    {return "saber::bifourier::BifourierCovarianceSqrt";}
 
   typedef BifourierCovarianceImplParameters Parameters_;
 
-  BifourierCovariance(const oops::GeometryData &,
-                      const oops::Variables &,
-                      const eckit::Configuration &,
-                      const Parameters_ &,
-                      const oops::FieldSet3D &,
-                      const oops::FieldSet3D &);
-  virtual ~BifourierCovariance();
+  BifourierCovarianceSqrt(const oops::GeometryData &,
+                          const oops::Variables &,
+                          const eckit::Configuration &,
+                          const Parameters_ &,
+                          const oops::FieldSet3D &,
+                          const oops::FieldSet3D &);
+  virtual ~BifourierCovarianceSqrt();
 
-  size_t ctlVecSize() const override
-    {return covar_->ctlVecSize();}
-  void randomCtlVec(atlas::Field & cv,
-                    const size_t & offset) const override
-    {covar_->randomCtlVec(cv, offset);}
-  void multiplySqrt(const atlas::Field & cv,
-                    oops::FieldSet3D & fset,
-                    const size_t & offset) const override
-    {covar_->multiplySqrt(cv, fset, offset);}
-  void multiplySqrtAD(const oops::FieldSet3D & fset,
-                      atlas::Field & cv,
-                      const size_t & offset) const override
-    {covar_->multiplySqrtAD(fset, cv, offset);}
+  const oops::GeometryData & innerGeometryData() const override
+    {return covar_->innerGeometryData();}
+  const oops::Variables & innerVars() const override
+    {return covar_->innerVars();}
 
+  void multiply(oops::FieldSet3D & fset) const override
+    {covar_->multiplySqrt(fset);}
+  void multiplyAD(oops::FieldSet3D & fset) const override
+    {covar_->multiplySqrtAD(fset);}
+  void leftInverseMultiply(oops::FieldSet3D & fset) const override
+    {covar_->leftInverseMultiply(fset);}
   void read() override
     {covar_->read();}
 

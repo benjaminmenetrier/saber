@@ -26,6 +26,7 @@ dirac_bifourier_gridtospectral
 dirac_bifourier_multiscale_1
 dirac_bifourier_multiscale_2
 dirac_bifourier_multiscale_3
+dirac_bifourier_multiscale_4
 dirac_bifourier_vordivtouv_1
 dirac_bifourier_vordivtouv_2
 dirac_bifourier_vordivtouv_3

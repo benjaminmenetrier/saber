@@ -35,6 +35,10 @@ if( FFTW_FOUND OR ( ECTRANS_FOUND AND ectrans_HAVE_ETRANS AND ectrans_HAVE_TRANS
     # Bi-Fourier covariance block
     BifourierCovariance.cc
     BifourierCovariance.h
+    BifourierCovarianceImpl.cc
+    BifourierCovarianceImpl.h
+    BifourierCovarianceSqrt.cc
+    BifourierCovarianceSqrt.h
 
     # Bi-Fourier grid to spectral block
     BifourierGridToSpectral.cc
