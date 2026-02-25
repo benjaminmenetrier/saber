@@ -380,9 +380,6 @@ void BifourierCovarianceImpl::multiplySqrtAD(const oops::FieldSet3D & fset,
   // Temporary FieldSet3D
   oops::FieldSet3D fsetTmp(fset);
 
-  // Copy FieldSet TODO: necessary?
-  trans_->copyFieldSet(fset.fieldSet(), fsetTmp.fieldSet(), vars_);
-
   // Adjoint square-root multiply
   multiplySqrtAD(fsetTmp);
 
