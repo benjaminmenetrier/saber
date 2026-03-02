@@ -1,35 +1,35 @@
-Norm of input parameter StdDev: 2.8007141946296485e+02
+Norm of input parameter StdDev: 2.7433556094680836e+02
 Member 0: 
 - Valid time: 2010-01-01T12:00:00Z
-  Geometry: structured [3922]
+  Geometry: structured [3763]
   Fields:
   - air_horizontal_streamfunction (10 levels):
-    + min    = -2.6900771034666993e+00
-    + max    = 2.6645358267191885e+00
-    + mean   = -3.7477808136266118e-02
-    + stddev = 1.0255139641609565e+00
+    + min    = -3.3547430828827545e+00
+    + max    = 2.8471951615098994e+00
+    + mean   = -2.3861432191376396e-02
+    + stddev = 1.2294528544265662e+00
   - air_horizontal_velocity_potential (10 levels):
-    + min    = -1.4322221240552462e+00
-    + max    = 4.1269023303611210e+00
-    + mean   = 7.8320513266552216e-01
-    + stddev = 9.9424340448486404e-01
+    + min    = -1.0772336555247022e+00
+    + max    = 4.6064737533723399e+00
+    + mean   = 7.6079951668861157e-01
+    + stddev = 1.0738079230632178e+00
   - air_pressure_at_surface (1 levels):
     + min    = 0.0000000000000000e+00
     + max    = 0.0000000000000000e+00
 Member 1: 
 - Valid time: 2010-01-01T12:00:00Z
-  Geometry: structured [3922]
+  Geometry: structured [3763]
   Fields:
   - air_horizontal_streamfunction (10 levels):
-    + min    = -2.6455743181835096e+00
-    + max    = 3.8899833292292851e+00
-    + mean   = -3.3050144393030711e-01
-    + stddev = 9.9193287927482221e-01
+    + min    = -2.5768819587929843e+00
+    + max    = 3.0632025404261678e+00
+    + mean   = -4.8343713922864595e-01
+    + stddev = 9.3481711160811287e-01
   - air_horizontal_velocity_potential (10 levels):
-    + min    = -1.8793191829875564e+00
-    + max    = 3.4657709030918809e+00
-    + mean   = 3.0528657790512015e-01
-    + stddev = 8.5775900496881308e-01
+    + min    = -2.2840676089162644e+00
+    + max    = 2.6614653783853832e+00
+    + mean   = 1.0129854312310467e-01
+    + stddev = 8.9074205926315997e-01
   - air_pressure_at_surface (1 levels):
     + min    = 0.0000000000000000e+00
     + max    = 0.0000000000000000e+00

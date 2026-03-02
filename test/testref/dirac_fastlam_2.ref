@@ -1,12 +1,12 @@
 Input Dirac increment:
 - Valid time: 2010-01-01T12:00:00Z
-  Geometry: structured [3922]
+  Geometry: structured [3763]
   Fields:
   - air_horizontal_streamfunction (10 levels):
     + min    = 0.0000000000000000e+00
     + max    = 1.0000000000000000e+00
-    + mean   = 4.5894951555328913e-04
-    + stddev = 2.1418463477775512e-02
+    + mean   = 4.7834174860483656e-04
+    + stddev = 2.1866084325865485e-02
   - air_horizontal_velocity_potential (10 levels):
     + min    = 0.0000000000000000e+00
     + max    = 0.0000000000000000e+00
@@ -37,24 +37,24 @@ Input Dirac increment:
     FastLAM interpolation adjoint test passed
     FastLAM redToRows test passed
     FastLAM rowsToCols test passed
-Norm of output parameter normalized horizontal length-scale: 2.2794859475472554e+03
-Norm of output parameter weight - 0: 1.2535554957807602e+02
-Norm of output parameter weight - 1: 1.4352295282374322e+02
-Norm of output parameter weight - 2: 1.1946655211831653e+02
-Norm of output parameter normalization - 0: 3.1811466910603735e+02
-Norm of output parameter normalization - 1: 3.3870977620224511e+02
-Norm of output parameter normalization - 2: 3.3848054317039401e+02
+Norm of output parameter normalized horizontal length-scale: 2.2328019811953645e+03
+Norm of output parameter weight - 0: 1.2274175180803287e+02
+Norm of output parameter weight - 1: 1.4060679485952969e+02
+Norm of output parameter weight - 2: 1.1703622545681110e+02
+Norm of output parameter normalization - 0: 3.1160107964985599e+02
+Norm of output parameter normalization - 1: 3.3175830521613460e+02
+Norm of output parameter normalization - 2: 3.3132320551859749e+02
 Adjoint test for block FastLAM passed
 Square-root test for block FastLAM passed
 Covariance(SABER) * Increment:
 - Valid time: 2010-01-01T12:00:00Z
-  Geometry: structured [3922]
+  Geometry: structured [3763]
   Fields:
   - air_horizontal_streamfunction (10 levels):
     + min    = 0.0000000000000000e+00
-    + max    = 1.0000000000000004e+00
-    + mean   = 2.9594124789983623e-02
-    + stddev = 1.0850161934105648e-01
+    + max    = 1.0000000000000009e+00
+    + mean   = 2.8262478717257272e-02
+    + stddev = 1.0679639177368752e-01
   - air_horizontal_velocity_potential (10 levels):
     + min    = 0.0000000000000000e+00
     + max    = 0.0000000000000000e+00

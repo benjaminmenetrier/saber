@@ -92,7 +92,7 @@ do iv=1,nam%nv
    ! Allocation
    call mom%blk(iv)%alloc(nam,geom,mom%nc1a,ne,nsub,nam%iterative_algo)
 end do
-if (nam%check_dirac) then
+if (nam%check_dirac.and.(.not.nam%load_mom)) then
    if (nam%iterative_algo) then
       allocate(mom%m1(geom%nc0a,geom%nl0,nam%nv))
       allocate(mom%m2(geom%nc0a,geom%nl0,nam%nv))
@@ -130,7 +130,7 @@ integer :: iv
 do iv=1,nam%nv
    call mom%blk(iv)%init(nam%iterative_algo)
 end do
-if (nam%check_dirac) then
+if (nam%check_dirac.and.(.not.nam%load_mom)) then
    if (nam%iterative_algo) then
       mom%m1 = zero
       mom%m2 = zero

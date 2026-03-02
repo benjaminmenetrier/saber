@@ -2,7 +2,7 @@ geometry:
   function space: StructuredColumns
   grid:
     type : regional
-    nx : 74
+    nx : 71
     ny : 53
     dx : 2.5e3
     dy : 2.5e3

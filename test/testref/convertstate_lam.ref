@@ -1,6 +1,6 @@
 Input state: 
 - Valid time: 2010-01-01T12:00:00Z
-  Geometry: structured [3922]
+  Geometry: structured [3763]
   Fields:
   - air_horizontal_streamfunction (10 levels):
     + min    = 2.0000000000000000e+04
@@ -13,7 +13,7 @@ Input state:
     + max    = 2.0000000000000000e+04
 Output state: 
 - Valid time: 2010-01-01T12:00:00Z
-  Geometry: structured [3922]
+  Geometry: structured [3763]
   Fields:
   - air_horizontal_streamfunction (10 levels):
     + min    = 2.0000000000000000e+04
@@ -26,7 +26,7 @@ Output state:
     + max    = 2.0000000000000000e+04
 Input state: 
 - Valid time: 2010-01-01T12:00:00Z
-  Geometry: structured [3922]
+  Geometry: structured [3763]
   Fields:
   - air_horizontal_streamfunction (10 levels):
     + min    = 5.0000000000000000e+03
@@ -39,7 +39,7 @@ Input state:
     + max    = 5.0000000000000000e+03
 Output state: 
 - Valid time: 2010-01-01T12:00:00Z
-  Geometry: structured [3922]
+  Geometry: structured [3763]
   Fields:
   - air_horizontal_streamfunction (10 levels):
     + min    = 5.0000000000000000e+03
@@ -52,7 +52,7 @@ Output state:
     + max    = 5.0000000000000000e+03
 Input state: 
 - Valid time: 2010-01-01T12:00:00Z
-  Geometry: structured [3922]
+  Geometry: structured [3763]
   Fields:
   - air_horizontal_streamfunction (10 levels):
     + min    = 4.0000000000000000e+00
@@ -65,7 +65,7 @@ Input state:
     + max    = 0.0000000000000000e+00
 Output state: 
 - Valid time: 2010-01-01T12:00:00Z
-  Geometry: structured [3922]
+  Geometry: structured [3763]
   Fields:
   - air_horizontal_streamfunction (10 levels):
     + min    = 4.0000000000000000e+00
@@ -78,7 +78,7 @@ Output state:
     + max    = 0.0000000000000000e+00
 Input state: 
 - Valid time: 2010-01-01T12:00:00Z
-  Geometry: structured [3922]
+  Geometry: structured [3763]
   Fields:
   - air_horizontal_streamfunction (10 levels):
     + min    = 1.0000000000000000e+00
@@ -91,7 +91,7 @@ Input state:
     + max    = 0.0000000000000000e+00
 Output state: 
 - Valid time: 2010-01-01T12:00:00Z
-  Geometry: structured [3922]
+  Geometry: structured [3763]
   Fields:
   - air_horizontal_streamfunction (10 levels):
     + min    = 1.0000000000000000e+00
