@@ -1,20 +1,20 @@
-Norm of input parameter StdDev: 1.4055514931869269e+06
+Norm of input parameter StdDev: 1.4349390230947097e+06
 Member 0: 
 - Valid time: 2010-01-01T12:00:00Z
-  Geometry: structured [3763]
+  Geometry: structured [3922]
   Fields:
   - air_horizontal_streamfunction (10 levels):
-    + min    = -1.6773715414413771e+04
-    + max    = 1.4235975807549497e+04
-    + mean   = -1.1930716095687733e+02
-    + stddev = 6.1472642721328175e+03
+    + min    = -1.3450385517333496e+04
+    + max    = 1.3322679133595942e+04
+    + mean   = -1.8738904068133019e+02
+    + stddev = 5.1275698208047843e+03
   - air_horizontal_velocity_potential (10 levels):
-    + min    = -5.3861682776235111e+03
-    + max    = 2.3032368766861699e+04
-    + mean   = 3.8039975834430547e+03
-    + stddev = 5.3690396153160864e+03
+    + min    = -7.1611106202762312e+03
+    + max    = 2.0634511651805606e+04
+    + mean   = 3.9160256633276413e+03
+    + stddev = 4.9712170224242927e+03
   - air_pressure_at_surface (1 levels):
-    + min    = -1.1646030600386195e+04
-    + max    = 1.0796598984975553e+04
-    + mean   = -1.8108303417865163e+03
-    + stddev = 5.9501676310279554e+03
+    + min    = -8.9991857724693673e+03
+    + max    = 7.6010067280149615e+03
+    + mean   = -2.8181729843363573e+03
+    + stddev = 4.9389956640166092e+03

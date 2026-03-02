@@ -1,17 +1,17 @@
 Input Dirac increment:
 - Valid time: 2010-01-01T12:00:00Z
-  Geometry: structured [3763]
+  Geometry: structured [3922]
   Fields:
   - air_horizontal_streamfunction (10 levels):
     + min    = 0.0000000000000000e+00
     + max    = 1.0000000000000000e+00
-    + mean   = 2.1259633271326071e-04
-    + stddev = 1.4579327285977359e-02
+    + mean   = 2.0397756246812851e-04
+    + stddev = 1.4280796740714136e-02
   - air_horizontal_velocity_potential (10 levels):
     + min    = 0.0000000000000000e+00
     + max    = 1.0000000000000000e+00
-    + mean   = 2.6574541589157588e-05
-    + stddev = 5.1550501053999505e-03
+    + mean   = 2.5497195308516064e-05
+    + stddev = 5.0494747557063690e-03
     FastLAM interpolation accuracy test passed
     FastLAM interpolation adjoint test passed
     FastLAM redToRows test passed
@@ -36,26 +36,26 @@ Input Dirac increment:
     FastLAM interpolation adjoint test passed
     FastLAM redToRows test passed
     FastLAM rowsToCols test passed
-Norm of output parameter normalized horizontal length-scale: 3.4440397359364192e+03
-Norm of output parameter weight - 0: 1.1660633257222007e+02
-Norm of output parameter weight - 1: 1.3769036427394980e+02
-Norm of output parameter weight - 2: 1.1658735441857046e+02
-Norm of output parameter normalization - 0: 3.2922227652017415e+02
-Norm of output parameter normalization - 1: 3.2922227652017415e+02
-Norm of output parameter normalization - 2: 3.2922227652017966e+02
+Norm of output parameter normalized horizontal length-scale: 3.5160485555725131e+03
+Norm of output parameter weight - 0: 1.1904442868941472e+02
+Norm of output parameter weight - 1: 1.4056933984375630e+02
+Norm of output parameter weight - 2: 1.1902462091977107e+02
+Norm of output parameter normalization - 0: 3.3610571661075079e+02
+Norm of output parameter normalization - 1: 3.3610571661075079e+02
+Norm of output parameter normalization - 2: 3.3610571661075079e+02
 Adjoint test for block FastLAM passed
 Square-root test for block FastLAM passed
 Covariance(SABER) * Increment:
 - Valid time: 2010-01-01T12:00:00Z
-  Geometry: structured [3763]
+  Geometry: structured [3922]
   Fields:
   - air_horizontal_streamfunction (10 levels):
     + min    = 0.0000000000000000e+00
-    + max    = 1.0000000000000007e+00
-    + mean   = 3.6151215361943773e-03
-    + stddev = 3.5430813093146565e-02
+    + max    = 1.0000000000000000e+00
+    + mean   = 3.5355982148575511e-03
+    + stddev = 3.4665045886034036e-02
   - air_horizontal_velocity_potential (10 levels):
     + min    = 0.0000000000000000e+00
-    + max    = 1.0000000000000000e+00
-    + mean   = 5.8374996261583980e-03
-    + stddev = 4.5134918263927598e-02
+    + max    = 9.9999999999999944e-01
+    + mean   = 5.8465245101184159e-03
+    + stddev = 4.4013628705056505e-02

@@ -1,43 +1,43 @@
-- xspace: LocalConfiguration[root={type => linear , start => 5.2120971254055749e+05 , end => 6.9620971254055749e+05 , N => 71 , endpoint => true}]
+- xspace: LocalConfiguration[root={type => linear , start => 5.1745971254055749e+05 , end => 6.9995971254055749e+05 , N => 74 , endpoint => true}]
 - yspace: LocalConfiguration[root={type => linear , start => -2.1173080099392682e+04 , end => 1.0882691990060732e+05 , N => 53 , endpoint => true}]
-Outer grid size: 3763
-- xspace: LocalConfiguration[root={type => linear , start => 5.2120971254055749e+05 , end => 7.4620971254055749e+05 , N => 91 , endpoint => true}]
+Outer grid size: 3922
+- xspace: LocalConfiguration[root={type => linear , start => 5.1745971254055749e+05 , end => 7.4995971254055749e+05 , N => 94 , endpoint => true}]
 - yspace: LocalConfiguration[root={type => linear , start => -2.1173080099392682e+04 , end => 1.5882691990060732e+05 , N => 73 , endpoint => true}]
-Info     : Inner grid size: 6643
-- Regional grid size: 91x73
+Info     : Inner grid size: 6862
+- Regional grid size: 94x73
 - Cell sizes: 2.5000000000000000e+00 km x 2.5000000000000000e+00 km
-- Mean latitude: 5.6472887993879155e+01 deg
-- Spectral sizes: 46x37
-- Truncation parameters MxN: 45x36
-- Maximum total wave number: 45
-- Spectral array global size: 5067
+- Mean latitude: 5.6471890314036727e+01 deg
+- Spectral sizes: 48x37
+- Truncation parameters MxN: 46x36
+- Maximum total wave number: 46
+- Spectral array global size: 5197
 - Direct-inverse test passed
 - Inverse-direct test passed
 - Parseval identity test passed
 - Adjoint test (forward) passed
 - Adjoint test (inverse) passed
 - Derivatives / direct Laplacian consistency test passed
-- xspace: LocalConfiguration[root={type => linear , start => 5.2120971254055749e+05 , end => 7.4620971254055749e+05 , N => 91 , endpoint => true}]
+- xspace: LocalConfiguration[root={type => linear , start => 5.1745971254055749e+05 , end => 7.4995971254055749e+05 , N => 94 , endpoint => true}]
 - yspace: LocalConfiguration[root={type => linear , start => -2.1173080099392682e+04 , end => 1.5882691990060732e+05 , N => 73 , endpoint => true}]
-Outer grid size: 6643
-- xspace: LocalConfiguration[root={type => linear , start => 5.2120971254055749e+05 , end => 6.9620971254055749e+05 , N => 71 , endpoint => true}]
+Outer grid size: 6862
+- xspace: LocalConfiguration[root={type => linear , start => 5.1745971254055749e+05 , end => 6.9995971254055749e+05 , N => 74 , endpoint => true}]
 - yspace: LocalConfiguration[root={type => linear , start => -2.1173080099392682e+04 , end => 1.0882691990060732e+05 , N => 53 , endpoint => true}]
-Info     : Inner grid size: 3763
-- xspace: LocalConfiguration[root={type => linear , start => 5.2120971254055749e+05 , end => 6.9620971254055749e+05 , N => 71 , endpoint => true}]
+Info     : Inner grid size: 3922
+- xspace: LocalConfiguration[root={type => linear , start => 5.1745971254055749e+05 , end => 6.9995971254055749e+05 , N => 74 , endpoint => true}]
 - yspace: LocalConfiguration[root={type => linear , start => -2.1173080099392682e+04 , end => 1.0882691990060732e+05 , N => 53 , endpoint => true}]
-Outer grid size: 3763
-- xspace: LocalConfiguration[root={type => linear , start => 5.2120971254055749e+05 , end => 7.4620971254055749e+05 , N => 91 , endpoint => true}]
+Outer grid size: 3922
+- xspace: LocalConfiguration[root={type => linear , start => 5.1745971254055749e+05 , end => 7.4995971254055749e+05 , N => 94 , endpoint => true}]
 - yspace: LocalConfiguration[root={type => linear , start => -2.1173080099392682e+04 , end => 1.5882691990060732e+05 , N => 73 , endpoint => true}]
-Info     : Inner grid size: 6643
-- xspace: LocalConfiguration[root={type => linear , start => 5.2120971254055749e+05 , end => 7.4620971254055749e+05 , N => 91 , endpoint => true}]
+Info     : Inner grid size: 6862
+- xspace: LocalConfiguration[root={type => linear , start => 5.1745971254055749e+05 , end => 7.4995971254055749e+05 , N => 94 , endpoint => true}]
 - yspace: LocalConfiguration[root={type => linear , start => -2.1173080099392682e+04 , end => 1.5882691990060732e+05 , N => 73 , endpoint => true}]
-Outer grid size: 6643
-- xspace: LocalConfiguration[root={type => linear , start => 5.2120971254055749e+05 , end => 6.9620971254055749e+05 , N => 71 , endpoint => true}]
+Outer grid size: 6862
+- xspace: LocalConfiguration[root={type => linear , start => 5.1745971254055749e+05 , end => 6.9995971254055749e+05 , N => 74 , endpoint => true}]
 - yspace: LocalConfiguration[root={type => linear , start => -2.1173080099392682e+04 , end => 1.0882691990060732e+05 , N => 53 , endpoint => true}]
-Info     : Inner grid size: 3763
-Norm of perturbation: member 1: 6.1789781495542329e+01
-Norm of band perturbation: member 1: band 1: 3.1913010569890638e+01
-Norm of band perturbation: member 1: band 2: 5.1182321193165784e+01
-Norm of perturbation: member 2: 6.1789781495542329e+01
-Norm of band perturbation: member 2: band 1: 3.1913010569890634e+01
-Norm of band perturbation: member 2: band 2: 5.1182321193165798e+01
+Info     : Inner grid size: 3922
+Norm of perturbation: member 1: 6.3732457665011680e+01
+Norm of band perturbation: member 1: band 1: 3.2430073595355800e+01
+Norm of band perturbation: member 1: band 2: 5.3451378929883369e+01
+Norm of perturbation: member 2: 6.3732457665011687e+01
+Norm of band perturbation: member 2: band 1: 3.2430073595355793e+01
+Norm of band perturbation: member 2: band 2: 5.3451378929883354e+01

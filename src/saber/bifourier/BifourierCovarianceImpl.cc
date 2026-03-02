@@ -34,7 +34,7 @@ BifourierCovarianceImpl::BifourierCovarianceImpl(const oops::GeometryData & geom
                                                  const oops::FieldSet3D & xb,
                                                  const oops::FieldSet3D & fg)
   : geometryData_(geometryData),
-    comm_(geometryData.comm()),
+    comm_(geometryData_.comm()),
     vars_(vars),
     params_(params),
     Lf_(params_.calibration.value() != boost::none ?
@@ -116,44 +116,56 @@ BifourierCovarianceImpl::BifourierCovarianceImpl(const oops::GeometryData & geom
       // Get correlation square-root view
       auto corSqrtView = make_view<double, 3>(corSqrtField);
 
-      // Get horizontal vertical length-scale
+      // Get vertical coordinate
+      std::string vertCoordName;
+      const std::string key = var.name() + ".vert_coord";
+      if (params_.fieldsMetaData.value().has(key)) {
+        vertCoordName = params_.fieldsMetaData.value().getString(key);
+     } else if (geometryData_.fieldSet().has("vert_coord")) {
+        vertCoordName = "vert_coord";
+      }
       std::vector<double> vcoord(nz, 0.0);
+      if (vertCoordName.empty()) {
+        // Use model levels
+        std::iota(vcoord.begin(), vcoord.end(), 0);
+      } else {
+        // Get vertical coordinate field
+        const atlas::Field vcoordField = geometryData_.fieldSet()[vertCoordName];
+
+        // Should be a 1D profile
+        ASSERT(vcoordField.rank() == 1);
+
+        // Check number of levels
+        ASSERT(vcoordField.shape(0) == static_cast<int>(nz));
+
+        // Get vertical coordinate view
+        const auto vcoordView = make_view<double, 1>(vcoordField);
+
+        // Copy vertical coordinate
+        for (size_t jz = 0; jz < nz; ++jz) {
+          vcoord[jz] = vcoordView(jz);
+        }
+      }
+
+      // Get horizontal vertical length-scale
       double Lv = 0.0;
       for (const auto & profile : *params_.profiles.value()) {
         if (profile.variable.value() == var.name()) {
-          // Get vertical coordinate
-          const std::string vcoordName = profile.vcoord.value();
-          if (vcoordName == "model levels") {
-            // Use model levels
-            std::iota(vcoord.begin(), vcoord.end(), 0);
-          } else {
-            // Get 1D vertical coordinate field from geometry data
-            const atlas::Field vcoordField = geometryData.fieldSet()[vcoordName];
-
-            // Check number of levels
-            ASSERT(vcoordField.shape(0) == static_cast<int>(nz));
-
-            // Get vertical coordinate view
-            const auto vcoordView = make_view<double, 1>(vcoordField);
-
-            // Copy vertical coordinate
-            for (size_t jz = 0; jz < nz; ++jz) {
-              vcoord[jz] = vcoordView(jz);
-            }
-          }
-
           // Copy vertical length-scale
           Lv = profile.Lv.value();
         }
       }
-      ASSERT(Lv > 0.0);
 
       // Compute vertical correlation matrix
       Eigen::MatrixXd vertCor(nz, nz);
       for (size_t jzI = 0; jzI < nz; ++jzI) {
         for (size_t jzJ = 0; jzJ < nz; ++jzJ) {
-          const double normDist = std::abs(vcoord[jzI]-vcoord[jzJ])/Lv;
-          vertCor(jzI, jzJ) = oops::gc99(normDist);
+          if (Lv > 0.0) {
+            const double normDist = std::abs(vcoord[jzI]-vcoord[jzJ])/Lv;
+            vertCor(jzI, jzJ) = oops::gc99(normDist);
+          } else {
+            vertCor(jzI, jzJ) = (jzI == jzJ) ? 1.0 : 0.0;
+          }
         }
       }
 

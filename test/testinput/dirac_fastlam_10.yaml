@@ -45,7 +45,7 @@ background error:
       function space: StructuredColumns
       grid:
         type : regional
-        nx : 71
+        nx : 74
         ny : 53
         dx : 2.5e3
         dy : 2.5e3
