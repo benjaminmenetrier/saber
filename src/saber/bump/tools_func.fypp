@@ -1753,18 +1753,18 @@ write(lunit,trim(cfmt),advance='no') '',varname,': ['
 if (grp2d) then
    ! Write single level
    if (profile(ilev2d)<zero) then
-      cfmt = '(e10.3)'
+      cfmt = '(e11.4)'
    else
-      cfmt = '(e9.3)'
+      cfmt = '(e10.4)'
    end if
    write(lunit,trim(cfmt),advance='no') profile(ilev2d)
 else
    ! Write all levels
    do il0=1,nl0
       if (profile(il0)<zero) then
-         cfmt = '(e10.3)'
+         cfmt = '(e11.4)'
       else
-         cfmt = '(e9.3)'
+         cfmt = '(e10.4)'
       end if
       write(lunit,trim(cfmt),advance='no') profile(il0)
       if (il0<nl0) write(lunit,'(a)',advance='no') ','
