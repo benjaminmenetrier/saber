@@ -198,6 +198,7 @@ auto createSpectralFilter(const oops::GeometryData & geometryData,
   // 4) Take square root (optional)
   // ------------------------------
   if ( params.squareRootFilter.value() ) {
+std::cout << "TEST: square-root activated" << std::endl;
     std::transform(spectralFilter.begin(), spectralFilter.end(),
                    spectralFilter.begin(), [](auto & e){return std::sqrt(e);});
   }

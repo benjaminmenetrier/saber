@@ -40,7 +40,7 @@ class SpectralAnalyticalFilterParameters : public SaberBlockParametersBase {
     oops::Parameter<bool> complementFilter{"complement filter", false, this};
 
     /// Define filter as a square-root
-    oops::Parameter<bool> squareRootFilter{"square root filter", false, this};
+    oops::Parameter<bool> squareRootFilter{"square-root filter", true, this};
 
     /// Filter specifications (Gaussian, boxcar function, triangle...)
     oops::Parameter<eckit::LocalConfiguration> function{"function",

@@ -35,6 +35,7 @@ bands:
     - saber block name: spectral to gauss
       right-inverse of a following block: true
     - saber block name: spectral analytical filter
+      square-root filter: false
       function:
         shape: waveband filter
         waveband min: 0
@@ -70,6 +71,7 @@ bands:
     - saber block name: spectral to gauss
       right-inverse of a following block: true
     - saber block name: spectral analytical filter
+      square-root filter: false
       function:
         shape: waveband filter
         waveband min: 1
@@ -104,6 +106,7 @@ bands:
     - saber block name: spectral to gauss
       right-inverse of a following block: true
     - saber block name: spectral analytical filter
+      square-root filter: false
       function:
         shape: waveband filter
         waveband min: 3
