@@ -440,7 +440,12 @@ void BifourierSpectralConverter::multiplyAD(oops::FieldSet3D & fset) const {
 void BifourierSpectralConverter::leftInverseMultiply(oops::FieldSet3D & fset) const {
   oops::Log::trace() << classname() << "::leftInverseMultiply starting" << std::endl;
 
-  ASSERT(false);
+  // Check sizes
+  ASSERT(innerTrans_->nx() <= outerTrans_->nx());
+  ASSERT(innerTrans_->ny() <= outerTrans_->ny());
+
+  // Adjoint multiply
+  multiplyAD(fset);
 
   oops::Log::trace() << classname() << "::leftInverseMultiply done" << std::endl;
 }

@@ -89,8 +89,7 @@ background error:
           auxiliary outer blocks:
           - saber block name: BifourierSpectralToGrid
   - filter:
-    - saber block name: BifourierSpectralToGrid
-      right-inverse of a following block: true
+    - saber block name: BifourierGridToSpectral
     - saber block name: BifourierAnalyticalFilter
       waveband min: 2
       waveband peak: 5

@@ -42,6 +42,9 @@ class BifourierAnalyticalFilterParameters : public SaberBlockParametersBase {
     // Maximum waveband (optional)
     oops::OptionalParameter<double> wavebandMax{"waveband max", this};
 
+    // Inverse mode
+    oops::Parameter<bool> inverseMode{"inverse mode", false, this};
+
     oops::Variables mandatoryActiveVars() const override {return oops::Variables();}
 };
 

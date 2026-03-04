@@ -111,6 +111,12 @@ auto createSpectralFilter(const BifourierTransformBase & trans,
     throw eckit::BadParameter("min or max waveband should be present", Here());
   }
 
+  if (params.inverseMode.value()) {
+    // Inverse filter
+    std::transform(spectralFilter.begin(), spectralFilter.end(),
+                   spectralFilter.begin(), [&](auto & x){return x != 0.0 ? 1.0 / x : 0.0;});
+  }
+
   oops::Log::trace() << "saber::bifourier::createSpectralFilter done" << std::endl;
   return spectralFilter;
 }
