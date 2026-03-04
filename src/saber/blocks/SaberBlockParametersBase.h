@@ -76,9 +76,11 @@ class SaberBlockParametersBase : public oops::Parameters {
   // Force calling write()
   oops::Parameter<bool> forceWrite{"force write", false, this};
 
-  // Right-inverse of a following block (sharing pointer).
-  // Only for filters, some methods like multiplyAD are not available.
-  oops::Parameter<bool> rightInverse{"right-inverse of a following block", false, this};
+  // Right-inverse mode: only for filters, some methods like multiplyAD are not available.
+  oops::Parameter<bool> rightInverse{"right-inverse", false, this};
+
+  // Reuse already created block
+  oops::Parameter<bool> reuseBlock{"reuse already created block", false, this};
 
   // METHODS
   // Find out whether calibration is needed
