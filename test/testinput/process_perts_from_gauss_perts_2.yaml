@@ -33,7 +33,8 @@ bands:
         multiply fset filename: "initial_increment"
         output path: "testdata/process_perts_from_gauss_perts_2/"
     - saber block name: spectral to gauss
-      right-inverse of a following block: true
+      right-inverse: true
+      reuse already created block: true
     - saber block name: spectral analytical filter
       function:
         shape: waveband filter
@@ -68,7 +69,8 @@ bands:
 - band:
     filter:
     - saber block name: spectral to gauss
-      right-inverse of a following block: true
+      right-inverse: true
+      reuse already created block: true
     - saber block name: spectral analytical filter
       function:
         shape: waveband filter
@@ -102,7 +104,8 @@ bands:
 - band:
     filter:
     - saber block name: spectral to gauss
-      right-inverse of a following block: true
+      right-inverse: true
+      reuse already created block: true
     - saber block name: spectral analytical filter
       function:
         shape: waveband filter

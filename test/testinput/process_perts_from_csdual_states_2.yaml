@@ -28,9 +28,11 @@ bands:
         multiply fset filename: initial_CS14_variance
         output path: testdata/process_perts_from_csdual_states_2/
     - <<: *GaussToCSDual
-      right-inverse of a following block: true
+      right-inverse: true
+      reuse already created block: true
     - saber block name: spectral to gauss
-      right-inverse of a following block: true
+      right-inverse: true
+      reuse already created block: true
     - saber block name: spectral analytical filter
       function:
         shape: waveband filter
@@ -62,9 +64,11 @@ bands:
       gauss grid uid: F14
     filter:
     - <<: *GaussToCSDual
-      right-inverse of a following block: true
+      right-inverse: true
+      reuse already created block: true
     - saber block name: spectral to gauss
-      right-inverse of a following block: true
+      right-inverse: true
+      reuse already created block: true
     - saber block name: spectral analytical filter
       function:
         shape: waveband filter
@@ -92,9 +96,11 @@ bands:
       gauss grid uid: F14
     filter:
     - <<: *GaussToCSDual
-      right-inverse of a following block: true
+      right-inverse: true
+      reuse already created block: true
     - saber block name: spectral to gauss
-      right-inverse of a following block: true
+      right-inverse: true
+      reuse already created block: true
     - saber block name: spectral analytical filter
       function:
         shape: waveband filter
