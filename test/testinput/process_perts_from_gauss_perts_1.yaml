@@ -27,7 +27,8 @@ bands:
 - band:
     filter:
     - saber block name: spectral to gauss
-      right-inverse of a following block: true
+      right-inverse: true
+      reuse already created block: true
     - saber block name: spectral analytical filter
       function:
         horizontal daley length: 5008e3
