@@ -119,9 +119,9 @@ std::tuple<const SaberBlockParametersBase&, oops::Variables, oops::Variables>
   // Get active variables
   const oops::Variables activeVars = saberOuterBlockParams.getActiveVars(currentOuterVars);
 
-  if (saberOuterBlockParams.rightInverse.value()) {
-    // Creating inverse of a following outer block
-    oops::Log::info() << "Info     : Right-inverse of a following outer block: "
+  if (saberOuterBlockParams.reuseBlock.value()) {
+    // Reuse an already created block
+    oops::Log::info() << "Info     : Reuse an already created block: "
                       << saberOuterBlockParams.saberBlockName.value() << std::endl;
 
     // Find the target block, while checking for its unicity
@@ -142,7 +142,8 @@ std::tuple<const SaberBlockParametersBase&, oops::Variables, oops::Variables>
     ASSERT(found);
 
     // Share pointer of target block
-    outerBlocks_.emplace_back(std::make_pair(targetBlock, true));
+    outerBlocks_.emplace_back(std::make_pair(targetBlock,
+                                             saberOuterBlockParams.rightInverse.value()));
   } else {
     // Creating outer block
     oops::Log::info() << "Info     : Creating outer block: "
@@ -192,7 +193,7 @@ std::tuple<const SaberBlockParametersBase&, oops::Variables, oops::Variables>
                                                saberOuterBlockParams,
                                                fset4dXb[0],
                                                fset4dFg[0]),
-                                             false));
+                                             saberOuterBlockParams.rightInverse.value()));
   }
 
   return std::tuple<const SaberBlockParametersBase&, oops::Variables, oops::Variables>(
