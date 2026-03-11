@@ -77,7 +77,7 @@ class SaberBlockParametersBase : public oops::Parameters {
   oops::Parameter<bool> forceWrite{"force write", false, this};
 
   // Right-inverse mode: only for filters, some methods like multiplyAD are not available.
-  oops::Parameter<bool> rightInverse{"right-inverse", false, this};
+  oops::Parameter<bool> rightInverse{"right inverse", false, this};
 
   // Reuse already created block
   oops::Parameter<bool> reuseBlock{"reuse already created block", false, this};

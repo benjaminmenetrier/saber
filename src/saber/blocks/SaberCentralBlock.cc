@@ -680,7 +680,7 @@ void SaberCentralBlock::directCalibration(const oops::FieldSets & fsets) {
   for (size_t igroup = 0; igroup < ngroup_; ++igroup) {
     if (doCalibration_[igroup]) {
       if (groupAuxOuterBlockChains_[igroup]) {
-        // Applying the left-inverse of the auxiliary outer block chain would require a deep-copy
+        // Applying the left inverse of the auxiliary outer block chain would require a deep-copy
         // of the ensemble, not allowed here. If needed, ensemble-based calibration should be done
         // outside of the multivariate central block framework.
         ASSERT(fsets.size() == 0);
