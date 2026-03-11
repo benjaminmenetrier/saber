@@ -29,11 +29,7 @@ class SpectralAnalyticalImplParameters : public SaberBlockParametersBase {
   OOPS_CONCRETE_PARAMETERS(SpectralAnalyticalImplParameters, SaberBlockParametersBase)
 
  public:
-    /// Whether to normalize as a localization function
-    oops::Parameter<bool> normalizeFilterVariance{"normalize filter variance", false, this};
-
     /// Whether to preserve variance of processed increments
-    /// Should only be used when "normalize filter variance" == false.
     oops::Parameter<bool> preservingVariance{"preserving variance", false, this};
 
     /// Define filter as the complement of the function
