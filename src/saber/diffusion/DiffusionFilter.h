@@ -15,7 +15,7 @@
 #include "atlas/field.h"
 
 #include "saber/blocks/SaberOuterBlockBase.h"
-#include "saber/diffusion/DiffusionImplementation.h"
+#include "saber/diffusion/DiffusionImpl.h"
 #include "saber/diffusion/DiffusionParameters.h"
 
 // forward declarations

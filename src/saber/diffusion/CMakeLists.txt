@@ -8,8 +8,8 @@ Diffusion.cc
 Diffusion.h
 DiffusionFilter.cc
 DiffusionFilter.h
-DiffusionImplementation.cc
-DiffusionImplementation.h
+DiffusionImpl.cc
+DiffusionImpl.h
 DiffusionParameters.h
 )
 
