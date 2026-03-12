@@ -54,8 +54,7 @@ class SpectralAnalyticalImpl {
                          const oops::Variables &,
                          const eckit::Configuration &,
                          const Parameters_ &,
-                         const oops::FieldSet3D &,
-                         const oops::FieldSet3D &,
+                         const util::DateTime &,
                          const bool &);
 
   const oops::GeometryData & innerGeometryData() const {return innerGeometryData_;}

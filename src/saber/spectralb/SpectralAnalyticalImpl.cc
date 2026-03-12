@@ -208,11 +208,10 @@ SpectralAnalyticalImpl::SpectralAnalyticalImpl(const oops::GeometryData & geomet
                                                const oops::Variables & vars,
                                                const eckit::Configuration & covarConf,
                                                const Parameters_ & params,
-                                               const oops::FieldSet3D & xb,
-                                               const oops::FieldSet3D & fg,
+                                               const util::DateTime & validTime,
                                                const bool & sqrtMode)
   : params_(params),
-    validTime_(xb.validTime()),
+    validTime_(validTime),
     activeVars_(params.getActiveVars(vars)),
     innerGeometryData_(geometryData),
     innerVars_(vars),
