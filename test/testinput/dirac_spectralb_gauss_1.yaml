@@ -106,7 +106,6 @@ background error:
               - summed_variables
               function:
                 horizontal daley length: 6000e3  # Possibly larger localization
-              normalize filter variance: true
             saber outer blocks:
             - saber block name: spectral to gauss
               active variables:
@@ -170,7 +169,6 @@ background error:
               - summed_variables
               function:
                 horizontal daley length: 6000e3  # Possibly larger localization
-              normalize filter variance: true
             saber outer blocks:
             - saber block name: spectral to gauss
               active variables:
@@ -232,7 +230,6 @@ background error:
               - summed_variables
               function:
                 horizontal daley length: 6000e3  # Possibly larger localization
-              normalize filter variance: true
             saber outer blocks:
             - saber block name: spectral to gauss
               active variables:

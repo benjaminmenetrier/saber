@@ -56,7 +56,6 @@ background error:
                 waveband min: 0
                 waveband max: 14
                 waveband amplitude: 1.0
-              normalize filter variance: true
             saber outer blocks:
             - saber block name: spectral to gauss
         saber outer blocks:
@@ -93,7 +92,6 @@ background error:
             # (although full inter-level and inter-variables localization)
               function:
                 horizontal daley length: 5000e3  # (in m)
-              normalize filter variance: true
             saber outer blocks:
             - saber block name: spectral to gauss
         saber outer blocks:
@@ -127,7 +125,6 @@ background error:
                 waveband min: 0
                 waveband max: 0
                 waveband amplitude: 1.0
-              normalize filter variance: true
             saber outer blocks:
             - saber block name: spectral to gauss
             - saber block name: gauss to cubed-sphere-dual

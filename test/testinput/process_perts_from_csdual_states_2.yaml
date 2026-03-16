@@ -16,7 +16,7 @@ background:
 
 bands:
 - band:
-    gauss to cubed-sphere-dual block: &GaussToCSDual # To avoid a copy in right-inverse and direct blocks
+    gauss to cubed-sphere-dual block: &GaussToCSDual # To avoid a copy in right inverse and direct blocks
       saber block name: gauss to cubed-sphere-dual
       gauss grid uid: F14
     filter:
@@ -28,10 +28,10 @@ bands:
         multiply fset filename: initial_CS14_variance
         output path: testdata/process_perts_from_csdual_states_2/
     - <<: *GaussToCSDual
-      right-inverse: true
+      right inverse: true
       reuse already created block: true
     - saber block name: spectral to gauss
-      right-inverse: true
+      right inverse: true
       reuse already created block: true
     - saber block name: spectral analytical filter
       function:
@@ -59,15 +59,15 @@ bands:
       filepath: testdata/process_perts_from_csdual_states_2/wb1_CS-LFR-14_mb%MEM%_inc
       member pattern: '%MEM%'
 - band:
-    gauss to cubed-sphere-dual block: &GaussToCSDual # To avoid a copy in right-inverse and direct blocks
+    gauss to cubed-sphere-dual block: &GaussToCSDual # To avoid a copy in right inverse and direct blocks
       saber block name: gauss to cubed-sphere-dual
       gauss grid uid: F14
     filter:
     - <<: *GaussToCSDual
-      right-inverse: true
+      right inverse: true
       reuse already created block: true
     - saber block name: spectral to gauss
-      right-inverse: true
+      right inverse: true
       reuse already created block: true
     - saber block name: spectral analytical filter
       function:
@@ -91,15 +91,15 @@ bands:
       multiply fset filename: wb2_F14_inc
     - <<: *GaussToCSDual
 - band:
-    gauss to cubed-sphere-dual block: &GaussToCSDual # To avoid a copy in right-inverse and direct blocks
+    gauss to cubed-sphere-dual block: &GaussToCSDual # To avoid a copy in right inverse and direct blocks
       saber block name: gauss to cubed-sphere-dual
       gauss grid uid: F14
     filter:
     - <<: *GaussToCSDual
-      right-inverse: true
+      right inverse: true
       reuse already created block: true
     - saber block name: spectral to gauss
-      right-inverse: true
+      right inverse: true
       reuse already created block: true
     - saber block name: spectral analytical filter
       function:
