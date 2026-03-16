@@ -150,12 +150,11 @@ auto createSpectralFilter(const oops::GeometryData & geometryData,
   // 3) Normalize as a localization function if required or
   //    preserve variance of increments.
   // ---------------------------------------------------
-  if ( params.normalizeFilterVariance && params.preservingVariance ) {
-    throw eckit::BadParameter(
-    "normalize filter variance option incompatibile with preserving variance option");
+  if ( sqrtMode && params.preservingVariance ) {
+    throw eckit::BadParameter("square-root mode incompatibile with preserving variance option");
   }
 
-  if ( params.normalizeFilterVariance ) {
+  if ( sqrtMode ) {
     // Compute total variance in spectral space before normalization.
     std::vector<double> spectralFilterPrefixSum(spectralFilter.size(), 0.0);
     std::partial_sum(spectralFilter.begin(), spectralFilter.end(), spectralFilterPrefixSum.begin());
@@ -209,11 +208,10 @@ SpectralAnalyticalImpl::SpectralAnalyticalImpl(const oops::GeometryData & geomet
                                                const oops::Variables & vars,
                                                const eckit::Configuration & covarConf,
                                                const Parameters_ & params,
-                                               const oops::FieldSet3D & xb,
-                                               const oops::FieldSet3D & fg,
+                                               const util::DateTime & validTime,
                                                const bool & sqrtMode)
   : params_(params),
-    validTime_(xb.validTime()),
+    validTime_(validTime),
     activeVars_(params.getActiveVars(vars)),
     innerGeometryData_(geometryData),
     innerVars_(vars),

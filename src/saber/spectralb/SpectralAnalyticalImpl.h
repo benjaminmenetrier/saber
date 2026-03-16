@@ -29,11 +29,7 @@ class SpectralAnalyticalImplParameters : public SaberBlockParametersBase {
   OOPS_CONCRETE_PARAMETERS(SpectralAnalyticalImplParameters, SaberBlockParametersBase)
 
  public:
-    /// Whether to normalize as a localization function
-    oops::Parameter<bool> normalizeFilterVariance{"normalize filter variance", false, this};
-
     /// Whether to preserve variance of processed increments
-    /// Should only be used when "normalize filter variance" == false.
     oops::Parameter<bool> preservingVariance{"preserving variance", false, this};
 
     /// Define filter as the complement of the function
@@ -58,8 +54,7 @@ class SpectralAnalyticalImpl {
                          const oops::Variables &,
                          const eckit::Configuration &,
                          const Parameters_ &,
-                         const oops::FieldSet3D &,
-                         const oops::FieldSet3D &,
+                         const util::DateTime &,
                          const bool &);
 
   const oops::GeometryData & innerGeometryData() const {return innerGeometryData_;}

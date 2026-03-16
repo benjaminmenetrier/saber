@@ -240,7 +240,6 @@ template <typename MODEL> class ProcessPerts : public oops::Application {
 
     std::size_t b(0);
     for (const auto & bandConf : bandsConfs) {
-      eckit::LocalConfiguration bConf = bandConf.getSubConfiguration("band");
       if (bandConf.has("band")) {
         // Add filter for this band
         eckit::LocalConfiguration bConf = bandConf.getSubConfiguration("band");

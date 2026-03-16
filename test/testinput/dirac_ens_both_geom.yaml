@@ -67,7 +67,6 @@ background error:
                 waveband min: 0
                 waveband max: 0
                 waveband amplitude: 1.0
-              normalize filter variance: true
             saber outer blocks:
             - saber block name: spectral to gauss
         saber outer blocks:

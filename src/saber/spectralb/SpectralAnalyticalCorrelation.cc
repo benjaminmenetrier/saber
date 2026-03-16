@@ -36,7 +36,7 @@ SpectralAnalyticalCorrelation::SpectralAnalyticalCorrelation(
 
   // Setup implementation
   impl_ = std::make_unique<SpectralAnalyticalImpl>(geometryData, centralVars, covarConf, params,
-    xb, fg, true);
+    xb.validTime(), true);
 
   oops::Log::trace() << classname() << "::SpectralAnalyticalCorrelation done" << std::endl;
 }

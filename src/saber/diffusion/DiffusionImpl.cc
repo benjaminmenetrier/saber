@@ -5,7 +5,7 @@
  * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
  */
 
-#include "saber/diffusion/DiffusionImplementation.h"
+#include "saber/diffusion/DiffusionImpl.h"
 
 #include <algorithm>
 #include <limits>

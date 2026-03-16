@@ -156,7 +156,7 @@ class SaberOuterBlockChain {
       } else {
         if (it->second) {
           // Right-inverse mode
-          throw eckit::Exception("no right-inverse available in right-inverse mode", Here());
+          throw eckit::Exception("no right inverse available in right inverse mode", Here());
         } else {
           // Direct mode
           it->first.get()->rightInverseMultiply(fset);
@@ -224,7 +224,7 @@ class SaberOuterBlockChain {
                           const oops::Variables & activeVars) const;
 
   /// @brief Vector of all outer blocks, paired with a boolean to indicate the application mode:
-  /// - true: right-inverse mode
+  /// - true: right inverse mode
   /// - false: direct mode
   /// TODO(AS): Need to expand this to create different outer blocks for different
   /// times for the 4D with multiple times on one MPI task.
