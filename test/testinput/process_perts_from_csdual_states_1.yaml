@@ -18,15 +18,15 @@ background:
 
 bands:
 - band: 
-    gauss to cubed-sphere-dual block: &GaussToCSDual # To avoid a copy in right-inverse and direct blocks
+    gauss to cubed-sphere-dual block: &GaussToCSDual # To avoid a copy in right inverse and direct blocks
       saber block name: gauss to cubed-sphere-dual
       gauss grid uid: F45
     filter:
     - <<: *GaussToCSDual
-      right-inverse: true
+      right inverse: true
       reuse already created block: true
     - saber block name: spectral to gauss
-      right-inverse: true
+      right inverse: true
       reuse already created block: true
     - saber block name: spectral analytical filter
       function:

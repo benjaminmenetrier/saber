@@ -33,7 +33,7 @@ SpectralAnalyticalFilter::SpectralAnalyticalFilter(const oops::GeometryData & ge
 
   // Setup implementation
   impl_ = std::make_unique<SpectralAnalyticalImpl>(geometryData, outerVars, covarConf, params,
-    xb, fg, false);
+    xb.validTime(), false);
 
   oops::Log::trace() << classname() << "::SpectralAnalyticalFilter done" << std::endl;
 }

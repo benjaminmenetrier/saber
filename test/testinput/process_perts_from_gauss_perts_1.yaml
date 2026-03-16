@@ -27,12 +27,11 @@ bands:
 - band:
     filter:
     - saber block name: spectral to gauss
-      right-inverse: true
+      right inverse: true
       reuse already created block: true
     - saber block name: spectral analytical filter
       function:
         horizontal daley length: 5008e3
-      normalize filter variance: false
       active variables:
       - air_horizontal_streamfunction
       - air_horizontal_velocity_potential
