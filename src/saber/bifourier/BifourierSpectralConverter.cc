@@ -138,8 +138,13 @@ BifourierSpectralConverter::BifourierSpectralConverter(const oops::GeometryData 
     }
   }
 
-  // Empty fields (no interpolation yet)
+  // Copy 1D fields (profiles), no interpolation for gridded fields
   atlas::FieldSet fields;
+  for (const auto & field : outerGeometryData.fieldSet()) {
+    if (field.rank() == 1) {
+      fields.add(field);
+    }
+  }
 
   // Inner geometry data
   innerGpGeometryData_ = std::make_unique<oops::GeometryData>(innerGpFs,
