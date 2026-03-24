@@ -121,7 +121,7 @@ BifourierCovarianceImpl::BifourierCovarianceImpl(const oops::GeometryData & geom
       const std::string key = var.name() + ".vert_coord";
       if (params_.fieldsMetaData.value().has(key)) {
         vertCoordName = params_.fieldsMetaData.value().getString(key);
-     } else if (geometryData_.fieldSet().has("vert_coord")) {
+      } else if (geometryData_.fieldSet().has("vert_coord")) {
         vertCoordName = "vert_coord";
       }
       std::vector<double> vcoord(nz, 0.0);
