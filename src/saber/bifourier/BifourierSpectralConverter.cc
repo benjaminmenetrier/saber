@@ -10,7 +10,6 @@
 #include "atlas/grid.h"
 
 #include "oops/util/FloatCompare.h"
-#include "oops/util/FunctionSpaceHelpers.h"
 
 using atlas::array::make_view;
 
@@ -112,21 +111,39 @@ BifourierSpectralConverter::BifourierSpectralConverter(const oops::GeometryData 
     // Create inner grid
     atlas::StructuredGrid innerGrid(xspace, yspace, projection, domain);
 
-    // Create a new function space
-    eckit::LocalConfiguration innerGeomConfig;
-    innerGeomConfig.set("function space", "StructuredColumns");
-    innerGeomConfig.set("grid", innerGrid.spec());
-    innerGeomConfig.set("partitioner", params.partitioner.value());
-    atlas::grid::Partitioner partitioner;
-    atlas::Mesh mesh;
-    atlas::FieldSet fields;
-    util::setupFunctionSpace(comm_, innerGeomConfig, innerGrid, partitioner, mesh, innerGpFs,
-      fields);
+    // Set up ATLAS MPI
+    eckit::mpi::setCommDefault(comm_.name().c_str());
+
+    // Create partitioner
+    atlas::grid::Partitioner partitioner = atlas::grid::Partitioner(params.partitioner.value());
+
+    // Create functionspace from partitioner
+    innerGpFs = atlas::functionspace::StructuredColumns(innerGrid, partitioner);
+
+    // Reset communicator
+    eckit::mpi::setCommDefault(comm_.name().c_str());
+
+    // Bugfix for regional grids
+    // It seems that the content of lonlat for a regional function space is actually the xy
+    // coordinates. The routine to compute distances on the sphere was complaining about
+    // impossible lon/lat values...
+    auto lonlat = atlas::array::make_view<double, 2>(innerGpFs.lonlat());
+    double lonlatPoint[] = {0, 0};
+    const auto view_i = atlas::array::make_indexview<int, 1>(innerGpFs.index_i());
+    const auto view_j = atlas::array::make_indexview<int, 1>(innerGpFs.index_j());
+    for (int jj = 0; jj < innerGpFs.size(); ++jj) {
+      innerGrid.lonlat(view_i(jj), view_j(jj), lonlatPoint);
+      lonlat(jj, 0) = lonlatPoint[0];
+      lonlat(jj, 1) = lonlatPoint[1];
+    }
   }
+
+  // Empty fields (no interpolation yet)
+  atlas::FieldSet fields;
 
   // Inner geometry data
   innerGpGeometryData_ = std::make_unique<oops::GeometryData>(innerGpFs,
-    outerGeometryData.fieldSet(), outerGeometryData.levelsAreTopDown(), comm_, false);
+    fields, outerGeometryData.levelsAreTopDown(), comm_, false);
 
   // Create inner spectral transform
   innerTrans_ = transStore_.setupTransform(*innerGpGeometryData_, innerVars_,
@@ -134,7 +151,7 @@ BifourierSpectralConverter::BifourierSpectralConverter(const oops::GeometryData 
 
   // Create inner spectral GeometryData
   innerGeometryData_ = std::make_unique<oops::GeometryData>(innerTrans_->spFspace(),
-    outerGeometryData.fieldSet(), outerGeometryData.levelsAreTopDown(), comm_, false);
+    fields, outerGeometryData.levelsAreTopDown(), comm_, false);
 
   // Check domain size
   ASSERT(oops::is_close_relative(static_cast<double>(innerTrans_->nx())*innerTrans_->dx(),
