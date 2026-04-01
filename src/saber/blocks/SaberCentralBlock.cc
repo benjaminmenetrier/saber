@@ -787,8 +787,8 @@ void SaberCentralBlock::randomCtlVec(atlas::Field & cv,
     // Initialize index
     size_t index = offset;
 
-    if (strategy_ == "univariate") {
-      // Univariate strategy
+    if ((strategy_ == "univariate") || (strategy_ == "duplicated and weighted")) {
+      // Univariate or duplicated and weighted strategy
       for (size_t igroup = 0; igroup < ngroup_; ++igroup) {
         for (size_t jvar = 0; jvar < groupInputVars_[igroup].size(); ++jvar) {
           // Apply localization
@@ -805,17 +805,6 @@ void SaberCentralBlock::randomCtlVec(atlas::Field & cv,
         groupCentralBlocks_[igroup]->randomCtlVec(cv, index);
 
         if (strategy_ == "duplicated") {
-          // Update index
-          index += groupCentralBlocks_[igroup]->ctlVecSize();
-        }
-      }
-    } else if (strategy_ == "duplicated and weighted") {
-      // Duplicated and weighted strategy
-      for (size_t igroup = 0; igroup < ngroup_; ++igroup) {
-        for (size_t jvar = 0; jvar < groupInputVars_[igroup].size(); ++jvar) {
-          // Apply localization
-          groupCentralBlocks_[igroup]->randomCtlVec(cv, index);
-
           // Update index
           index += groupCentralBlocks_[igroup]->ctlVecSize();
         }
