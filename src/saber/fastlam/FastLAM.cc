@@ -1254,6 +1254,25 @@ void FastLAM::setupWeight() {
   const auto indexX0View = atlas::array::make_indexview<int, 1>(fs.index_i());
   const auto indexY0View = atlas::array::make_indexview<int, 1>(fs.index_j());
 
+  // Get grid cell size field
+  std::vector<double> cellSizeField(nodes0_, 0.0);
+  for (size_t jnode0 = 0; jnode0 < nodes0_; ++jnode0) {
+    if (ghostView(jnode0) == 0) {
+      // Cell area
+      const int i0 = indexX0View(jnode0);
+      const int j0 = indexY0View(jnode0);
+      const int im = std::min(std::max(i0-1, 0), static_cast<int>(nx0_-1));
+      const int ip = std::min(std::max(i0+1, 0), static_cast<int>(nx0_-1));
+      const int jm = std::min(std::max(j0-1, 0), static_cast<int>(ny0_-1));
+      const int jp = std::min(std::max(j0+1, 0), static_cast<int>(ny0_-1));
+      const double dx = atlas::util::Earth().distance(grid.lonlat(ip, j0), grid.lonlat(im, j0))
+        /static_cast<double>(ip-im);
+      const double dy = atlas::util::Earth().distance(grid.lonlat(i0, jp), grid.lonlat(i0, jm))
+        /static_cast<double>(jp-jm);
+      cellSizeField[jnode0] = std::sqrt(dx*dy);
+    }
+  }
+
   // Normalize rh
   for (size_t jg = 0; jg < groups_.size(); ++jg) {
     atlas::Field rhField = (*rh_)[groups_[jg].name_];
@@ -1261,21 +1280,9 @@ void FastLAM::setupWeight() {
 
     for (size_t jnode0 = 0; jnode0 < nodes0_; ++jnode0) {
       if (ghostView(jnode0) == 0) {
-        // Cell area
-        const int i0 = indexX0View(jnode0);
-        const int j0 = indexY0View(jnode0);
-        const int im = std::min(std::max(i0-1, 0), static_cast<int>(nx0_-1));
-        const int ip = std::min(std::max(i0+1, 0), static_cast<int>(nx0_-1));
-        const int jm = std::min(std::max(j0-1, 0), static_cast<int>(ny0_-1));
-        const int jp = std::min(std::max(j0+1, 0), static_cast<int>(ny0_-1));
-        const double dx = atlas::util::Earth().distance(grid.lonlat(ip, j0), grid.lonlat(im, j0))
-          /static_cast<double>(ip-im);
-        const double dy = atlas::util::Earth().distance(grid.lonlat(i0, jp), grid.lonlat(i0, jm))
-          /static_cast<double>(jp-jm);
-
         // Normalize rh with cell area square-root
         for (size_t jz0 = 0; jz0 < groups_[jg].nz0_; ++jz0) {
-          rhView(jnode0, jz0) = rhView(jnode0, jz0)/std::sqrt(dx*dy);
+          rhView(jnode0, jz0) = rhView(jnode0, jz0)/cellSizeField[jnode0];
         }
       }
     }
@@ -1357,6 +1364,54 @@ void FastLAM::setupWeight() {
     }
   }
 
+  // Initialize sampling length-scales
+  if (params_.srhFromYaml.value() != boost::none) {
+    // Get min/max cell sizes
+    double minCellSize = std::numeric_limits<double>::max();
+    double maxCellSize = std::numeric_limits<double>::min();
+    for (size_t jnode0 = 0; jnode0 < nodes0_; ++jnode0) {
+      if (ghostView(jnode0) == 0) {
+        minCellSize = std::min(minCellSize, cellSizeField[jnode0]);
+        maxCellSize = std::max(maxCellSize, cellSizeField[jnode0]);
+      }
+    }
+    comm_.allReduceInPlace(minCellSize, eckit::mpi::min());
+    comm_.allReduceInPlace(maxCellSize, eckit::mpi::max());
+
+    // Average value
+    double srh = *params_.srhFromYaml.value();
+    srh = 0.5*(srh/minCellSize + srh/maxCellSize);
+
+    // Copy input value to srh_
+    for (size_t jg = 0; jg < groups_.size(); ++jg) {
+      for (size_t jBin = 0; jBin < weight_.size(); ++jBin) {
+        data_[jg][jBin]->srh() = srh;
+      }
+    }
+  } else {
+    // Copy rh_ to srh_
+    for (size_t jg = 0; jg < groups_.size(); ++jg) {
+      for (size_t jBin = 0; jBin < weight_.size(); ++jBin) {
+        data_[jg][jBin]->srh() = data_[jg][jBin]->rh();
+      }
+    }
+  }
+  if (params_.srvFromYaml.value() != boost::none) {
+    // Copy input value to srv_
+    for (size_t jg = 0; jg < groups_.size(); ++jg) {
+      for (size_t jBin = 0; jBin < weight_.size(); ++jBin) {
+        data_[jg][jBin]->srv() = *params_.srvFromYaml.value();
+      }
+    }
+  } else {
+    // Copy rv_ to srv_
+    for (size_t jg = 0; jg < groups_.size(); ++jg) {
+      for (size_t jBin = 0; jBin < weight_.size(); ++jBin) {
+        data_[jg][jBin]->srv() = data_[jg][jBin]->rv();
+      }
+    }
+  }
+
   oops::Log::trace() << classname() << "::setupWeight done" << std::endl;
 }
 
@@ -1398,10 +1453,10 @@ void FastLAM::setupReductionFactors() {
   oops::Log::trace() << classname() << "::setupReductionFactors starting" << std::endl;
 
   for (size_t jBin = 0; jBin < weight_.size(); ++jBin) {
-    // Define reduction factors
+    // Define reduction factors from sampling length-scales
     for (size_t jg = 0; jg < groups_.size(); ++jg) {
-      data_[jg][jBin]->rfh() = std::max(data_[jg][jBin]->rh()/data_[jg][jBin]->resol(), 1.0);
-      data_[jg][jBin]->rfv() = std::max(data_[jg][jBin]->rv()/data_[jg][jBin]->resol(), 1.0);
+      data_[jg][jBin]->rfh() = std::max(data_[jg][jBin]->srh()/data_[jg][jBin]->resol(), 1.0);
+      data_[jg][jBin]->rfv() = std::max(data_[jg][jBin]->srv()/data_[jg][jBin]->resol(), 1.0);
     }
 
     if (params_.strategy.value() == "crossed") {

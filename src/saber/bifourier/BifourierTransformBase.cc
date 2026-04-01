@@ -96,7 +96,7 @@ BifourierTransformBase::BifourierTransformBase(const oops::GeometryData & gdata,
 
   // Cell size
   dx_ = fs.grid().dx(0);
-  dy_ = fs.grid().y(1) - fs.grid().y(0);
+  dy_ = std::abs(fs.grid().y(1) - fs.grid().y(0));
   oops::Log::test() << "- Cell sizes: " << dx_*1.0e-3 << " km x " << dy_*1.0e-3 << " km"
     << std::endl;
 
