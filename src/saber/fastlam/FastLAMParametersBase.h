@@ -70,6 +70,12 @@ class FastLAMParametersBase : public oops::Parameters {
   oops::OptionalParameter<std::vector<ValueOrProfileParameters>>
     rvFromYaml{"vertical length-scale", this};
 
+  // Sampling horizontal length-scale
+  oops::OptionalParameter<double> srhFromYaml{"sampling horizontal length-scale", this};
+
+  // Sampling vertical length-scale
+  oops::OptionalParameter<double> srvFromYaml{"sampling vertical length-scale", this};
+
   // Number of layers
   oops::OptionalParameter<size_t> nLayers{"number of layers", this};
 
