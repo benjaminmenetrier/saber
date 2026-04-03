@@ -112,6 +112,7 @@ class FastLAM : public SaberCentralBlockBase {
   size_t nx0_;
   size_t ny0_;
   size_t nodes0_;
+  std::vector<double> cellSizeField_;
 
   // Control vector size
   size_t ctlVecSize_;
