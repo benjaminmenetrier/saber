@@ -370,8 +370,8 @@ void LayerHalo::extractConvolution(const size_t & nxHalf,
 
 // -----------------------------------------------------------------------------
 
-std::vector<int> LayerHalo::ctlVecRemoteIndex() const {
-  oops::Log::trace() << classname() << "::ctlVecRemoteIndex starting" << std::endl;
+std::vector<int> LayerHalo::ctlVecGlbIndex() const {
+  oops::Log::trace() << classname() << "::ctlVecGlbIndex starting" << std::endl;
 
   // Reduced grid indices
   atlas::Field indexXField = fset_["indexX"];
@@ -380,19 +380,19 @@ std::vector<int> LayerHalo::ctlVecRemoteIndex() const {
   auto indexYView = atlas::array::make_view<int, 1>(indexYField);
 
   // Compute remote index
-  std::vector<int> ctlVecRemoteIndex(ctlVecSize());
+  std::vector<int> ctlVecGlbIndex(ctlVecSize());
   size_t index = 0;
   for (size_t jnode = 0; jnode < rSize_; ++jnode) {
     const int jx = indexXView(jnode);
     const int jy = indexYView(jnode);
     for (size_t jz = 0; jz < nz_; ++jz) {
-      ctlVecRemoteIndex[index] = (jx*ny_+jy)*nz_+jz;
+      ctlVecGlbIndex[index] = (jx*ny_+jy)*nz_+jz;
       ++index;
     }
   }
 
-  oops::Log::trace() << classname() << "::ctlVecRemoteIndex done" << std::endl;
-  return ctlVecRemoteIndex;
+  oops::Log::trace() << classname() << "::ctlVecGlbIndex done" << std::endl;
+  return ctlVecGlbIndex;
 }
 
 // -----------------------------------------------------------------------------

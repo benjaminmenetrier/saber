@@ -143,7 +143,7 @@ void FastLAM::randomCtlVec(atlas::Field & cv,
     atlas::array::make_shape(ctlVecSize_));
 
   // Random local control vector
-  util::randomCtlVec(comm_, remoteIndex_, cvTmp);
+  util::randomCtlVec(comm_, glbIndex_, cvTmp);
 
   // Fill control vector values
   const auto cvTmpView = atlas::array::make_view<double, 1>(cvTmp);
@@ -771,7 +771,7 @@ void FastLAM::directCalibration(const oops::FieldSets &) {
   setupCtlVecSize();
 
   // Setup remote index
-  setupRemoteIndex();
+  setupGlbIndex();
 
   oops::Log::trace() << classname() << "::calibration done" << std::endl;
 }
@@ -862,7 +862,7 @@ void FastLAM::read() {
   setupCtlVecSize();
 
   // Setup remote index
-  setupRemoteIndex();
+  setupGlbIndex();
 
   oops::Log::trace() << classname() << "::read done" << std::endl;
 }
@@ -1459,8 +1459,8 @@ void FastLAM::setupCtlVecSize() {
 
 // -----------------------------------------------------------------------------
 
-void FastLAM::setupRemoteIndex() {
-  oops::Log::trace() << classname() << "::setupRemoteIndex starting" << std::endl;
+void FastLAM::setupGlbIndex() {
+  oops::Log::trace() << classname() << "::setupGlbIndex starting" << std::endl;
 
   // Initialize offset
   int offset = 0;
@@ -1470,7 +1470,7 @@ void FastLAM::setupRemoteIndex() {
     // Loop over groups
     for (size_t jg = 0; jg < groups_.size(); ++jg) {
       // Get partial remote index
-      std::vector<int> partialRemoteIndex = data_[jg][jBin]->ctlVecRemoteIndex();
+      std::vector<int> partialGlbIndex = data_[jg][jBin]->ctlVecGlbIndex();
 
       // Get global control vector size
       int ctlVecGlbSize;
@@ -1481,21 +1481,21 @@ void FastLAM::setupRemoteIndex() {
         // Univariate strategy
         for (size_t jvar = 0; jvar < groups_[jg].variables_.size(); ++jvar) {
           for (size_t jcv = 0; jcv < data_[jg][jBin]->ctlVecSize(); ++jcv) {
-            remoteIndex_.push_back(partialRemoteIndex[jcv]+offset);
+            glbIndex_.push_back(partialGlbIndex[jcv]+offset);
           }
           offset += ctlVecGlbSize;
         }
       } else if (params_.strategy.value() == "duplicated") {
         // Duplicated strategy
         for (size_t jcv = 0; jcv < data_[jg][jBin]->ctlVecSize(); ++jcv) {
-         remoteIndex_.push_back(partialRemoteIndex[jcv]+offset);
+         glbIndex_.push_back(partialGlbIndex[jcv]+offset);
         }
         offset += ctlVecGlbSize;
       } else if (params_.strategy.value() == "crossed") {
         // Crossed strategy
         if (jg == 0) {
           for (size_t jcv = 0; jcv < data_[jg][jBin]->ctlVecSize(); ++jcv) {
-            remoteIndex_.push_back(partialRemoteIndex[jcv]+offset);
+            glbIndex_.push_back(partialGlbIndex[jcv]+offset);
           }
           offset += ctlVecGlbSize;
         }
@@ -1507,9 +1507,9 @@ void FastLAM::setupRemoteIndex() {
   }
 
   // Check final size
-  ASSERT(remoteIndex_.size() == ctlVecSize_);
+  ASSERT(glbIndex_.size() == ctlVecSize_);
 
-  oops::Log::trace() << classname() << "::setupRemoteIndex done" << std::endl;
+  oops::Log::trace() << classname() << "::setupGlbIndex done" << std::endl;
 }
 
 // -----------------------------------------------------------------------------
