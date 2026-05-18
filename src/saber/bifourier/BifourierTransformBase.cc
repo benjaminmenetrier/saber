@@ -717,18 +717,18 @@ void BifourierTransformBase::createRandomFieldSet(atlas::FieldSet & spFset,
   ASSERT(nvz == nvz_);
 
   // Create remote index
-  std::vector<int> remoteIndex(ns_*nvz_);
+  std::vector<int> glbIndex(ns_*nvz_);
   for (size_t js = 0; js < ns_; ++js) {
     for (size_t jvz = 0; jvz < nvz_; ++jvz) {
       const size_t jj = js*nvz_ + jvz;
       const size_t jjOrdered = sToSGlb_[js]*nvz_ + jvz;
-      remoteIndex[jj] = jjOrdered;
+      glbIndex[jj] = jjOrdered;
     }
   }
 
   // Create random vector
   std::vector<double> randomVec(ns_*nvz_);
-  util::randomCtlVec(comm_, remoteIndex, randomVec);
+  util::randomCtlVec(comm_, glbIndex, randomVec);
 
   // Prepare spectral FieldSet
   for (const auto & var : activeVars) {

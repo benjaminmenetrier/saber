@@ -339,7 +339,7 @@ void SaberParametricBlockChain::multiplySqrtAD(const oops::FieldSet4D & fset4d,
   // Central block square-root adjoint
   if (crossTimeCov_) {
     // Duplicated cross-time covariances
-    for (size_t jtime = 1; jtime < fset4dCopy.size(); ++jtime) {
+    for (size_t jtime = 1; jtime < size4D_; ++jtime) {
       fset4dCopy[0] += fset4dCopy[jtime];
     }
     if (timeComm_.rank() > 0) {
@@ -358,7 +358,7 @@ void SaberParametricBlockChain::multiplySqrtAD(const oops::FieldSet4D & fset4d,
   } else {
     // No cross-time covariances
     size_t index = offset;
-    for (size_t jtime = 0; jtime < fset4dCopy.size(); ++jtime) {
+    for (size_t jtime = 0; jtime < size4D_; ++jtime) {
       centralBlock_->multiplySqrtAD(fset4dCopy[jtime], cv, index);
       index += centralBlock_->ctlVecSize();
     }
