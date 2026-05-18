@@ -65,16 +65,16 @@ geometry:
 
 background error:
   covariance model: SABER
+  covariance type: hybrid
+  run components recursively: true
+  run in parallel: false
   adjoint test: false
-  saber central block:
-    saber block name: Hybrid
-    run components recursively: true
-    run in parallel: false
-    components:
+  components:
     # ===========================================================
     # Waveband 1
     # ===========================================================
     - covariance:
+        covariance type: ensemble
         ensemble geometry:
           function space: StructuredColumns
           grid:
@@ -94,23 +94,19 @@ background error:
             nmembers: 2
             template:
               date: 2016-01-01T16:00:00Z
-              filename: testdata/process_perts_from_gauss_perts_4/wb1_F12_inc_%MEM%.nc
+              filename: testdata/process_perts_spectralb_from_gauss_perts_4/wb1_F12_inc_%MEM%.nc
               variables:
               - eastward_wind
               - northward_wind
               parallel IO: true
-        saber central block:
-          saber block name: Ensemble
-          localization:
+        localization:
             saber central block:
-              saber block name: ID
-            saber outer blocks:
-            - saber block name: spectral analytical filter
+              saber block name: spectral analytical filter
               active variables:
               - summed_variables
               function:
                 horizontal daley length: 6000e3  # Possibly larger localization
-              normalize filter variance: true
+            saber outer blocks:
             - saber block name: spectral to gauss
               active variables:
               - summed_variables
@@ -141,6 +137,7 @@ background error:
     # Waveband 2
     # ===========================================================
     - covariance:
+        covariance type: ensemble
         ensemble geometry:
           function space: StructuredColumns
           grid:
@@ -160,23 +157,19 @@ background error:
             nmembers: 2
             template:
               date: 2016-01-01T16:00:00Z
-              filename: testdata/process_perts_from_gauss_perts_4/wb2_F12_inc_%MEM%.nc
+              filename: testdata/process_perts_spectralb_from_gauss_perts_4/wb2_F12_inc_%MEM%.nc
               variables:
               - eastward_wind
               - northward_wind
               parallel IO: true
-        saber central block:
-          saber block name: Ensemble
-          localization:
+        localization:
             saber central block:
-              saber block name: ID
-            saber outer blocks:
-            - saber block name: spectral analytical filter
+              saber block name: spectral analytical filter
               active variables:
               - summed_variables
               function:
                 horizontal daley length: 6000e3  # Possibly larger localization
-              normalize filter variance: true
+            saber outer blocks:
             - saber block name: spectral to gauss
               active variables:
               - summed_variables
@@ -207,6 +200,7 @@ background error:
     # Waveband 3
     # ===========================================================
     - covariance:
+        covariance type: ensemble
         ensemble geometry:
           function space: StructuredColumns
           grid:
@@ -225,22 +219,18 @@ background error:
             nmembers: 2
             template:
               date: 2016-01-01T16:00:00Z
-              filepath: testdata/process_perts_from_gauss_perts_4/wb3_F12_inc_%MEM%
+              filepath: testdata/process_perts_spectralb_from_gauss_perts_4/wb3_F12_inc_%MEM%
               variables:
               - eastward_wind
               - northward_wind
-        saber central block:
-          saber block name: Ensemble
-          localization:
+        localization:
             saber central block:
-              saber block name: ID
-            saber outer blocks:
-            - saber block name: spectral analytical filter
+              saber block name: spectral analytical filter
               active variables:
               - summed_variables
               function:
                 horizontal daley length: 6000e3  # Possibly larger localization
-              normalize filter variance: true
+            saber outer blocks:
             - saber block name: spectral to gauss
               active variables:
               - summed_variables
@@ -301,8 +291,7 @@ increment variables:
 - northward_wind
 
 output dirac:
-  mpi pattern: '%MPI%'
-  filepath: testdata/dirac_spectralb_gauss_1/dirac_%id%_%MPI%
+  filepath: testdata/dirac_spectralb_gauss_1/_MPI_-_OMP__dirac_%id%
 
 test:
   reference filename: testref/dirac_spectralb_gauss_1.ref

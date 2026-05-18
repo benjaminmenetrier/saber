@@ -582,7 +582,7 @@ WriteVariances::WriteVariances(const oops::GeometryData & outerGeometryData,
                                const Parameters_ & params,
                                const oops::FieldSet3D & xb,
                                const oops::FieldSet3D & fg)
-  : SaberOuterBlockBase(params, xb.validTime()),
+  : SaberOuterBlockBase(params, xb.validTime(), outerGeometryData, outerVars),
     innerGeometryData_(outerGeometryData),
     innerVars_(outerVars),
     params_(params),
@@ -791,9 +791,11 @@ void WriteVariances::write() const {
   eckit::LocalConfiguration writeConfig;
   writeParams.serialize(writeConfig);
 
-  const std::string mpi_pattern = writeParams.mpiPattern;
-  const std::string mpi_size = std::to_string(eckit::mpi::comm().size());
-  ::util::seekAndReplace(writeConfig, mpi_pattern, mpi_size);
+  if (writeParams.mpiPattern.value()) {
+    const std::string mpi_pattern = *writeParams.mpiPattern.value();
+    const std::string mpi_size = std::to_string(eckit::mpi::comm().size());
+    ::util::seekAndReplace(writeConfig, mpi_pattern, mpi_size);
+  }
   const std::string ncfilepath = "./" + writeConfig.getString("file path");
 
   using atlas::array::make_view;

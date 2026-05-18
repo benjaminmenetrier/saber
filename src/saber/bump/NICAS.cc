@@ -30,8 +30,8 @@ NICAS::NICAS(const oops::GeometryData & geometryData,
              const Parameters_ & params,
              const oops::FieldSet3D & xb,
              const oops::FieldSet3D & fg)
-  : SaberCentralBlockBase(params, xb.validTime()),
-    activeVars_(getActiveVars(params, centralVars)),
+  : SaberCentralBlockBase(params, xb.validTime(), geometryData, centralVars),
+    activeVars_(params.getActiveVars(centralVars)),
     bumpParams_(params.calibrationParams.value() != boost::none ? *params.calibrationParams.value()
       : *params.readParams.value()),
     bump_(new BUMP(geometryData, activeVars_, covarConf, bumpParams_,
@@ -67,14 +67,6 @@ void NICAS::multiply(oops::FieldSet3D & fset) const {
   oops::Log::trace() << classname() << "::multiply starting" << std::endl;
   bump_->multiplyNicas(fset);
   oops::Log::trace() << classname() << "::multiply done" << std::endl;
-}
-
-// -----------------------------------------------------------------------------
-
-void NICAS::filter(oops::FieldSet3D & fset) const {
-  oops::Log::trace() << classname() << "::filter starting" << std::endl;
-  bump_->filterNicas(fset);
-  oops::Log::trace() << classname() << "::filter done" << std::endl;
 }
 
 // -----------------------------------------------------------------------------

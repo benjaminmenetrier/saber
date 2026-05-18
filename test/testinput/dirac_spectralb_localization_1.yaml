@@ -30,12 +30,10 @@ background error:
   covariance model: SABER
   adjoint test: true
   saber central block:
-    saber block name: ID
-  saber outer blocks:
-  - saber block name: spectral analytical filter
+    saber block name: spectral analytical filter
     function:
       horizontal daley length: 5008e3  # For localization to be 0.5 on 1st diagnostic point in theory
-    normalize filter variance: true
+  saber outer blocks:
   - saber block name: spectral to gauss
   - saber block name: mo_vertical_localization
     localization data:
@@ -45,7 +43,7 @@ background error:
       pressure field name in pressure file: Prho_bar_Mean
     number of vertical modes: 10
     renormalize to unit diagonal: true
-    output file name: testdata/dirac_spectralb_localization_1/vertical_localization.nc
+    output file name: testdata/dirac_spectralb_localization_1/_MPI_-_OMP__vertical_localization.nc
   - saber block name: mo vertical interpolation for localization
     inner vertical levels: 70
 dirac:
@@ -96,8 +94,7 @@ diagnostic points:
   - var1_levels
   - var2
 output dirac:
-  mpi pattern: '%MPI%'
-  filepath: testdata/dirac_spectralb_localization_1/%MPI%_dirac_%id%
+  filepath: testdata/dirac_spectralb_localization_1/_MPI_-_OMP__dirac_%id%
 
 test:
   reference filename: testref/dirac_spectralb_localization_1.ref

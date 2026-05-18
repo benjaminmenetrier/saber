@@ -1,6 +1,6 @@
 /*
  * (C) Copyright 2022- UCAR
- * (C) Crown Copyright 2022-2024 Met Office
+ * (C) Crown Copyright 2022-2026 Met Office
  *
  * This software is licensed under the terms of the Apache Licence Version 2.0
  * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
@@ -290,13 +290,17 @@ SpectralToGauss::SpectralToGauss(const oops::GeometryData & outerGeometryData,
                                  const Parameters_ & params,
                                  const oops::FieldSet3D & xb,
                                  const oops::FieldSet3D & fg)
-  : SaberOuterBlockBase(params, xb.validTime()),
-    activeVars_(getActiveVars(params, outerVars)),
-    outerVars_(outerVars),
-    useWindTransform_(outerVars_.has("eastward_wind") && outerVars_.has("northward_wind")),
+  : SaberOuterBlockBase(params, xb.validTime(), outerGeometryData, outerVars),
+    activeVars_(params.getActiveVars(outerVars)),
+    useWindTransform_(outerVars.has("eastward_wind") && outerVars.has("northward_wind")),
     innerVars_(createInnerVars(outerVars, activeVars_, useWindTransform_)),
     gaussFunctionSpace_(outerGeometryData.functionSpace()),
-    specFunctionSpace_(2 * atlas::GaussianGrid(gaussFunctionSpace_.grid()).N() - 1),
+    specFunctionSpace_([&]() {
+      // Ensure that the MPI communicator is set correctly, for when Trans is initialised.
+      eckit::mpi::setCommDefault(outerGeometryData.comm().name());
+      return atlas::functionspace::Spectral(
+          2 * atlas::GaussianGrid(gaussFunctionSpace_.grid()).N() - 1);
+    }()),
     trans_(gaussFunctionSpace_, specFunctionSpace_),
     innerGeometryData_(atlas::FunctionSpace(specFunctionSpace_),
                        outerGeometryData.fieldSet(),
@@ -635,8 +639,8 @@ void SpectralToGauss::multiplyAD(oops::FieldSet3D & fieldSet) const {
 
 // -----------------------------------------------------------------------------
 
-void SpectralToGauss::leftInverseMultiply(oops::FieldSet3D & fieldSet) const {
-  oops::Log::trace() << classname() << "::leftInverseMultiply starting" << std::endl;
+void SpectralToGauss::inverseMultiply(oops::FieldSet3D & fieldSet) const {
+  oops::Log::trace() << classname() << "::inverseMultiply starting" << std::endl;
   auto outFieldSet = atlas::FieldSet();
   auto scalarFieldSet = atlas::FieldSet();
   auto windFieldSet = atlas::FieldSet();
@@ -660,7 +664,7 @@ void SpectralToGauss::leftInverseMultiply(oops::FieldSet3D & fieldSet) const {
 
   fieldSet.fieldSet() = outFieldSet;
 
-  oops::Log::trace() << classname() << "::leftInverseMultiply done" << std::endl;
+  oops::Log::trace() << classname() << "::inverseMultiply done" << std::endl;
 }
 
 // -----------------------------------------------------------------------------
@@ -668,7 +672,7 @@ void SpectralToGauss::leftInverseMultiply(oops::FieldSet3D & fieldSet) const {
 oops::FieldSet3D SpectralToGauss::generateInnerFieldSet(
   const oops::GeometryData & innerGeometryData,
   const oops::Variables & innerVars) const {
-  oops::FieldSet3D fset(this->validTime(), innerGeometryData.comm());
+  oops::FieldSet3D fset(validTime_, innerGeometryData.comm());
   fset.deepCopy(util::createSmoothFieldSet(innerGeometryData.comm(),
                                            innerGeometryData.functionSpace(),
                                            innerVars));
@@ -680,7 +684,7 @@ oops::FieldSet3D SpectralToGauss::generateInnerFieldSet(
 oops::FieldSet3D SpectralToGauss::generateOuterFieldSet(
   const oops::GeometryData & outerGeometryData,
   const oops::Variables & outerVars) const {
-  oops::FieldSet3D fset(this->validTime(), outerGeometryData.comm());
+  oops::FieldSet3D fset(validTime_, outerGeometryData.comm());
   fset.deepCopy(util::createSmoothFieldSet(outerGeometryData.comm(),
                                            outerGeometryData.functionSpace(),
                                            outerVars));

@@ -20,6 +20,14 @@ ecbuild_declare_project()
 list( APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake )
 set( CMAKE_DIRECTORY_LABELS ${PROJECT_NAME} )
 
+## RPATH settings - ensure executables can find shared libraries during build and install
+set( CMAKE_SKIP_BUILD_RPATH FALSE )
+set( CMAKE_BUILD_WITH_INSTALL_RPATH FALSE )
+set( CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE )
+# Add build lib directory to RPATH
+set( CMAKE_BUILD_RPATH "${CMAKE_BINARY_DIR}/lib" )
+list( APPEND CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib" )
+
 ## Configuration options
 option( ENABLE_OFFLINE_CODECOV "Enable SABER offline code coverage" OFF )
 option( ENABLE_SABER_DOC "Enable SABER documentation" OFF )
@@ -35,7 +43,7 @@ if( ENABLE_QUENCH )
     find_package( jedicmake REQUIRED )  # Prefer find modules from jedi-cmake
 endif()
 if(OPENMP)
-  find_package( OpenMP REQUIRED COMPONENTS CXX Fortran )
+    find_package( OpenMP REQUIRED COMPONENTS CXX Fortran )
 endif()
 find_package( MPI REQUIRED COMPONENTS Fortran )
 find_package( NetCDF REQUIRED COMPONENTS C Fortran )
@@ -62,7 +70,18 @@ endif()
 
 # Flag to signify Atlas supports spherical vector interpolation.
 if( atlas_VERSION VERSION_GREATER_EQUAL "0.44.0" )
-    add_definitions(-DATLAS_SUPPORTS_SPHERICAL_VECTOR_INTERP_META)
+    add_compile_definitions( ATLAS_SUPPORTS_SPHERICAL_VECTOR_INTERP_META )
+endif()
+
+# Flag to set if an issue in Atlas regarding the use of atlas::mpi::Scope
+# is resolved, and so extra calls to `eckit::mpi::setCommDefault` are not needed.
+# This is because sometimes Atlas used to erroneously set the MPI communicator.
+# See Atlas issue #186.
+if ( atlas_VERSION VERSION_GREATER_EQUAL "0.46.0" )
+  add_compile_definitions( ATLAS_SCOPE_ISSUE_RESOLVED )
+  set( ATLAS_SUPPORTS_SPECTRAL_ON_SPLIT_COMM ON )
+else()
+  set( ATLAS_SUPPORTS_SPECTRAL_ON_SPLIT_COMM OFF )
 endif()
 
 if( ENABLE_MKL )
@@ -81,11 +100,21 @@ find_package( vader 1.7.0 REQUIRED )
 # Optionals
 find_package( ECTRANS 1.6.0 COMPONENTS transi double QUIET ) # TODO(Benjamin): update tag once the ectrans PR is merged and a new tag is created
 find_package( FFTW 3.3.8 QUIET )
-find_package( gsibec 1.2.1 QUIET )
-find_package( eccodes 2.24 QUIET )
-if( eccodes_FOUND )
-    set( ECCODES_LIBRARIES eccodes )
-    add_compile_definitions( ECCODES_FOUND )
+find_package( ip 5 QUIET )
+find_package( gsibec 1.4.2 QUIET )
+
+# Torch
+set(Torch_FOUND FALSE CACHE BOOL "Torch not found")
+if(DEFINED Torch_ROOT AND NOT Torch_ROOT STREQUAL "")
+  set(Torch_FOUND TRUE CACHE BOOL "Torch found" FORCE)
+  # Temporary fix until Torch is properly installed as a cmake package
+  include_directories("${Torch_ROOT}/include")
+  include_directories("${Torch_ROOT}/include/torch/csrc/api/include")
+  # Use full paths to libraries instead of link_directories
+  set(TORCH_LIBRARIES
+      "${Torch_ROOT}/lib/libtorch.so"
+      "${Torch_ROOT}/lib/libtorch_cpu.so"
+      "${Torch_ROOT}/lib/libc10.so")
 endif()
 
 # Optional SABER blocks
@@ -100,7 +129,6 @@ else()
     message( STATUS "SABER block FastLAM spectral layer is NOT enabled" )
 endif()
 if( gsibec_FOUND )
-    find_package( sp QUIET )
     message( STATUS "SABER block GSI is enabled" )
 else()
     message( STATUS "SABER block GSI is NOT enabled" )
@@ -111,6 +139,17 @@ else()
     message( STATUS "SABER block SPECTRALB is NOT enabled" )
 endif()
 
+if( BUILD_TESTING AND ENABLE_OFFLINE_CODECOV )
+    ## Code coverage
+    message( STATUS "Offline code coverage is enabled" )
+    set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage")
+    set( CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} -fprofile-arcs -ftest-coverage")
+    set( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fprofile-arcs -ftest-coverage")
+    set( CMAKE_Fortran_LINK_FLAGS "${CMAKE_Fortran_LINK_FLAGS} -fprofile-arcs -ftest-coverage")
+else()
+    message( STATUS "Offline code coverage is not enabled" )
+endif()
+
 ## Sources
 add_subdirectory( src/saber )
 add_subdirectory( tools )
@@ -119,10 +158,10 @@ add_subdirectory( tools )
 if( ENABLE_BUMP )
     if( ENABLE_BUMP_INSTRUMENTATION )
         message( STATUS "BUMP instrumentation is enabled" )
-        add_definitions(-DENABLE_BUMP_INSTRUMENTATION=1)
+        add_compile_definitions( ENABLE_BUMP_INSTRUMENTATION=1 )
     else()
         message( STATUS "BUMP instrumentation is not enabled" )
-        add_definitions(-DENABLE_BUMP_INSTRUMENTATION=0)
+        add_compile_definitions( ENABLE_BUMP_INSTRUMENTATION=0 )
     endif()
 endif()
 
@@ -134,36 +173,27 @@ else()
 endif()
 
 if( BUILD_TESTING )
-  # Test data
-  find_package( jedi-model-data 1.0.0 QUIET )
+    # Test data
+    find_package( jedi-model-data 1.0.0 QUIET )
 
-  ## Code coverage
-  if ( ENABLE_OFFLINE_CODECOV )
-      message( STATUS "Offline code coverage is enabled" )
-      set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage")
-      set( CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} -fprofile-arcs -ftest-coverage")
-      set( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fprofile-arcs -ftest-coverage")
-      set( CMAKE_Fortran_LINK_FLAGS "${CMAKE_Fortran_LINK_FLAGS} -fprofile-arcs -ftest-coverage")
-  else()
-      message( STATUS "Offline code coverage is not enabled" )
-  endif()
+    # If test data repo found build the tests
+    if( jedi-model-data_FOUND )
+        message( STATUS "jedi-model-data found; building saber tests" )
+        add_subdirectory( test )
+    else()
+        message( STATUS "jedi-model-data not found; skipping saber tests" )
+    endif()
 
-  # If test data repo found build the tests
-  if( jedi-model-data_FOUND )
-      message( STATUS "jedi-model-data found; building saber tests" )
-      add_subdirectory( test )
-  else()
-      message( STATUS "jedi-model-data not found; skipping saber tests" )
-  endif()
-
-  ## Global tests
-  ecbuild_add_test( TARGET saber_coding_norms_src
-                    TYPE SCRIPT
-                    COMMAND ${CMAKE_BINARY_DIR}/bin/${PROJECT_NAME}_cpplint.py
-                    ARGS --quiet --recursive ${CMAKE_SOURCE_DIR}/${PROJECT_NAME}/src )
+    ## Global tests
+    ecbuild_add_test( TARGET saber_coding_norms_src
+                      TYPE SCRIPT
+                      LABELS tier2
+                      COMMAND ${CMAKE_BINARY_DIR}/bin/${PROJECT_NAME}_cpplint.py
+                      ARGS --quiet --recursive ${CMAKE_SOURCE_DIR}/${PROJECT_NAME}/src )
 endif()
+
 if( ENABLE_QUENCH )
-  add_subdirectory( quench )
+    add_subdirectory( quench )
 endif()
 
 ## Package Config

@@ -60,12 +60,11 @@ SpectralCorrelation::SpectralCorrelation(const oops::GeometryData & geometryData
                                          const Parameters_ & params,
                                          const oops::FieldSet3D & xb,
                                          const oops::FieldSet3D & fg)
-  : SaberCentralBlockBase(params, xb.validTime()), params_(params),
-    activeVars_(getActiveVars(params, centralVars)),
+  : SaberCentralBlockBase(params, xb.validTime(), geometryData, centralVars), params_(params),
+    activeVars_(params.getActiveVars(centralVars)),
     netCDFConf_(createNetCDFHeaderInput(params, activeVars_)),
     spectralVerticalCorrelations_(),
-    geometryData_(geometryData),
-    specFunctionSpace_(geometryData_.functionSpace())
+    specFunctionSpace_(geometryData.functionSpace())
 {
   oops::Log::trace() << classname() << "::SpectralCorrelation starting " << std::endl;
 
@@ -208,9 +207,11 @@ void SpectralCorrelation::write() const {
   writeParams.serialize(writeConfig);
 
   const std::string filepath{writeParams.filePath};
-  const std::string mpi_pattern = writeParams.mpiPattern;
-  const std::string mpi_size = std::to_string(geometryData_.comm().size());
-  ::util::seekAndReplace(writeConfig, mpi_pattern, mpi_size);
+  if (writeParams.mpiPattern.value()) {
+    const std::string mpi_pattern = *writeParams.mpiPattern.value();
+    const std::string mpi_size = std::to_string(geometryData().comm().size());
+    ::util::seekAndReplace(writeConfig, mpi_pattern, mpi_size);
+  }
   const std::string ncfilepath = "./" + writeConfig.getString("file path");
 
   using atlas::array::make_view;
@@ -220,7 +221,7 @@ void SpectralCorrelation::write() const {
   // the one in memory  ... it should not affect the internal version.
   // gather and sum on pe 0
   const std::size_t root(0);
-  atlas::FieldSet spectralVertCovToWrite = util::gatherSumFieldSet(geometryData_.comm(),
+  atlas::FieldSet spectralVertCovToWrite = util::gatherSumFieldSet(geometryData().comm(),
                                                                    root,
                                                                    spectralVerticalCorrelations_);
   const std::vector<std::string> dim_names{"binning_index",
@@ -254,7 +255,7 @@ void SpectralCorrelation::write() const {
   std::vector<int> netcdf_var_ids;
   std::vector<std::vector<int>> netcdf_dim_var_ids;
 
-  if (geometryData_.comm().rank() == root) {
+  if (geometryData().comm().rank() == root) {
     ::util::atlasArrayWriteHeader(ncfilepath,
                                   dim_names,
                                   dim_sizes,

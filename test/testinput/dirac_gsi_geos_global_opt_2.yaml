@@ -1,6 +1,7 @@
 # Dirac test to generate a reference for BUMP scaling check (optimization_bump_hdiag_gsi_2.yaml), with homogeneous length-scales and rescaling in the namelist
 background error:
   covariance model: SABER
+  covariance type: gsi hybrid covariance
   adjoint test: true
   adjoint tolerance: 1e-11
   saber central block:
@@ -79,7 +80,6 @@ background:
   - air_horizontal_velocity_potential
   - air_pressure_at_surface
 output dirac:
-  mpi pattern: '%MPI%'
-  filepath: testdata/dirac_gsi_geos_global_opt_2/%MPI%_dirac_%id%
+  filepath: testdata/dirac_gsi_geos_global_opt_2/_MPI_-_OMP__dirac_%id%
 test:
   reference filename: testref/dirac_gsi_geos_global_opt_2.ref

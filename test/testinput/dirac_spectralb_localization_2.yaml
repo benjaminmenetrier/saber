@@ -30,12 +30,10 @@ background error:
   covariance model: SABER
   adjoint test: true
   saber central block:
-    saber block name: ID
-  saber outer blocks:
-  - saber block name: spectral analytical filter
+    saber block name: spectral analytical filter
     function:
       horizontal daley length: 5008e3  # For localization to be 0.5 on 1st diagnostic point in theory
-    normalize filter variance: true
+  saber outer blocks:
   - saber block name: spectral to gauss
   - saber block name: mo_vertical_localization
     localization data:
@@ -96,8 +94,7 @@ diagnostic points:
   - var1_levels
   - var2
 output dirac:
-  mpi pattern: '%MPI%'
-  filepath: testdata/dirac_spectralb_localization_2/%MPI%_dirac_%id%
+  filepath: testdata/dirac_spectralb_localization_2/_MPI_-_OMP__dirac_%id%
 
 test:
   reference filename: testref/dirac_spectralb_localization_2.ref

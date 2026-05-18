@@ -13,8 +13,6 @@
 #include <utility>
 #include <vector>
 
-#include "atlas/field.h"
-
 #include "eckit/exception/Exceptions.h"
 #include "eckit/memory/NonCopyable.h"
 
@@ -44,8 +42,13 @@ class SaberCentralBlockBase : public util::Printable,
                               private eckit::NonCopyable {
  public:
   explicit SaberCentralBlockBase(const SaberBlockParametersBase & params,
-                                 const util::DateTime & validTime)
-    : validTime_(validTime), blockName_(params.saberBlockName) {}
+                                 const util::DateTime & validTime,
+                                 const oops::GeometryData & geometryData,
+                                 const oops::Variables & centralVars)
+    : validTime_(validTime),
+      blockName_(params.saberBlockName),
+      geometryData_(geometryData),
+      centralVars_(centralVars) {}
   virtual ~SaberCentralBlockBase() {}
 
   // Application methods
@@ -56,16 +59,11 @@ class SaberCentralBlockBase : public util::Printable,
   // Block multiplication
   virtual void multiply(oops::FieldSet3D &) const = 0;
 
-  // Block filtering; by default calls multiply
-  virtual void filter(oops::FieldSet3D & fset) const {
-    this->multiply(fset);
-  }
-
   // Setup / calibration methods
 
   // Read block data
   virtual void read()
-    {throw eckit::NotImplemented("read not implemented yet for the block " + this->blockName(),
+    {throw eckit::NotImplemented("read not implemented yet for the block " + blockName_,
       Here());}
 
   // Read model files
@@ -77,18 +75,18 @@ class SaberCentralBlockBase : public util::Printable,
   // Direct calibration
   virtual void directCalibration(const oops::FieldSets &)
     {throw eckit::NotImplemented("directCalibration not implemented yet for the block "
-      + this->blockName(), Here());}
+      + blockName_, Here());}
 
   // Iterative calibration
   virtual void iterativeCalibrationInit()
     {throw eckit::NotImplemented("iterativeCalibrationInit not implemented yet for the block "
-      + this->blockName(), Here());}
+      + blockName_, Here());}
   virtual void iterativeCalibrationUpdate(const oops::FieldSet3D &)
     {throw eckit::NotImplemented("iterativeCalibrationUpdate not implemented yet for the block "
-      + this->blockName(), Here());}
+      + blockName_, Here());}
   virtual void iterativeCalibrationFinal()
     {throw eckit::NotImplemented("iterativeCalibrationUpdate not implemented yet for the block "
-      + this->blockName(), Here());}
+      + blockName_, Here());}
 
   // Write block data
   virtual void write() const {}
@@ -100,21 +98,27 @@ class SaberCentralBlockBase : public util::Printable,
   // Square-root formulation
   virtual size_t ctlVecSize() const
     {throw eckit::NotImplemented("ctlVecSize not implemented yet for the block "
-      + this->blockName(), Here());}
+      + blockName_, Here());}
   virtual void multiplySqrt(const atlas::Field &, oops::FieldSet3D &, const size_t &) const
     {throw eckit::NotImplemented("multiplySqrt not implemented yet for the block "
-      + this->blockName(), Here());}
+      + blockName_, Here());}
   virtual void multiplySqrtAD(const oops::FieldSet3D &, atlas::Field &, const size_t &) const
     {throw eckit::NotImplemented("multiplySqrtAD not implemented yet for the block "
-      + this->blockName(), Here());}
+      + blockName_, Here());}
 
   // Non-virtual methods
 
   // Return block name
-  std::string blockName() const {return blockName_;}
+  const std::string blockName() const {return blockName_;}
 
   // Return date/time
   const util::DateTime validTime() const {return validTime_;}
+
+  // Return geometry data
+  const oops::GeometryData & geometryData() const {return geometryData_;}
+
+  // Return central variables
+  const oops::Variables & centralVars() const {return centralVars_;}
 
   // Read model fields
   template <typename MODEL>
@@ -125,21 +129,14 @@ class SaberCentralBlockBase : public util::Printable,
   template <typename MODEL>
   void write(const oops::Geometry<MODEL> &) const;
 
-  // Adjoint test
-  void adjointTest(const oops::GeometryData &,
-                   const oops::Variables &,
-                   const double &) const;
-
-  // Square-root test
-  void sqrtTest(const oops::GeometryData &,
-                const oops::Variables &,
-                const double &) const;
-
  protected:
   const util::DateTime validTime_;
 
  private:
-  std::string blockName_;
+  const std::string blockName_;
+  const oops::GeometryData & geometryData_;
+  const oops::Variables centralVars_;
+
   virtual void print(std::ostream &) const = 0;
 };
 
@@ -154,6 +151,10 @@ class SaberCentralBlockParametersWrapper : public oops::Parameters {
  public:
   oops::RequiredPolymorphicParameter<SaberBlockParametersBase, SaberCentralBlockFactory>
     saberCentralBlockParameters{"saber block name", this};
+
+  const SaberBlockParametersBase & blockParams() const
+    {return this->saberCentralBlockParameters;
+  }
 };
 
 // -----------------------------------------------------------------------------

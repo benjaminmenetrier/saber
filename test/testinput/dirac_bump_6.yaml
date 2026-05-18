@@ -20,6 +20,7 @@ background error:
   components:
   - covariance:
       covariance model: SABER
+      covariance type: ensemble
       adjoint test: true
       square-root test: true
       square-root tolerance: 1.0e-10
@@ -34,8 +35,6 @@ background error:
           pattern: '%mem%'
           nmembers: 25
           zero padding: 6
-      saber central block:
-        saber block name: Ensemble
     weight:
       value: 0.5
   - covariance:
@@ -62,7 +61,6 @@ dirac:
   variable:
   - eastward_wind
 output dirac:
-  mpi pattern: '%MPI%'
-  filepath: testdata/dirac_bump_6/%MPI%_dirac_%id%
+  filepath: testdata/dirac_bump_6/_MPI_-_OMP__dirac_%id%
 test:
   reference filename: testref/dirac_bump_6.ref

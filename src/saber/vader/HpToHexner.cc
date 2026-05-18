@@ -41,9 +41,9 @@ HpToHexner::HpToHexner(const oops::GeometryData & outerGeometryData,
                        const Parameters_ & params,
                        const oops::FieldSet3D & xb,
                        const oops::FieldSet3D & fg)
-  : SaberOuterBlockBase(params, xb.validTime()),
+  : SaberOuterBlockBase(params, xb.validTime(), outerGeometryData, outerVars),
     innerGeometryData_(outerGeometryData), innerVars_(outerVars),
-    activeVars_(getActiveVars(params, outerVars)),
+    activeVars_(params.getActiveVars(outerVars)),
     xb_(xb.validTime(), xb.commGeom())
 {
   xb_.shallowCopy(xb);
