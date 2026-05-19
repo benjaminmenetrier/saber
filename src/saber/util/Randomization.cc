@@ -17,15 +17,15 @@ namespace util {
 // -----------------------------------------------------------------------------
 
 void randomCtlVec(const eckit::mpi::Comm & comm,
-                  const std::vector<int> & remoteIndex,
+                  const std::vector<int> & glbIndex,
                   std::vector<double> & randVecLoc) {
   oops::Log::trace() << "util::randomCtlVec starting" << std::endl;
 
   // Check sizes consistency
-  ASSERT(remoteIndex.size() == randVecLoc.size());
+  ASSERT(glbIndex.size() == randVecLoc.size());
 
   // Local size
-  const int nLoc = remoteIndex.size();
+  const int nLoc = glbIndex.size();
 
   // Counts
   std::vector<int> counts(comm.size());
@@ -49,7 +49,7 @@ void randomCtlVec(const eckit::mpi::Comm & comm,
   if (comm.rank() == 0) {
     mapping.resize(nGlb);
   }
-  comm.gatherv(remoteIndex.cbegin(), remoteIndex.cend(), mapping.begin(), mapping.end(),
+  comm.gatherv(glbIndex.cbegin(), glbIndex.cend(), mapping.begin(), mapping.end(),
     counts, displs, 0);
 
   // Generate global random vector
@@ -72,19 +72,19 @@ void randomCtlVec(const eckit::mpi::Comm & comm,
 // -----------------------------------------------------------------------------
 
 void randomCtlVec(const eckit::mpi::Comm & comm,
-                  const std::vector<int> & remoteIndex,
+                  const std::vector<int> & glbIndex,
                   atlas::Field & field) {
   oops::Log::trace() << "util::randomCtlVec starting" << std::endl;
 
   // Check sizes consistency
-  ASSERT(remoteIndex.size() == field.size());
+  ASSERT(glbIndex.size() == field.size());
 
   // Local size
-  const int nLoc = remoteIndex.size();
+  const int nLoc = glbIndex.size();
 
   // Create random vector
   std::vector<double> randVecLoc(nLoc);
-  randomCtlVec(comm, remoteIndex, randVecLoc);
+  randomCtlVec(comm, glbIndex, randVecLoc);
 
   // Fill local Field
   auto view = make_view<double, 1>(field);
