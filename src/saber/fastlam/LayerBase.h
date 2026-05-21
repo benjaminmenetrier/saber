@@ -32,7 +32,7 @@ namespace fastlam {
 class LayerBase : public util::Printable,
                   private eckit::NonCopyable {
  public:
-  static const std::string classname() {return "saber::fastlam::LayerBase";}
+  static const std::string classname() {return "saber::fastlam::Layer";}
 
   // Constructor
   LayerBase(const FastLAMParametersBase & params,
