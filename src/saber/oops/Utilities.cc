@@ -156,9 +156,15 @@ oops::FieldSets readEnsemble(const oops::GeometryData & geomData,
 
   // Get variables
   const eckit::LocalConfiguration varConf = getEnsSubconfig(inputConf, 0);
-  const oops::Variables vars(varConf.has("variables") ?
-    oops::Variables{varConf.getStringVector("variables")} :
-    modelvars);
+  oops::Variables vars;
+  if (varConf.has("variables")) {
+    vars = oops::Variables{varConf.getStringVector("variables")};
+    for (auto & var : vars) {
+      var.setLevels(modelvars[var.name()].getLevels());
+    }
+  } else {
+    vars = modelvars;
+  }
 
   // Initialize FieldSets
   std::vector<int> members(ne);
