@@ -39,17 +39,13 @@ oops::Variables getInnerOnlyVars(const SaberBlockParametersBase & params,
 // -----------------------------------------------------------------------------
 
 void setMPI(eckit::LocalConfiguration & conf,
-            const int & mpi,
-            const int & omp) {
+            const int & mpi) {
   oops::Log::trace() << "setMPI starting" << std::endl;
 
-  // MPI pattern
-  const std::string mpiPattern = conf.getString("mpi pattern", "_MPI_");
-  util::seekAndReplace(conf, mpiPattern, std::to_string(mpi));
-
-  // OMP pattern
-  const std::string ompPattern = conf.getString("omp pattern", "_OMP_");
-  util::seekAndReplace(conf, ompPattern, std::to_string(omp));
+  if (conf.has("mpi pattern")) {
+    std::string mpiPattern = conf.getString("mpi pattern");
+    util::seekAndReplace(conf, mpiPattern, std::to_string(mpi));
+  }
 
   oops::Log::trace() << "setMPI done" << std::endl;
 }

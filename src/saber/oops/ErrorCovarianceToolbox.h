@@ -19,7 +19,6 @@
 #include <sstream>
 #include <string>
 #include <vector>
-
 #include "atlas/functionspace.h"
 #include "atlas/util/Earth.h"
 
@@ -115,17 +114,14 @@ template <typename MODEL> class ErrorCovarianceToolbox : public oops::Applicatio
   typedef oops::Localization<MODEL>                       Localization_;
 
  public:
+// -----------------------------------------------------------------------------
   explicit ErrorCovarianceToolbox(const eckit::mpi::Comm & comm = eckit::mpi::comm()) :
     Application(comm) {
     oops::instantiateCovarFactory<MODEL>();
   }
-
 // -----------------------------------------------------------------------------
-
   virtual ~ErrorCovarianceToolbox() {}
-
 // -----------------------------------------------------------------------------
-
   int execute(const eckit::Configuration & fullConfig) const override {
     // Deserialize parameters
     ErrorCovarianceToolboxParameters params;
@@ -239,30 +235,27 @@ template <typename MODEL> class ErrorCovarianceToolbox : public oops::Applicatio
       dirac(covarConf, testConf, id, geom, vars, xx, dxi);
     }
 
-    // Randomization
-    const size_t & randomizationSize = params.backgroundError.value().randomizationSize.value();
-    if (randomizationSize > 0) {
-      randomization(params, geom, vars, covarConf, xx, ntasks);
-    }
-
-    // If background error covariance has not been setup yet, do it now
-    if (!diracParams && (randomizationSize == 0)) {
+    // Background error covariance base parameters
+    if ((!diracParams) || (params.backgroundError.value().randomizationSize.value())) {
+      // Background error covariance training
       std::unique_ptr<CovarianceBase_> Bmat(CovarianceFactory_::create(
                                             geom, vars, covarConf, xx, xx));
+
+      // Randomization
+      if (params.backgroundError.value().randomizationSize.value()) {
+        randomization(params, geom, vars, xx, Bmat, ntasks);
+      }
     }
 
     return 0;
   }
-
 // -----------------------------------------------------------------------------
-
  private:
   std::string appname() const override {
     return "oops::ErrorCovarianceToolbox<" + MODEL::name() + ">";
   }
-
 // -----------------------------------------------------------------------------
-
+// The passed geometry should be consistent with the passed increment
   void print_value_at_positions(const eckit::LocalConfiguration & diagConf,
                                 const Geometry_ & geom,
                                 const Increment4D_ & data) const {
@@ -283,9 +276,8 @@ template <typename MODEL> class ErrorCovarianceToolbox : public oops::Applicatio
 
     oops::Log::trace() << appname() << "::print_value_at_position done" << std::endl;
   }
-
 // -----------------------------------------------------------------------------
-
+// The passed geometry should be consistent with the passed increment
   void extract_1d_covariances(const eckit::LocalConfiguration & diracConf,
                               const eckit::LocalConfiguration & profileConf,
                               const Geometry_ & geom,
@@ -370,9 +362,8 @@ template <typename MODEL> class ErrorCovarianceToolbox : public oops::Applicatio
 
   oops::Log::trace() << appname() << "::extract_1d_covariances done" << std::endl;
 }
-
 // -----------------------------------------------------------------------------
-
+// The passed geometry/variables should be consistent with the passed increment
   void dirac(const eckit::LocalConfiguration & covarConf,
              const eckit::LocalConfiguration & testConf,
              std::string & id,
@@ -532,99 +523,98 @@ template <typename MODEL> class ErrorCovarianceToolbox : public oops::Applicatio
       oops::Log::test() << "Localization(" << id << ") * Increment:" << dxo << std::endl;
     }
   }
-
 // -----------------------------------------------------------------------------
-
   void randomization(const ErrorCovarianceToolboxParameters & params,
                      const Geometry_ & geom,
                      const oops::Variables & vars,
-                     const eckit::LocalConfiguration & covarConf,
                      const State4D_ & xx,
+                     const std::unique_ptr<CovarianceBase_> & Bmat,
                      const size_t & ntasks) const {
     // Get randomization size
-    const size_t & randomizationSize = params.backgroundError.value().randomizationSize.value();
-    ASSERT(randomizationSize > 0);
+    ASSERT(params.backgroundError.value().randomizationSize.value());
+    const size_t randomizationSize = *params.backgroundError.value().randomizationSize.value();
 
-    oops::Log::info() << "Info     : " << std::endl;
-    oops::Log::info() << "Info     : Generate perturbations:" << std::endl;
-    oops::Log::info() << "Info     : -----------------------" << std::endl;
+    if (randomizationSize > 0) {
+      oops::Log::info() << "Info     : " << std::endl;
+      oops::Log::info() << "Info     : Generate perturbations:" << std::endl;
+      oops::Log::info() << "Info     : -----------------------" << std::endl;
 
-    // Build covariance
-    oops::Log::info() << "Info     : Build covariance" << std::endl;
-    std::unique_ptr<CovarianceBase_> Bmat(CovarianceFactory_::create(
-                                            geom, vars, covarConf, xx, xx));
+      // Create increments
+      Increment4D_ dx(geom, vars, xx.times(), xx.commTime());
+      Increment4D_ dxsq(geom, vars, xx.times(), xx.commTime());
+      Increment4D_ variance(geom, vars, xx.times(), xx.commTime());
 
-    // Create increments
-    Increment4D_ dx(geom, vars, xx.times(), xx.commTime());
-    Increment4D_ dxsq(geom, vars, xx.times(), xx.commTime());
-    Increment4D_ variance(geom, vars, xx.times(), xx.commTime());
+      // Initialize variance
+      variance.zero();
 
-    // Initialize variance
-    variance.zero();
+      // Output options
+      const auto & outputPerturbations = params.outputPerturbations.value();
+      const auto & outputStates = params.outputStates.value();
+      const auto & outputVariance = params.outputVariance.value();
 
-    // Output options
-    const auto & outputPerturbations = params.outputPerturbations.value();
-    const auto & outputStates = params.outputStates.value();
-    const auto & outputVariance = params.outputVariance.value();
+      for (size_t jm = 0; jm < randomizationSize; ++jm) {
+        // Generate member
+        Bmat->randomize(dx);
 
-    for (size_t jm = 0; jm < randomizationSize; ++jm) {
-      // Generate member
-      oops::Log::info() << "Info     : Member " << jm+1 << std::endl;
-      Bmat->randomize(dx);
+        if ((outputPerturbations != boost::none) || (outputStates != boost::none)) {
+          oops::Log::test() << "Member " << jm << ": " << dx[0] << std::endl;
 
-      if (outputPerturbations != boost::none) {
+          if (outputPerturbations != boost::none) {
+            // Update config
+            auto outputPerturbationsUpdated = *outputPerturbations;
+            util::setMember(outputPerturbationsUpdated, jm+1);
+            setMPI(outputPerturbationsUpdated, ntasks);
+
+            // Write perturbation
+            dx.write(outputPerturbationsUpdated);
+          }
+
+          if (outputStates != boost::none) {
+            // Update config
+            auto outputStatesUpdated = *outputStates;
+            util::setMember(outputStatesUpdated, jm+1);
+            setMPI(outputStatesUpdated, ntasks);
+
+            // Add background state to perturbation
+            State4D_ xp(xx);
+            xp += dx;
+
+            // Write state
+            xp.write(outputStatesUpdated);
+          }
+
+          oops::Log::info() << "Info     : " << std::endl;
+        }
+
+        // Square perturbation
+        dxsq = dx;
+        dxsq.schur_product_with(dx);
+
+        // Update variance
+        variance += dxsq;
+      }
+      oops::Log::info() << "Info     : " << std::endl;
+
+      if (outputVariance != boost::none) {
+        oops::Log::info() << "Info     : Write randomized variance:" << std::endl;
+        oops::Log::info() << "Info     : --------------------------" << std::endl;
+        oops::Log::info() << "Info     : " << std::endl;
+        if (randomizationSize > 1) {
+          // Normalize variance
+          double rk_norm = 1.0/static_cast<double>(randomizationSize);
+          variance *= rk_norm;
+        }
+
         // Update config
-        auto outputPerturbationsUpdated = *outputPerturbations;
-        util::setMember(outputPerturbationsUpdated, jm+1);
-        setMPI(outputPerturbationsUpdated, ntasks);
+        auto outputVarianceUpdated = *outputVariance;
+        setMPI(outputVarianceUpdated, ntasks);
 
-        // Write perturbation
-        oops::Log::test() << "Write perturbation: " << dx;
-        dx.write(outputPerturbationsUpdated);
+        // Write variance
+        variance.write(outputVarianceUpdated);
+        oops::Log::test() << "Randomized variance: " << variance << std::endl;
       }
-
-      if (outputStates != boost::none) {
-        // Update config
-        auto outputStatesUpdated = *outputStates;
-        util::setMember(outputStatesUpdated, jm+1);
-        setMPI(outputStatesUpdated, ntasks);
-
-        // Add background state to perturbation
-        State4D_ xp(xx);
-        xp += dx;
-
-        // Write state
-        oops::Log::test() << "Write state: " << xp;
-        xp.write(outputStatesUpdated);
-      }
-
-      // Square perturbation
-      dxsq = dx;
-      dxsq.schur_product_with(dx);
-
-      // Update variance
-      variance += dxsq;
-
-      oops::Log::info() << "Info     :" << std::endl;
-    }
-
-    if (outputVariance != boost::none) {
-      if (randomizationSize > 1) {
-        // Normalize variance
-        double rk_norm = 1.0/static_cast<double>(randomizationSize);
-        variance *= rk_norm;
-      }
-
-      // Update config
-      auto outputVarianceUpdated = *outputVariance;
-      setMPI(outputVarianceUpdated, ntasks);
-
-      // Write variance
-      oops::Log::test() << "Write randomized variance:" << variance[0] << std::endl;
-      variance.write(outputVarianceUpdated);
     }
   }
-
 // -----------------------------------------------------------------------------
 };
 
