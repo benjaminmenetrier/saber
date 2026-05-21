@@ -87,43 +87,16 @@ void LayerBase::setupVerticalCoord(const atlas::Field & rvField,
     const auto wgtView = atlas::array::make_view<double, 2>(wgtField);
     const std::string key = myGroup_ + ".vert_coord";
     const std::string vertCoordName = fieldsMetaData_.getString(key, "vert_coord");
-    atlas::Field localVertCoordField;
-    if (gdata_.fieldSet().has(vertCoordName)) {
-      const atlas::Field vertCoordField = gdata_.fieldSet()[vertCoordName];
-      const size_t rank = vertCoordField.rank();
-      ASSERT((rank == 1) || (rank == 2));
-      if (rank == 1) {
-        localVertCoordField = atlas::Field(vertCoordName, atlas::array::make_datatype<double>(),
-          atlas::array::make_shape(mSize_, nz0_));
-        auto localVertCoordView = atlas::array::make_view<double, 2>(localVertCoordField);
-        const auto vertCoordView = atlas::array::make_view<double, 1>(vertCoordField);
-        for (size_t jnode0 = 0; jnode0 < mSize_; ++jnode0) {
-          if (ghostView(jnode0) == 0) {
-            for (size_t jz0 = 0; jz0 < nz0_; ++jz0) {
-              localVertCoordView(jnode0, jz0) = vertCoordView(jz0);
-            }
-          }
-        }
-      } else if (rank == 2) {
-        localVertCoordField = vertCoordField.clone();
-      }
-    } else {
-      localVertCoordField = atlas::Field(vertCoordName, atlas::array::make_datatype<double>(),
-        atlas::array::make_shape(mSize_, nz0_));
-      auto localVertCoordView = atlas::array::make_view<double, 2>(localVertCoordField);
-      for (size_t jnode0 = 0; jnode0 < mSize_; ++jnode0) {
-        if (ghostView(jnode0) == 0) {
-          for (size_t jz0 = 0; jz0 < nz0_; ++jz0) {
-            localVertCoordView(jnode0, jz0) = static_cast<double>(jz0+1);
-          }
-        }
-      }
-    }
-    const auto localVertCoordView = atlas::array::make_view<double, 2>(localVertCoordField);
     for (size_t jnode0 = 0; jnode0 < mSize_; ++jnode0) {
       if (ghostView(jnode0) == 0) {
         for (size_t jz0 = 0; jz0 < nz0_; ++jz0) {
-          vertCoord[jz0] += localVertCoordView(jnode0, jz0)*wgtView(jnode0, jz0);
+          double VC = static_cast<double>(jz0+1);
+          if (gdata_.fieldSet().has(vertCoordName)) {
+            const atlas::Field vertCoordField = gdata_.fieldSet()[vertCoordName];
+            const auto vertCoordView = atlas::array::make_view<double, 2>(vertCoordField);
+            VC = vertCoordView(jnode0, jz0);
+          }
+          vertCoord[jz0] += VC*wgtView(jnode0, jz0);
           rv[jz0] += rvView(jnode0, jz0)*wgtView(jnode0, jz0);
           wgt[jz0] += wgtView(jnode0, jz0);
         }

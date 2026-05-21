@@ -95,10 +95,6 @@ class LayerBase : public util::Printable,
   const double & rh() const {return rh_;}
   double & rv() {return rv_;}
   const double & rv() const {return rv_;}
-  double & srh() {return srh_;}
-  const double & srh() const {return srh_;}
-  double & srv() {return srv_;}
-  const double & srv() const {return srv_;}
   double & resol() {return resol_;}
   const double & resol() const {return resol_;}
   double & rfh() {return rfh_;}
@@ -143,8 +139,6 @@ class LayerBase : public util::Printable,
   // Convolution
   double rh_;
   double rv_;
-  double srh_;
-  double srv_;
   std::vector<double> normVertCoord_;
   size_t xKernelSize_;
   size_t yKernelSize_;
