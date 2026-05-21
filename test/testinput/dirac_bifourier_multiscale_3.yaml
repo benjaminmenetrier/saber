@@ -36,6 +36,7 @@ background error:
   covariance model: SABER
   covariance type: ensemble
   adjoint test: true
+  adjoint tolerance: 1.0e-11
   square-root test: true
   square-root tolerance: 1.0e-8
   inverse test: true
