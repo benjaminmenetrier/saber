@@ -29,9 +29,6 @@ class BifourierSpectralToGridParameters : public SaberBlockParametersBase {
   OOPS_CONCRETE_PARAMETERS(BifourierSpectralToGridParameters, SaberBlockParametersBase)
 
  public:
-  // Filter mode
-  oops::Parameter<bool> filter{"filter mode", false, this};
-
   // Transform parameters
   oops::Parameter<BifourierTransformParameters> transform{"transform",
     BifourierTransformParameters(), this};

@@ -64,13 +64,8 @@ void BifourierSpectralToGrid::multiplyAD(oops::FieldSet3D & fset) const {
   // Temporary fieldset
   atlas::FieldSet fsetTmp;
 
-  if (params_.filter.value()) {
-    // Direct spectral transform
-    trans_->gp2sp(fset.fieldSet(), fsetTmp, innerVars_);
-  } else {
-    // Inverse spectral transform, adjoint
-    trans_->sp2gpAdj(fset.fieldSet(), fsetTmp, innerVars_);
-  }
+  // Inverse spectral transform, adjoint
+  trans_->sp2gpAdj(fset.fieldSet(), fsetTmp, innerVars_);
 
   // Remove outer variables
   util::removeFieldsFromFieldSet(fset.fieldSet(), innerVars_.variables());
