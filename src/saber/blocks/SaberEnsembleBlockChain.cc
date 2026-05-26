@@ -83,10 +83,6 @@ void SaberEnsembleBlockChain::multiply(oops::FieldSet4D & fset4d) const {
         // ensemble members distributed across MPI tasks.
       }
 
-      // Normalize result
-      const double rk = 1.0/static_cast<double>(scaleData.ensemble()->ens_size()-1);
-      fset4dScale *= rk;
-
       // Apply interpolator
       if (scaleData.interpolator()) {
         scaleData.interpolator()->applyOuterBlocks(fset4dScale);
@@ -171,10 +167,6 @@ void SaberEnsembleBlockChain::randomize(oops::FieldSet4D & fset4d) const {
         // Add up member contribution
         fset4dScale += fset4dMem;
       }
-
-      // Normalize result
-      const double rk = 1.0/std::sqrt(static_cast<double>(scaleData.ensemble()->ens_size()-1));
-      fset4dScale *= rk;
 
       // Apply interpolator
       if (scaleData.interpolator()) {
@@ -340,10 +332,6 @@ void SaberEnsembleBlockChain::multiplySqrt(const atlas::Field & cv,
       fset4dScale += fset4dMem;
     }
 
-    // Normalize result
-    const double rk = 1.0/std::sqrt(static_cast<double>(scaleData.ensemble()->ens_size()-1));
-    fset4dScale *= rk;
-
     // Apply interpolator
     if (scaleData.interpolator()) {
       scaleData.interpolator()->applyOuterBlocks(fset4dScale);
@@ -398,10 +386,6 @@ void SaberEnsembleBlockChain::multiplySqrtAD(const oops::FieldSet4D & fset4d,
     if (scaleData.interpolator()) {
       scaleData.interpolator()->applyOuterBlocksAD(fset4dScaleInit);
     }
-
-    // Normalize initial fieldset
-    const double rk = 1.0/std::sqrt(static_cast<double>(scaleData.ensemble()->ens_size()-1));
-    fset4dScaleInit *= rk;
 
     // Central block: ensemble covariance square-root adjoint
     if (scaleData.localization()) {

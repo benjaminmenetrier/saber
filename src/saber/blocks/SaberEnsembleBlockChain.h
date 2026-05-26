@@ -242,11 +242,12 @@ SaberEnsembleBlockChain::SaberEnsembleBlockChain(const oops::Geometry<MODEL> & g
   paramsBase.deserialize(fullConf);
 
   // Read ensemble (for non-iterative ensemble loading)
-  std::unique_ptr<oops::FieldSets> ensemble = std::make_unique<oops::FieldSets>(readEnsemble(
-                                     geom,
-                                     outerVars,
-                                     fset4dXb.times(), fset4dXb.commTime(), fset4dXb.commEns(),
-                                     fullConf));
+  std::unique_ptr<oops::FieldSets> ensemble = std::make_unique<oops::FieldSets>(
+                                     readAndScaleEnsemble(
+                                       geom,
+                                       outerVars,
+                                       fset4dXb.times(), fset4dXb.commTime(), fset4dXb.commEns(),
+                                       fullConf));
 
   // Check that there is an ensemble of at least 2 members (or no member).
   if (ensemble->ens_size() == 1) {
