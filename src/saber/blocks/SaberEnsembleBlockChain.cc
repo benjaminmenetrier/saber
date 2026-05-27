@@ -198,51 +198,6 @@ void SaberEnsembleBlockChain::randomize(oops::FieldSet4D & fset4d) const {
 
 // -----------------------------------------------------------------------------
 
-size_t SaberEnsembleBlockChain::ctlVecSize() const {
-  oops::Log::trace() << "saber::SaberEnsembleBlockChain::ctlVecSize starting" << std::endl;
-
-  // Initialize control vector size
-  size_t ctlVecSize = 0;
-
-  // Get control vector size
-  if (scaleDataVec_[0].localization()) {
-    // Check that all scales have a localization
-    for (const auto & scaleData : scaleDataVec_) {
-      ASSERT(scaleData.localization());
-    }
-
-    // Compute control vector size
-    if (strategy_ == "separated") {
-      // Separated strategy
-      for (const auto & scaleData : scaleDataVec_) {
-        ctlVecSize += scaleData.ensemble()->ens_size()*scaleData.localization()->ctlVecSize();
-      }
-    } else if (strategy_ == "crossed") {
-      // Crossed strategy
-      ctlVecSize = scaleDataVec_[0].ensemble()->ens_size()
-        *scaleDataVec_[0].localization()->ctlVecSize();
-
-      // Check that all the scales have the same control vector size
-      for (const auto & scaleData : scaleDataVec_) {
-        ASSERT(scaleData.localization()->ctlVecSize() ==
-          scaleDataVec_[0].localization()->ctlVecSize());
-      }
-    }
-  } else {
-    // Without localization
-    // Only one scale allowed
-    ASSERT(scaleDataVec_.size() == 1);
-
-    // Control vector size = number of members
-    ctlVecSize = scaleDataVec_[0].ensemble()->ens_size();
-  }
-
-  oops::Log::trace() << "saber::SaberEnsembleBlockChain::ctlVecSize done" << std::endl;
-  return ctlVecSize;
-}
-
-// -----------------------------------------------------------------------------
-
 void SaberEnsembleBlockChain::randomCtlVec(atlas::Field & cv,
                                            const size_t & offset) const {
   oops::Log::trace() << "saber::SaberEnsembleBlockChain::randomCtlVec starting" << std::endl;
