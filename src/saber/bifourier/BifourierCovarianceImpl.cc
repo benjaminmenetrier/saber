@@ -83,7 +83,7 @@ BifourierCovarianceImpl::BifourierCovarianceImpl(const oops::GeometryData & geom
       // Get horizontal grid-point correlation view
       auto horCorView = make_view<double, 2>(horCorField);
 
-      // Compute horizontal grid-point correlation
+      // Compute isotropic horizontal grid-point correlation
       for (int jnode = 0; jnode < fs.size(); ++jnode) {
         const double distI = indexIView(jnode) < static_cast<int>(trans_->nx()/2) ?
           static_cast<double>(indexIView(jnode))*trans_->dx() :
@@ -188,7 +188,7 @@ BifourierCovarianceImpl::BifourierCovarianceImpl(const oops::GeometryData & geom
 
       // Compute horizontal spectral variance
       for (size_t js = 0; js < trans_->ns(); ++js) {
-        if (trans_->q(js) == 0) {
+        if ((trans_->k(js) == 0) && (trans_->q(js) == 0)) {
           const size_t jw = trans_->jw(js);
           for (size_t jzI = 0; jzI < nz; ++jzI) {
             horSpecVarView(jw, jzI, 0) += horCorSpView(js, jzI);
@@ -202,7 +202,6 @@ BifourierCovarianceImpl::BifourierCovarianceImpl(const oops::GeometryData & geom
       // Compute horizontal spectral standard-deviation
       for (size_t jw = 0; jw < trans_->nw(); ++jw) {
         for (size_t jzI = 0; jzI < nz; ++jzI) {
-          horSpecVarView(jw, jzI, 0) *= trans_->spNormSumInv(jw);
           horSpecVarView(jw, jzI, 0) = std::max(horSpecVarView(jw, jzI, 0), 0.0);
           horSpecVarView(jw, jzI, 0) = std::sqrt(horSpecVarView(jw, jzI, 0));
         }
