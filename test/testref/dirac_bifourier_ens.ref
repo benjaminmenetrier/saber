@@ -37,7 +37,7 @@ Inner inverse test for block BifourierSpectralToGrid passed: U Uinv (U x) == (U 
 Outer inverse test for block BifourierSpectralToGrid passed: Uinv U (Uinv x) == (Uinv x)
 Covariance norms: 
 - allVars: 
-  + correlation square-root: 7.6323886576243916e-01
+  + correlation square-root: 4.5234983514451682e-01
   + standard-deviation:      3.3166247903553998e+00
 Adjoint test for block BifourierCovariance passed
 Adjoint test for the multivariate central block passed
@@ -50,27 +50,27 @@ Covariance(SABER) * Increment:
   Geometry: structured [3848]
   Fields:
   - geographical_x_wind (10 levels):
-    + min    = -2.5931397768674475e-03
-    + max    = 1.6530747198609025e-04
-    + mean   = -1.0232356842039904e-06
-    + stddev = 3.7270278837621308e-05
+    + min    = -2.5919736589595501e-03
+    + max    = 2.9894710852763787e-04
+    + mean   = -2.3333294852050006e-07
+    + stddev = 3.8025360561107368e-05
   - geographical_y_wind (10 levels):
-    + min    = -2.2471564944107790e-03
-    + max    = 5.5817428836576642e-04
-    + mean   = -2.3739979799028274e-07
-    + stddev = 2.2264249718148841e-05
+    + min    = -2.2471564944107525e-03
+    + max    = 4.1834077245693767e-04
+    + mean   = -2.2310403986638367e-07
+    + stddev = 2.4518806821658896e-05
   - air_temperature (10 levels):
-    + min    = -4.1354536418052035e-03
-    + max    = 3.9479701524967908e-02
-    + mean   = 9.3730262274789660e-06
-    + stddev = 3.9165511576332051e-04
+    + min    = -3.7164116088034141e-03
+    + max    = 3.9479701524967457e-02
+    + mean   = 3.5252866122681593e-06
+    + stddev = 3.8894076304977842e-04
   - log_of_air_pressure_at_surface (1 levels):
-    + min    = -9.9271863698174558e-07
-    + max    = 4.9285746970490057e-06
-    + mean   = 2.9065659522281343e-08
-    + stddev = 2.5946137536117223e-07
+    + min    = -8.8612741957324470e-07
+    + max    = 4.5982151748833491e-06
+    + mean   = 2.7526921251054597e-08
+    + stddev = 2.6354654946586714e-07
   - water_vapor_mixing_ratio_wrt_moist_air (10 levels):
-    + min    = -2.6906749317035067e-06
-    + max    = 7.3044427262920486e-06
-    + mean   = 1.9816277214834637e-09
-    + stddev = 8.9396500570964279e-08
+    + min    = -2.5226440587765053e-06
+    + max    = 6.8098471793038101e-06
+    + mean   = 1.8153395291877271e-09
+    + stddev = 1.0050964042779309e-07
