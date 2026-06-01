@@ -780,7 +780,6 @@ SaberEnsembleBlockChain::SaberEnsembleBlockChain(const oops::Geometry<MODEL> & g
     // Control vector size = number of members
     ctlVecSize_ = scaleDataVec_[0].ensemble()->ens_size();
   }
-  std::cout << "TOTO: " << ctlVecSize_ << std::endl;
 
   // Adjoint test
   // TODO(AS): this is now a copy of the test in SaberCentralBlock; needs to be generalized.
