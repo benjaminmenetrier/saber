@@ -50,7 +50,6 @@ background error:
         specific off-diagonal weights:
         - variables pair: [air_horizontal_streamfunction, air_horizontal_velocity_potential]
           weight: 0.5
-        positive-definiteness test: true
         horizontal interpolation test: true
       dirac:
       - longitude: 150.0

@@ -139,11 +139,6 @@ BUMP::BUMP(const oops::GeometryData & geometryData,
       }
     }
     grid.set("model.nl0", nl0);
-
-    // 2D variables are meaningful if 3D variables are present only
-    if (nl0 == 1) {
-      var2d.clear();
-    }
     grid.set("model.2d variables", var2d);
 
     // Add nearest 3D level for 2D fields
@@ -608,30 +603,6 @@ void BUMP::inverseMultiplyStdDev(oops::FieldSet3D & fset) const {
 
 // -----------------------------------------------------------------------------
 
-void BUMP::randomizeNicas(oops::FieldSet3D & fset) const {
-  oops::Log::trace() << classname() << "::randomizeNicas starting" << std::endl;
-
-  for (size_t jgrid = 0; jgrid < keyBUMP_.size(); ++jgrid) {
-    bump_randomize_f90(keyBUMP_[jgrid], fset.get());
-  }
-
-  oops::Log::trace() << classname() << "::randomizeNicas done" << std::endl;
-}
-
-// -----------------------------------------------------------------------------
-
-void BUMP::multiplyNicas(oops::FieldSet3D & fset) const {
-  oops::Log::trace() << classname() << "::multiplyNicas starting" << std::endl;
-
-  for (size_t jgrid = 0; jgrid < keyBUMP_.size(); ++jgrid) {
-    bump_apply_nicas_f90(keyBUMP_[jgrid], fset.get());
-  }
-
-  oops::Log::trace() << classname() << "::multiplyNicas done" << std::endl;
-}
-
-// -----------------------------------------------------------------------------
-
 void BUMP::filterNicas(oops::FieldSet3D & fset) const {
   oops::Log::trace() << classname() << "::filterNicas starting" << std::endl;
 
@@ -680,6 +651,23 @@ size_t BUMP::getCvSize() const {
 
   oops::Log::trace() << classname() << "::getCvSize done" << std::endl;
   return n;
+}
+
+// -----------------------------------------------------------------------------
+
+void BUMP::randomCv(atlas::Field & cv,
+                    const size_t & offset) const {
+  oops::Log::trace() << classname() << "::randomCv starting" << std::endl;
+
+  int index = offset;
+  for (unsigned int jgrid = 0; jgrid < keyBUMP_.size(); ++jgrid) {
+    bump_random_cv_f90(keyBUMP_[jgrid], cv.get(), index);
+    int nTmp;
+    bump_get_cv_size_f90(keyBUMP_[jgrid], nTmp);
+    index += nTmp;
+  }
+
+  oops::Log::trace() << classname() << "::randomCv done" << std::endl;
 }
 
 // -----------------------------------------------------------------------------

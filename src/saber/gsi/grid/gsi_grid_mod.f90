@@ -7,7 +7,9 @@
 module gsi_grid_mod
 
 ! netcdf
-use netcdf
+use netcdf, only: &
+  nf90_close, nf90_get_var, nf90_inquire_dimension, nf90_inq_dimid, &
+  nf90_inq_varid, NF90_NOWRITE, nf90_open
 
 ! atlas
 use atlas_module,                   only: atlas_field, atlas_fieldset, atlas_real
@@ -42,9 +44,11 @@ type :: gsi_grid
   logical :: vflip                  ! Flip vertical grid (gsi k=1=top)
   logical :: noGSI
   real(kind=kind_real), allocatable :: lats(:), lons(:)
+  real(kind=kind_real), allocatable :: lats2(:,:), lons2(:,:)
   real(kind=kind_real), allocatable :: grid_lats(:,:), grid_lons(:,:)
   integer :: ngrid ! Number of grid points for each processor
   logical :: debug
+  logical :: regional
   contains
     procedure, public :: create
     procedure, public :: delete
@@ -82,6 +86,16 @@ verbose = comm%rank()==0
 call conf%get_or_die("debugging mode", self%debug)
 call conf%get_or_die("debugging bypass gsi", self%noGSI)
 
+! Regional mode
+! -------------
+self%regional = .false.
+if (conf%has("regional mode")) then
+  call conf%get_or_die("regional mode", self%regional)
+end if
+if (self%regional .and. self%noGSI) then
+  call abor1_ftn("GSI grid: regional mode is not supported with noGSI")
+end if
+
 ! Domain decomposition
 ! --------------------
 if (conf%has("processor layout x direction").and.conf%has("processor layout y direction")) then
@@ -104,35 +118,44 @@ if (comm%rank() == 0) then
   call conf%get_or_die("gsi error covariance file", str)
   self%filename = str
 
-endif
+end if
 
 if (self%noGSI) then
   call woGSI()
 else
   call wGSI()
-endif
+end if
 
 ! Create arrays of lon/lat to be compatible with interpolation
 if(.not.allocated(self%grid_lons)) allocate(self%grid_lons(self%isc:self%iec, self%jsc:self%jec))
 if(.not.allocated(self%grid_lats)) allocate(self%grid_lats(self%isc:self%iec, self%jsc:self%jec))
 
-do i = self%isc, self%iec
-  self%grid_lons(i,:) = self%lons(i)
-enddo
-do j = self%jsc, self%jec
-  self%grid_lats(:,j) = self%lats(j)
-enddo
+if(self%regional) then
+  do i = self%isc, self%iec
+    do j = self%jsc, self%jec
+      self%grid_lons(i,j) = self%lons2(i,j)
+      self%grid_lats(i,j) = self%lats2(i,j)
+    end do
+  end do
+else
+  do i = self%isc, self%iec
+    self%grid_lons(i,:) = self%lons(i)
+  end do
+  do j = self%jsc, self%jec
+    self%grid_lats(:,j) = self%lats(j)
+  end do
+end if
 
 if ( self%debug ) then
  if(self%comm%rank() == 0) then
     do j=1,self%layout(1)*self%layout(2)
-       write(6,'(a,6(i5,1x))') 'grid dist indexes: task, is,ie, js,je ', j, &
+       write(6,"(a,6(i5,1x))") "grid dist indexes: task, is,ie, js,je ", j, &
                                 self%isc, self%iec, &
                                 self%jsc, self%jec, &
                                 self%ngrid
-    enddo
- endif
-endif
+    end do
+ end if
+end if
 
 
 
@@ -150,8 +173,9 @@ contains
   npe = self%layout(1)*self%layout(2)
 
   ! Check that user choices match comm size
-  if (.not. self%layout(1)*self%layout(2) == comm%size()) &
+  if (.not. self%layout(1)*self%layout(2) == comm%size()) then
     call abor1_ftn("GSI grid: number of processor in layout does not match number in communicator")
+  end if
 
   ! Get required name of resources for GSI B error
   ! ----------------------------------------------
@@ -167,18 +191,27 @@ contains
 
   ! Allocate the lat/lon arrays
   ! ---------------------------
-  if(.not.allocated(self%lons)) allocate(self%lons(self%npx))
-  if(.not.allocated(self%lats)) allocate(self%lats(self%npy))
+  if(self%regional) then
+    if(.not.allocated(self%lons2)) allocate(self%lons2(self%npx,self%npy))
+    if(.not.allocated(self%lats2)) allocate(self%lats2(self%npx,self%npy))
+  else
+    if(.not.allocated(self%lons)) allocate(self%lons(self%npx))
+    if(.not.allocated(self%lats)) allocate(self%lats(self%npy))
+  end if
 
   ! Read the latitudes and longitudes per GSIbec
   ! --------------------------------------------
-  call gsibec_get_grid (eqspace,'degree',self%lats,self%lons)
+  if(self%regional) then
+    call gsibec_get_grid ("degree",self%lats2,self%lons2)
+  else
+    call gsibec_get_grid (eqspace,"degree",self%lats,self%lons)
+  end if
   call gsibec_set_grid (comm%rank(),vgrdfn)
 
   ! If debugging, read the latitude and longitude from file
   ! and compare with those from GSIbec
   ! ---------------------------------------------
-  if (self%debug .and. comm%rank() == 0) then
+  if (self%debug .and. comm%rank() == 0 .and. .not. self%regional) then
 
     allocate(mylons(self%npx))
     allocate(mylats(self%npy))
@@ -196,11 +229,11 @@ contains
     call nccheck(nf90_close(ncid), "nf90_close")
 
     do i=1,self%npx
-       print *, 'lons: gsi, file: ',self%lons(i),mylons(i) 
-    enddo
+       print *, "lons: gsi, file: ",self%lons(i),mylons(i)
+    end do
     do j=1,self%npy
-       print *, 'lats: gsi, file: ',self%lats(j),mylats(j) 
-    enddo
+       print *, "lats: gsi, file: ",self%lats(j),mylats(j)
+    end do
     deallocate(mylons)
     deallocate(mylats)
 
@@ -209,7 +242,7 @@ contains
   self%ngrid = (self%iec-self%isc+1)*(self%jec-self%jsc+1)
   if (self%ngrid /= igdim) then
     call abor1_ftn("gsi_grid_mod: inconsistent distribution")
-  endif
+  end if
 
   end subroutine wGSI
 
@@ -236,7 +269,7 @@ contains
     call nccheck(nf90_inquire_dimension(ncid, dimid(2), len=self%npy), "nf90_inquire_dimension lat" )
     call nccheck(nf90_inquire_dimension(ncid, dimid(3), len=self%npz), "nf90_inquire_dimension lev" )
 
-  endif
+  end if
 
   ! Broadcast the dimensions
   ! ------------------------
@@ -272,8 +305,9 @@ contains
   call comm%broadcast(self%lats, 0)
 
   ! Check that user choices match comm size
-  if (.not. self%layout(1)*self%layout(2) == comm%size()) &
+  if (.not. self%layout(1)*self%layout(2) == comm%size()) then
     call abor1_ftn("GSI grid: number of processor in layout does not match number in communicator")
+  end if
 
 
   ! Doing gsi stuff ...
@@ -313,10 +347,12 @@ subroutine delete(self)
 class(gsi_grid), intent(inout) :: self
 
 ! Deallocate arrays
-deallocate(self%lons)
-deallocate(self%lats)
-deallocate(self%grid_lons)
-deallocate(self%grid_lats)
+if (allocated(self%lons)) deallocate(self%lons)
+if (allocated(self%lats)) deallocate(self%lats)
+if (allocated(self%lons2)) deallocate(self%lons2)
+if (allocated(self%lats2)) deallocate(self%lats2)
+if (allocated(self%grid_lons)) deallocate(self%grid_lons)
+if (allocated(self%grid_lats)) deallocate(self%grid_lats)
 call self%comm%final()
 
 ! Set grid to zero
@@ -341,29 +377,29 @@ class(gsi_grid), intent(in) :: self
 ! Root PE prints grid info
 if (self%comm%rank() == 0) then
 
-  write(*,'(A28)')      "ErrorCovarianceGSI GSI grid:"
-  write(*,'(A38, I5)')  "  Number of longitudinal grid points: ", self%npx
-  write(*,'(A37, I5)')  "  Number of latitudinal grid points: ", self%npy
-  write(*,'(A34, I5)')  "  Number of vertical grid points: ", self%npz
-  write(*,'(A1)')       " "
-  write(*,'(A43, I5)')  "  Number of processors in the x direction: ", self%layout(1)
-  write(*,'(A43, I5)')  "  Number of processors in the y direction: ", self%layout(2)
+  write(*,"(A28)")      "ErrorCovarianceGSI GSI grid:"
+  write(*,"(A38, I5)")  "  Number of longitudinal grid points: ", self%npx
+  write(*,"(A37, I5)")  "  Number of latitudinal grid points: ", self%npy
+  write(*,"(A34, I5)")  "  Number of vertical grid points: ", self%npz
+  write(*,"(A1)")       " "
+  write(*,"(A43, I5)")  "  Number of processors in the x direction: ", self%layout(1)
+  write(*,"(A43, I5)")  "  Number of processors in the y direction: ", self%layout(2)
 
-endif
+end if
 
 if (self%debug) then
   ! Print index ranges
-  write(*,'(A7, I6, A7, I6, A7, I6, A7, I6, A7, I6)')  "  Proc ", self%comm%rank(), &
-                        ' isc = ', self%isc, ' iec = ', self%iec, &
-                        ' jsc = ', self%jsc, ' jec = ', self%jec
+  write(*,"(A7, I6, A7, I6, A7, I6, A7, I6, A7, I6)")  "  Proc ", self%comm%rank(), &
+                        " isc = ", self%isc, " iec = ", self%iec, &
+                        " jsc = ", self%jsc, " jec = ", self%jec
 
   ! Print latlon
-  write(*,'(A10, F10.3, A10, F10.3, A10, F10.3, A10, F10.3)')  &
-        "  Lat min ", minval(self%grid_lats), &
-        "  Lat max ", maxval(self%grid_lats), &
-        "  Lon min ", minval(self%grid_lons), &
-        "  Lon max ", maxval(self%grid_lons)
-endif
+    write(*,"(A10, F10.3, A10, F10.3, A10, F10.3, A10, F10.3)")  &
+      "  Lat min ", minval(self%grid_lats), &
+      "  Lat max ", maxval(self%grid_lats), &
+      "  Lon min ", minval(self%grid_lons), &
+      "  Lon max ", maxval(self%grid_lons)
+end if
 
 end subroutine print
 
@@ -394,16 +430,16 @@ real(kind_real), pointer :: real_ptr(:,:)
 type(atlas_field) :: lonlat_field
 
 ! Create lon/lat field
-lonlat_field = atlas_field(name="lonlat", kind=atlas_real(kind_real), shape=(/2,self%ngrid/))
+lonlat_field = atlas_field(name="lonlat", kind=atlas_real(kind_real), shape=[2,self%ngrid])
 
 ! Get pointer to the data
 call lonlat_field%data(real_ptr)
 
 ! Fill lon/lat
 real_ptr(1,:) = reshape(self%grid_lons(self%isc:self%iec, &
-                                       self%jsc:self%jec), (/self%ngrid/))
+                                       self%jsc:self%jec), [self%ngrid])
 real_ptr(2,:) = reshape(self%grid_lats(self%isc:self%iec, &
-                                       self%jsc:self%jec), (/self%ngrid/))
+                                       self%jsc:self%jec), [self%ngrid])
 
 ! Add field to fieldset
 call grid_fieldset%add(lonlat_field)
