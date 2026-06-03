@@ -42,7 +42,7 @@ Biperiodization::Biperiodization(const oops::GeometryData & outerGeometryData,
   // Empty inner FieldSet
   atlas::FieldSet innerFset;
 
-  if (!biper_->sameGrid()) {
+  if (!biper_->sameFs()) {
     // Generate inner GeometryData
     innerGeometryData_ = std::make_unique<oops::GeometryData>(biper_->innerFunctionSpace(),
       innerFset, outerGeometryData.levelsAreTopDown(), comm_);
