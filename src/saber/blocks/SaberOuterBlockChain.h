@@ -49,13 +49,15 @@ class SaberOuterBlockChain {
                        const std::vector<SaberOuterBlockParametersWrapper> & params,
                        std::shared_ptr<oops::FieldSets> fsetEns = NULL,
                        const bool & centralDirectCalibration = false);
-  /// @brief Simpler, limited constructor using only generic GeometryData
+  /// @brief Alternative constructor using only generic GeometryData
   SaberOuterBlockChain(const oops::GeometryData & outerGeometryData,
                        const oops::Variables & outerVars,
                        oops::FieldSet4D & fset4dXb,
                        oops::FieldSet4D & fset4dFg,
                        const eckit::Configuration & conf,
-                       const std::vector<SaberOuterBlockParametersWrapper> & params);
+                       const std::vector<SaberOuterBlockParametersWrapper> & params,
+                       std::shared_ptr<oops::FieldSets> fsetEns = NULL,
+                       const bool & centralDirectCalibration = false);
 
   ~SaberOuterBlockChain() = default;
 
@@ -183,6 +185,15 @@ class SaberOuterBlockChain {
   void calibrateBlock(const eckit::Configuration & conf,
                       const oops::FieldSet4D & fset4dXb,
                       const oops::Geometry<MODEL> & geom,
+                      const bool & validModelGeom,
+                      const oops::Variables & outerVars,
+                      const oops::Variables & currentOuterVars,
+                      oops::FieldSets & fsetEns);
+
+  /// @brief Alternative block calibration. Used in alternative constructor.
+  void calibrateBlock(const eckit::Configuration & conf,
+                      const oops::FieldSet4D & fset4dXb,
+                      const oops::GeometryData & outerGeometryData,
                       const bool & validModelGeom,
                       const oops::Variables & outerVars,
                       const oops::Variables & currentOuterVars,
@@ -319,7 +330,6 @@ SaberOuterBlockChain::SaberOuterBlockChain(const oops::Geometry<MODEL> & geom,
           innerSaberOuterBlockParamWrapper.saberOuterBlockParameters;
         applyLeftInverse = applyLeftInverse || innerSaberOuterBlockParams.doCalibration();
       }
-      applyLeftInverse = applyLeftInverse || conf.has("output ensemble");
 
       if (applyLeftInverse) {
         // Left inverse multiplication on ensemble members

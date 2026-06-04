@@ -37,6 +37,17 @@ SaberParametricBlockChain::SaberParametricBlockChain(
   // Set cross-time covariance flag
   crossTimeCov_ = (params.timeCovariance.value() == "multivariate duplicated");
 
+  // Get central block parameters
+  SaberCentralBlockParameters saberCentralBlockParams = params.saberCentralBlockParams;
+  const bool centralDirectCalibration = saberCentralBlockParams.doCalibration();
+
+  // Read generic ensemble (for non-iterative ensemble loading)
+  std::shared_ptr<oops::FieldSets> fsetEns = std::make_shared<oops::FieldSets>(readEnsemble(
+                                         outerGeometryData,
+                                         outerVars,
+                                         fset4dXb.times(), fset4dXb.commTime(), fset4dXb.commEns(),
+                                         fullConf));
+
   // If needed create generic outer block chain
   if (params.saberOuterBlocksParams.value()) {
     outerBlockChain_ = std::make_shared<SaberOuterBlockChain>(outerGeometryData,
@@ -44,16 +55,16 @@ SaberParametricBlockChain::SaberParametricBlockChain(
         fset4dXb,
         fset4dFg,
         fullConf,
-        *params.saberOuterBlocksParams.value());
+        *params.saberOuterBlocksParams.value(),
+        fsetEns,
+        centralDirectCalibration);
   }
 
   // Set outer geometry data for central block
   const oops::GeometryData & currentOuterGeom = outerBlockChain_ ?
                              outerBlockChain_->innerGeometryData() : outerGeometryData;
 
-  SaberCentralBlockParameters saberCentralBlockParams;
-  saberCentralBlockParams.deserialize(conf.getSubConfiguration("saber central block"));
-
+  // Create central block
   oops::Log::info() << "Info     : Creating central block: " << std::endl;
 
   const auto currentOuterVars = initCentralBlock(currentOuterGeom,
@@ -67,9 +78,16 @@ SaberParametricBlockChain::SaberParametricBlockChain(
     throw eckit::UserError("The generic constructor of the SABER parametric block chain "
                            "does not allow covariance calibration.", Here());
   }
-  if (fullConf.has("output ensemble")) {
-    throw eckit::UserError("The generic constructor of the SABER parametric block chain "
-                           "does not allow ensemble output.", Here());
+
+  if (centralBlock_->doCalibration()) {
+    // Calibration
+    centralBlock_->calibrateBlock(outerGeometryData,
+                                  outerVariables_,
+                                  fset4dXb,
+                                  fset4dFg,
+                                  fullConf,
+                                  outerBlockChain_,
+                                  fsetEns);
   }
 
   if (centralBlock_->doRead()) {
@@ -78,7 +96,7 @@ SaberParametricBlockChain::SaberParametricBlockChain(
     centralBlock_->read();
   }
 
-  if (centralBlock_->forceWrite()) {
+  if (centralBlock_->forceWrite() || centralBlock_->doCalibration()) {
     // Write data
     oops::Log::info() << "Info     : Write data" << std::endl;
     centralBlock_->write();

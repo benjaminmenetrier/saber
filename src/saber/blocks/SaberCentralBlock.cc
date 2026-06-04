@@ -1170,6 +1170,57 @@ void SaberCentralBlock::multiplySqrtAD(const oops::FieldSet3D & fset3d,
 
 // -----------------------------------------------------------------------------
 
+void SaberCentralBlock::calibrateBlock(const oops::GeometryData & geometryData,
+                                       const oops::Variables & outerVars,
+                                       oops::FieldSet4D & fset4dXb,
+                                       oops::FieldSet4D & fset4dFg,
+                                       const eckit::Configuration & conf,
+                                       std::shared_ptr<SaberOuterBlockChain> outerBlockChain,
+                                       std::shared_ptr<oops::FieldSets> fsetEns) {
+  oops::Log::trace() << "SaberCentralBlock::calibrateBlock starting" << std::endl;
+
+  // Iterative ensemble loading flag
+  const bool iterativeEnsembleLoading = conf.getBool("iterative ensemble loading");
+
+  // Block calibration
+  if (iterativeEnsembleLoading) {
+    // Iterative calibration
+    oops::Log::info() << "Info     : Iterative calibration" << std::endl;
+
+    // Initialization
+    this->iterativeCalibrationInit();
+
+    // Get ensemble size
+    size_t nens = getNensFromConfig(conf);
+
+    for (size_t ie = 0; ie < nens; ++ie) {
+      // Read ensemble member
+      oops::FieldSet3D fset(fset4dXb[0].validTime(), geometryData.comm());
+      readEnsembleMember(geometryData, outerVars, conf, ie, fset);
+
+      // Apply outer blocks inverse (all of them)
+      oops::Log::info() << "Info     : Apply outer blocks inverse (all of them)" << std::endl;
+      if (outerBlockChain) outerBlockChain->leftInverseMultiply(fset);
+
+      // Use FieldSet in the central block
+      oops::Log::info() << "Info     : Use FieldSet in the central block" << std::endl;
+      this->iterativeCalibrationUpdate(fset);
+    }
+
+    // Finalization
+    oops::Log::info() << "Info     : Finalization" << std::endl;
+    this->iterativeCalibrationFinal();
+  } else {
+    // Direct calibration
+    oops::Log::info() << "Info     : Direct calibration" << std::endl;
+    this->directCalibration(*fsetEns);
+  }
+
+  oops::Log::trace() << "SaberCentralBlock::calibrateBlock done" << std::endl;
+}
+
+// -----------------------------------------------------------------------------
+
 void SaberCentralBlock::adjointTest(const double & globalAdjointTolerance) const {
   oops::Log::trace() << "SaberCentralBlock::adjointTest starting" << std::endl;
 

@@ -318,6 +318,14 @@ void readHybridWeight(const oops::Geometry<MODEL> & geom,
   oops::Log::trace() << "readHybridWeight done" << std::endl;
 }
 
+// -----------------------------------------------------------------------------
+
+void readEnsembleMember(const oops::GeometryData & geomData,
+                        const oops::Variables & vars,
+                        const eckit::Configuration & conf,
+                        const size_t & ie,
+                        oops::FieldSet3D & fset);
+
 // -------------------------------------------------------------------------------------------------
 
 template<typename MODEL>
@@ -370,6 +378,7 @@ void readEnsembleMember(const oops::Geometry<MODEL> & geom,
     // Read states
     oops::State<MODEL> xxBase(geom, memConfBase);
     oops::State<MODEL> xxPairs(geom, memConfPairs);
+
     // Compute difference
     oops::Increment<MODEL> dx(geom, vars, fset.validTime());
     dx.diff(xxPairs, xxBase);

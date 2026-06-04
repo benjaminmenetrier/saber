@@ -686,7 +686,7 @@ SaberEnsembleBlockChain::SaberEnsembleBlockChain(const oops::Geometry<MODEL> & g
                                    ensGeom,
                                    scaleData.localization()->outerVariables(),
                                    fset4dXb.times(), fset4dXb.commTime(), fset4dXb.commEns(),
-                                   *scaleData.params().genericEnsemble.value()));
+                                   scaleData.params().toConfiguration()));
         } else {
           // Check geometry consistency
           if (outerBlockChain_) {
