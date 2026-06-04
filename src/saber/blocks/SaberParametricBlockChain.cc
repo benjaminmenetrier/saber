@@ -73,12 +73,6 @@ SaberParametricBlockChain::SaberParametricBlockChain(
                                                  fset4dXb,
                                                  fset4dFg);
 
-  // Check block doesn't expect calibration, as this could be done with the standard ctor
-  if (centralBlock_->doCalibration()) {
-    throw eckit::UserError("The generic constructor of the SABER parametric block chain "
-                           "does not allow covariance calibration.", Here());
-  }
-
   if (centralBlock_->doCalibration()) {
     // Calibration
     centralBlock_->calibrateBlock(outerGeometryData,

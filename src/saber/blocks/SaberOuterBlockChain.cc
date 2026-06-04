@@ -72,12 +72,6 @@ SaberOuterBlockChain::SaberOuterBlockChain(
     validGeom = validGeom &&
       (&(innerGeometryData()) == &currentOuterGeometryData);
 
-    // Check block doesn't expect model fields to be read as this is a generic ctor
-    if (outerBlocks_.back().first->getReadConfs().size() != 0) {
-      throw eckit::UserError("The generic constructor of the SABER outer block chain "
-                             "does not allow to read MODEL fields.", Here());
-    }
-
     // Remove element from inner parameters
     innerParams.pop_back();
 
