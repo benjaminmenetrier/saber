@@ -727,6 +727,32 @@ saber_add_test( TARGET saber_dirac_bifourier_multiscale_4_1-2
                 DEPENDS saber_quench_error_covariance_toolbox.x
                 TEST_DEPENDS saber_dirac_bifourier_multiscale_2_1-2 )
 
+# dirac_bifourier_multiscale_5
+saber_add_test( TARGET saber_dirac_bifourier_multiscale_5_1-1
+                MPI 1
+                OMP 1
+                COMMAND ${CMAKE_BINARY_DIR}/bin/saber_quench_error_covariance_toolbox.x
+                ARGS testinput/dirac_bifourier_multiscale_5.yaml
+                DEPENDS saber_quench_error_covariance_toolbox.x
+                TEST_DEPENDS saber_dirac_bifourier_multiscale_2_1-1 )
+
+saber_add_test( TARGET saber_dirac_bifourier_multiscale_5_2-1
+                MPI 2
+                OMP 1
+                COMMAND ${CMAKE_BINARY_DIR}/bin/saber_quench_error_covariance_toolbox.x
+                ARGS testinput/dirac_bifourier_multiscale_5.yaml
+                DEPENDS saber_quench_error_covariance_toolbox.x
+                TEST_DEPENDS saber_dirac_bifourier_multiscale_2_2-1 )
+
+saber_add_test( TARGET saber_dirac_bifourier_multiscale_5_1-2
+                MPI 1
+                OMP 2
+                LABELS   tier2
+                COMMAND ${CMAKE_BINARY_DIR}/bin/saber_quench_error_covariance_toolbox.x
+                ARGS testinput/dirac_bifourier_multiscale_5.yaml
+                DEPENDS saber_quench_error_covariance_toolbox.x
+                TEST_DEPENDS saber_dirac_bifourier_multiscale_2_1-2 )
+
 # dirac_bifourier_vordivtouv_1
 saber_add_test( TARGET saber_dirac_bifourier_vordivtouv_1_1-1
                 MPI 1
