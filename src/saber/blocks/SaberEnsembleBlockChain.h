@@ -145,6 +145,9 @@ class SaberEnsembleBlockChainParameters: public ErrorCovarianceParametersBase {
   // Multi-scales strategy (separated or crossed)
   oops::OptionalParameter<std::string> strategy{"multiscale strategy", this};
 
+  // Internal interpolation for multi-scale case
+  oops::Parameter<bool> internalInterpolation{"internal interpolation", false, this};
+
   // Ensemble transform parameters
   oops::OptionalParameter<std::vector<SaberOuterBlockParametersWrapper>>
     ensembleTransform{"ensemble transform", this};
@@ -212,6 +215,8 @@ class SaberEnsembleBlockChain : public SaberBlockChainBase {
   std::vector<ScaleData> scaleDataVec_;
   /// @brief Multiscales strategy
   std::string strategy_;
+  /// @brief Internal interpolation
+  bool internalInterpolation_;
   /// @brief Control vector size.
   size_t ctlVecSize_;
   /// @brief Variables used in the ensemble covariance.
@@ -231,6 +236,7 @@ SaberEnsembleBlockChain::SaberEnsembleBlockChain(const oops::Geometry<MODEL> & g
   : comm_(geom.getComm()),
     outerFunctionSpace_(geom.functionSpace()),
     outerVariables_(outerVars),
+    internalInterpolation_(false),
     ctlVecSize_(0) {
   oops::Log::trace() << "SaberEnsembleBlockChain ctor starting" << std::endl;
 
@@ -431,6 +437,9 @@ SaberEnsembleBlockChain::SaberEnsembleBlockChain(const oops::Geometry<MODEL> & g
     ASSERT(params.strategy.value());
     strategy_ = *params.strategy.value();
     ASSERT((strategy_ == "separated") || (strategy_ == "crossed"));
+
+    // Set internal interpolation flag
+    internalInterpolation_ = params.internalInterpolation.value();
   } else {
     // No scale separation
     eckit::LocalConfiguration scaleConf;
