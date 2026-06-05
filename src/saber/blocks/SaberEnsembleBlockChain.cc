@@ -33,8 +33,8 @@ void SaberEnsembleBlockChain::multiply(oops::FieldSet4D & fset4d) const {
       // Copy initial FieldSet4D
       oops::FieldSet4D fset4dScaleInit = oops::copyFieldSet4D(fset4dInit);
 
-      // Apply interpolator adjoint
-      if (scaleData.interpolator()) {
+      // Apply external interpolation adjoint
+      if (scaleData.externalInterpolation()) {
         scaleData.interpolator()->applyOuterBlocksAD(fset4dScaleInit);
       }
 
@@ -44,26 +44,33 @@ void SaberEnsembleBlockChain::multiply(oops::FieldSet4D & fset4d) const {
 
       for (size_t ie = 0; ie < scaleData.ensemble()->ens_size(); ++ie) {
         // Copy initial FieldSet4D
-        oops::FieldSet4D fset4dMem = oops::copyFieldSet4D(fset4dScaleInit);
+        oops::FieldSet4D fset4dTmp = oops::copyFieldSet4D(fset4dScaleInit);
 
         if (scaleData.localization()) {
           // With localization
 
-          // First schur product
-          for (size_t it = 0; it < fset4dMem.size(); ++it) {
-            fset4dMem[it] *= (*scaleData.ensemble())(it, ie);
+          // Get ensemble member and optionally apply internal interpolation
+          oops::FieldSet4D fset4dMem(fset4d.times(), fset4d.commTime(), fset4d[0].commGeom());
+          if (scaleData.internalInterpolation()) {
+            fset4dMem.deepCopy(*scaleData.ensemble(), ie);
+            scaleData.interpolator()->applyOuterBlocks(fset4dMem);
+          } else {
+            for (size_t it = 0; it < fset4dMem.size(); ++it) {
+              fset4dMem[it].shallowCopy((*scaleData.ensemble())(it, ie));
+            }
           }
+
+          // First schur product
+          fset4dTmp *= fset4dMem;
 
           // Apply localization
-          scaleData.localization()->multiply(fset4dMem);
+          scaleData.localization()->multiply(fset4dTmp);
 
           // Second schur product
-          for (size_t it = 0; it < fset4dMem.size(); ++it) {
-            fset4dMem[it] *= (*scaleData.ensemble())(it, ie);
-          }
+          fset4dTmp *= fset4dMem;
 
           // Add up member contribution
-          fset4dScale += fset4dMem;
+          fset4dScale += fset4dTmp;
         } else {
           // No localization
 
@@ -71,20 +78,20 @@ void SaberEnsembleBlockChain::multiply(oops::FieldSet4D & fset4d) const {
           const double wgt = fset4dScaleInit.dot_product_with(*scaleData.ensemble(), ie, vars_);
 
           // Copy ensemble member
-          fset4dMem.deepCopy(*scaleData.ensemble(), ie);
+          fset4dTmp.deepCopy(*scaleData.ensemble(), ie);
 
           // Apply weight
-          fset4dMem *= wgt;
+          fset4dTmp *= wgt;
 
           // Add up member contribution
-          fset4dScale += fset4dMem;
+          fset4dScale += fset4dTmp;
         }
         // TODO(Algo): Add communication here when the code starts supporting
         // ensemble members distributed across MPI tasks.
       }
 
-      // Apply interpolator
-      if (scaleData.interpolator()) {
+      // Apply external interpolation
+      if (scaleData.externalInterpolation()) {
         scaleData.interpolator()->applyOuterBlocks(fset4dScale);
       }
 
@@ -120,7 +127,7 @@ void SaberEnsembleBlockChain::randomize(oops::FieldSet4D & fset4d) const {
   // Central block: randomization with ensemble covariance
   const auto & scaleData = scaleDataVec_[0];
   fset4d.deepCopy(*scaleData.ensemble(), 0);
-  if (scaleData.interpolator()) {
+  if (scaleData.externalInterpolation()) {
     scaleData.interpolator()->applyOuterBlocks(fset4d);
   }
   fset4d.zero();
@@ -131,28 +138,37 @@ void SaberEnsembleBlockChain::randomize(oops::FieldSet4D & fset4d) const {
       // Create scale FieldSet4D
       oops::FieldSet4D fset4dScale(fset4d.times(), fset4d.commTime(), fset4d[0].commGeom());
 
-      // Copy ensemble member
-      fset4dScale.deepCopy(*scaleData.ensemble(), 0);
+      // Initialize FieldSet4D for this scale
+      if (scaleData.externalInterpolation()) {
+        fset4dScale.deepCopy(*scaleData.ensemble(), 0);
+      } else {
+        fset4dScale.deepCopy(fset4d);
+      }
       fset4dScale.zero();
 
       for (unsigned int ie = 0; ie < scaleData.ensemble()->ens_size(); ++ie) {
         // Create empty FieldSet4D
-        // TODO(Benjamin): could be a oops::copyFieldSet4D(fset4dScale);
-        oops::FieldSet4D fset4dMem(fset4d.times(), fset4d.commTime(), fset4d[0].commGeom());
-
-        // Copy ensemble member
-        fset4dMem.deepCopy(*scaleData.ensemble(), ie);
+        oops::FieldSet4D fset4dTmp(fset4d.times(), fset4d.commTime(), fset4d[0].commGeom());
 
         if (scaleData.localization()) {
           // With localization
 
           // Randomize localization
-          scaleData.localization()->randomize(fset4dMem);
+          scaleData.localization()->randomize(fset4dTmp);
+
+          // Get ensemble member and optionally apply internal interpolation
+          oops::FieldSet4D fset4dMem(fset4d.times(), fset4d.commTime(), fset4d[0].commGeom());
+          if (scaleData.internalInterpolation()) {
+            fset4dMem.deepCopy(*scaleData.ensemble(), ie);
+            scaleData.interpolator()->applyOuterBlocks(fset4dMem);
+          } else {
+            for (size_t it = 0; it < fset4dMem.size(); ++it) {
+              fset4dMem[it].shallowCopy((*scaleData.ensemble())(it, ie));
+            }
+          }
 
           // Schur product
-          for (size_t it = 0; it < fset4dMem.size(); ++it) {
-            fset4dMem[it] *= (*scaleData.ensemble())(it, ie);
-          }
+          fset4dTmp *= fset4dMem;
         } else {
           // No localization
           if (!normalDist) {
@@ -160,12 +176,15 @@ void SaberEnsembleBlockChain::randomize(oops::FieldSet4D & fset4d) const {
               scaleData.ensemble()->ens_size(), 0.0, 1.0, seed_);
           }
 
+          // Copy ensemble member
+          fset4dTmp.deepCopy(*scaleData.ensemble(), ie);
+
           // Apply weight
-          fset4dMem *= (*normalDist)[ie];
+          fset4dTmp *= (*normalDist)[ie];
         }
 
         // Add up member contribution
-        fset4dScale += fset4dMem;
+        fset4dScale += fset4dTmp;
       }
 
       // Apply interpolator
@@ -255,40 +274,55 @@ void SaberEnsembleBlockChain::multiplySqrt(const atlas::Field & cv,
     // Create scale FieldSet4D
     oops::FieldSet4D fset4dScale(fset4d.times(), fset4d.commTime(), fset4d[0].commGeom());
 
-    // Copy ensemble member
-    fset4dScale.deepCopy(*scaleData.ensemble(), 0);
+    // Initialize FieldSet4D for this scale
+    if (scaleData.externalInterpolation()) {
+      fset4dScale.deepCopy(*scaleData.ensemble(), 0);
+    } else {
+      fset4dScale.deepCopy(fset4d);
+    }
     fset4dScale.zero();
 
     // Central block: ensemble covariance square-root
     for (unsigned int ie = 0; ie < scaleData.ensemble()->ens_size(); ++ie) {
       // Create empty FieldSet4D
-      oops::FieldSet4D fset4dMem(fset4d.times(), fset4d.commTime(), fset4d[0].commGeom());
+      oops::FieldSet4D fset4dTmp(fset4d.times(), fset4d.commTime(), fset4d[0].commGeom());
 
       if (scaleData.localization()) {
         // With localization
-        scaleData.localization()->multiplySqrt(cv, fset4dMem, index);
+        scaleData.localization()->multiplySqrt(cv, fset4dTmp, index);
         index += scaleData.localization()->ctlVecSize();
 
-        // Schur product
-        for (size_t it = 0; it < fset4dMem.size(); ++it) {
-          fset4dMem[it] *= (*scaleData.ensemble())(it, ie);
+        // Get ensemble member and optionally apply internal interpolation
+        oops::FieldSet4D fset4dMem(fset4d.times(), fset4d.commTime(), fset4d[0].commGeom());
+        if (scaleData.internalInterpolation()) {
+          fset4dMem.deepCopy(*scaleData.ensemble(), ie);
+          scaleData.interpolator()->applyOuterBlocks(fset4dMem);
+        } else {
+          for (size_t it = 0; it < fset4dMem.size(); ++it) {
+            fset4dMem[it].shallowCopy((*scaleData.ensemble())(it, ie));
+          }
         }
+
+        // Schur product
+        fset4dTmp *= fset4dMem;
       } else {
         // No localization
         const auto cvView = atlas::array::make_view<double, 1>(cv);
-        fset4dMem.deepCopy(*scaleData.ensemble(), ie);
+
+        // Copy ensemble member
+        fset4dTmp.deepCopy(*scaleData.ensemble(), ie);
 
         // Apply weight
-        fset4dMem *= cvView(index);
+        fset4dTmp *= cvView(index);
         ++index;
       }
 
       // Add up member contribution
-      fset4dScale += fset4dMem;
+      fset4dScale += fset4dTmp;
     }
 
-    // Apply interpolator
-    if (scaleData.interpolator()) {
+    // Apply external interpolation
+    if (scaleData.externalInterpolation()) {
       scaleData.interpolator()->applyOuterBlocks(fset4dScale);
     }
 
@@ -337,8 +371,8 @@ void SaberEnsembleBlockChain::multiplySqrtAD(const oops::FieldSet4D & fset4d,
     // Copy initial FieldSet4D
     oops::FieldSet4D fset4dScaleInit = oops::copyFieldSet4D(fset4dInit);
 
-    // Apply interpolator adjoint
-    if (scaleData.interpolator()) {
+    // Apply external interpolation adjoint
+    if (scaleData.externalInterpolation()) {
       scaleData.interpolator()->applyOuterBlocksAD(fset4dScaleInit);
     }
 
@@ -353,15 +387,24 @@ void SaberEnsembleBlockChain::multiplySqrtAD(const oops::FieldSet4D & fset4d,
 
       for (unsigned int ie = 0; ie < scaleData.ensemble()->ens_size(); ++ie) {
         // Copy initial fieldset
-        oops::FieldSet4D fset4dMem = oops::copyFieldSet4D(fset4dScaleInit);
+        oops::FieldSet4D fset4dTmp = oops::copyFieldSet4D(fset4dScaleInit);
 
-        // First schur product
-        for (size_t it = 0; it < fset4dMem.size(); ++it) {
-          fset4dMem[it] *= (*scaleData.ensemble())(it, ie);
+        // Get ensemble member and optionally apply internal interpolation
+        oops::FieldSet4D fset4dMem(fset4d.times(), fset4d.commTime(), fset4d[0].commGeom());
+        if (scaleData.internalInterpolation()) {
+          fset4dMem.deepCopy(*scaleData.ensemble(), ie);
+          scaleData.interpolator()->applyOuterBlocks(fset4dMem);
+        } else {
+          for (size_t it = 0; it < fset4dMem.size(); ++it) {
+            fset4dMem[it].shallowCopy((*scaleData.ensemble())(it, ie));
+          }
         }
 
+        // Schur product
+        fset4dTmp *= fset4dMem;
+
         // Apply localization square-root adjoint
-        scaleData.localization()->multiplySqrtAD(fset4dMem, cvScale, 0);
+        scaleData.localization()->multiplySqrtAD(fset4dTmp, cvScale, 0);
         for (size_t jcv = 0; jcv < scaleData.localization()->ctlVecSize(); ++jcv) {
           cvView(index+jcv) += cvScaleView(jcv);
         }
