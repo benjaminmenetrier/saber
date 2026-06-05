@@ -67,6 +67,9 @@ class ScaleParameters : public oops::Parameters {
   // Localization parametric blockchain (optional)
   oops::OptionalParameter<eckit::LocalConfiguration> localizationParams{
     "localization", this};
+
+  // Localization at full resolution (even if an interpolator is present)
+  oops::Parameter<bool> locAtFullRes{"localization at full resolution", false, this};
 };
 
 
@@ -74,7 +77,10 @@ class ScaleParameters : public oops::Parameters {
 
 class ScaleData {
  public:
-  explicit ScaleData(const ScaleParameters & params) : params_(params) {}
+  explicit ScaleData(const ScaleParameters & params) :
+    params_(params),
+    internalInterpolation_(params_.interpolatorParams.value() && params_.locAtFullRes.value()),
+    externalInterpolation_(params_.interpolatorParams.value() && !params_.locAtFullRes.value()) {}
 
   // Accessors
   const std::unique_ptr<SaberOuterBlockChain> & filter() const
@@ -95,6 +101,10 @@ class ScaleData {
     {return ensemble_;}
   const ScaleParameters & params() const
     {return params_;}
+  const bool & internalInterpolation() const
+    {return internalInterpolation_;}
+  const bool & externalInterpolation() const
+    {return externalInterpolation_;}
 
  private:
   /// @brief Filter outer block chain.
@@ -107,6 +117,10 @@ class ScaleData {
   std::unique_ptr<oops::FieldSets> ensemble_;
   /// @brief Scale parameters
   const ScaleParameters params_;
+  /// @brief Internal interpolation
+  bool internalInterpolation_;
+  /// @brief External interpolation
+  bool externalInterpolation_;
 };
 
 // -----------------------------------------------------------------------------
@@ -144,9 +158,6 @@ class SaberEnsembleBlockChainParameters: public ErrorCovarianceParametersBase {
 
   // Multi-scales strategy (separated or crossed)
   oops::OptionalParameter<std::string> strategy{"multiscale strategy", this};
-
-  // Internal interpolation for multi-scale case
-  oops::Parameter<bool> internalInterpolation{"internal interpolation", false, this};
 
   // Ensemble transform parameters
   oops::OptionalParameter<std::vector<SaberOuterBlockParametersWrapper>>
@@ -215,8 +226,6 @@ class SaberEnsembleBlockChain : public SaberBlockChainBase {
   std::vector<ScaleData> scaleDataVec_;
   /// @brief Multiscales strategy
   std::string strategy_;
-  /// @brief Internal interpolation
-  bool internalInterpolation_;
   /// @brief Control vector size.
   size_t ctlVecSize_;
   /// @brief Variables used in the ensemble covariance.
@@ -236,7 +245,6 @@ SaberEnsembleBlockChain::SaberEnsembleBlockChain(const oops::Geometry<MODEL> & g
   : comm_(geom.getComm()),
     outerFunctionSpace_(geom.functionSpace()),
     outerVariables_(outerVars),
-    internalInterpolation_(false),
     ctlVecSize_(0) {
   oops::Log::trace() << "SaberEnsembleBlockChain ctor starting" << std::endl;
 
@@ -437,9 +445,6 @@ SaberEnsembleBlockChain::SaberEnsembleBlockChain(const oops::Geometry<MODEL> & g
     ASSERT(params.strategy.value());
     strategy_ = *params.strategy.value();
     ASSERT((strategy_ == "separated") || (strategy_ == "crossed"));
-
-    // Set internal interpolation flag
-    internalInterpolation_ = params.internalInterpolation.value();
   } else {
     // No scale separation
     eckit::LocalConfiguration scaleConf;
@@ -479,8 +484,8 @@ SaberEnsembleBlockChain::SaberEnsembleBlockChain(const oops::Geometry<MODEL> & g
     }
 
     // Consistency check 2: residual from filter is incompatible with interpolator
-    if (scaleData.params().residualFromFilter.value()) {
-      ASSERT(!scaleData.interpolator());
+    if (scaleParams.residualFromFilter.value()) {
+      ASSERT(!scaleParams.interpolatorParams.value());
     }
 
     // Get interpolator outer geometry data
@@ -532,6 +537,10 @@ SaberEnsembleBlockChain::SaberEnsembleBlockChain(const oops::Geometry<MODEL> & g
         == util::getGridUid(interpolatorOuterGeomData.functionSpace()));
     }
 
+    // Get localization geometry data
+    const oops::GeometryData & localizationGeomData = scaleData.externalInterpolation() ?
+       filterOuterGeomData : interpolatorOuterGeomData;
+
     // Localization
     if (scaleParams.localizationParams.value()) {
       oops::Log::info() << "Info     : Localization setup" << std::endl;
@@ -546,7 +555,7 @@ SaberEnsembleBlockChain::SaberEnsembleBlockChain(const oops::Geometry<MODEL> & g
       // the current geometryData, using a generic constructor of the parametric block chain.
 
       // Check consistency of `geom` and the current geometry
-      const auto & currentFspace = filterOuterGeomData.functionSpace();
+      const auto & currentFspace = localizationGeomData.functionSpace();
       if (util::getGridUid(geom.functionSpace()) != util::getGridUid(currentFspace)) {
         oops::Log::info() << "Info     : Localization and ensemble are on different "
                              "functionSpaces, building localization with generic "
@@ -554,7 +563,7 @@ SaberEnsembleBlockChain::SaberEnsembleBlockChain(const oops::Geometry<MODEL> & g
         // Note QUENCH could just build another geometry here and use the standard
         // constructor, but other models usually don't have this ability to create a
         // Geometry on any mesh.
-        scaleData.localization() = std::make_unique<SaberParametricBlockChain>(filterOuterGeomData,
+        scaleData.localization() = std::make_unique<SaberParametricBlockChain>(localizationGeomData,
                                                                      currentOuterVars,
                                                                      fset4dXb,
                                                                      fset4dFg,
