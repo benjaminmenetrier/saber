@@ -140,69 +140,6 @@ eckit::LocalConfiguration getEnsSubconfig(const eckit::Configuration & conf, siz
 
 // -----------------------------------------------------------------------------
 
-oops::FieldSets readEnsemble(const oops::GeometryData & geomData,
-                             const oops::Variables & modelvars,
-                             const std::vector<util::DateTime> & times,
-                             const eckit::mpi::Comm & commTime,
-                             const eckit::mpi::Comm & commEns,
-                             const eckit::Configuration & inputConf) {
-  oops::Log::trace() << "readEnsemble starting" << std::endl;
-
-  // Read generic ensemble
-  oops::Log::info() << "Info     : Read generic ensemble" << std::endl;
-
-  // Get ensemble size
-  const size_t ne = getNensFromConfig(inputConf);
-
-  // Get variables
-  const eckit::LocalConfiguration varConf = getEnsSubconfig(inputConf, 0);
-  oops::Variables vars;
-  if (varConf.has("variables")) {
-    vars = oops::Variables{varConf.getStringVector("variables")};
-    for (auto & var : vars) {
-      var.setLevels(modelvars[var.name()].getLevels());
-    }
-  } else {
-    vars = modelvars;
-  }
-
-  // Initialize FieldSets
-  std::vector<int> members(ne);
-  std::iota(members.begin(), members.end(), 0);
-  oops::FieldSets ensemble(times,
-                           commTime,
-                           members,
-                           commEns);
-
-  // So far, only working for 3D ensembles
-  ASSERT(times.size() == 1);
-  const size_t it = 0;
-
-  for (size_t ie = 0; ie < ne; ++ie) {
-    // Get member configuration
-    const eckit::LocalConfiguration memConf = getEnsSubconfig(inputConf, ie);
-
-    // Read member as ATLAS fieldset
-    atlas::FieldSet fset;
-    util::readFieldSet(geomData.comm(),
-                       geomData.functionSpace(),
-                       vars,
-                       memConf,
-                       fset);
-
-    // Create FieldSet3D
-    oops::FieldSet3D fset3d(times[it], geomData.comm());
-    fset3d.shallowCopy(fset);
-
-    // Emplace back members
-    ensemble.emplace_back(it, ie, fset3d);
-  }
-
-  return ensemble;
-}
-
-// -----------------------------------------------------------------------------
-
 void cvToFset(const atlas::Field & cv,
               oops::FieldSet3D & fset,
               const size_t & offset,
