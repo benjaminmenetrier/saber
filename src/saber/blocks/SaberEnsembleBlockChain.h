@@ -695,14 +695,16 @@ SaberEnsembleBlockChain::SaberEnsembleBlockChain(const oops::Geometry<MODEL> & g
     } else {
       // Read ensemble perturbations
       for (auto & scaleData : scaleDataVec_) {
-        // Check geometry consistency
-        if (outerBlockChain_) {
-          ASSERT(util::getGridUid(outerBlockChain_->innerGeometryData().functionSpace())
-            == util::getGridUid(geom.functionSpace()));
-        }
+        if (scaleData.params().ensemblePert.value()) {
+          // Check geometry consistency
+          if (outerBlockChain_) {
+            ASSERT(util::getGridUid(outerBlockChain_->innerGeometryData().functionSpace())
+              == util::getGridUid(geom.functionSpace()));
+          }
 
-        // No interpolator allowed
-        ASSERT(!scaleData.interpolator());
+          // No interpolator allowed
+          ASSERT(!scaleData.interpolator());
+        }
 
         // Read ensemble using model reader
         scaleData.ensemble() = std::make_unique<oops::FieldSets>(readEnsemble(
