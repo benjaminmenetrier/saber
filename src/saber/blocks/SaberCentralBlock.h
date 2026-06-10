@@ -163,14 +163,8 @@ class SaberCentralBlock : public util::Printable {
                       std::shared_ptr<SaberOuterBlockChain>,
                       std::shared_ptr<oops::FieldSets>);
 
-  // Alternative calibrate block
-  void calibrateBlock(const oops::GeometryData & geometryData,
-                      const oops::Variables &,
-                      oops::FieldSet4D &,
-                      oops::FieldSet4D &,
-                      const eckit::Configuration &,
-                      std::shared_ptr<SaberOuterBlockChain>,
-                      std::shared_ptr<oops::FieldSets>);
+  // Alternative calibrate block, without ensemble
+  void calibrateBlock(const oops::FieldSet4D &);
 
   // Adjoint test
   void adjointTest(const double & tol) const;

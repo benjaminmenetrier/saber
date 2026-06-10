@@ -130,10 +130,8 @@ SaberParametricBlockChain::SaberParametricBlockChain(const oops::Geometry<MODEL>
                        oops::FieldSet4D & fset4dXb,
                        oops::FieldSet4D & fset4dFg,
                        const eckit::Configuration & conf)
-  : outerFunctionSpace_(geom.functionSpace()),
-    outerVariables_(outerVars),
-    timeComm_(fset4dXb.commTime()),
-    size4D_(fset4dXb.size()) {
+  : outerFunctionSpace_(geom.functionSpace()), outerVariables_(outerVars),
+  timeComm_(fset4dXb.commTime()), size4D_(fset4dXb.size()) {
   oops::Log::trace() << "SaberParametricBlockChain ctor starting" << std::endl;
 
   // Deserialize parameters and fill configuration with missing values
@@ -188,9 +186,7 @@ SaberParametricBlockChain::SaberParametricBlockChain(const oops::Geometry<MODEL>
                                   fullConf,
                                   outerBlockChain_,
                                   fsetEns);
-  }
-
-  if (centralBlock_->doRead()) {
+  } else if (centralBlock_->doRead()) {
     // Read data
     oops::Log::info() << "Info     : Read data" << std::endl;
     centralBlock_->read();

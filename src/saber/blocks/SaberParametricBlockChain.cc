@@ -37,17 +37,6 @@ SaberParametricBlockChain::SaberParametricBlockChain(
   // Set cross-time covariance flag
   crossTimeCov_ = (params.timeCovariance.value() == "multivariate duplicated");
 
-  // Get central block parameters
-  SaberCentralBlockParameters saberCentralBlockParams = params.saberCentralBlockParams;
-  const bool centralDirectCalibration = saberCentralBlockParams.doCalibration();
-
-  // Read generic ensemble (for non-iterative ensemble loading)
-  std::shared_ptr<oops::FieldSets> fsetEns = std::make_shared<oops::FieldSets>(readEnsemble(
-                                         outerGeometryData,
-                                         outerVars,
-                                         fset4dXb.times(), fset4dXb.commTime(), fset4dXb.commEns(),
-                                         fullConf));
-
   // If needed create generic outer block chain
   if (params.saberOuterBlocksParams.value()) {
     outerBlockChain_ = std::make_shared<SaberOuterBlockChain>(outerGeometryData,
@@ -55,9 +44,7 @@ SaberParametricBlockChain::SaberParametricBlockChain(
         fset4dXb,
         fset4dFg,
         fullConf,
-        *params.saberOuterBlocksParams.value(),
-        fsetEns,
-        centralDirectCalibration);
+        *params.saberOuterBlocksParams.value());
   }
 
   // Set outer geometry data for central block
@@ -69,22 +56,14 @@ SaberParametricBlockChain::SaberParametricBlockChain(
 
   const auto currentOuterVars = initCentralBlock(currentOuterGeom,
                                                  fullConf,
-                                                 saberCentralBlockParams,
+                                                 params.saberCentralBlockParams.value(),
                                                  fset4dXb,
                                                  fset4dFg);
 
   if (centralBlock_->doCalibration()) {
-    // Calibration
-    centralBlock_->calibrateBlock(outerGeometryData,
-                                  outerVariables_,
-                                  fset4dXb,
-                                  fset4dFg,
-                                  fullConf,
-                                  outerBlockChain_,
-                                  fsetEns);
-  }
-
-  if (centralBlock_->doRead()) {
+    // Calibration, without ensemble
+    centralBlock_->calibrateBlock(fset4dXb);
+  } else if (centralBlock_->doRead()) {
     // Read data
     oops::Log::info() << "Info     : Read data" << std::endl;
     centralBlock_->read();

@@ -52,13 +52,15 @@ class ScaleParameters : public oops::Parameters {
   oops::OptionalParameter<std::vector<SaberOuterBlockParametersWrapper>> interpolatorParams{
     "interpolator", this};
 
-  // Ensemble perturbations to read using generic reader (optional)
-  oops::OptionalParameter<eckit::LocalConfiguration> genericEnsemble{
-    "generic ensemble", this};
-
-  // Ensemble perturbations to read using model reader (optional)
+  // Ensemble perturbations to read (optional)
   oops::OptionalParameter<eckit::LocalConfiguration> ensemblePert{
     "ensemble pert", this};
+
+  // Ensemble perturbations to read on other geometry (optional)
+  oops::OptionalParameter<eckit::LocalConfiguration> ensemblePertOtherGeom{
+                        "ensemble pert on other geometry", this};
+  oops::OptionalParameter<eckit::LocalConfiguration> ensembleGeom{
+                        "ensemble geometry", this};
 
   // Output filtered perturbations (optional)
   oops::OptionalParameter<eckit::LocalConfiguration> output{
@@ -479,7 +481,7 @@ SaberEnsembleBlockChain::SaberEnsembleBlockChain(const oops::Geometry<MODEL> & g
         }
       } else {
         // First scale does not include a filter: all scales should read ensemble perturbations
-        ASSERT(scaleParams.genericEnsemble.value() || scaleParams.ensemblePert.value());
+        ASSERT(scaleParams.ensemblePert.value() || scaleParams.ensemblePertOtherGeom.value());
       }
     }
 
@@ -693,35 +695,21 @@ SaberEnsembleBlockChain::SaberEnsembleBlockChain(const oops::Geometry<MODEL> & g
     } else {
       // Read ensemble perturbations
       for (auto & scaleData : scaleDataVec_) {
-        if (scaleData.params().genericEnsemble.value()) {
-          // Get current geometry
-          const oops::GeometryData & ensGeom = scaleData.interpolator() ?
-            scaleData.interpolator()->innerGeometryData() : outerBlockChain_ ?
-            outerBlockChain_->innerGeometryData() : geom.generic();
-
-          // Read ensemble using generic reader
-          scaleData.ensemble() = std::make_unique<oops::FieldSets>(readEnsemble(
-                                   ensGeom,
-                                   scaleData.localization()->outerVariables(),
-                                   fset4dXb.times(), fset4dXb.commTime(), fset4dXb.commEns(),
-                                   scaleData.params().toConfiguration()));
-        } else {
-          // Check geometry consistency
-          if (outerBlockChain_) {
-            ASSERT(util::getGridUid(outerBlockChain_->innerGeometryData().functionSpace())
-              == util::getGridUid(geom.functionSpace()));
-          }
-
-          // No interpolator allowed
-          ASSERT(!scaleData.interpolator());
-
-          // Read ensemble using model reader
-          scaleData.ensemble() = std::make_unique<oops::FieldSets>(readEnsemble(
-                                   geom,
-                                   scaleData.localization()->outerVariables(),
-                                   fset4dXb.times(), fset4dXb.commTime(), fset4dXb.commEns(),
-                                   scaleData.params().toConfiguration()));
+        // Check geometry consistency
+        if (outerBlockChain_) {
+          ASSERT(util::getGridUid(outerBlockChain_->innerGeometryData().functionSpace())
+            == util::getGridUid(geom.functionSpace()));
         }
+
+        // No interpolator allowed
+        ASSERT(!scaleData.interpolator());
+
+        // Read ensemble using model reader
+        scaleData.ensemble() = std::make_unique<oops::FieldSets>(readEnsemble(
+                                 geom,
+                                 scaleData.localization()->outerVariables(),
+                                 fset4dXb.times(), fset4dXb.commTime(), fset4dXb.commEns(),
+                                 scaleData.params().toConfiguration()));
       }
     }
   } else {

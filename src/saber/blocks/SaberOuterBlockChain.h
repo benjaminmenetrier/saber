@@ -55,9 +55,7 @@ class SaberOuterBlockChain {
                        oops::FieldSet4D & fset4dXb,
                        oops::FieldSet4D & fset4dFg,
                        const eckit::Configuration & conf,
-                       const std::vector<SaberOuterBlockParametersWrapper> & params,
-                       std::shared_ptr<oops::FieldSets> fsetEns = NULL,
-                       const bool & centralDirectCalibration = false);
+                       const std::vector<SaberOuterBlockParametersWrapper> & params);
 
   ~SaberOuterBlockChain() = default;
 
@@ -190,14 +188,8 @@ class SaberOuterBlockChain {
                       const oops::Variables & currentOuterVars,
                       oops::FieldSets & fsetEns);
 
-  /// @brief Alternative block calibration. Used in alternative constructor.
-  void calibrateBlock(const eckit::Configuration & conf,
-                      const oops::FieldSet4D & fset4dXb,
-                      const oops::GeometryData & outerGeometryData,
-                      const bool & validModelGeom,
-                      const oops::Variables & outerVars,
-                      const oops::Variables & currentOuterVars,
-                      oops::FieldSets & fsetEns);
+  /// @brief Alternative block calibration, without ensemble. Used in alternative constructor.
+  void calibrateBlock(const oops::FieldSet4D & fset4dXb);
 
   /// @brief Left inverse multiply (used in calibration) by all outer blocks
   ///        except the last one and the ones that haven't implemented inverse yet.
