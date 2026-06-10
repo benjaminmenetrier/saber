@@ -99,7 +99,7 @@ background error:
               vertical length-scale: 4.0
           auxiliary outer blocks:
           - saber block name: BifourierSpectralToGrid
-  - ensemble pert on other geometry:
+  - ensemble pert:
       members from template:
         template:
           date: 2010-01-01T12:00:00Z
@@ -107,7 +107,6 @@ background error:
           state variables: *vars
         pattern: '%MEM%'
         nmembers: 25
-    ensemble geometry: *geom
     localization:
       saber central block:
         multivariate strategy: duplicated

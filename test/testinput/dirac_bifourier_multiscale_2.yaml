@@ -97,7 +97,7 @@ background error:
       active variables: *vars
     - saber block name: BifourierSpectralToGrid
     output:
-      generic write:
+      model write:
         filepath: testdata/dirac_bifourier_multiscale_2/filtered_pert_mb%MEM%_wb2
         member pattern: '%MEM%'
     localization:
