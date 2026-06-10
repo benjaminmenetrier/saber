@@ -186,9 +186,7 @@ SaberParametricBlockChain::SaberParametricBlockChain(const oops::Geometry<MODEL>
                                   fullConf,
                                   outerBlockChain_,
                                   fsetEns);
-  }
-
-  if (centralBlock_->doRead()) {
+  } else if (centralBlock_->doRead()) {
     // Read data
     oops::Log::info() << "Info     : Read data" << std::endl;
     centralBlock_->read();

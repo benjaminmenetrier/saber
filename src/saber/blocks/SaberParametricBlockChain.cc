@@ -51,34 +51,25 @@ SaberParametricBlockChain::SaberParametricBlockChain(
   const oops::GeometryData & currentOuterGeom = outerBlockChain_ ?
                              outerBlockChain_->innerGeometryData() : outerGeometryData;
 
-  SaberCentralBlockParameters saberCentralBlockParams;
-  saberCentralBlockParams.deserialize(conf.getSubConfiguration("saber central block"));
-
+  // Create central block
   oops::Log::info() << "Info     : Creating central block: " << std::endl;
 
   const auto currentOuterVars = initCentralBlock(currentOuterGeom,
                                                  fullConf,
-                                                 saberCentralBlockParams,
+                                                 params.saberCentralBlockParams.value(),
                                                  fset4dXb,
                                                  fset4dFg);
 
-  // Check block doesn't expect calibration, as this could be done with the standard ctor
   if (centralBlock_->doCalibration()) {
-    throw eckit::UserError("The generic constructor of the SABER parametric block chain "
-                           "does not allow covariance calibration.", Here());
-  }
-  if (fullConf.has("output ensemble")) {
-    throw eckit::UserError("The generic constructor of the SABER parametric block chain "
-                           "does not allow ensemble output.", Here());
-  }
-
-  if (centralBlock_->doRead()) {
+    // Calibration, without ensemble
+    centralBlock_->calibrateBlock(fset4dXb);
+  } else if (centralBlock_->doRead()) {
     // Read data
     oops::Log::info() << "Info     : Read data" << std::endl;
     centralBlock_->read();
   }
 
-  if (centralBlock_->forceWrite()) {
+  if (centralBlock_->forceWrite() || centralBlock_->doCalibration()) {
     // Write data
     oops::Log::info() << "Info     : Write data" << std::endl;
     centralBlock_->write();
