@@ -59,8 +59,6 @@ class ScaleParameters : public oops::Parameters {
   // Ensemble perturbations to read on other geometry (optional)
   oops::OptionalParameter<eckit::LocalConfiguration> ensemblePertOtherGeom{
                         "ensemble pert on other geometry", this};
-  oops::OptionalParameter<eckit::LocalConfiguration> ensembleGeom{
-                        "ensemble geometry", this};
 
   // Output filtered perturbations (optional)
   oops::OptionalParameter<eckit::LocalConfiguration> output{
@@ -704,14 +702,25 @@ SaberEnsembleBlockChain::SaberEnsembleBlockChain(const oops::Geometry<MODEL> & g
 
           // No interpolator allowed
           ASSERT(!scaleData.interpolator());
-        }
 
-        // Read ensemble using model reader
-        scaleData.ensemble() = std::make_unique<oops::FieldSets>(readEnsemble(
-                                 geom,
-                                 scaleData.localization()->outerVariables(),
-                                 fset4dXb.times(), fset4dXb.commTime(), fset4dXb.commEns(),
-                                 scaleData.params().toConfiguration()));
+          // Read ensemble using model reader
+          scaleData.ensemble() = std::make_unique<oops::FieldSets>(readEnsemble(
+                                   geom,
+                                   scaleData.localization()->outerVariables(),
+                                   fset4dXb.times(), fset4dXb.commTime(), fset4dXb.commEns(),
+                                   scaleData.params().toConfiguration()));
+        } else if (scaleData.params().ensemblePertOtherGeom.value()) {
+          // Get current geometry
+          const oops::GeometryData & ensGeom = scaleData.interpolator() ?
+            scaleData.interpolator()->innerGeometryData() : outerBlockChain_ ?
+            outerBlockChain_->innerGeometryData() : geom.generic();
+
+          // Read ensemble
+          scaleData.ensemble() = std::make_unique<oops::FieldSets>(ensGeom.functionSpace(),
+                                  currentOuterVars, fset4dXb.times(),
+                                  *scaleData.params().ensemblePertOtherGeom.value(),
+                                  ensGeom.comm(), fset4dXb.commTime());
+        }
       }
     }
   } else {
