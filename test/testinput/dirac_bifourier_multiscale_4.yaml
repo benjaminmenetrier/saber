@@ -57,31 +57,6 @@ background error:
           state variables: *vars
         pattern: '%MEM%'
         nmembers: 25
-    ensemble geometry:
-      function space: StructuredColumns
-      grid:
-        type : regional
-        nx : 37
-        ny : 26
-        dx : 5.0e3
-        dy : 5.0e3
-        lonlat(centre) : [9.9, 56.3]
-        projection :  
-          type : lambert_conformal_conic
-          latitude0  : 56.3
-          longitude0 : 0.0
-        y_numbering: 1
-      partitioner: checkerboard
-      groups:
-      - variables:
-        - geographical_x_wind
-        - geographical_y_wind
-        - air_temperature
-        - water_vapor_mixing_ratio_wrt_moist_air
-        levels: 10
-      - variables:
-        - log_of_air_pressure_at_surface
-        levels: 1
     localization:
       saber central block:
         multivariate strategy: duplicated
