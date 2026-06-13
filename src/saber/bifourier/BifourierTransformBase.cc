@@ -1074,7 +1074,7 @@ double BifourierTransformBase::rkstar(const size_t & jk,
 
 // -----------------------------------------------------------------------------
 
-double BifourierTransformBase::ikstar(const size_t & jk,
+size_t BifourierTransformBase::ikstar(const size_t & jk,
                                       const size_t & jl,
                                       const size_t & M,
                                       const size_t & N,

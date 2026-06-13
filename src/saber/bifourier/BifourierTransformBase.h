@@ -350,7 +350,7 @@ class BifourierTransformBase : public util::Printable,
 
 
   // Integer kstar value
-  double ikstar(const size_t &,
+  size_t ikstar(const size_t &,
                 const size_t &,
                 const size_t &,
                 const size_t &,
