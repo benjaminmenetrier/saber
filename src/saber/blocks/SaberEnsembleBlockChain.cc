@@ -124,16 +124,16 @@ void SaberEnsembleBlockChain::multiply(oops::FieldSet4D & fset4d) const {
 void SaberEnsembleBlockChain::randomize(oops::FieldSet4D & fset4d) const {
   oops::Log::trace() << "saber::SaberEnsembleBlockChain::randomize starting" << std::endl;
 
-  // Central block: randomization with ensemble covariance
-  const auto & scaleData = scaleDataVec_[0];
-  fset4d.deepCopy(*scaleData.ensemble(), 0);
-  if (scaleData.externalInterpolation()) {
-    scaleData.interpolator()->applyOuterBlocks(fset4d);
-  }
-  fset4d.zero();
-  std::unique_ptr<util::NormalDistribution<double>> normalDist;
-
   if (strategy_ == "separated") {
+    // Central block: randomization with ensemble covariance
+    const auto & scaleData = scaleDataVec_[0];
+    fset4d.deepCopy(*scaleData.ensemble(), 0);
+    if (scaleData.externalInterpolation()) {
+      scaleData.interpolator()->applyOuterBlocks(fset4d);
+    }
+    fset4d.zero();
+    std::unique_ptr<util::NormalDistribution<double>> normalDist;
+
     for (const auto & scaleData : scaleDataVec_) {
       // Create scale FieldSet4D
       oops::FieldSet4D fset4dScale(fset4d.times(), fset4d.commTime(), fset4d[0].commGeom());
@@ -262,6 +262,11 @@ void SaberEnsembleBlockChain::multiplySqrt(const atlas::Field & cv,
   oops::Log::trace() << "saber::SaberEnsembleBlockChain::multiplySqrt starting" << std::endl;
 
   // Initialization
+  const auto & scaleData = scaleDataVec_[0];
+  fset4d.deepCopy(*scaleData.ensemble(), 0);
+  if (scaleData.externalInterpolation()) {
+    scaleData.interpolator()->applyOuterBlocks(fset4d);
+  }
   fset4d.zero();
   size_t index = offset;
 
