@@ -33,8 +33,8 @@ void SaberEnsembleBlockChain::multiply(oops::FieldSet4D & fset4d) const {
       // Copy initial FieldSet4D
       oops::FieldSet4D fset4dScaleInit = oops::copyFieldSet4D(fset4dInit);
 
-      // Apply external interpolation adjoint
       if (scaleData.externalInterpolation()) {
+        // Scale contribution at reduced resolution
         scaleData.interpolator()->applyOuterBlocksAD(fset4dScaleInit);
       }
 
@@ -49,12 +49,14 @@ void SaberEnsembleBlockChain::multiply(oops::FieldSet4D & fset4d) const {
         if (scaleData.localization()) {
           // With localization
 
-          // Get ensemble member and optionally apply internal interpolation
+          // Get ensemble member
           oops::FieldSet4D fset4dMem(fset4d.times(), fset4d.commTime(), fset4d[0].commGeom());
           if (scaleData.internalInterpolation()) {
+            // Interpolate ensemble member at full resolution
             fset4dMem.deepCopy(*scaleData.ensemble(), ie);
             scaleData.interpolator()->applyOuterBlocks(fset4dMem);
           } else {
+            // Keep ensemble member at file resolution
             for (size_t it = 0; it < fset4dMem.size(); ++it) {
               fset4dMem[it].shallowCopy((*scaleData.ensemble())(it, ie));
             }
@@ -90,8 +92,8 @@ void SaberEnsembleBlockChain::multiply(oops::FieldSet4D & fset4d) const {
         // ensemble members distributed across MPI tasks.
       }
 
-      // Apply external interpolation
       if (scaleData.externalInterpolation()) {
+        // Interpolate scale contribution at full resolution
         scaleData.interpolator()->applyOuterBlocks(fset4dScale);
       }
 
@@ -128,20 +130,23 @@ void SaberEnsembleBlockChain::randomize(oops::FieldSet4D & fset4d) const {
     // Central block: randomization with ensemble covariance
     const auto & scaleData = scaleDataVec_[0];
     fset4d.deepCopy(*scaleData.ensemble(), 0);
-    if (scaleData.externalInterpolation()) {
+    fset4d.zero();
+    if (scaleData.internalInterpolation() || scaleData.externalInterpolation()) {
+      // Prepare output FieldSet4D at full resolution
       scaleData.interpolator()->applyOuterBlocks(fset4d);
     }
-    fset4d.zero();
     std::unique_ptr<util::NormalDistribution<double>> normalDist;
 
     for (const auto & scaleData : scaleDataVec_) {
       // Create scale FieldSet4D
       oops::FieldSet4D fset4dScale(fset4d.times(), fset4d.commTime(), fset4d[0].commGeom());
 
-      // Initialize FieldSet4D for this scale
+      // Initialize scale contribution
       if (scaleData.externalInterpolation()) {
+        // Process scale contribution at reduced resolution
         fset4dScale.deepCopy(*scaleData.ensemble(), 0);
       } else {
+        // Process scale contribution at full resolution
         fset4dScale.deepCopy(fset4d);
       }
       fset4dScale.zero();
@@ -156,12 +161,14 @@ void SaberEnsembleBlockChain::randomize(oops::FieldSet4D & fset4d) const {
           // Randomize localization
           scaleData.localization()->randomize(fset4dTmp);
 
-          // Get ensemble member and optionally apply internal interpolation
+          // Get ensemble member
           oops::FieldSet4D fset4dMem(fset4d.times(), fset4d.commTime(), fset4d[0].commGeom());
           if (scaleData.internalInterpolation()) {
+            // Interpolate ensemble member at full resolution
             fset4dMem.deepCopy(*scaleData.ensemble(), ie);
             scaleData.interpolator()->applyOuterBlocks(fset4dMem);
           } else {
+            // Keep ensemble member at file resolution
             for (size_t it = 0; it < fset4dMem.size(); ++it) {
               fset4dMem[it].shallowCopy((*scaleData.ensemble())(it, ie));
             }
@@ -187,8 +194,8 @@ void SaberEnsembleBlockChain::randomize(oops::FieldSet4D & fset4d) const {
         fset4dScale += fset4dTmp;
       }
 
-      // Apply interpolator
       if (scaleData.interpolator()) {
+        // Interpolate scale contribution at full resolution
         scaleData.interpolator()->applyOuterBlocks(fset4dScale);
       }
 
@@ -264,10 +271,11 @@ void SaberEnsembleBlockChain::multiplySqrt(const atlas::Field & cv,
   // Initialization
   const auto & scaleData = scaleDataVec_[0];
   fset4d.deepCopy(*scaleData.ensemble(), 0);
-  if (scaleData.externalInterpolation()) {
+  fset4d.zero();
+  if (scaleData.internalInterpolation() || scaleData.externalInterpolation()) {
+    // Prepare output FieldSet4D at full resolution
     scaleData.interpolator()->applyOuterBlocks(fset4d);
   }
-  fset4d.zero();
   size_t index = offset;
 
   for (const auto & scaleData : scaleDataVec_) {
@@ -279,10 +287,12 @@ void SaberEnsembleBlockChain::multiplySqrt(const atlas::Field & cv,
     // Create scale FieldSet4D
     oops::FieldSet4D fset4dScale(fset4d.times(), fset4d.commTime(), fset4d[0].commGeom());
 
-    // Initialize FieldSet4D for this scale
+    // Initialize scale contribution
     if (scaleData.externalInterpolation()) {
+      // Process scale contribution at reduced resolution
       fset4dScale.deepCopy(*scaleData.ensemble(), 0);
     } else {
+      // Process scale contribution at full resolution
       fset4dScale.deepCopy(fset4d);
     }
     fset4dScale.zero();
@@ -297,12 +307,14 @@ void SaberEnsembleBlockChain::multiplySqrt(const atlas::Field & cv,
         scaleData.localization()->multiplySqrt(cv, fset4dTmp, index);
         index += scaleData.localization()->ctlVecSize();
 
-        // Get ensemble member and optionally apply internal interpolation
+        // Get ensemble member
         oops::FieldSet4D fset4dMem(fset4d.times(), fset4d.commTime(), fset4d[0].commGeom());
         if (scaleData.internalInterpolation()) {
+          // Interpolate ensemble member at full resolution
           fset4dMem.deepCopy(*scaleData.ensemble(), ie);
           scaleData.interpolator()->applyOuterBlocks(fset4dMem);
         } else {
+          // Keep ensemble member at file resolution
           for (size_t it = 0; it < fset4dMem.size(); ++it) {
             fset4dMem[it].shallowCopy((*scaleData.ensemble())(it, ie));
           }
@@ -326,8 +338,8 @@ void SaberEnsembleBlockChain::multiplySqrt(const atlas::Field & cv,
       fset4dScale += fset4dTmp;
     }
 
-    // Apply external interpolation
     if (scaleData.externalInterpolation()) {
+      // Interpolate scale contribution at full resolution
       scaleData.interpolator()->applyOuterBlocks(fset4dScale);
     }
 
@@ -399,8 +411,8 @@ void SaberEnsembleBlockChain::multiplySqrtAD(const oops::FieldSet4D & fset4d,
     // Copy initial FieldSet4D
     oops::FieldSet4D fset4dScaleInit = oops::copyFieldSet4D(fset4dInit);
 
-    // Apply external interpolation adjoint
     if (scaleData.externalInterpolation()) {
+      // Scale contribution at reduced resolution
       scaleData.interpolator()->applyOuterBlocksAD(fset4dScaleInit);
     }
 
@@ -414,12 +426,14 @@ void SaberEnsembleBlockChain::multiplySqrtAD(const oops::FieldSet4D & fset4d,
         // Copy initial fieldset
         oops::FieldSet4D fset4dTmp = oops::copyFieldSet4D(fset4dScaleInit);
 
-        // Get ensemble member and optionally apply internal interpolation
+        // Get ensemble member
         oops::FieldSet4D fset4dMem(fset4d.times(), fset4d.commTime(), fset4d[0].commGeom());
         if (scaleData.internalInterpolation()) {
+          // Interpolate ensemble member at full resolution
           fset4dMem.deepCopy(*scaleData.ensemble(), ie);
           scaleData.interpolator()->applyOuterBlocks(fset4dMem);
         } else {
+          // Keep ensemble member at file resolution
           for (size_t it = 0; it < fset4dMem.size(); ++it) {
             fset4dMem[it].shallowCopy((*scaleData.ensemble())(it, ie));
           }
