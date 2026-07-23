@@ -194,7 +194,7 @@ void SaberEnsembleBlockChain::randomize(oops::FieldSet4D & fset4d) const {
         fset4dScale += fset4dTmp;
       }
 
-      if (scaleData.interpolator()) {
+    if (scaleData.externalInterpolation()) {
         // Interpolate scale contribution at full resolution
         scaleData.interpolator()->applyOuterBlocks(fset4dScale);
       }
