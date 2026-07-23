@@ -66,7 +66,7 @@ auto createSpectralFilter(const BifourierTransformBase & trans,
       // Response function
       if ((kstar > wmin) && (kstar <= wpeak)) {
         spectralFilter[js] = std::pow(std::sin(0.5*M_PI*(kstar-wmin)/(wpeak-wmin)), 2);
-      } else if ((kstar > wpeak) & (kstar < wmax)) {
+      } else if ((kstar > wpeak) && (kstar < wmax)) {
         spectralFilter[js] = std::pow(std::sin(0.5*M_PI*(wmax-kstar)/(wmax-wpeak)), 2);
       }
     }
