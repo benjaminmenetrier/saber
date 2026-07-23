@@ -17,7 +17,6 @@ background error:
   covariance type: ensemble
   adjoint test: true
   square-root test: true
-  square-root tolerance: 1.0e-11
   sub-ensembles size: 5
   ensemble pert:
     members from template:
