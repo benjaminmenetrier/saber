@@ -68,13 +68,13 @@ background error:
           variables: *vars
           variables on extra levels:
           - log_of_air_pressure_at_surface
-          saber central block:
+          group central block:
             saber block name: BifourierCovariance
             profiles:
             - variable: allVars
               horizontal length-scales: [50.0e3, 50.0e3, 50.0e3, 50.0e3, 50.0e3, 50.0e3, 50.0e3, 50.0e3, 50.0e3, 50.0e3, 50.0e3]
               vertical length-scale: 4.0
-          auxiliary outer blocks:
+          group outer blocks:
           - saber block name: BifourierSpectralToGrid
   - output:
       model write:
@@ -88,13 +88,13 @@ background error:
           variables: *vars
           variables on extra levels:
           - log_of_air_pressure_at_surface
-          saber central block:
+          group central block:
             saber block name: BifourierCovariance
             profiles:
             - variable: allVars
               horizontal length-scales: [10.0e3, 10.0e3, 10.0e3, 10.0e3, 10.0e3, 10.0e3, 10.0e3, 10.0e3, 10.0e3, 10.0e3, 10.0e3]
               vertical length-scale: 1.5
-          auxiliary outer blocks:
+          group outer blocks:
           - saber block name: BifourierSpectralToGrid
   multiscale strategy: separated
 dirac:

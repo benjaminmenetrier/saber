@@ -97,6 +97,22 @@ BifourierTransformBase::BifourierTransformBase(const oops::GeometryData & gdata,
   // Cell size
   dx_ = fs.grid().dx(0);
   dy_ = std::abs(fs.grid().y(1) - fs.grid().y(0));
+  if (fs.grid().spec().has("domain")) {
+    const eckit::LocalConfiguration domain = fs.grid().spec().getSubConfiguration("domain");
+    const std::string units = domain.getString("units");
+    if (units == "degrees") {
+      const eckit::LocalConfiguration xspace = fs.grid().spec().getSubConfiguration("xspace");
+      const eckit::LocalConfiguration yspace = fs.grid().spec().getSubConfiguration("yspace");
+      const double xmin = domain.getDouble("xmin");
+      const double ymin = domain.getDouble("ymin");
+      double centre[] = {xmin+0.5*static_cast<double>(nx_)*dx_,
+        ymin+0.5*static_cast<double>(ny_)*dy_};
+      fs.grid().projection().lonlat2xy(centre);
+      const double degToRad = M_PI / 180.;
+      dx_ *= degToRad*atlas::util::Earth::radius()*std::cos(centre[1]*degToRad);
+      dy_ *= degToRad*atlas::util::Earth::radius();
+    }
+  }
   oops::Log::test() << "- Cell sizes: " << dx_*1.0e-3 << " km x " << dy_*1.0e-3 << " km"
     << std::endl;
 

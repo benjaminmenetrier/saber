@@ -188,7 +188,7 @@ BifourierCovarianceImpl::BifourierCovarianceImpl(const oops::GeometryData & geom
 
       // Compute horizontal spectral variance
       for (size_t js = 0; js < trans_->ns(); ++js) {
-        if ((trans_->k(js) == 0) && (trans_->q(js) == 0)) {
+        if ((trans_->l(js) == 0) && (trans_->q(js) == 0)) {
           const size_t jw = trans_->jw(js);
           for (size_t jzI = 0; jzI < nz; ++jzI) {
             horSpecVarView(jw, jzI, 0) += horCorSpView(js, jzI);

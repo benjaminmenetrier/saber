@@ -25,7 +25,7 @@ Inner inverse test for block BifourierSpectralToGrid passed: U Uinv (U x) == (U 
 Outer inverse test for block BifourierSpectralToGrid passed: Uinv U (Uinv x) == (Uinv x)
 Covariance norms: 
 - air_temperature: 
-  + correlation square-root: 4.2078532461104839e-01
+  + correlation square-root: 4.1336454080208562e-01
   + standard-deviation:      3.1622776601683795e+00
 Adjoint test for block BifourierCovariance passed
 Square-root test for block BifourierCovariance passed
@@ -34,7 +34,7 @@ Covariance(SABER) * Increment:
   Geometry: structured [3848]
   Fields:
   - air_temperature (10 levels):
-    + min    = -1.6441193848608676e-01
-    + max    = 9.9999999999999378e-01
-    + mean   = 1.6087422077912005e-03
-    + stddev = 4.7033847494721441e-02
+    + min    = -1.1105713326382016e-01
+    + max    = 1.0000000000000024e+00
+    + mean   = 1.1037935444359543e-03
+    + stddev = 4.0574981759944236e-02
