@@ -2,7 +2,7 @@
     FastLAM interpolation adjoint test passed
     FastLAM redToRows test passed
     FastLAM rowsToCols test passed
-Write state: 
+Member 0: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: structured [3763]
   Fields:
@@ -11,7 +11,7 @@ Write state:
     + max    = 2.7100054583351225e+00
     + mean   = -1.6967500339708796e-02
     + stddev = 9.3923119192827653e-01
-Write state: 
+Member 1: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: structured [3763]
   Fields:

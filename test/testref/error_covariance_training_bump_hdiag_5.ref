@@ -64,5 +64,5 @@
              Block air_horizontal_streamfunction: not sampled
                 Level:   1 ~> loc. at class zero:       0.92
                 Level:   2 ~> loc. at class zero:       0.92
-Norm of output parameter loc_rh - 1: 1.3018411234733273e+40
-Norm of output parameter loc_rv - 1: 1.3018411234733273e+40
+Norm of output parameter loc_rh - 1: 3.8999404149294387e+04
+Norm of output parameter loc_rv - 1: 3.8999404149294387e+04

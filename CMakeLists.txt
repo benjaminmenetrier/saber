@@ -9,7 +9,7 @@
 
 cmake_minimum_required( VERSION 3.12 )
 
-project( saber VERSION 1.10.0 LANGUAGES CXX Fortran )
+project( saber VERSION 1.13.0 LANGUAGES CXX Fortran )
 
 option(OPENMP "Build saber with OpenMP support" ON)
 
@@ -88,14 +88,14 @@ else()
 endif()
 
 # Required
-find_package( oops 1.10.0 REQUIRED )
-find_package( vader 1.7.0 REQUIRED )
+find_package( oops 1.13.0 REQUIRED )
+find_package( vader 1.10.0 REQUIRED )
 
 # Optionals
 find_package( ECTRANS 1.6.0 COMPONENTS transi double QUIET ) # TODO(Benjamin): update tag once the ectrans PR is merged and a new tag is created
 find_package( FFTW 3.3.8 QUIET )
 find_package( ip 5 QUIET )
-find_package( gsibec 1.4.2 QUIET )
+find_package( gsibec 1.4.4 QUIET )
 
 # Torch
 if( DEFINED Torch_ROOT AND NOT Torch_ROOT STREQUAL "")
@@ -109,7 +109,7 @@ if( ENABLE_TORCH )
     # Find Python3 for venv creation
     if( NOT Python3_EXECUTABLE )
         find_package( Python3 COMPONENTS Interpreter REQUIRED )
-     endif()
+    endif()
 
     # Create virtual environment only during CMake configuration
     set( VENV_PYTHON ${VENV_DIR}/bin/python )

@@ -74,7 +74,7 @@
                    Level:   2 ~> amplitude:        0.27
                                  cor. hor. support:      2841.34 km
                                  cor. ver. support:         0.49 vertical units
-             Block common:  0.30460921E+00 for    35880 diagnostic points
+             Block common:  0.30459908E+00 for    35880 diagnostic points
                 Level:   1 ~> loc. at class zero:       0.92
                 Level:   2 ~> loc. at class zero:       0.92
                    Level:   1 ~> amplitude:        1.00
@@ -91,13 +91,13 @@
                                  loc. ver. support:         5.99 vertical units
 Norm of output parameter loc_a - 1: 5.5208694967369041e+01
 Norm of output parameter loc_a - 2: 0.0000000000000000e+00
-Norm of output parameter loc_rh1 - 1: 3.8057845364854437e+08
-Norm of output parameter loc_rh1 - 2: 3.8041879977721000e+08
-Norm of output parameter loc_rh2 - 1: 3.9999235162462348e+08
-Norm of output parameter loc_rh2 - 2: 3.9988290866503239e+08
-Norm of output parameter loc_rhc - 1: 9.5830410741769487e+00
-Norm of output parameter loc_rhc - 2: 9.5830410741769487e+00
-Norm of output parameter loc_rh - 1: 3.8605359201551306e+08
-Norm of output parameter loc_rh - 2: 3.8592133009089392e+08
-Norm of output parameter loc_rv - 1: 3.2900115328766714e+02
-Norm of output parameter loc_rv - 2: 3.2879457119059163e+02
+Norm of output parameter loc_rh1 - 1: 3.8046551871901220e+08
+Norm of output parameter loc_rh1 - 2: 3.8016512635449696e+08
+Norm of output parameter loc_rh2 - 1: 4.0007995324412251e+08
+Norm of output parameter loc_rh2 - 2: 3.9987574864973450e+08
+Norm of output parameter loc_rhc - 1: 9.6056061521695089e+00
+Norm of output parameter loc_rhc - 2: 9.6056061521695089e+00
+Norm of output parameter loc_rh - 1: 3.8602142477926880e+08
+Norm of output parameter loc_rh - 2: 3.8577380097219729e+08
+Norm of output parameter loc_rv - 1: 3.2900124591461787e+02
+Norm of output parameter loc_rv - 2: 3.2891992930491745e+02

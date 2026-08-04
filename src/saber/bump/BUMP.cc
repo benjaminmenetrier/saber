@@ -25,7 +25,6 @@
 #include "oops/util/FieldSetOperations.h"
 #include "oops/util/Logger.h"
 
-#include "saber/bump/type_bump_parameters.h"
 #include "saber/oops/Utilities.h"
 
 namespace saber {
@@ -463,16 +462,13 @@ void BUMP::writeAtlasFiles() const {
     std::vector<eckit::LocalConfiguration> outputAtlasFilesConf
       = bumpConf_.getSubConfigurations("output atlas files");
     for (const auto & output : this->fieldsToWrite(outputAtlasFilesConf)) {
-      // Get file configuration
-      eckit::LocalConfiguration file = this->getFileConf(comm_, output.first);
-
       // Print FieldSet norm
       oops::Log::test() << "+++ Norm of output parameter " << output.second.name() << ": "
                         << output.second.norm(vars_)
                         << std::endl;
 
       // Write FieldSet
-      output.second.write(file);
+      output.second.write(output.first);
     }
   }
 

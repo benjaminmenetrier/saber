@@ -47,7 +47,7 @@ Covariance(SABER) * Increment:
   - air_horizontal_velocity_potential (2 levels):
     + min    = 0.0000000000000000e+00
     + max    = 0.0000000000000000e+00
-Write randomized variance:
+Randomized variance: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: F10 [800]
   Fields:
@@ -61,3 +61,16 @@ Write randomized variance:
     + max    = 1.8115110615000563e+00
     + mean   = 9.9736755755786999e-01
     + stddev = 2.0079969569392198e-01
+- Valid time: 2010-01-01T18:00:00Z
+  Geometry: F10 [800]
+  Fields:
+  - air_horizontal_streamfunction (2 levels):
+    + min    = 4.5337554388034379e-01
+    + max    = 1.6936155612243513e+00
+    + mean   = 1.0097630983692576e+00
+    + stddev = 1.9962821126054997e-01
+  - air_horizontal_velocity_potential (2 levels):
+    + min    = 5.5902201113651639e-01
+    + max    = 1.9701557389973594e+00
+    + mean   = 1.0067236558439350e+00
+    + stddev = 2.0320641697545735e-01

@@ -1,4 +1,4 @@
-Write perturbation: 
+Member 0: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: F12 [1152]
   Fields:
@@ -38,7 +38,7 @@ Write perturbation:
     + max    = 7.5520503780907262e+01
     + mean   = -5.8234289447549867e-02
     + stddev = 1.1585261549458250e+01
-Write perturbation: 
+Member 1: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: F12 [1152]
   Fields:
@@ -78,7 +78,7 @@ Write perturbation:
     + max    = 8.3224117038033228e+01
     + mean   = 1.4576614480682428e+00
     + stddev = 1.3129887390957048e+01
-Write perturbation: 
+Member 2: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: F12 [1152]
   Fields:
@@ -118,7 +118,7 @@ Write perturbation:
     + max    = 8.4793627181053708e+01
     + mean   = -5.6587188689497192e-01
     + stddev = 1.1231426941114025e+01
-Write perturbation: 
+Member 3: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: F12 [1152]
   Fields:
@@ -158,7 +158,7 @@ Write perturbation:
     + max    = 6.3811234125938249e+01
     + mean   = -4.3515783423705057e-01
     + stddev = 1.1191587116101408e+01
-Write perturbation: 
+Member 4: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: F12 [1152]
   Fields:
@@ -198,7 +198,7 @@ Write perturbation:
     + max    = 8.7892387919791844e+01
     + mean   = 5.1082336698870079e-01
     + stddev = 1.1130354976718364e+01
-Write perturbation: 
+Member 5: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: F12 [1152]
   Fields:
@@ -238,7 +238,7 @@ Write perturbation:
     + max    = 5.9443556658047441e+01
     + mean   = -1.6888727782109858e+00
     + stddev = 1.1180000428268110e+01
-Write perturbation: 
+Member 6: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: F12 [1152]
   Fields:
@@ -278,7 +278,7 @@ Write perturbation:
     + max    = 8.2845326225957450e+01
     + mean   = 2.0081837964367349e-01
     + stddev = 1.1963108034141948e+01
-Write perturbation: 
+Member 7: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: F12 [1152]
   Fields:
@@ -318,7 +318,7 @@ Write perturbation:
     + max    = 8.2723644439552942e+01
     + mean   = -3.8582849431379540e-01
     + stddev = 1.2722813286466321e+01
-Write perturbation: 
+Member 8: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: F12 [1152]
   Fields:
@@ -358,7 +358,7 @@ Write perturbation:
     + max    = 6.3954378795489291e+01
     + mean   = -2.4948643091568987e-01
     + stddev = 1.0848701239239313e+01
-Write perturbation: 
+Member 9: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: F12 [1152]
   Fields:
@@ -398,7 +398,7 @@ Write perturbation:
     + max    = 8.3247037994014775e+01
     + mean   = -3.9957072994810267e-01
     + stddev = 1.2333645572065691e+01
-Write randomized variance:
+Randomized variance: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: F12 [1152]
   Fields:
