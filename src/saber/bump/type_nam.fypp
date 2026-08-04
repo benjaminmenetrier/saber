@@ -107,6 +107,7 @@ type nam_type
    integer :: ng                                              !< Number of groups of variables
    character(len=1024),allocatable :: group_names(:)          !< Group of variables names
    integer,allocatable :: group_index(:)                      !< Variables group index
+   character(len=1024) :: groups_definition                   !< Group definition mode (internal to the nam object)
    logical :: mask_check                                      !< Check that sampling couples and interpolations do not cross mask boundaries
 
    ! Ensemble sizes
@@ -120,10 +121,10 @@ type nam_type
    integer :: nc4                                             !< Number of angular sectors
    real(kind_real) :: dc                                      !< Class size, should be larger than the typical grid cell size [in meters]
    integer :: nl0r                                            !< Reduced number of levels for diagnostics
+   logical :: enable_large_nl0r                               !< Enable nl0r larger than 15 (large memory footprint)
    logical :: local_diag                                      !< Activate local diagnostics
    real(kind_real) :: local_rad                               !< Local diagnostics calculation radius [in meters]
    real(kind_real) :: local_dlat                              !< Local diagnostics calculation latitude band half-width [in degrees]
-   integer :: irmax                                           !< Maximum number of random number draws
    character(len=2) :: samp_interp_type                       !< Sampling C2B to C0A interpolation type ('c0': C0 mesh-based, 'c1': C1 mesh-based or 'si': smooth interpolation)
    integer :: nmask                                           !< Number of masks
    character(len=1024),allocatable :: mask_type(:)            !< Mask restriction type
@@ -236,6 +237,8 @@ contains
 @:add_procedure(nam_get_real_value_or_profile)
 @:add_procedure(nam_get_string_array)
    procedure :: read_universe_radius => nam_read_universe_radius
+   procedure :: msg => nam_msg
+   procedure :: warning => nam_warning
    procedure :: abort => nam_abort
 end type nam_type
 
@@ -332,6 +335,7 @@ nam%ng = 0
 nam%nmask = 0
 nam%nldwv = 0
 nam%ndir = 0
+nam%groups_definition = ''
 call nam%from_conf(mpl,conf,.false.)
 
 end subroutine nam_init
@@ -547,6 +551,7 @@ if (conf%get('model',section)) then
          ! Groups
          allocate(nam%group_index(nam%nv))
          if (section%get('groups',confs)) then
+            nam%groups_definition = 'custom'
             nam%ng = size(confs)
             allocate(nam%group_names(nam%ng))
             nam%group_index = 0
@@ -568,11 +573,13 @@ if (conf%get('model',section)) then
          else
             select case (nam%strategy)
             case ('duplicated','duplicated and weighted')
+               nam%groups_definition = 'default_common'
                nam%ng = 1
                allocate(nam%group_names(nam%ng))
                nam%group_names(1) = 'common'
                nam%group_index = 1
             case default
+               nam%groups_definition = 'default_var'
                nam%ng = nam%nv
                allocate(nam%group_names(nam%ng))
                do iv=1,nam%nv
@@ -626,10 +633,10 @@ if (conf%get('sampling',section)) then
    call nam%get(section,'angular sectors',nam%nc4,'nc4')
    call nam%get(section,'distance class width',nam%dc,'dc')
    call nam%get(section,'reduced levels',nam%nl0r,'nl0r')
+   call nam%get(section,'enable large number of reduced levels',nam%enable_large_nl0r,'enable_large_nl0r')
    call nam%get(section,'local diagnostic',nam%local_diag,'local_diag')
    call nam%get(section,'averaging length-scale',nam%local_rad,'local_rad')
    call nam%get(section,'averaging latitude width',nam%local_dlat,'local_dlat')
-   call nam%get(section,'max number of draws',nam%irmax,'irmax')
    call nam%get(section,'interpolation type',nam%samp_interp_type,'samp_interp_type')
    if (section%get('masks',confs)) then
       nam%nmask = size(confs)
@@ -1090,6 +1097,7 @@ type(mpl_type),intent(inout) :: mpl  !< MPI data
 ! Local variables
 integer :: iv,ig,il0,idir,ildwv,imask
 character(len=2) :: ildwvchar
+character(len=1024) :: msg
 
 ! Set name
 @:set_name(nam_check)
@@ -1230,16 +1238,17 @@ if ((nam%new_hdiag.and.(.not.nam%from_gsi)).or.nam%check_optimality) then
    if (nam%nc4<=0) call nam%abort(mpl,'${subr}$','*nc4* should be positive')
    if ((nam%nc4>1).and.(mod(nam%nc4,2)==1)) call nam%abort(mpl,'${subr}$','*nc4* should be even')
    if (.not.(nam%dc>zero)) call nam%abort(mpl,'${subr}$','*dc* should be positive')
-   if (nam%nl0r<1) call mpl%abort ('${subr}$','*nl0r* should be positive')
+   if (nam%nl0r<1) call nam%abort(mpl,'${subr}$','*nl0r* should be positive')
+   if (.not.nam%enable_large_nl0r) then
+      if (nam%nl0r>15) call nam%abort(mpl,'${subr}$','*nl0r* is larger than 15 (large memory footprint),' &
+ & //' activate *enable_large_nl0r* to bypass this check')
+   end if
 end if
 if (nam%local_diag) then
    if (.not.((nam%local_rad>zero).or.(nam%local_dlat>zero))) call nam%abort(mpl,'${subr}$', &
  & '*local_rad* or *local_dlat* should be positive')
    if ((nam%local_rad>zero).and.(nam%local_dlat>zero)) call nam%abort(mpl,'${subr}$', &
  & '*local_rad* and *local_dlat* cannot be positive at the same time')
-end if
-if (.not.(nam%load_samp_local.or.nam%load_samp_global)) then
-   if (nam%irmax<1) call mpl%abort ('${subr}$','*irmax* should be positive')
 end if
 select case (nam%samp_interp_type)
 case ('c0','c1','si')
@@ -1366,8 +1375,24 @@ if (nam%new_nicas.or.nam%load_nicas_local.or.nam%load_nicas_global) then
       if (.not.allocated(nam%rv)) call nam%abort(mpl,'${subr}$','*rv* is missing')
       do ig=1,nam%ng
          do il0=1,nam%nl0
-            if (mpl%msv%is(nam%rh(il0,ig))) call nam%abort(mpl,'${subr}$','*rh* is missing for '//trim(nam%group_names(ig)))
-            if (mpl%msv%is(nam%rv(il0,ig))) call nam%abort(mpl,'${subr}$','*rv* is missing for '//trim(nam%group_names(ig)))
+            if (mpl%msv%is(nam%rh(il0,ig))) then
+               select case (nam%groups_definition)
+               case ('custom')
+                  call nam%msg('*rh* is missing for the group '//trim(nam%group_names(ig))//' that you specified',msg)
+               case ('default_common')
+                  call nam%msg('with the duplicated or duplicated and weighted *strategy*,' & 
+ & //' *rh* must be specified for the "common" group',msg)
+               case ('default_var')
+                  call nam%msg('with the univariate or crossed *strategy*,' &
+ & //' *rh* must be specified for the group of each variable',msg)
+               case default
+                  call mpl%abort('${subr}$','wrong groups_definition [internal]')
+               end select
+               call mpl%abort('${subr}$',msg)
+            end if
+            if (mpl%msv%is(nam%rv(il0,ig))) then
+               call nam%abort(mpl,'${subr}$','*rv* is missing for '//trim(nam%group_names(ig)))
+            end if
             if (nam%rh(il0,ig)<zero) call nam%abort(mpl,'${subr}$','*rh* should be non-negative for '//trim(nam%group_names(ig)))
             if (nam%rv(il0,ig)<zero) call nam%abort(mpl,'${subr}$','*rv* should be non-negative for '//trim(nam%group_names(ig)))
          end do
@@ -1574,7 +1599,7 @@ integer,allocatable,intent(inout) :: val(:)  !< Values
 character(len=*),intent(in) :: internal      !< Internal BUMP variable name
 
 ! Local variables
-integer :: iconf,ig,it
+integer :: iconf,ig,it,ntoset,nfound
 integer :: scalar
 character(len=:),allocatable :: str_array(:)
 type(fckit_configuration),allocatable :: confs(:)
@@ -1591,8 +1616,10 @@ if (conf%has(key).and.(nam%ng>0)) then
 
    ! Initialization
    val = mpl%msv%vali
+   ntoset = 0
+   nfound = 0
 
-  ! Get subconfigurations vector
+   ! Get subconfigurations vector
    call conf%get_or_die(key,confs)
 
    ! Loop over subconfigurations
@@ -1604,13 +1631,21 @@ if (conf%has(key).and.(nam%ng>0)) then
       else
          call mpl%abort('${subr}$','groups or variables missing')
       end if
+      ntoset = ntoset+size(str_array)
       call confs(iconf)%get_or_die('value',scalar)
       do it=1,size(str_array)
          do ig=1,nam%ng
-            if (str_array(it)==nam%group_names(ig)) val(ig) = scalar
+            if (str_array(it)==nam%group_names(ig)) then
+               val(ig) = scalar
+               nfound = nfound+1
+            end if
          end do
       end do
    end do
+   if (ntoset>0) then
+      if (ntoset/=nam%ng) call mpl%abort('${subr}$','missing groups/variables names in *'//key//'*')
+      if (nfound/=nam%ng) call mpl%abort('${subr}$','not able to fill exactly all groups for key *'//key//'*')
+   end if
 end if
 
 ! Release memory
@@ -1644,7 +1679,7 @@ character(len=*),intent(in) :: internal               !< Internal BUMP variable 
 real(kind_real),intent(in),optional :: norm           !< Normalization factor
 
 ! Local variables
-integer :: iconf,ig,it
+integer :: iconf,ig,it,ntoset,nfound
 real(kind_real) :: scalar,lnorm
 real(kind_real),allocatable :: array(:)
 character(len=:),allocatable :: str_array(:)
@@ -1666,6 +1701,8 @@ if (conf%has(key).and.(nam%nl0>0).and.(nam%ng>0)) then
 
    ! Initialization
    val = mpl%msv%valr
+   ntoset = 0
+   nfound = 0
 
    ! Get subconfigurations vector
    call conf%get_or_die(key,confs)
@@ -1679,24 +1716,35 @@ if (conf%has(key).and.(nam%nl0>0).and.(nam%ng>0)) then
       else
          call mpl%abort('${subr}$','groups or variables missing')
       end if
+      ntoset = ntoset+size(str_array)
       if (confs(iconf)%has('value')) then
          call confs(iconf)%get_or_die('value',scalar)
          do it=1,size(str_array)
             do ig=1,nam%ng
-               if (str_array(it)==nam%group_names(ig)) val(:,ig) = scalar*lnorm
+               if (str_array(it)==nam%group_names(ig)) then
+                  val(:,ig) = scalar*lnorm
+                  nfound = nfound+1
+               end if
             end do
          end do
       elseif (confs(iconf)%has('profile')) then
          call confs(iconf)%get_or_die('profile',array)
          do it=1,size(str_array)
             do ig=1,nam%ng
-               if (str_array(it)==nam%group_names(ig)) val(1:size(array),ig) = array*lnorm
+               if (str_array(it)==nam%group_names(ig)) then
+                  val(1:size(array),ig) = array*lnorm
+                  nfound = nfound+1
+               end if
             end do
          end do
       else
-         call mpl%abort('${subr}$','missing value/profile in '//key)
+         call mpl%abort('${subr}$','missing value/profile in *'//key//'*')
       end if
    end do
+   if (ntoset>0) then
+      if (ntoset<nam%ng) call mpl%abort('${subr}$','missing groups/variables names in *'//key//'*')
+      if (nfound/=nam%ng) call mpl%abort('${subr}$','inconsistent groups/variables in *'//key//'*')
+   end if
 end if
 
 ! Release memory
@@ -1815,23 +1863,21 @@ call mpl%f_comm%broadcast(nam%universe_radius,mpl%rootproc-1)
 end subroutine nam_read_universe_radius
 
 !----------------------------------------------------------------------
-! Subroutine: nam_abort
-!> Specific abort where internal BUMP variable names in the message (surrounded by *...*) are replaced with yaml keys
+! Subroutine: nam_msg
+!> Change internal BUMP variable names in the message (surrounded by *...*), replaced with yaml keys
 !----------------------------------------------------------------------
-subroutine nam_abort(nam,mpl,subr,msg)
+subroutine nam_msg(nam,msg,newmsg)
 
 implicit none
 
 ! Passed variables
-class(nam_type),intent(inout) :: nam !< Namelist
-type(mpl_type),intent(inout) :: mpl  !< MPI data
-character(len=*),intent(in) :: subr  !< Calling subroutine
-character(len=*),intent(in) :: msg   !< Input message
+class(nam_type),intent(inout) :: nam        !< Namelist
+character(len=*),intent(in) :: msg          !< Input message
+character(len=1024),intent(inout) :: newmsg !< Output message
 
 ! Local variable
 integer :: isub,istart,iend,i,pos,result_pos
 character(len=1),parameter :: sep(1) = (/'*'/)
-character(len=1024) :: newmsg
 character(len=:),allocatable :: str
 
 ! Initialization
@@ -1860,7 +1906,7 @@ do
    if (mod(isub,2)==0) then
       ! Replace BUMP internal variable with yaml key
       if (.not.nam%conf_keys%get(msg(istart:iend),str)) then
-         newmsg = trim(newmsg)//trim(msg(istart:iend))//'[internal]'
+         newmsg = trim(newmsg)//trim(msg(istart:iend))//' [internal]'
        else
          newmsg = trim(newmsg)//'*'//trim(str)//'*'
       end if
@@ -1872,6 +1918,53 @@ do
    ! Update separator iterator
    isub = isub+1
 end do
+
+end subroutine nam_msg
+
+!----------------------------------------------------------------------
+! Subroutine: nam_warning
+!> Specific warning with update message
+!----------------------------------------------------------------------
+subroutine nam_warning(nam,mpl,subr,msg)
+
+implicit none
+
+! Passed variables
+class(nam_type),intent(inout) :: nam !< Namelist
+type(mpl_type),intent(inout) :: mpl  !< MPI data
+character(len=*),intent(in) :: subr  !< Calling subroutine
+character(len=*),intent(in) :: msg   !< Input message
+
+! Local variable
+character(len=1024) :: newmsg
+
+! Update message
+call nam%msg(msg,newmsg)
+
+! Call warning with new message
+call mpl%warning(subr,newmsg)
+
+end subroutine nam_warning
+
+!----------------------------------------------------------------------
+! Subroutine: nam_abort
+!> Specific abort with update message
+!----------------------------------------------------------------------
+subroutine nam_abort(nam,mpl,subr,msg)
+
+implicit none
+
+! Passed variables
+class(nam_type),intent(inout) :: nam !< Namelist
+type(mpl_type),intent(inout) :: mpl  !< MPI data
+character(len=*),intent(in) :: subr  !< Calling subroutine
+character(len=*),intent(in) :: msg   !< Input message
+
+! Local variable
+character(len=1024) :: newmsg
+
+! Update message
+call nam%msg(msg,newmsg)
 
 ! Call abort with new message
 call mpl%abort(subr,newmsg)

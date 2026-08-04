@@ -398,6 +398,8 @@ class SamplingSection : public oops::Parameters {
   oops::Parameter<double> dc{"distance class width", 0.0, this};
   // Reduced number of levels for diagnostics
   oops::Parameter<int> nl0r{"reduced levels", 0, this};
+  // Enable nl0r larger than 15 (large memory footprint)
+  oops::Parameter<bool> enable_large_nl0r{"enable large number of reduced levels", false, this};
   // Activate local diagnostics
   oops::Parameter<bool> local_diag{"local diagnostic", false, this};
   // Local diagnostics calculation radius [in meters]
