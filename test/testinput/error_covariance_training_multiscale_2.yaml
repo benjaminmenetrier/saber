@@ -1,3 +1,4 @@
+# Prepares NICAS localizations for the `crossed` multiscale strategy
 geometry:
   function space: StructuredColumns
   grid:

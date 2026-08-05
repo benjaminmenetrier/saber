@@ -1,3 +1,4 @@
+# Reads perturbations pre-computed in `dirac_multiscale_1` and applies B using a `separated` strategy and the localizations from `error_covariance_training_multiscale_1` (same results as `dirac_multiscale_1`)
 geometry:
   function space: StructuredColumns
   grid:

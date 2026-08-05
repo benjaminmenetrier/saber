@@ -63,7 +63,9 @@ SaberParametricBlockChain::SaberParametricBlockChain(
   if (centralBlock_->doCalibration()) {
     // Calibration, without ensemble
     centralBlock_->calibrateBlock(fset4dXb);
-  } else if (centralBlock_->doRead()) {
+  }
+
+  if (centralBlock_->doRead()) {
     // Read data
     oops::Log::info() << "Info     : Read data" << std::endl;
     centralBlock_->read();
