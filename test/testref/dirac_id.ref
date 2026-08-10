@@ -26,7 +26,7 @@ Covariance(SABER) * Increment:
     + max    = 0.0000000000000000e+00
 Adjoint test for block ID passed
 Square-root test for block ID passed
-Write randomized variance:
+Randomized variance: 
 - Valid time: 2010-01-01T12:00:00Z
   Geometry: F10 [800]
   Fields:

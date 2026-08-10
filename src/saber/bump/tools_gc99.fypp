@@ -262,7 +262,7 @@ if (eq(nd,zero)) then
    value = one
 elseif (infeq(nd,half)) then
    ! Inside support
-   value = one-(two*nd)
+   value = one-two*nd
 end if
 
 end function gc99_fit_func_sqrt

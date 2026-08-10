@@ -8,6 +8,7 @@ if( ENABLE_BUMP )
     BUMP.cc
     BUMP.h
     BUMPParameters.h
+    BUMPParameters.cc
     NICAS.cc
     NICAS.h
     NICASFilter.cc
@@ -39,8 +40,6 @@ if( ENABLE_BUMP )
     type_bump.h
     type_bump.fypp
     type_bump_interface.F90
-    type_bump_parameters.cc
-    type_bump_parameters.h
     type_cmat.fypp
     type_cmat_blk.fypp
     type_com.fypp

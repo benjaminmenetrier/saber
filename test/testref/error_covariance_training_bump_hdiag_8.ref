@@ -46,18 +46,18 @@
                    Level:   2 ~> amplitude:        1.00
                                  cor. hor. support:      4320.11 km
                                  cor. ver. support:         3.12 vertical units
-             Block air_horizontal_streamfunction:  0.21813381E+00 for       40 diagnostic points
+             Block air_horizontal_streamfunction:  0.21807315E+00 for       40 diagnostic points
                 Level:   1 ~> loc. at class zero:       0.83
                 Level:   2 ~> loc. at class zero:       0.83
                    Level:   1 ~> amplitude:        1.00
                                  loc. hor. support:      5776.56 km
                                  loc. ver. support:         4.17 vertical units
                    Level:   2 ~> amplitude:        1.00
-                                 loc. hor. support:      5438.49 km
+                                 loc. hor. support:      5433.35 km
                                  loc. ver. support:         4.17 vertical units
                 Level:   1 ~> hybrid coefficients: 0.59 / 0.39
                 Level:   2 ~> hybrid coefficients: 0.58 / 0.42
-Norm of output parameter loc_rh - 1: 2.6385235156393513e+08
+Norm of output parameter loc_rh - 1: 2.6373529638225096e+08
 Norm of output parameter loc_rv - 1: 1.9605475146722972e+02
-Norm of output parameter hyb_coef_1 - 1: 2.7508287933561459e+01
-Norm of output parameter hyb_coef_2 - 1: 1.9045819028697913e+01
+Norm of output parameter hyb_coef_1 - 1: 2.7508384443095572e+01
+Norm of output parameter hyb_coef_2 - 1: 1.9045718046702543e+01

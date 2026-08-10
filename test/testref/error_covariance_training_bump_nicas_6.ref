@@ -10,28 +10,28 @@
           Domain area (% of Earth area): 0.100E+03%
              Level   1 ~> 100.0%
              Level   1 ~>  0.100E+01 vert. coord.
-Norm of input parameter a - 1: 5.0808620707443012e+01
-Norm of input parameter a - 2: 1.1174545682972937e+01
-Norm of input parameter rh1 - 1: 2.8694684170467079e+08
-Norm of input parameter rh1 - 2: 2.4892482296903673e+08
-Norm of input parameter rh2 - 1: 3.0636917043196994e+08
-Norm of input parameter rh2 - 2: 2.6604399704367176e+08
-Norm of input parameter rhc - 1: 7.8680668989728186e+00
-Norm of input parameter rhc - 2: 7.8680668989728186e+00
-Norm of input parameter rv - 1: 1.9245091199721224e+02
-Norm of input parameter rv - 2: 3.2384804082426633e+01
+Norm of input parameter a - 1: 5.0808592812490318e+01
+Norm of input parameter a - 2: 1.1174577750747718e+01
+Norm of input parameter rh1 - 1: 2.8694851915382427e+08
+Norm of input parameter rh1 - 2: 2.4892464940101463e+08
+Norm of input parameter rh2 - 1: 3.0636935841660672e+08
+Norm of input parameter rh2 - 2: 2.6604610830443236e+08
+Norm of input parameter rhc - 1: 7.8683163161819181e+00
+Norm of input parameter rhc - 2: 7.8683163161819181e+00
+Norm of input parameter rv - 1: 1.9245167729771703e+02
+Norm of input parameter rv - 2: 3.2384704646199779e+01
              Effective levels:   1   2 
                    Requested distance between points (min/max/avg):  0.831E+03 km /  0.104E+04 km /  0.914E+03 km
                    Regular sampling grid size:     5248 points
                    Nearest neighbor distance (min/max/avg):  0.752E+03 km /  0.122E+04 km /  0.925E+03 km
                    Effective resolution (min/max/avg):  3.74 /  6.01 /  4.94
-                   Subgrid hash:   1564716506
+                   Subgrid hash:    919121371
                 Subgrid size:      420
                    Requested distance between points (min/max/avg):  0.847E+03 km /  0.109E+04 km /  0.923E+03 km
                    Regular sampling grid size:     4960 points
                    Nearest neighbor distance (min/max/avg):  0.721E+03 km /  0.130E+04 km /  0.941E+03 km
                    Effective resolution (min/max/avg):  3.71 /  6.07 /  4.95
-                   Subgrid hash:   1008162784
+                   Subgrid hash:    998528991
                 Subgrid size:      414
              nc1(  1) =                        420
              nc1(  2) =                        414
@@ -43,29 +43,29 @@ Norm of input parameter rv - 2: 3.2384804082426633e+01
                    Regular sampling grid size:     9328 points
                    Nearest neighbor distance (min/max/avg):  0.574E+03 km /  0.110E+04 km /  0.798E+03 km
                    Effective resolution (min/max/avg):  3.82 /  5.89 /  4.94
-                   Subgrid hash:  -1524584340
+                   Subgrid hash:  -1627148044
                 Subgrid size:      574
                    Requested distance between points (min/max/avg):  0.638E+03 km /  0.881E+03 km /  0.790E+03 km
                    Regular sampling grid size:     8944 points
                    Nearest neighbor distance (min/max/avg):  0.592E+03 km /  0.112E+04 km /  0.796E+03 km
-                   Effective resolution (min/max/avg):  3.57 /  6.10 /  4.91
-                   Subgrid hash:    677957576
+                   Effective resolution (min/max/avg):  3.57 /  6.09 /  4.91
+                   Subgrid hash:   1668796383
                 Subgrid size:      587
              nc1(  1) =                        574
              nc1(  2) =                        587
              ns =                             1161
              v%n_s =                             2
-             c%n_s[global] =                 16689
+             c%n_s[global] =                 16690
              nc1(  1) =                        420
              nc1(  2) =                        414
              ns =                              834
              v%n_s =                             2
-             c%n_s[global] =                 24358
+             c%n_s[global] =                 24359
              nc1(  1) =                        574
              nc1(  2) =                        587
              ns =                             1161
              v%n_s =                             2
-             c%n_s[global] =                 16916
+             c%n_s[global] =                 16917
     Full NICAS adjoint test result:                        T
        Block NICAS adjoint test result:                    T
           Interpolation adjoint test (horizontal) result:  T
@@ -99,7 +99,7 @@ Norm of input parameter rv - 2: 3.2384804082426633e+01
           Component NICAS adjoint test result:             T
              0.0 /    0.0:  1.0000000
           Level   1:  0.0000000 -  1.0000000
-          Level   2:  0.0000000 -  0.5520310
+          Level   2:  0.0000000 -  0.5521337
              0.0 /    0.0:  0.0000000
           Level   1:  0.0000000 -  0.0000000
           Level   2:  0.0000000 -  0.0000000
@@ -119,12 +119,12 @@ Norm of input parameter rv - 2: 3.2384804082426633e+01
                    Regular sampling grid size:     5848 points
                    Nearest neighbor distance (min/max/avg):  0.691E+03 km /  0.115E+04 km /  0.862E+03 km
                    Effective resolution (min/max/avg):  3.97 /  6.20 /  4.96
-                   Subgrid hash:  -1879149144
+                   Subgrid hash:   1044215194
                 Subgrid size:      486
              nc1(  1) =                        486
              ns =                              486
              v%n_s =                             1
-             c%n_s[global] =                  6422
+             c%n_s[global] =                  6423
     Full NICAS adjoint test result:                        T
        Block NICAS adjoint test result:                    T
           Interpolation adjoint test (horizontal) result:  T

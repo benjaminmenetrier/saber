@@ -527,7 +527,7 @@ type(fieldset_type),intent(in) :: fieldset             !< Fieldset
 ! Local variables
 integer :: il0,imga
 real(kind_real) :: lon0,lat0,dist,maxdist
-real(kind_real),pointer :: real_ptr(:,:)
+real(kind_real),pointer :: vert_coord_ptr(:),real_ptr(:,:)
 type(atlas_field) :: afield,afield_lonlat
 type(atlas_functionspace_nodecolumns) :: afunctionspace_nc
 type(atlas_functionspace_pointcloud) :: afunctionspace_pc
@@ -569,7 +569,19 @@ end if
 ! Get vertical coordinate
 if ((nam%vert_coord_name/='').and.(fieldset%has_field(nam%vert_coord_name))) then
    afield = fieldset%field(nam%vert_coord_name)
-   call field_to_array(afield,mpl,geom%vert_coord_mga,nam%ilev2d)
+   if (afield%rank()==1) then
+      ! Simple profile
+      if (afield%shape(1)/=geom%nl0) then
+        call mpl%abort('${subr}$','wrong vertical coordinate profile size')
+      end if
+      call afield%data(vert_coord_ptr)
+      do il0=1,geom%nl0
+         geom%vert_coord_mga(:,il0) = vert_coord_ptr(il0)
+      end do
+   else
+      ! Full 3D field
+      call field_to_array(afield,mpl,geom%vert_coord_mga,nam%ilev2d)
+   end if
 end if
 
 ! Get geometry mask

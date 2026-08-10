@@ -1869,6 +1869,7 @@ call bump%geom%dealloc
 call bump%gsi%dealloc
 call bump%hdiag%dealloc
 call bump%mom%dealloc
+call bump%nam%dealloc
 call bump%nicas%dealloc
 call bump%samp%dealloc
 call bump%var%dealloc

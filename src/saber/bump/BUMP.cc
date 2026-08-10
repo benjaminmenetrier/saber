@@ -25,7 +25,6 @@
 #include "oops/util/FieldSetOperations.h"
 #include "oops/util/Logger.h"
 
-#include "saber/bump/type_bump_parameters.h"
 #include "saber/oops/Utilities.h"
 
 namespace saber {
@@ -297,6 +296,12 @@ void BUMP::readAtlasFiles() {
       const std::string param = conf.getString("parameter");
       const int icmp = conf.getInt("component", 1);
 
+      // Check if file is empty
+      if (file.empty()) {
+        throw eckit::Exception("BUMP::readAtlasFiles: file configuration if empty for parameter "
+          + param + " and component " + std::to_string(icmp) , Here());
+      }
+
       // Create FieldSet
       oops::FieldSet3D fset(validTime_, comm_);
       fset.name() = param + " - " + std::to_string(icmp);
@@ -332,6 +337,12 @@ std::vector<std::pair<std::string, eckit::LocalConfiguration>> BUMP::getReadConf
 
     // Get file configuration
     eckit::LocalConfiguration file = this->getFileConf(comm_, conf);
+
+    // Check if file is empty
+    if (file.empty()) {
+      throw eckit::Exception("BUMP::getReadConfs: file configuration if empty for parameter "
+        + param + " and component " + std::to_string(icmp) , Here());
+    }
 
     // Add pair
     inputs.push_back(std::make_pair(name, file));
@@ -463,16 +474,13 @@ void BUMP::writeAtlasFiles() const {
     std::vector<eckit::LocalConfiguration> outputAtlasFilesConf
       = bumpConf_.getSubConfigurations("output atlas files");
     for (const auto & output : this->fieldsToWrite(outputAtlasFilesConf)) {
-      // Get file configuration
-      eckit::LocalConfiguration file = this->getFileConf(comm_, output.first);
-
       // Print FieldSet norm
       oops::Log::test() << "+++ Norm of output parameter " << output.second.name() << ": "
                         << output.second.norm(vars_)
                         << std::endl;
 
       // Write FieldSet
-      output.second.write(file);
+      output.second.write(output.first);
     }
   }
 
@@ -507,6 +515,12 @@ std::vector<std::pair<eckit::LocalConfiguration, oops::FieldSet3D>> BUMP::fields
 
     // Get file configuration
     eckit::LocalConfiguration file = this->getFileConf(comm_, conf);
+
+    // Check if file is empty
+    if (file.empty()) {
+      throw eckit::Exception("BUMP::fieldsToWrite: file configuration if empty for parameter "
+        + param + " and component " + std::to_string(icmp) , Here());
+    }
 
     // Add pair
     outputs.push_back(std::make_pair(file, fset));
