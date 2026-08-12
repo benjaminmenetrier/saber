@@ -50,10 +50,10 @@ background error:
           - air_horizontal_streamfunction_l1
           value: 7.5
         - groups:
-          - air_horizontal_streamfunction_l1
+          - air_horizontal_streamfunction_l2
           value: 3.75
         - groups:
-          - air_horizontal_streamfunction_l1
+          - air_horizontal_streamfunction_l3
           value: 1.875
 test:
   reference filename: testref/error_covariance_training_multiscale_1.ref
