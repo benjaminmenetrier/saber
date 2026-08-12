@@ -529,7 +529,6 @@ saber_add_test( TARGET saber_dirac_multiscale_1_1-1
                 ARGS testinput/dirac_multiscale_1.yaml
                 DEPENDS saber_quench_error_covariance_toolbox.x
                 TEST_DEPENDS saber_randomization_multiscale_1_1-1
-                             saber_process_perts_multiscale_1_1-1
                              saber_error_covariance_training_multiscale_1_1-1 )
 
 saber_add_test( TARGET saber_dirac_multiscale_1_2-1
@@ -539,7 +538,6 @@ saber_add_test( TARGET saber_dirac_multiscale_1_2-1
                 ARGS testinput/dirac_multiscale_1.yaml
                 DEPENDS saber_quench_error_covariance_toolbox.x
                 TEST_DEPENDS saber_randomization_multiscale_1_2-1
-                             saber_process_perts_multiscale_1_2-1
                              saber_error_covariance_training_multiscale_1_2-1 )
 
 saber_add_test( TARGET saber_dirac_multiscale_1_1-2
@@ -550,7 +548,6 @@ saber_add_test( TARGET saber_dirac_multiscale_1_1-2
                 ARGS testinput/dirac_multiscale_1.yaml
                 DEPENDS saber_quench_error_covariance_toolbox.x
                 TEST_DEPENDS saber_randomization_multiscale_1_1-2
-                             saber_process_perts_multiscale_1_1-2
                              saber_error_covariance_training_multiscale_1_1-2 )
 
 # dirac_multiscale_2

@@ -59,7 +59,7 @@ Covariance(SABER) * Increment:
   Geometry: L48x25 [1200]
   Fields:
   - air_horizontal_streamfunction (5 levels):
-    + min    = -3.5067773998982550e-05
-    + max    = 5.8874455315178809e-01
-    + mean   = 1.9229013670585976e-03
-    + stddev = 1.7405895905954708e-02
+    + min    = -2.2026968507307307e-03
+    + max    = 5.8874455315178831e-01
+    + mean   = 3.9317711048840387e-03
+    + stddev = 1.9978432838941233e-02
