@@ -3,7 +3,7 @@ Input Dirac increment:
   Geometry: structured [3848]
   Fields:
   - air_temperature (10 levels):
-    + min    = 0.0000000000000000e+00
+    + min close to zero
     + max    = 1.0000000000000000e+00
     + mean   = 5.1975051975051978e-05
     + stddev = 7.2092788291837394e-03

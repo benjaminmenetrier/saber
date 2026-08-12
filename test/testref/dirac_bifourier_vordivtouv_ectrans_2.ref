@@ -3,7 +3,7 @@ Input Dirac increment:
   Geometry: structured [3848]
   Fields:
   - geographical_x_wind (10 levels):
-    + min    = 0.0000000000000000e+00
+    + min close to zero
     + max    = 1.0000000000000000e+00
     + mean   = 2.5987525987525989e-05
     + stddev = 5.0977961892907644e-03
@@ -39,10 +39,10 @@ Covariance(SABER) * Increment:
   - geographical_x_wind (10 levels):
     + min    = -2.1689794389779322e+03
     + max    = 2.1096443954369538e+03
-    + mean   ~ 0
+    + mean close to zero
     + stddev = 1.2012041701661208e+02
   - geographical_y_wind (10 levels):
     + min    = -2.1825745936084577e+03
     + max    = 2.1567926003335415e+03
-    + mean   ~ 0
+    + mean close to zero
     + stddev = 1.3738193872717906e+02
