@@ -1,3 +1,4 @@
+# Generates perturbations including 3 different scales
 geometry:
   function space: StructuredColumns
   grid:

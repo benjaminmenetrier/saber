@@ -1,3 +1,4 @@
+# Same as `dirac_multiscale_2` for the `crossed` strategy, using the localizations from `error_covariance_training_multiscale_2`
 geometry:
   function space: StructuredColumns
   grid:
