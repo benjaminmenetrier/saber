@@ -29,7 +29,6 @@ background error:
         pattern: "%mem%"
         nmembers: 25
     localization:
-      localization method: SABER
       saber central block:
         saber block name: BUMP_NICAS
         read:
@@ -54,7 +53,6 @@ background error:
         pattern: "%mem%"
         nmembers: 25
     localization:
-      localization method: SABER
       saber central block:
         saber block name: BUMP_NICAS
         read:
@@ -79,7 +77,6 @@ background error:
         pattern: "%mem%"
         nmembers: 25
     localization:
-      localization method: SABER
       saber central block:
         saber block name: BUMP_NICAS
         read:

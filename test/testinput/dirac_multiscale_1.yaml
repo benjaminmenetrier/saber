@@ -58,7 +58,6 @@ background error:
         filepath: testdata/dirac_multiscale_1/filtered_pert_mb%mem%_wb1
         member pattern: '%mem%'
     localization:
-      localization method: SABER
       saber central block:
         saber block name: BUMP_NICAS
         read:
@@ -101,7 +100,6 @@ background error:
         filepath: testdata/dirac_multiscale_1/filtered_pert_mb%mem%_wb2
         member pattern: '%mem%'
     localization:
-      localization method: SABER
       saber central block:
         saber block name: BUMP_NICAS
         read:
@@ -121,7 +119,6 @@ background error:
         filepath: testdata/dirac_multiscale_1/filtered_pert_mb%mem%_wb3
         member pattern: '%mem%'
     localization:
-      localization method: SABER
       saber central block:
         saber block name: BUMP_NICAS
         read:
@@ -136,7 +133,7 @@ background error:
           drivers:
             multivariate strategy: univariate
             read local nicas: true
-  recursive filters: true
+  recursive perturbations processing: true
   multiscale strategy: separated
 dirac:
   lon:

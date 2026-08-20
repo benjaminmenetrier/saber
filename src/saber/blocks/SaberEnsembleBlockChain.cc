@@ -34,7 +34,7 @@ void SaberEnsembleBlockChain::multiply(oops::FieldSet4D & fset4d) const {
       oops::FieldSet4D fset4dScaleInit = oops::copyFieldSet4D(fset4dInit);
 
       if (scaleData.externalInterpolation()) {
-        // Scale contribution at reduced resolution
+        // Interpolate scale contribution to reduced resolution
         scaleData.interpolator()->applyOuterBlocksAD(fset4dScaleInit);
       }
 
@@ -52,7 +52,7 @@ void SaberEnsembleBlockChain::multiply(oops::FieldSet4D & fset4d) const {
           // Get ensemble member
           oops::FieldSet4D fset4dMem(fset4d.times(), fset4d.commTime(), fset4d[0].commGeom());
           if (scaleData.internalInterpolation()) {
-            // Interpolate ensemble member at full resolution
+            // Interpolate ensemble member to full resolution
             fset4dMem.deepCopy(*scaleData.ensemble(), ie);
             scaleData.interpolator()->applyOuterBlocks(fset4dMem);
           } else {
@@ -93,7 +93,7 @@ void SaberEnsembleBlockChain::multiply(oops::FieldSet4D & fset4d) const {
       }
 
       if (scaleData.externalInterpolation()) {
-        // Interpolate scale contribution at full resolution
+        // Interpolate scale contribution to full resolution
         scaleData.interpolator()->applyOuterBlocks(fset4dScale);
       }
 
@@ -111,10 +111,10 @@ void SaberEnsembleBlockChain::multiply(oops::FieldSet4D & fset4d) const {
                                        atlas::array::make_datatype<double>(),
                                        atlas::array::make_shape(ctlVecSize()));
 
-    // Adjoint square-root multiply
+    // Adjoint square-root multiply (fset4D -> cv, index at 0)
     multiplySqrtAD(fset4d, cv, 0);
 
-    // Square-root multiply
+    // Square-root multiply (cv -> fset4D, index at 0)
     multiplySqrt(cv, fset4d, 0);
   }
 
@@ -164,7 +164,7 @@ void SaberEnsembleBlockChain::randomize(oops::FieldSet4D & fset4d) const {
           // Get ensemble member
           oops::FieldSet4D fset4dMem(fset4d.times(), fset4d.commTime(), fset4d[0].commGeom());
           if (scaleData.internalInterpolation()) {
-            // Interpolate ensemble member at full resolution
+            // Interpolate ensemble member to full resolution
             fset4dMem.deepCopy(*scaleData.ensemble(), ie);
             scaleData.interpolator()->applyOuterBlocks(fset4dMem);
           } else {
@@ -195,7 +195,7 @@ void SaberEnsembleBlockChain::randomize(oops::FieldSet4D & fset4d) const {
       }
 
     if (scaleData.externalInterpolation()) {
-        // Interpolate scale contribution at full resolution
+        // Interpolate scale contribution to full resolution
         scaleData.interpolator()->applyOuterBlocks(fset4dScale);
       }
 
@@ -310,7 +310,7 @@ void SaberEnsembleBlockChain::multiplySqrt(const atlas::Field & cv,
         // Get ensemble member
         oops::FieldSet4D fset4dMem(fset4d.times(), fset4d.commTime(), fset4d[0].commGeom());
         if (scaleData.internalInterpolation()) {
-          // Interpolate ensemble member at full resolution
+          // Interpolate ensemble member to full resolution
           fset4dMem.deepCopy(*scaleData.ensemble(), ie);
           scaleData.interpolator()->applyOuterBlocks(fset4dMem);
         } else {
@@ -339,7 +339,7 @@ void SaberEnsembleBlockChain::multiplySqrt(const atlas::Field & cv,
     }
 
     if (scaleData.externalInterpolation()) {
-      // Interpolate scale contribution at full resolution
+      // Interpolate scale contribution to full resolution
       scaleData.interpolator()->applyOuterBlocks(fset4dScale);
     }
 
@@ -412,7 +412,7 @@ void SaberEnsembleBlockChain::multiplySqrtAD(const oops::FieldSet4D & fset4d,
     oops::FieldSet4D fset4dScaleInit = oops::copyFieldSet4D(fset4dInit);
 
     if (scaleData.externalInterpolation()) {
-      // Scale contribution at reduced resolution
+      // Interpolate scale contribution to reduced resolution
       scaleData.interpolator()->applyOuterBlocksAD(fset4dScaleInit);
     }
 
@@ -429,7 +429,7 @@ void SaberEnsembleBlockChain::multiplySqrtAD(const oops::FieldSet4D & fset4d,
         // Get ensemble member
         oops::FieldSet4D fset4dMem(fset4d.times(), fset4d.commTime(), fset4d[0].commGeom());
         if (scaleData.internalInterpolation()) {
-          // Interpolate ensemble member at full resolution
+          // Interpolate ensemble member to full resolution
           fset4dMem.deepCopy(*scaleData.ensemble(), ie);
           scaleData.interpolator()->applyOuterBlocks(fset4dMem);
         } else {

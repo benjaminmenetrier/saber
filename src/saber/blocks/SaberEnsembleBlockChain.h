@@ -153,8 +153,8 @@ class SaberEnsembleBlockChainParameters: public ErrorCovarianceParametersBase {
   // Vector of scale-specific configurations
   oops::OptionalParameter<std::vector<ScaleParameters>> scales{"scales", this};
 
-  // Recursive filters
-  oops::Parameter<bool> recursiveFilters{"recursive filters", false, this};
+  // Recursive perturbations processing
+  oops::Parameter<bool> recursivePertProcessing{"recursive perturbations processing", false, this};
 
   // Multi-scales strategy (separated or crossed)
   oops::OptionalParameter<std::string> strategy{"multiscale strategy", this};
@@ -183,8 +183,9 @@ class SaberEnsembleBlockChainParameters: public ErrorCovarianceParametersBase {
   oops::OptionalParameter<eckit::LocalConfiguration> ensembleGeom{
                         "ensemble geometry", this};
 
-  // Sub-ensembles size: if subEnsSize = p, it means that sets of members {0,...,p-1}, {p,...,2p-1},
-  // etc. are distinct sub-ensembles. The mean of each sub-ensemble is subtracted.
+  // Sub-ensembles size: it means that sets of members {0,...,subEnsSize-1},
+  // {subEnsSize,...,2 subEnsSize-1}, etc. are distinct sub-ensembles. The mean of each sub-ensemble
+  // is subtracted from the concerned members to compute perturbations.
   oops::OptionalParameter<size_t> subEnsSize{"sub-ensembles size", this};
 };
 
@@ -652,8 +653,8 @@ SaberEnsembleBlockChain::SaberEnsembleBlockChain(const oops::Geometry<MODEL> & g
                 fset4dDx[0] -= fsetI;
                 fset4dDx[0] *= -1.0;
 
-                if (params.recursiveFilters.value()) {
-                  // Recursive filter: xI = xI - x'
+                if (params.recursivePertProcessing.value()) {
+                  // Recursive processing: xI = xI - x'
                   fsetI -= fset4dDx[0];
                 }
 
@@ -669,8 +670,8 @@ SaberEnsembleBlockChain::SaberEnsembleBlockChain(const oops::Geometry<MODEL> & g
                   scaleData.interpolator()->applyOuterBlocks(*fset4dDxPtr);
                 }
 
-                if (params.recursiveFilters.value()) {
-                  // Recursive filter: xI = xI - x'
+                if (params.recursivePertProcessing.value()) {
+                  // Recursive processing: xI = xI - x'
                   fsetI -= (*fset4dDxPtr)[0];
                 }
 
