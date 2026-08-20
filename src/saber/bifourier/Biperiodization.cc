@@ -48,7 +48,7 @@ Biperiodization::Biperiodization(const oops::GeometryData & outerGeometryData,
       innerFset, outerGeometryData.levelsAreTopDown(), comm_);
   }
 
-  if (params_.read.value() != boost::none) {
+  if (params_.read.value()) {
     // Create input test fieldset
     inputTestFset_ = std::make_unique<oops::FieldSet3D>(xb.validTime(), outerGeometryData.comm());
   }
@@ -128,7 +128,7 @@ void Biperiodization::write() const {
   oops::Log::trace() << classname() << "::write starting" << std::endl;
 
   const auto & paramsRead = params_.read.value();
-  if (paramsRead != boost::none) {
+  if (paramsRead) {
     // Write output inner test file
     outputInnerTestFset_->write(paramsRead->outputInnerTestFile.value());
 

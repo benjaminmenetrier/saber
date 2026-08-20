@@ -157,7 +157,7 @@ void BifourierAromeCovariance::read() {
 void BifourierAromeCovariance::write() const {
   oops::Log::trace() << classname() << "::write starting" << std::endl;
 
-  if (params_.write.value() != boost::none) {
+  if (params_.write.value()) {
     // Write data
     if (params_.write.value()->outputFileFormat.value() == "arome legacy binary"
       || params_.write.value()->outputFileFormat.value() == "arome legacy netcdf") {

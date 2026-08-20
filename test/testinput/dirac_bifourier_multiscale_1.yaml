@@ -58,7 +58,7 @@ background error:
     - saber block name: BifourierSpectralToGrid
     output:
       model write:
-        filepath: testdata/dirac_bifourier_multiscale_1/filtered_pert_mb%MEM%_wb1
+        filepath: testdata/dirac_bifourier_multiscale_1/_MPI_-_OMP__filtered_pert_mb%MEM%_wb1
         member pattern: '%MEM%'
     localization:
       saber central block:
@@ -78,7 +78,7 @@ background error:
           - saber block name: BifourierSpectralToGrid
   - output:
       model write:
-        filepath: testdata/dirac_bifourier_multiscale_1/filtered_pert_mb%MEM%_wb2
+        filepath: testdata/dirac_bifourier_multiscale_1/_MPI_-_OMP__filtered_pert_mb%MEM%_wb2
         member pattern: '%MEM%'
     localization:
       saber central block:
@@ -107,8 +107,7 @@ dirac:
   variable:
   - air_temperature
 output dirac:
-  mpi pattern: "%MPI%"
-  filepath: testdata/dirac_bifourier_multiscale_1/%MPI%_dirac_%id%
+  filepath: testdata/dirac_bifourier_multiscale_1/_MPI_-_OMP__dirac_%id%
 test:
   reference filename: testref/dirac_bifourier_multiscale_1.ref
 

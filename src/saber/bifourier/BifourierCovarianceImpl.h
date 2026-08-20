@@ -36,6 +36,9 @@ class BifourierCovarianceImplReadParameters : public oops::Parameters {
  public:
   // Input file
   oops::RequiredParameter<std::string> inputFile{"input file", this};
+
+  // Input file from balance operator
+  oops::Parameter<bool> inputFileFromBalance{"input file from balance", false, this};
 };
 
 // -----------------------------------------------------------------------------

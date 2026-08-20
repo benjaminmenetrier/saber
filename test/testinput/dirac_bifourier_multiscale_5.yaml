@@ -54,7 +54,7 @@ background error:
       members from template:
         template:
           date: 2010-01-01T12:00:00Z
-          filepath: testdata/dirac_bifourier_multiscale_2/filtered_pert_mb%MEM%_wb1
+          filepath: testdata/dirac_bifourier_multiscale_2/_MPI_-_OMP__filtered_pert_mb%MEM%_wb1
           state variables: *vars
         pattern: '%MEM%'
         nmembers: 25
@@ -78,7 +78,7 @@ background error:
       members from template:
         template:
           date: 2010-01-01T12:00:00Z
-          filepath: testdata/dirac_bifourier_multiscale_2/filtered_pert_mb%MEM%_wb2
+          filepath: testdata/dirac_bifourier_multiscale_2/_MPI_-_OMP__filtered_pert_mb%MEM%_wb2
           state variables: *vars
         pattern: '%MEM%'
         nmembers: 25
@@ -109,8 +109,7 @@ dirac:
   variable:
   - air_temperature
 output dirac:
-  mpi pattern: "%MPI%"
-  filepath: testdata/dirac_bifourier_multiscale_5/%MPI%_dirac_%id%
+  filepath: testdata/dirac_bifourier_multiscale_5/_MPI_-_OMP__dirac_%id%
 test:
   reference filename: testref/dirac_bifourier_multiscale_5.ref
 

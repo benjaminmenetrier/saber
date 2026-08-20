@@ -122,7 +122,7 @@ BifourierSpectralVorDivToGridWind::BifourierSpectralVorDivToGridWind(
       }
     }
 
-    if (biperParams != boost::none) {
+    if (biperParams) {
       // Check biperiodization parameters (should not change the grid size)
       ASSERT(biperParams->innerExtNx.value() == biperParams->outerExtNx.value());
       ASSERT(biperParams->innerExtNy.value() == biperParams->outerExtNy.value());
@@ -167,7 +167,7 @@ BifourierSpectralVorDivToGridWind::BifourierSpectralVorDivToGridWind(
         *std::pow(std::tan((0.25*M_PI)-(pole*0.5*latRad)), sina);
     }
 
-    if (biperParams != boost::none) {
+    if (biperParams) {
       // Add biperiodization variable
       biperVars.push_back("map_factor");
       biperVars["map_factor"].setLevels(1);
@@ -220,7 +220,7 @@ BifourierSpectralVorDivToGridWind::BifourierSpectralVorDivToGridWind(
       dyDlatView(jnode, 0) *= dlatNorm;
     }
 
-    if (biperParams != boost::none) {
+    if (biperParams) {
       // Add biperiodization variables
       biperVars.push_back("dxDlon");
       biperVars["dxDlon"].setLevels(1);
@@ -233,7 +233,7 @@ BifourierSpectralVorDivToGridWind::BifourierSpectralVorDivToGridWind(
     }
   }
 
-  if (biperParams != boost::none) {
+  if (biperParams) {
     // Setup biperiodization implementation
     BiperiodizationImpl biper(outerGeometryData, biperVars, *biperParams);
     ASSERT(biper.sameFs());

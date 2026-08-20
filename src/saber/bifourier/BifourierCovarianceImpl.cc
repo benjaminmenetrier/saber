@@ -37,8 +37,7 @@ BifourierCovarianceImpl::BifourierCovarianceImpl(const oops::GeometryData & geom
     comm_(geometryData_.comm()),
     vars_(vars),
     params_(params),
-    Lf_(params_.calibration.value() != boost::none ?
-      params_.calibration.value()->filteringScale.value() : 0),
+    Lf_(params_.calibration.value() ? params_.calibration.value()->filteringScale.value() : 0),
     trans_(transStore_.retrieveTransform(geometryData, vars_))
 {
   oops::Log::trace() << classname() << "::BifourierCovarianceImpl starting" << std::endl;
@@ -247,7 +246,7 @@ BifourierCovarianceImpl::BifourierCovarianceImpl(const oops::GeometryData & geom
       std::vector<double> stdDev(nz, 1.0);
       for (const auto & profile : *params_.profiles.value()) {
         if (profile.variable.value() == var.name()) {
-          if (profile.stdDev.value() != boost::none) {
+          if (profile.stdDev.value()) {
             stdDev = *profile.stdDev.value();
           }
         }
@@ -415,91 +414,173 @@ void BifourierCovarianceImpl::leftInverseMultiply(oops::FieldSet3D & fset) const
 void BifourierCovarianceImpl::read() {
   oops::Log::trace() << classname() << "::read starting" << std::endl;
 
-  for (const auto & var : vars_) {
-    // Create correlation square-root field
-    createField3D("corSqrt", trans_->nw(), var, data_);
+  if (params_.read.value()->inputFileFromBalance.value()) {
+    // Input file from balance operator (full covariances)
+    for (const auto & var : vars_) {
+      // Create covariance field
+      createField3D("cov", trans_->nw(), var, data_);
+    }
 
-    // Create standard-deviation field
-    createFieldProfile("stdDev", var, data_);
-  }
+    // NetCDF file path
+    const std::string ncFilePath = params_.read.value()->inputFile.value();
 
-  // NetCDF file path
-  const std::string ncFilePath = params_.read.value()->inputFile.value();
-
-  // NetCDF IDs
-  int ncId, retval, nwId, nzIId, nzJId, corSqrtId, stdDevId;
-  size_t nwGlbFromFile, nzIFromFile, nzJFromFile;
-
-  if (comm_.rank() == 0) {
-    // Open NetCDF file
-    if ((retval = nc_open(ncFilePath.c_str(), NC_NOWRITE, &ncId))) ERR(retval, ncFilePath);
-  }
-
-  for (const auto & var : vars_) {
-    // Get number of levels
-    const size_t nz = var.getLevels();
-
-    // Define global vectors
-    std::vector<double> corSqrtVecGlb;
-    std::vector<double> stdDevVec(nz);
+    // NetCDF IDs
+    int ncId, retval, nwId, nzIId, nzJId, covId;
+    size_t nwGlbFromFile, nzIFromFile, nzJFromFile;
 
     if (comm_.rank() == 0) {
-      // Check dimensions
-      const std::string nzIName = "nzI_" + var.name();
-      const std::string nzJName = "nzJ_" + var.name();
-      if ((retval = nc_inq_dimid(ncId, "nwGlb", &nwId))) ERR(retval, "nwGlb");
-      if ((retval = nc_inq_dimid(ncId, nzIName.c_str(), &nzIId))) ERR(retval, nzIName);
-      if ((retval = nc_inq_dimid(ncId, nzJName.c_str(), &nzJId))) ERR(retval, nzJName);
-      if ((retval = nc_inq_dimlen(ncId, nwId, &nwGlbFromFile))) ERR(retval, "nwGlb");
-      if ((retval = nc_inq_dimlen(ncId, nzIId, &nzIFromFile))) ERR(retval, nzIName);
-      if ((retval = nc_inq_dimlen(ncId, nzJId, &nzJFromFile))) ERR(retval, nzJName);
-      ASSERT(nwGlbFromFile == trans_->nwGlb());
-      ASSERT(nzIFromFile == nz);
-      ASSERT(nzJFromFile == nz);
-
-      // Get correlation square-root field name
-      const std::string corSqrtFieldName = fieldName("corSqrt", var);
-
-      // Get standard-deviation field name
-      const std::string stdDevFieldName = fieldName("stdDev", var);
-
-      // Get variables ID
-      if ((retval = nc_inq_varid(ncId, corSqrtFieldName.c_str(), &corSqrtId)))
-        ERR(retval, corSqrtFieldName);
-      if ((retval = nc_inq_varid(ncId, stdDevFieldName.c_str(), &stdDevId)))
-        ERR(retval, stdDevFieldName);
-
-      // Allocate global correlation square-root vector
-      corSqrtVecGlb.resize(trans_->nwGlb()*nz*nz);
-
-      // Read data
-      if ((retval = nc_get_var_double(ncId, corSqrtId, corSqrtVecGlb.data())))
-        ERR(retval, corSqrtFieldName);
-      if ((retval = nc_get_var_double(ncId, stdDevId, stdDevVec.data())))
-        ERR(retval, stdDevFieldName);
+      // Open NetCDF file
+      if ((retval = nc_open(ncFilePath.c_str(), NC_NOWRITE, &ncId))) ERR(retval, ncFilePath);
     }
 
-    // Get correlation square-root field
-    auto corSqrtField = getField("corSqrt", var, data_);
+    for (const auto & var : vars_) {
+      // Get number of levels
+      const size_t nz = var.getLevels();
 
-    // Scatter correlation square-root vector
-    trans_->scatterCov(corSqrtVecGlb, corSqrtField);
+      // Define global vectors
+      std::vector<double> covVecGlb;
 
-    // Broadcast standard-deviation vector
-    comm_.broadcast(stdDevVec.begin(), stdDevVec.end(), 0);
+      if (comm_.rank() == 0) {
+        // Check dimensions
+        const std::string nzIName = "nzI_" + var.name();
+        const std::string nzJName = "nzJ_" + var.name();
+        if ((retval = nc_inq_dimid(ncId, "nwGlb", &nwId))) ERR(retval, "nwGlb");
+        if ((retval = nc_inq_dimid(ncId, nzIName.c_str(), &nzIId))) ERR(retval, nzIName);
+        if ((retval = nc_inq_dimid(ncId, nzJName.c_str(), &nzJId))) ERR(retval, nzJName);
+        if ((retval = nc_inq_dimlen(ncId, nwId, &nwGlbFromFile))) ERR(retval, "nwGlb");
+        if ((retval = nc_inq_dimlen(ncId, nzIId, &nzIFromFile))) ERR(retval, nzIName);
+        if ((retval = nc_inq_dimlen(ncId, nzJId, &nzJFromFile))) ERR(retval, nzJName);
+        ASSERT(nwGlbFromFile == trans_->nwGlb());
+        ASSERT(nzIFromFile == nz);
+        ASSERT(nzJFromFile == nz);
 
-    // Get standard-deviation view
-    auto stdDevView = getViewProfile("stdDev", var, data_);
+        // Get covariance field name (try with vvCov first)
+        std::string covFieldName = fieldName("vvCov", var, var);
 
-    // Deserialize standard-deviation vector
-    for (size_t jzJ = 0; jzJ < nz; ++jzJ) {
-      stdDevView(jzJ) = stdDevVec[jzJ];
+        // Get variables ID
+        retval = nc_inq_varid(ncId, covFieldName.c_str(), &covId);
+
+        if (retval != 0) {
+          // Get covariance field name (try with xxCov if vvCov is missing)
+          std::string covFieldName = fieldName("xxCov", var, var);
+
+          // Get variables ID
+          if ((retval = nc_inq_varid(ncId, covFieldName.c_str(), &covId)))
+            ERR(retval, covFieldName);
+        }
+
+        // Allocate global correlation square-root vector
+        covVecGlb.resize(trans_->nwGlb()*nz*nz);
+
+        // Read data
+        if ((retval = nc_get_var_double(ncId, covId, covVecGlb.data())))
+          ERR(retval, covFieldName);
+      }
+
+      // Get covariance field
+      auto covField = getField("cov", var, data_);
+
+      // Scatter covariance vector
+      trans_->scatterCov(covVecGlb, covField);
     }
-  }
 
-  if (comm_.rank() == 0) {
-    // Close file
-    if ((retval = nc_close(ncId))) ERR(retval, ncFilePath);
+    if (comm_.rank() == 0) {
+      // Close file
+      if ((retval = nc_close(ncId))) ERR(retval, ncFilePath);
+    }
+
+    // Compute square-root
+    computeSquareRoot();
+
+    // Print norms
+    print(oops::Log::test());
+  } else {
+    for (const auto & var : vars_) {
+      // Create correlation square-root field
+      createField3D("corSqrt", trans_->nw(), var, data_);
+
+      // Create standard-deviation field
+      createFieldProfile("stdDev", var, data_);
+    }
+
+    // NetCDF file path
+    const std::string ncFilePath = params_.read.value()->inputFile.value();
+
+    // NetCDF IDs
+    int ncId, retval, nwId, nzIId, nzJId, corSqrtId, stdDevId;
+    size_t nwGlbFromFile, nzIFromFile, nzJFromFile;
+
+    if (comm_.rank() == 0) {
+      // Open NetCDF file
+      if ((retval = nc_open(ncFilePath.c_str(), NC_NOWRITE, &ncId))) ERR(retval, ncFilePath);
+    }
+
+    for (const auto & var : vars_) {
+      // Get number of levels
+      const size_t nz = var.getLevels();
+
+      // Define global vectors
+      std::vector<double> corSqrtVecGlb;
+      std::vector<double> stdDevVec(nz);
+
+      if (comm_.rank() == 0) {
+        // Check dimensions
+        const std::string nzIName = "nzI_" + var.name();
+        const std::string nzJName = "nzJ_" + var.name();
+        if ((retval = nc_inq_dimid(ncId, "nwGlb", &nwId))) ERR(retval, "nwGlb");
+        if ((retval = nc_inq_dimid(ncId, nzIName.c_str(), &nzIId))) ERR(retval, nzIName);
+        if ((retval = nc_inq_dimid(ncId, nzJName.c_str(), &nzJId))) ERR(retval, nzJName);
+        if ((retval = nc_inq_dimlen(ncId, nwId, &nwGlbFromFile))) ERR(retval, "nwGlb");
+        if ((retval = nc_inq_dimlen(ncId, nzIId, &nzIFromFile))) ERR(retval, nzIName);
+        if ((retval = nc_inq_dimlen(ncId, nzJId, &nzJFromFile))) ERR(retval, nzJName);
+        ASSERT(nwGlbFromFile == trans_->nwGlb());
+        ASSERT(nzIFromFile == nz);
+        ASSERT(nzJFromFile == nz);
+
+        // Get correlation square-root field name
+        const std::string corSqrtFieldName = fieldName("corSqrt", var);
+
+        // Get standard-deviation field name
+        const std::string stdDevFieldName = fieldName("stdDev", var);
+
+        // Get variables ID
+        if ((retval = nc_inq_varid(ncId, corSqrtFieldName.c_str(), &corSqrtId)))
+          ERR(retval, corSqrtFieldName);
+        if ((retval = nc_inq_varid(ncId, stdDevFieldName.c_str(), &stdDevId)))
+          ERR(retval, stdDevFieldName);
+
+        // Allocate global correlation square-root vector
+        corSqrtVecGlb.resize(trans_->nwGlb()*nz*nz);
+
+        // Read data
+        if ((retval = nc_get_var_double(ncId, corSqrtId, corSqrtVecGlb.data())))
+          ERR(retval, corSqrtFieldName);
+        if ((retval = nc_get_var_double(ncId, stdDevId, stdDevVec.data())))
+          ERR(retval, stdDevFieldName);
+      }
+
+      // Get correlation square-root field
+      auto corSqrtField = getField("corSqrt", var, data_);
+
+      // Scatter correlation square-root vector
+      trans_->scatterCov(corSqrtVecGlb, corSqrtField);
+
+      // Broadcast standard-deviation vector
+      comm_.broadcast(stdDevVec.begin(), stdDevVec.end(), 0);
+
+      // Get standard-deviation view
+      auto stdDevView = getViewProfile("stdDev", var, data_);
+
+      // Deserialize standard-deviation vector
+      for (size_t jzJ = 0; jzJ < nz; ++jzJ) {
+        stdDevView(jzJ) = stdDevVec[jzJ];
+      }
+    }
+
+    if (comm_.rank() == 0) {
+      // Close file
+      if ((retval = nc_close(ncId))) ERR(retval, ncFilePath);
+    }
   }
 
   oops::Log::trace() << classname() << "::read done" << std::endl;
@@ -705,7 +786,7 @@ void BifourierCovarianceImpl::iterativeCalibrationFinal() {
 void BifourierCovarianceImpl::write() const {
   oops::Log::trace() << classname() << "::write starting" << std::endl;
 
-  if (params_.write.value() != boost::none) {
+  if (params_.write.value()) {
     // Create covariance fieldset
     atlas::FieldSet covData;
 
@@ -918,10 +999,10 @@ void BifourierCovarianceImpl::computeSquareRoot() {
   oops::Log::trace() << classname() << "::computeSquareRoot starting" << std::endl;
 
   // Combine covariance with an old covariance
-  if (params_.calibration.value() != boost::none) {
-    if (params_.calibration.value()->oldCovInputFile.value() != boost::none) {
+  if (params_.calibration.value()) {
+    if (params_.calibration.value()->oldCovInputFile.value()) {
       // Check parameters consistency
-      ASSERT(params_.calibration.value()->halfLife.value() != boost::none);
+      ASSERT(params_.calibration.value()->halfLife.value());
 
       // Read old covariance
       readCovariance();
@@ -930,7 +1011,7 @@ void BifourierCovarianceImpl::computeSquareRoot() {
       const double halfLife = *params_.calibration.value()->halfLife.value();
       const double alphaInf = 1.0-std::exp(-std::log(2.0)/halfLife);
       double updateFactor = alphaInf;
-      if (params_.calibration.value()->cycleIndex.value() != boost::none) {
+      if (params_.calibration.value()->cycleIndex.value()) {
         const size_t cycleIndex = *params_.calibration.value()->cycleIndex.value();
         ASSERT(cycleIndex > 0);
         updateFactor /= 1.0-std::pow(1.0-alphaInf, static_cast<double>(cycleIndex+1));
