@@ -1,4 +1,4 @@
-# Dirac test for an ensemble B with a multiscale bifourier localization matrix, with ensemble at lower resolution read with the generic reader
+# Dirac test for an ensemble B with a multiscale bifourier localization matrix, with ensemble read at lower resolution and localization at full resolution (internal interpolator)
 geometry:
   function space: StructuredColumns
   grid:
@@ -71,7 +71,7 @@ background error:
             profiles:
             - variable: allVars
               horizontal length-scales: [50.0e3, 50.0e3, 50.0e3, 50.0e3, 50.0e3, 50.0e3, 50.0e3, 50.0e3, 50.0e3, 50.0e3, 50.0e3]
-              vertical length-scale: 1.5
+              vertical length-scale: 2.5
           group outer blocks:
           - saber block name: BifourierSpectralToGrid
   - ensemble pert:
@@ -95,7 +95,7 @@ background error:
             profiles:
             - variable: allVars
               horizontal length-scales: [10.0e3, 10.0e3, 10.0e3, 10.0e3, 10.0e3, 10.0e3, 10.0e3, 10.0e3, 10.0e3, 10.0e3, 10.0e3]
-              vertical length-scale: 1.5
+              vertical length-scale: 2.5
           group outer blocks:
           - saber block name: BifourierSpectralToGrid
   multiscale strategy: crossed

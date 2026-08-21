@@ -1,5 +1,5 @@
-# Dirac test for an ensemble B with a multiscale bifourier localization matrix, with ensemble at lower resolution read with the generic reader
-geometry: &geom
+# Dirac test for an ensemble B with a multiscale bifourier localization matrix, with ensemble read at lower resolution
+geometry:
   function space: StructuredColumns
   grid:
     type : regional

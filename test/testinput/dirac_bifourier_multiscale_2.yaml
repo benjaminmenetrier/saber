@@ -1,4 +1,4 @@
-# Dirac test for an ensemble B with a multiscale bifourier localization matrix, with ensemble at lower resolution
+# Dirac test for an ensemble B with a multiscale bifourier localization matrix, with ensemble filtered to lower resolution
 geometry:
   function space: StructuredColumns
   grid:
