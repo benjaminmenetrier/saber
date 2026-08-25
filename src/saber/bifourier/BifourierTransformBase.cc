@@ -9,6 +9,8 @@
 #include <limits>
 #include <utility>
 
+#include "atlas/util/Constants.h"
+
 #include "eckit/exception/Exceptions.h"
 
 #include "oops/generic/gc99.h"
@@ -82,11 +84,27 @@ BifourierTransformBase::BifourierTransformBase(const oops::GeometryData & gdata,
 
   // Print active variables
   oops::Log::info() << "Info     : New Bifourier transform" << std::endl;
+  if (params_.biperParams.value()) {
+    oops::Log::info() << "Info     : - Internal biperiodization activated" << std::endl;
+  } else {
+    oops::Log::info() << "Info     : - No internal biperiodization" << std::endl;
+  }
   oops::Log::info() << "Info     : - FFT backend: " << params_.fftBackend.value() << std::endl;
   oops::Log::info() << "Info     : - Active variable: " << activeVars.variables() << std::endl;
 
+  if (params_.biperParams.value()) {
+    // Setup biperiodization implementation
+    biper_ = std::make_unique<BiperiodizationImpl>(gdata, activeVars, *params_.biperParams.value());
+
+    // Set periodic grid-point FunctionSpace
+    gpFspace_ = biper_->innerFunctionSpace();
+  } else {
+    // Assume that the outer FunctionSpace is already periodic
+    gpFspace_ = gdata_.functionSpace();
+  }
+
   // Get function space
-  const atlas::functionspace::StructuredColumns fs(gdata_.functionSpace());
+  const atlas::functionspace::StructuredColumns fs(gpFspace_);
 
   // Get grid size
   nx_ = fs.grid().nx()[0];
@@ -108,9 +126,9 @@ BifourierTransformBase::BifourierTransformBase(const oops::GeometryData & gdata,
       double centre[] = {xmin+0.5*static_cast<double>(nx_)*dx_,
         ymin+0.5*static_cast<double>(ny_)*dy_};
       fs.grid().projection().lonlat2xy(centre);
-      const double degToRad = M_PI / 180.;
-      dx_ *= degToRad*atlas::util::Earth::radius()*std::cos(centre[1]*degToRad);
-      dy_ *= degToRad*atlas::util::Earth::radius();
+      dx_ *= atlas::util::Constants::degreesToRadians()*atlas::util::Earth::radius()
+        *std::cos(centre[1]*atlas::util::Constants::degreesToRadians());
+      dy_ *= atlas::util::Constants::degreesToRadians()*atlas::util::Earth::radius();
     }
   }
   oops::Log::test() << "- Cell sizes: " << dx_*1.0e-3 << " km x " << dy_*1.0e-3 << " km"
@@ -165,47 +183,54 @@ void BifourierTransformBase::test(const oops::Variables & activeVars) const {
   // Grid-point to spectral
   gp2sp(gpFset, spFset, activeVars);
 
+  // Create test FieldSets
+  atlas::FieldSet gpFsetTest;
+  atlas::FieldSet spFsetTest;
+
   // Check inverse
-  atlas::FieldSet gpFsetTest = util::copyFieldSet(gpFset);
-  sp2gp(spFset, gpFsetTest, activeVars);
-  ASSERT(util::compareFieldSets(comm_, gpFset, gpFsetTest));
-  oops::Log::test() << "- Direct-inverse test passed" << std::endl;
+  if (biper_) {
+    oops::Log::test() << "- Direct-inverse test skipped (biperiodization)" << std::endl;
+  } else {
+    gpFsetTest = util::copyFieldSet(gpFset);
+    gp2sp(gpFset, spFset, activeVars);
+    sp2gp(spFset, gpFsetTest, activeVars);
+    ASSERT(util::compareFieldSets(comm_, gpFset, gpFsetTest));
+    oops::Log::test() << "- Direct-inverse test passed" << std::endl;
+  }
 
   // Check forward
-  atlas::FieldSet spFsetTest;
-  gp2sp(gpFsetTest, spFsetTest, activeVars);
-  for (const auto & var : activeVars) {
-    const size_t nz = var.getLevels();
-    const auto spField = spFset[var.name()];
-    const auto spFieldTest = spFsetTest[var.name()];
-    const auto spView = make_view<double, 2>(spField);
-    const auto spViewTest = make_view<double, 2>(spFieldTest);
-    int wrongValues = 0;
-    for (size_t js = 0; js < ns_; ++js) {
-      for (size_t jz = 0; jz < nz; ++jz) {
-        if (!oops::is_close_relative(spView(js, jz), spViewTest(js, jz), tolerance)) {
-          ++wrongValues;
+  if (biper_) {
+    oops::Log::test() << "- Inverse-direct test skipped (biperiodization)" << std::endl;
+  } else {
+    sp2gp(spFset, gpFset, activeVars);
+    gp2sp(gpFset, spFsetTest, activeVars);
+    for (const auto & var : activeVars) {
+      const size_t nz = var.getLevels();
+      const auto spField = spFset[var.name()];
+      const auto spFieldTest = spFsetTest[var.name()];
+      const auto spView = make_view<double, 2>(spField);
+      const auto spViewTest = make_view<double, 2>(spFieldTest);
+      int wrongValues = 0;
+      for (size_t js = 0; js < ns_; ++js) {
+        for (size_t jz = 0; jz < nz; ++jz) {
+          if (!oops::is_close_relative(spView(js, jz), spViewTest(js, jz), tolerance)) {
+            ++wrongValues;
+          }
         }
       }
+      comm_.allReduceInPlace(wrongValues, eckit::mpi::sum());
+      ASSERT(wrongValues == 0);
     }
-    comm_.allReduceInPlace(wrongValues, eckit::mpi::sum());
-    ASSERT(wrongValues == 0);
+    oops::Log::test() << "- Inverse-direct test passed" << std::endl;
   }
-  oops::Log::test() << "- Inverse-direct test passed" << std::endl;
-
-  // Check Parseval's identity
-  double gpSqNorm = util::dotProductFieldSets(gpFset, gpFset, activeVars.variables(), comm_);
-  double spSqNorm = util::dotProductFieldSets(spFset, spFset, activeVars.variables(), comm_);
-//  ASSERT(oops::is_close_relative(gpSqNorm, spSqNorm, tolerance));
-  oops::Log::test() << "- Parseval identity test passed" << std::endl;
 
   // Adjoint test, forward
   gpFset = util::createRandomFieldSet(comm_, gdata_.functionSpace(), activeVars);
   gp2sp(gpFset, spFset, activeVars);
   createRandomFieldSet(spFsetTest, activeVars);
   gp2spAdj(spFsetTest, gpFsetTest, activeVars);
-  gpSqNorm = util::dotProductFieldSets(gpFset, gpFsetTest, activeVars.variables(), comm_);
-  spSqNorm = util::dotProductFieldSets(spFset, spFsetTest, activeVars.variables(), comm_);
+  double gpSqNorm = util::dotProductFieldSets(gpFset, gpFsetTest, activeVars.variables(), comm_);
+  double spSqNorm = util::dotProductFieldSets(spFset, spFsetTest, activeVars.variables(), comm_);
   ASSERT(oops::is_close_relative(gpSqNorm, spSqNorm, tolerance));
   oops::Log::test() << "- Adjoint test (forward) passed" << std::endl;
 
@@ -269,6 +294,18 @@ void BifourierTransformBase::gp2sp(const atlas::FieldSet & gpFset,
                                    const oops::Variables & activeVars) const {
   oops::Log::trace() << classname() << "::gp2sp starting" << std::endl;
 
+  atlas::FieldSet gpFsetTmp;
+  if (biper_) {
+    // FieldSet deep copy
+    util::copyFieldSet(gpFset, gpFsetTmp);
+
+    // Biperodization
+    biper_->inverseMultiply(gpFsetTmp);
+  } else {
+    // FieldSet shallow copy
+    util::shareFields(gpFset, gpFsetTmp);
+  }
+
   // Check the number of required levels
   size_t nvz = 0;
   for (const auto & var : activeVars) {
@@ -280,7 +317,7 @@ void BifourierTransformBase::gp2sp(const atlas::FieldSet & gpFset,
   std::vector<double> recvVec(gridRecvSize_*nvz_);
 
   // Ghost points
-  const auto ghostView = make_view<int, 1>(gdata_.functionSpace().ghost());
+  const auto ghostView = make_view<int, 1>(gpFspace_.ghost());
 
   // Serialize from grid-point FieldSet
   size_t zOffset = 0;
@@ -289,7 +326,7 @@ void BifourierTransformBase::gp2sp(const atlas::FieldSet & gpFset,
     const size_t nz = var.getLevels();
 
     // Check field
-    const auto gpField = gpFset[var.name()];
+    const auto gpField = gpFsetTmp[var.name()];
     ASSERT(gpField.shape(0) == static_cast<int>(nodes_));
     ASSERT(gpField.shape(1) == static_cast<int>(nz));
 
@@ -452,14 +489,14 @@ void BifourierTransformBase::sp2gp(const atlas::FieldSet & spFset,
       ASSERT(gpFset[var.name()].shape(1) == static_cast<int>(nz));
     } else {
       // Create field
-      atlas::Field gpField = gdata_.functionSpace().createField<double>(
+      atlas::Field gpField = gpFspace_.createField<double>(
         atlas::option::name(var.name()) | atlas::option::levels(nz));
       gpFset.add(gpField);
     }
   }
 
   // Ghost points
-  const auto ghostView = make_view<int, 1>(gdata_.functionSpace().ghost());
+  const auto ghostView = make_view<int, 1>(gpFspace_.ghost());
 
   // Deserialize into grid-point FieldSet
   zOffset = 0;
@@ -491,6 +528,11 @@ void BifourierTransformBase::sp2gp(const atlas::FieldSet & spFset,
 
     // Update total number of levels
     zOffset += nz;
+  }
+
+  if (biper_) {
+    // Biperodization
+    biper_->multiply(gpFset);
   }
 
   oops::Log::trace() << classname() << "::sp2gp done" << std::endl;
@@ -569,14 +611,14 @@ void BifourierTransformBase::gp2spAdj(const atlas::FieldSet & spFset,
       ASSERT(gpFset[var.name()].shape(1) == static_cast<int>(nz));
     } else {
       // Create field
-      atlas::Field gpField = gdata_.functionSpace().createField<double>(
+      atlas::Field gpField = gpFspace_.createField<double>(
         atlas::option::name(var.name()) | atlas::option::levels(nz));
       gpFset.add(gpField);
     }
   }
 
   // Ghost points
-  const auto ghostView = make_view<int, 1>(gdata_.functionSpace().ghost());
+  const auto ghostView = make_view<int, 1>(gpFspace_.ghost());
 
   // Deserialize into grid-point FieldSet
   zOffset = 0;
@@ -610,6 +652,11 @@ void BifourierTransformBase::gp2spAdj(const atlas::FieldSet & spFset,
     zOffset += nz;
   }
 
+  if (biper_) {
+    // Biperodization
+    biper_->inverseMultiplyAD(gpFset);
+  }
+
   oops::Log::trace() << classname() << "::gp2spAdj done" << std::endl;
 }
 
@@ -619,6 +666,18 @@ void BifourierTransformBase::sp2gpAdj(const atlas::FieldSet & gpFset,
                                       atlas::FieldSet & spFset,
                                       const oops::Variables & activeVars) const {
   oops::Log::trace() << classname() << "::sp2gpAdj starting" << std::endl;
+
+  atlas::FieldSet gpFsetTmp;
+  if (biper_) {
+    // FieldSet deep copy
+    util::copyFieldSet(gpFset, gpFsetTmp);
+
+    // Biperodization
+    biper_->multiplyAD(gpFsetTmp);
+  } else {
+    // FieldSet shallow copy
+    util::shareFields(gpFset, gpFsetTmp);
+  }
 
   // Check the number of required levels
   size_t nvz = 0;
@@ -631,7 +690,7 @@ void BifourierTransformBase::sp2gpAdj(const atlas::FieldSet & gpFset,
   std::vector<double> recvVec(gridRecvSize_*nvz_);
 
   // Ghost points
-  const auto ghostView = make_view<int, 1>(gdata_.functionSpace().ghost());
+  const auto ghostView = make_view<int, 1>(gpFspace_.ghost());
 
   // Serialize from grid-point FieldSet
   size_t zOffset = 0;
@@ -640,7 +699,7 @@ void BifourierTransformBase::sp2gpAdj(const atlas::FieldSet & gpFset,
     const size_t nz = var.getLevels();
 
     // Check field
-    const auto gpField = gpFset[var.name()];
+    const auto gpField = gpFsetTmp[var.name()];
     ASSERT(gpField.shape(0) == static_cast<int>(nodes_));
     ASSERT(gpField.shape(1) == static_cast<int>(nz));
 

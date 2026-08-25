@@ -19,9 +19,12 @@
 
 #include "oops/base/GeometryData.h"
 #include "oops/base/Variables.h"
+#include "oops/util/parameters/OptionalParameter.h"
 #include "oops/util/parameters/Parameter.h"
 #include "oops/util/parameters/Parameters.h"
 #include "oops/util/Printable.h"
+
+#include "saber/bifourier/BiperiodizationImpl.h"
 
 namespace saber {
 namespace bifourier {
@@ -32,6 +35,10 @@ class BifourierTransformParameters : public oops::Parameters {
   OOPS_CONCRETE_PARAMETERS(BifourierTransformParameters, Parameters)
 
  public:
+  // Biperiodization parameters
+  oops::OptionalParameter<BiperiodizationImplParameters> biperParams{"biperiodization",
+    this};
+
   // FFT backend
   oops::Parameter<std::string> fftBackend{"fft backend", "fftw", this};
 
@@ -135,6 +142,14 @@ class BifourierTransformBase : public util::Printable,
   // Geometry data
   const oops::GeometryData & geometryData() const
     {return gdata_;}
+
+  // Check if biperiodization is present
+  bool isBiper() const
+    {return biper_.get() != nullptr;}
+
+  // Periodic grid-point FunctionSpace
+  const atlas::FunctionSpace & gpFspace() const
+    {return gpFspace_;}
 
   // UIDs
   const std::string & gridUid() const
@@ -387,6 +402,12 @@ class BifourierTransformBase : public util::Printable,
  protected:
   // Model grid geometry data
   const oops::GeometryData & gdata_;
+
+  // Biperiodization
+  std::unique_ptr<BiperiodizationImpl> biper_;
+
+  // Periodic grid-point FunctionSpace
+  atlas::FunctionSpace gpFspace_;
 
   // Communicator
   const eckit::mpi::Comm & comm_;
