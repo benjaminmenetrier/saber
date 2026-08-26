@@ -10,8 +10,6 @@
 #include <algorithm>
 #include <vector>
 
-#include "atlas/util/Constants.h"
-
 #include "saber/bifourier/bifourier_arome_legacy.h"
 #include "saber/bifourier/BifourierUtilities.h"
 
@@ -237,18 +235,16 @@ void BifourierAromeCovariance::write() const {
       attributes.set("clid", "ALADIN98");
       attributes.set("clcom", " Balanced statistcs for a LAM, after L. Berre 1998");
       attributes.set("iorig", 85);
-      attributes.set("elon0", outerGrid.projection().spec().getDouble("longitude0")
-        *atlas::util::Constants::degreesToRadians());
-      attributes.set("elat0", outerGrid.projection().spec().getDouble("latitude0")
-        *atlas::util::Constants::degreesToRadians());
+      attributes.set("elon0", outerGrid.projection().spec().getDouble("longitude0"));
+      attributes.set("elat0", outerGrid.projection().spec().getDouble("latitude0"));
       const auto corner1 = y_increasing ? outerGrid.lonlat(0, 0)
         : outerGrid.lonlat(0, outerGrid.ny()-1);
-      attributes.set("elon1", corner1[0]*atlas::util::Constants::degreesToRadians());
-      attributes.set("elat1", corner1[1]*atlas::util::Constants::degreesToRadians());
+      attributes.set("elon1", corner1[0]);
+      attributes.set("elat1", corner1[1]);
       const auto corner2 = y_increasing ? outerGrid.lonlat(outerGrid.nxmax()-1, outerGrid.ny()-1)
         :  outerGrid.lonlat(outerGrid.nxmax()-1, 0);
-      attributes.set("elon2", corner2[0]*atlas::util::Constants::degreesToRadians());
-      attributes.set("elat2", corner2[1]*atlas::util::Constants::degreesToRadians());
+      attributes.set("elon2", corner2[0]);
+      attributes.set("elat2", corner2[1]);
       attributes.set("ndgl", gpGrid.ny());
       attributes.set("ndlon", gpGrid.nxmax());
       attributes.set("ndgux", outerGrid.ny());

@@ -9,8 +9,6 @@
 
 #include <algorithm>
 
-#include "atlas/util/Constants.h"
-
 #include "saber/bifourier/bifourier_arome_legacy.h"
 #include "saber/bifourier/BifourierUtilities.h"
 
@@ -486,18 +484,16 @@ void BifourierAromeBalance::write() const {
       attributes.set("clid", "ALADIN98");
       attributes.set("clcom", " Balanced statistcs for a LAM, after L. Berre 1998");
       attributes.set("iorig", 85);
-      attributes.set("elon0", outerGrid.projection().spec().getDouble("longitude0")
-        *atlas::util::Constants::degreesToRadians());
-      attributes.set("elat0", outerGrid.projection().spec().getDouble("latitude0")
-        *atlas::util::Constants::degreesToRadians());
+      attributes.set("elon0", outerGrid.projection().spec().getDouble("longitude0"));
+      attributes.set("elat0", outerGrid.projection().spec().getDouble("latitude0"));
       const auto corner1 = y_increasing ? outerGrid.lonlat(0, 0)
         : outerGrid.lonlat(0, outerGrid.ny()-1);
-      attributes.set("elon1", corner1[0]*atlas::util::Constants::degreesToRadians());
-      attributes.set("elat1", corner1[1]*atlas::util::Constants::degreesToRadians());
+      attributes.set("elon1", corner1[0]);
+      attributes.set("elat1", corner1[1]);
       const auto corner2 = y_increasing ? outerGrid.lonlat(outerGrid.nxmax()-1, outerGrid.ny()-1)
         :  outerGrid.lonlat(outerGrid.nxmax()-1, 0);
-      attributes.set("elon2", corner2[0]*atlas::util::Constants::degreesToRadians());
-      attributes.set("elat2", corner2[1]*atlas::util::Constants::degreesToRadians());
+      attributes.set("elon2", corner2[0]);
+      attributes.set("elat2", corner2[1]);
       attributes.set("ndgl", gpGrid.ny());
       attributes.set("ndlon", gpGrid.nxmax());
       attributes.set("ndgux", outerGrid.ny());
@@ -581,7 +577,7 @@ void BifourierAromeBalance::write() const {
           const int nflev = attributes.getDouble("nflev");
           if ((retval = nc_def_dim(ncId, "NFLEV", nflev, &nflevId))) ERR(retval, "NFLEV");
           if ((retval = nc_def_dim(ncId, "NFLEVP1", nflev+1, &nflevp1Id))) ERR(retval, "NFLEVP1");
-          if ((retval = nc_def_dim(ncId, "NSMAXP1", nmsmax+1, &nsmaxp1Id)))
+          if ((retval = nc_def_dim(ncId, "NSMAXP1", nsmax+1, &nsmaxp1Id)))
             ERR(retval, "NSMAXP1");
           const int kspec2g = attributes.getDouble("kspec2g");
           if ((retval = nc_def_dim(ncId, "KSPEC2G", kspec2g, &kspec2gId))) ERR(retval, "KSPEC2G");
