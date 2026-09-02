@@ -850,11 +850,6 @@ void BifourierBalanceImpl::write() const {
       // Close file
       if ((retval = nc_close(ncId))) ERR(retval, ncFilePath);
     }
-
-    if (params_.write.value()->writeDiagnostics.value()) {
-      // Compute and write diagnostics
-      computeDiagnostics();
-    }
   }
 
   oops::Log::trace() << classname() << "::write done" << std::endl;
@@ -1424,62 +1419,6 @@ oops::Variables BifourierBalanceImpl::xxCovVars(const oops::Variable & outputVar
 
   oops::Log::trace() << classname() << "::xxCovVars done" << std::endl;
   return inputVars;
-}
-
-// -----------------------------------------------------------------------------
-
-void BifourierBalanceImpl::computeDiagnostics() const {
-  oops::Log::trace() << classname() << "::computeDiagnostics starting" << std::endl;
-
-  // Create diagnostics FieldSet
-  atlas::FieldSet fset;
-
-  for (const auto & row : params_.rows.value()) {
-    // Get output variable
-    const oops::Variable outputVar = balVars_[row.outputVar.value()];
-
-    // Get number of output levels
-    const size_t nzI = outputVar.getLevels();
-
-    for (const auto & inputVarName : row.inputVars.value()) {
-      // Get input variable
-      const oops::Variable inputVar = balVars_[inputVarName];
-
-      // Get number of input levels
-      const size_t nzJ = inputVar.getLevels();
-
-      // Get vv-covariance field
-      const auto vvCovView = getView3D("vvCov", outputVar, inputVar, data_);
-
-      // Get regression view
-      const auto regView = getView3D("reg", outputVar, inputVar, data_);
-
-      // Balanced covariance name
-      const std::string balCovName = "balCov" + inputVar.name();
-
-      // Create balanced covariance field
-      createField3D(balCovName, trans_->nw(), outputVar, outputVar, fset);
-
-      // Get balanced covariance view
-      auto balCovView = getView3D(balCovName, outputVar, outputVar, fset);
-
-      // Compute balanced covariance multiplication
-      for (size_t jw = 0; jw < trans_->nw(); ++jw) {
-        for (size_t jzI1 = 0; jzI1 < nzI; ++jzI1) {
-          for (size_t jzI2 = 0; jzI2 < nzI; ++jzI2) {
-            for (size_t jzJ1 = 0; jzJ1 < nzJ; ++jzJ1) {
-              for (size_t jzJ2 = 0; jzJ2 < nzJ; ++jzJ2) {
-                balCovView(jw, jzI1, jzI2) += regView(jw, jzI1, jzJ1)*vvCovView(jw, jzJ1, jzJ2)
-                  *regView(jw, jzI2, jzJ2);
-              }
-            }
-          }
-        }
-      }
-    }
-  } 
-
-  oops::Log::trace() << classname() << "::computeDiagnostics done" << std::endl;
 }
 
 // -----------------------------------------------------------------------------

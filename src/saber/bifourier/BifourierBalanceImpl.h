@@ -138,6 +138,8 @@ class BifourierBalanceImpl {
     {return innerGeometryData_;}
   const oops::Variables & innerVars() const
     {return innerVars_;}
+  oops::Variables & innerVars()
+    {return innerVars_;}
 
   void multiply(oops::FieldSet3D &) const;
   void multiplyAD(oops::FieldSet3D &) const;
@@ -158,11 +160,15 @@ class BifourierBalanceImpl {
   // Specific accessors
   const eckit::mpi::Comm & comm() const
     {return comm_;}
+  const atlas::FieldSet & data() const
+    {return data_;}
   atlas::FieldSet & data()
     {return data_;}
   const std::shared_ptr<BifourierTransformBase> & trans() const
     {return trans_;}
-  oops::Variables & balVars()
+  const Parameters_ & params() const
+    {return params_;}
+  const oops::Variables & balVars() const
     {return balVars_;}
 
  protected:
@@ -203,7 +209,7 @@ class BifourierBalanceImpl {
   // Covariance implementation (for diagnostics)
   std::unique_ptr<BifourierCovarianceImpl> covar_;
 
-  // Private methods
+  // Protected methods
 
   // Read covariance
   void readCovariance();
@@ -217,9 +223,6 @@ class BifourierBalanceImpl {
 
   // Get variables to compute full covariances with
   oops::Variables xxCovVars(const oops::Variable &) const;
-
-  // Compute diagnostics
-  void computeDiagnostics() const;
 };
 
 // -----------------------------------------------------------------------------

@@ -5,22 +5,6 @@
 
 #include "saber/bifourier/BifourierBalance.h"
 
-#include <Eigen/Dense>
-#include <netcdf.h>
-
-#include <algorithm>
-
-#include "oops/util/FieldSetOperations.h"
-
-#include "saber/bifourier/BifourierUtilities.h"
-
-#define ERR(e, msg) {std::string s(nc_strerror(e)); \
-  throw eckit::Exception(s + " : " + msg, Here());}
-
-using atlas::array::make_datatype;
-using atlas::array::make_shape;
-using atlas::array::make_view;
-
 namespace saber {
 namespace bifourier {
 

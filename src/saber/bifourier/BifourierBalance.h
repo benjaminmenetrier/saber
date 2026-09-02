@@ -66,7 +66,7 @@ class BifourierBalance : public SaberOuterBlockBase {
   void write() const override
     {balance_->write();}
 
- protected:
+ private:
    // Balance implementation
   std::unique_ptr<BifourierBalanceImpl> balance_;
 

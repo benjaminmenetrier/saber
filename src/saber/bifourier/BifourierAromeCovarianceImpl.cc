@@ -3,7 +3,7 @@
  *
  */
 
-#include "saber/bifourier/BifourierAromeCovariance.h"
+#include "saber/bifourier/BifourierAromeCovarianceImpl.h"
 
 #include <netcdf.h>
 
@@ -25,55 +25,19 @@ namespace bifourier {
 
 // -----------------------------------------------------------------------------
 
-static SaberCentralBlockMaker<BifourierAromeCovariance>
-  makerBifourierAromeCovariance_("BifourierAromeCovariance");
-
-// -----------------------------------------------------------------------------
-
-BifourierAromeCovariance::BifourierAromeCovariance(const oops::GeometryData & geometryData,
-                                                   const oops::Variables & centralVars,
-                                                   const eckit::Configuration & covarConf,
-                                                   const Parameters_ & params,
-                                                   const oops::FieldSet3D & xb,
-                                                   const oops::FieldSet3D & fg)
-  : SaberCentralBlockBase(params, xb.validTime(), geometryData, centralVars), params_(params)
-{
-  oops::Log::trace() << classname() << "::BifourierCovariance starting" << std::endl;
-
-  // Setup covariance implementation
-  covar_ = std::make_unique<BifourierCovarianceImpl>(geometryData, centralVars, covarConf, params,
-    xb, fg);
-
-  oops::Log::trace() << classname() << "::BifourierAromeCovariance done" << std::endl;
-}
-
-// -----------------------------------------------------------------------------
-
-BifourierAromeCovariance::~BifourierAromeCovariance() {
-  oops::Log::trace() << classname() << "::~BifourierAromeCovariance starting" << std::endl;
-
-  // Reset covariance implementation
-  covar_.reset();
-
-  oops::Log::trace() << classname() << "::~BifourierAromeCovariance done" << std::endl;
-}
-
-
-// -----------------------------------------------------------------------------
-
-void BifourierAromeCovariance::read() {
+void BifourierAromeCovarianceImpl::read() {
   oops::Log::trace() << classname() << "::read starting" << std::endl;
 
   // Read data
   if (params_.read.value()->inputFileFormat.value() == "arome legacy binary"
     || params_.read.value()->inputFileFormat.value() == "arome legacy netcdf") {
-    for (const auto & var : centralVars()) {
+    for (const auto & var : vars_) {
       // Create covariance field
-      createField3D("cov", covar_->trans()->nw(), var, covar_->data());
+      createField3D("cov", trans_->nw(), var, data_);
     }
 
     // Get number of levels
-    const size_t nz = centralVars()["air_upward_absolute_vorticity"].getLevels();
+    const size_t nz = vars_["air_upward_absolute_vorticity"].getLevels();
 
     // Define global vectors
     std::vector<double> vorCovGlb;
@@ -83,15 +47,15 @@ void BifourierAromeCovariance::read() {
 
     // Define attributes
     eckit::LocalConfiguration attributes;
-    attributes.set("nsmax", covar_->trans()->nwGlb()-1);
+    attributes.set("nsmax", trans_->nwGlb()-1);
     attributes.set("nflev", nz);
 
-    if (covar_->comm().rank() == 0) {
+    if (comm_.rank() == 0) {
       // Allocate global vectors
-      vorCovGlb.resize(covar_->trans()->nwGlb()*nz*nz);
-      divuCovGlb.resize(covar_->trans()->nwGlb()*nz*nz);
-      tPsuCovGlb.resize(covar_->trans()->nwGlb()*(nz+1)*(nz+1));
-      quCovGlb.resize(covar_->trans()->nwGlb()*nz*nz);
+      vorCovGlb.resize(trans_->nwGlb()*nz*nz);
+      divuCovGlb.resize(trans_->nwGlb()*nz*nz);
+      tPsuCovGlb.resize(trans_->nwGlb()*(nz+1)*(nz+1));
+      quCovGlb.resize(trans_->nwGlb()*nz*nz);
 
       if (params_.read.value()->inputFileFormat.value() == "arome legacy binary") {
         // Read Fortran unformatted file (from readjbdat96.F90)
@@ -117,7 +81,7 @@ void BifourierAromeCovariance::read() {
         ASSERT(nflevFile == nz);
         if ((retval = nc_inq_dimid(ncId, "NSMAXP1", &dimId))) ERR(retval, "NSMAXP1");
         if ((retval = nc_inq_dimlen(ncId, dimId, &nsmaxp1File))) ERR(retval, "NSMAXP1");
-        ASSERT(nsmaxp1File == covar_->trans()->nwGlb());
+        ASSERT(nsmaxp1File == trans_->nwGlb());
 
         // Get variables
         if ((retval = nc_inq_varid(ncId, "VOR_VERTCOV", &varId))) ERR(retval, "VOR_VERTCOV");
@@ -137,34 +101,34 @@ void BifourierAromeCovariance::read() {
     }
 
     // Scatter data
-    for (const auto & var : centralVars()) {
+    for (const auto & var : vars_) {
       // Get covariance field
-      auto covField = getField("cov", var, covar_->data());
+      auto covField = getField("cov", var, data_);
 
       // Scatter global vector
       if (var.name() == "air_upward_absolute_vorticity") {
-        covar_->trans()->scatterCov(vorCovGlb, covField, true);
+        trans_->scatterCov(vorCovGlb, covField, true);
       }
       if (var.name() == "air_horizontal_divergence") {
-        covar_->trans()->scatterCov(divuCovGlb, covField, true);
+        trans_->scatterCov(divuCovGlb, covField, true);
       }
       if (var.name() == "air_temperature_and_log_of_air_pressure_at_surface") {
-        covar_->trans()->scatterCov(tPsuCovGlb, covField, true);
+        trans_->scatterCov(tPsuCovGlb, covField, true);
       }
       if (var.name() == "water_vapor_mixing_ratio_wrt_moist_air") {
-        covar_->trans()->scatterCov(quCovGlb, covField, true);
+        trans_->scatterCov(quCovGlb, covField, true);
       }
     }
 
     // Rescale covariance from AROME to block standard
-    for (const auto & var : centralVars()) {
+    for (const auto & var : vars_) {
       // Get number of levels
       const size_t nz = var.getLevels();
 
       // Get covariance view
-      auto covView = getView3D("cov", var, covar_->data());
+      auto covView = getView3D("cov", var, data_);
 
-      for (size_t jw = 0; jw < covar_->trans()->nw(); ++jw) {
+      for (size_t jw = 0; jw < trans_->nw(); ++jw) {
         // Get AROME weight
         const double zWeight = 1.0/aromeWeight(jw);
 
@@ -178,13 +142,13 @@ void BifourierAromeCovariance::read() {
     }
 
     // Compute square-root
-    covar_->computeSquareRoot();
+    BifourierCovarianceImpl::computeSquareRoot();
 
     // Print norms
     print(oops::Log::test());
   } else {
     // Generic reader
-    covar_->read();
+    BifourierCovarianceImpl::read();
   }
 
   oops::Log::trace() << classname() << "::read done" << std::endl;
@@ -192,7 +156,7 @@ void BifourierAromeCovariance::read() {
 
 // -----------------------------------------------------------------------------
 
-void BifourierAromeCovariance::write() const {
+void BifourierAromeCovarianceImpl::write() const {
   oops::Log::trace() << classname() << "::write starting" << std::endl;
 
   if (params_.write.value()) {
@@ -203,7 +167,7 @@ void BifourierAromeCovariance::write() const {
       atlas::FieldSet aromeCovData;
 
       // Compute covariance from correlation square-root and standard-deviation if it is missing
-      covar_->computeCovariance(aromeCovData);
+      BifourierCovarianceImpl::computeCovariance(aromeCovData);
 
       // Define global vectors
       std::vector<double> vorCovGlb;
@@ -211,7 +175,7 @@ void BifourierAromeCovariance::write() const {
       std::vector<double> tPsuCovGlb;
       std::vector<double> quCovGlb;
 
-      for (const auto & var : centralVars()) {
+      for (const auto & var : vars_) {
         // Get number of levels
         const size_t nz = var.getLevels();
 
@@ -219,12 +183,12 @@ void BifourierAromeCovariance::write() const {
         const auto covView = getView3D("cov", var, aromeCovData);
 
         // Create AROME covariance field
-        createField3D("aromeCov", covar_->trans()->nw(), var, aromeCovData);
+        createField3D("aromeCov", trans_->nw(), var, aromeCovData);
 
         // Get AROME covariance view
         auto aromeCovView = getView3D("aromeCov", var, aromeCovData);
 
-        for (size_t jw = 0; jw < covar_->trans()->nw(); ++jw) {
+        for (size_t jw = 0; jw < trans_->nw(); ++jw) {
           // Get AROME weight
           const double zWeight = aromeWeight(jw);
 
@@ -237,30 +201,29 @@ void BifourierAromeCovariance::write() const {
         }
       }
 
-      for (const auto & var : centralVars()) {
+      for (const auto & var : vars_) {
         // Get covariance field
         const auto aromeCovField = getField("aromeCov", var, aromeCovData);
 
         // Gather covariance vector
         if (var.name() == "air_upward_absolute_vorticity") {
-          covar_->trans()->gatherCov(aromeCovField, vorCovGlb, true);
+          trans_->gatherCov(aromeCovField, vorCovGlb, true);
         }
         if (var.name() == "air_horizontal_divergence") {
-          covar_->trans()->gatherCov(aromeCovField, divuCovGlb, true);
+          trans_->gatherCov(aromeCovField, divuCovGlb, true);
         }
         if (var.name() == "air_temperature_and_log_of_air_pressure_at_surface") {
-          covar_->trans()->gatherCov(aromeCovField, tPsuCovGlb, true);
+          trans_->gatherCov(aromeCovField, tPsuCovGlb, true);
         }
         if (var.name() == "water_vapor_mixing_ratio_wrt_moist_air") {
-          covar_->trans()->gatherCov(aromeCovField, quCovGlb, true);
+          trans_->gatherCov(aromeCovField, quCovGlb, true);
         }
       }
 
       // Define attributes
       eckit::LocalConfiguration attributes;
-      const atlas::StructuredGrid & outerGrid =
-        covar_->trans()->geometryData().functionSpace().grid();
-      const atlas::StructuredGrid & gpGrid = covar_->trans()->gpFspace().grid();
+      const atlas::StructuredGrid & outerGrid = trans_->geometryData().functionSpace().grid();
+      const atlas::StructuredGrid & gpGrid = trans_->gpFspace().grid();
       const bool y_increasing = outerGrid.spec().getSubConfiguration("yspace").getDouble("end")
         > outerGrid.spec().getSubConfiguration("yspace").getDouble("start");
       attributes.set("clid", "ALADIN98");
@@ -280,11 +243,11 @@ void BifourierAromeCovariance::write() const {
       attributes.set("ndlon", gpGrid.nxmax());
       attributes.set("ndgux", outerGrid.ny());
       attributes.set("ndlux", outerGrid.nxmax());
-      attributes.set("nsmax", covar_->trans()->nwGlb()-1);
-      attributes.set("nmsmax", covar_->trans()->M());
-      attributes.set("nflev", centralVars()["air_upward_absolute_vorticity"].getLevels());
+      attributes.set("nsmax", trans_->nwGlb()-1);
+      attributes.set("nmsmax", trans_->M());
+      attributes.set("nflev", vars_["air_upward_absolute_vorticity"].getLevels());
 
-      if (covar_->comm().rank() == 0) {
+      if (comm_.rank() == 0) {
         if (params_.write.value()->outputFileFormat.value() == "arome legacy binary") {
           // Write Fortran unformatted file (from ewgsacov.F90)
           const int nsmax = attributes.getDouble("nsmax");
@@ -395,7 +358,7 @@ void BifourierAromeCovariance::write() const {
       }
     } else {
       // Generic writer
-      covar_->write();
+      BifourierCovarianceImpl::write();
     }
   }
 
@@ -404,25 +367,25 @@ void BifourierAromeCovariance::write() const {
 
 // -----------------------------------------------------------------------------
 
-double BifourierAromeCovariance::aromeWeight(const size_t & jw) const {
+double BifourierAromeCovarianceImpl::aromeWeight(const size_t & jw) const {
   oops::Log::trace() << classname() << "::aromeWeight starting" << std::endl;
 
   // Get global total wavenumber
-  const size_t jwGlb = jw + covar_->trans()->nwStart();
+  const size_t jwGlb = jw + trans_->nwStart();
 
   // Constant coefficient
-  const double zmovern = static_cast<double>(covar_->trans()->ellips().size())
-    / static_cast<double>(covar_->trans()->nwGlb()-1);
+  const double zmovern = static_cast<double>(trans_->ellips().size())
+    / static_cast<double>(trans_->nwGlb()-1);
 
   // Compute weight
   double zWeight;
-  if (jwGlb != 0 && jwGlb != covar_->trans()->nwGlb()-1) {
+  if (jwGlb != 0 && jwGlb != trans_->nwGlb()-1) {
     zWeight = 2.0*M_PI*static_cast<double>(jwGlb)*zmovern;
   } else if (jwGlb == 0) {
 //    zWeight = M_PI*zmovern/4.0;
     zWeight = M_PI*zmovern/2.0;
-  } else if (jwGlb == covar_->trans()->nwGlb()-1) {
-    zWeight = M_PI*(static_cast<double>(covar_->trans()->nwGlb()-1)-0.25)*zmovern;
+  } else if (jwGlb == trans_->nwGlb()-1) {
+    zWeight = M_PI*(static_cast<double>(trans_->nwGlb()-1)-0.25)*zmovern;
   }
 
   // REDNMC factor

@@ -67,7 +67,7 @@ class BifourierCovariance : public SaberCentralBlockBase {
   void write() const override
     {covar_->write();}
 
- protected:
+ private:
   // Covariance implementation
   std::unique_ptr<BifourierCovarianceImpl> covar_;
 

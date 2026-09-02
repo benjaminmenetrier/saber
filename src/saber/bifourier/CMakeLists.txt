@@ -18,10 +18,14 @@ if( FFTW_FOUND OR ( ECTRANS_FOUND AND ectrans_HAVE_ETRANS AND ectrans_HAVE_TRANS
     # Bi-Fourier AROME balance block
     BifourierAromeBalance.cc
     BifourierAromeBalance.h
+    BifourierAromeBalanceImpl.cc
+    BifourierAromeBalanceImpl.h
 
     # Bi-Fourier AROME covariance block
     BifourierAromeCovariance.cc
     BifourierAromeCovariance.h
+    BifourierAromeCovarianceImpl.cc
+    BifourierAromeCovarianceImpl.h
 
     # Bi-Fourier AROME legacy file format reading
     bifourier_arome_legacy.h
@@ -29,11 +33,14 @@ if( FFTW_FOUND OR ( ECTRANS_FOUND AND ectrans_HAVE_ETRANS AND ectrans_HAVE_TRANS
     bifourier_arome_legacy_mod.F90
 
     # Bi-Fourier balance block
-    # Bi-Fourier balance block
     BifourierBalance.cc
     BifourierBalance.h
     BifourierBalanceImpl.cc
     BifourierBalanceImpl.h
+
+    # Bi-Fourier combined block (balance + covariance)
+    BifourierCombined.cc
+    BifourierCombined.h
 
     # Bi-Fourier covariance block
     BifourierCovariance.cc
@@ -42,6 +49,10 @@ if( FFTW_FOUND OR ( ECTRANS_FOUND AND ectrans_HAVE_ETRANS AND ectrans_HAVE_TRANS
     BifourierCovarianceImpl.h
     BifourierCovarianceSqrt.cc
     BifourierCovarianceSqrt.h
+
+    # Bi-Fourier diagnostics utility
+    BifourierDiagnostics.cc
+    BifourierDiagnostics.h
 
     # Bi-Fourier grid to spectral block
     BifourierGridToSpectral.cc

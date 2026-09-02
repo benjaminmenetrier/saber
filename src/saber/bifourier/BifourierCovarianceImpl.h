@@ -140,9 +140,9 @@ class BifourierCovarianceImpl {
                           const oops::FieldSet3D &,
                           const oops::FieldSet3D &);
 
-  const oops::GeometryData & innerGeometryData() const
+  const oops::GeometryData & geometryData() const
     {return geometryData_;}
-  const oops::Variables & innerVars() const
+  const oops::Variables & centralVars() const
     {return vars_;}
 
   size_t ctlVecSize() const
@@ -175,6 +175,8 @@ class BifourierCovarianceImpl {
   // Specific accessors
   const eckit::mpi::Comm & comm() const
     {return comm_;}
+  const atlas::FieldSet & data() const
+    {return data_;}
   atlas::FieldSet & data()
     {return data_;}
   const std::shared_ptr<BifourierTransformBase> & trans() const

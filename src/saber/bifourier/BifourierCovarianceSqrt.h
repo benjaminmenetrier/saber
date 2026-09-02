@@ -37,9 +37,9 @@ class BifourierCovarianceSqrt : public SaberOuterBlockBase {
   virtual ~BifourierCovarianceSqrt();
 
   const oops::GeometryData & innerGeometryData() const override
-    {return covar_->innerGeometryData();}
+    {return covar_->geometryData();}
   const oops::Variables & innerVars() const override
-    {return covar_->innerVars();}
+    {return covar_->centralVars();}
 
   void multiply(oops::FieldSet3D & fset) const override
     {covar_->multiplySqrt(fset);}
@@ -63,7 +63,7 @@ class BifourierCovarianceSqrt : public SaberOuterBlockBase {
   void write() const override
     {covar_->write();}
 
- protected:
+ private:
   // Covariance implementation
   std::unique_ptr<BifourierCovarianceImpl> covar_;
 

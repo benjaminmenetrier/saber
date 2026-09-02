@@ -8,85 +8,20 @@
 #include <string>
 #include <vector>
 
-#include "saber/bifourier/BifourierBalance.h"
+#include "saber/bifourier/BifourierAromeBalanceImpl.h"
+#include "saber/blocks/SaberOuterBlockBase.h"
 
 namespace saber {
 namespace bifourier {
 
 // -----------------------------------------------------------------------------
 
-class BifourierAromeBalanceReadParameters : public BifourierBalanceImplReadParameters {
-  OOPS_CONCRETE_PARAMETERS(BifourierAromeBalanceReadParameters, BifourierBalanceImplReadParameters)
-
- public:
-  // Input file format ("netcdf", "arome legacy binary" or "arome legacy netcdf")
-  oops::Parameter<std::string> inputFileFormat{"input file format", "netcdf", this};
-};
-
-// -----------------------------------------------------------------------------
-
-class BifourierAromeBalanceWriteParameters : public BifourierBalanceImplWriteParameters {
-  OOPS_CONCRETE_PARAMETERS(BifourierAromeBalanceWriteParameters, BifourierBalanceImplWriteParameters)
-
- public:
-  // Output file
-  oops::RequiredParameter<std::string> outputFile{"output file", this};
-
-  // Output file format ("netcdf", "arome legacy binary" or "arome legacy netcdf")
-  oops::Parameter<std::string> outputFileFormat{"output file format", "netcdf", this};
-};
-
-// -----------------------------------------------------------------------------
-
-class BalancedAirPressureParameters : public oops::Parameters {
-  OOPS_CONCRETE_PARAMETERS(BalancedAirPressureParameters, oops::Parameters)
-
- public:
-  // Zonal wavenumbers size
-  oops::RequiredParameter<size_t> M{"zonal truncation", this};
-
-  // Meridional wavenumbers size
-  oops::RequiredParameter<size_t> N{"meridional truncation", this};
-
-  // Mean latitude
-  oops::RequiredParameter<double> meanLat{"mean latitude", this};
-};
-
-// -----------------------------------------------------------------------------
-
-class BifourierAromeBalanceParameters : public BifourierBalanceImplParameters {
-  OOPS_CONCRETE_PARAMETERS(BifourierAromeBalanceParameters, BifourierBalanceImplParameters)
-
- public:
-  // Read parameters
-  oops::OptionalParameter<BifourierAromeBalanceReadParameters> read{"read", this};
-
-  // Write parameters
-  oops::OptionalParameter<BifourierAromeBalanceWriteParameters> write{"write", this};
-
-  // Explicit balanced air pressure parameters
-  oops::OptionalParameter<BalancedAirPressureParameters>
-    explicitPb{"explicit balanced air pressure parameters", this};
-
-  // Balanced air pressure parameters from grid
-  oops::Parameter<bool> pbFromTrans{"balanced air pressure parameters from grid", false, this};
-
-  oops::Variables mandatoryActiveVars() const override {return oops::Variables(
-    std::vector<std::string>({
-    "air_upward_absolute_vorticity",
-    "air_temperature",
-    "log_of_air_pressure_at_surface",
-    "air_temperature_and_log_of_air_pressure_at_surface"}));}
-};
-
-// -----------------------------------------------------------------------------
-
-class BifourierAromeBalance : public BifourierBalance {
+class BifourierAromeBalance : public SaberOuterBlockBase {
  public:
   static const std::string classname()
     {return "saber::bifourier::BifourierAromeBalance";}
 
-  typedef BifourierAromeBalanceParameters Parameters_;
+  typedef BifourierAromeBalanceImplParameters Parameters_;
 
   BifourierAromeBalance(const oops::GeometryData &,
                         const oops::Variables &,
@@ -94,63 +29,43 @@ class BifourierAromeBalance : public BifourierBalance {
                         const Parameters_ &,
                         const oops::FieldSet3D &,
                         const oops::FieldSet3D &);
+  virtual ~BifourierAromeBalance();
 
+  const oops::GeometryData & innerGeometryData() const override
+    {return balance_->innerGeometryData();}
   const oops::Variables & innerVars() const override
-    {return aromeInnerVars_;}
+    {return balance_->innerVars();}
 
-  void multiply(oops::FieldSet3D &) const;
-  void multiplyAD(oops::FieldSet3D &) const;
-  void leftInverseMultiply(oops::FieldSet3D &) const;
+  void multiply(oops::FieldSet3D & fset) const override
+    {balance_->multiply(fset);}
+  void multiplyAD(oops::FieldSet3D & fset) const override
+    {balance_->multiplyAD(fset);}
+  void leftInverseMultiply(oops::FieldSet3D & fset) const override
+    {balance_->leftInverseMultiply(fset);}
 
-  void read();
+  void read() override
+    {balance_->read();}
 
-  void directCalibration(const oops::FieldSets &);
+  void directCalibration(const oops::FieldSets & fsetEns) override
+    {balance_->directCalibration(fsetEns);}
 
-  void iterativeCalibrationUpdate(const oops::FieldSet3D &);
+  void iterativeCalibrationInit() override
+    {balance_->iterativeCalibrationInit();}
+  void iterativeCalibrationUpdate(const oops::FieldSet3D & fset) override
+    {balance_->iterativeCalibrationUpdate(fset);}
+  void iterativeCalibrationFinal() override
+    {balance_->iterativeCalibrationFinal();}
 
-  void write() const;
+  void write() const override
+    {balance_->write();}
 
  private:
-  // Parameters
-  BifourierAromeBalanceParameters params_;
+   // Balance implementation
+  std::unique_ptr<BifourierAromeBalanceImpl> balance_;
 
-  // Number of levels
-  size_t nz_;
-
-  // Vorticity to balanced pressure factor
-  std::vector<double> fact1_;
-
-  // AROME balance inner variables
-  oops::Variables aromeInnerVars_;
-
-  // Private methods
-
-  // Generic inner variables
-  oops::Variables genericInnerVars(const oops::Variables &);
-
-  // Vorticity to balanced pressure
-  void vorToPb(oops::FieldSet3D &) const;
-
-  // Vorticity to balanced pressure, adjoint
-  void vorToPbAD(oops::FieldSet3D &) const;
-
-  // Vorticity to balanced pressure, left inverse
-  void vorToPbLeftInverse(oops::FieldSet3D &) const;
-
-  // Remove balanced pressure
-  void removePb(oops::FieldSet3D &) const;
-
-  // Remove balanced pressure, adjoint
-  void removePbAD(oops::FieldSet3D &) const;
-
-  // Remove balanced pressure, left inverse
-  void removePbLeftInverse(oops::FieldSet3D &) const;
-
-  // Split TPs
-  void splitTPs(oops::FieldSet3D &) const;
-
-  // Gather TPs
-  void gatherTPs(oops::FieldSet3D &) const;
+  // Print
+  void print(std::ostream & os) const override
+    {balance_->print(os);}
 };
 
 // -----------------------------------------------------------------------------
