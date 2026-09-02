@@ -140,7 +140,6 @@ class BifourierCovarianceImpl {
                           const oops::FieldSet3D &,
                           const oops::FieldSet3D &);
 
-  // Central and outer blocks methods
   const oops::GeometryData & innerGeometryData() const
     {return geometryData_;}
   const oops::Variables & innerVars() const

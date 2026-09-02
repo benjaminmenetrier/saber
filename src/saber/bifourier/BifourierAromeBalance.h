@@ -15,8 +15,8 @@ namespace bifourier {
 
 // -----------------------------------------------------------------------------
 
-class BifourierAromeBalanceReadParameters : public BifourierBalanceReadParameters {
-  OOPS_CONCRETE_PARAMETERS(BifourierAromeBalanceReadParameters, BifourierBalanceReadParameters)
+class BifourierAromeBalanceReadParameters : public BifourierBalanceImplReadParameters {
+  OOPS_CONCRETE_PARAMETERS(BifourierAromeBalanceReadParameters, BifourierBalanceImplReadParameters)
 
  public:
   // Input file format ("netcdf", "arome legacy binary" or "arome legacy netcdf")
@@ -25,8 +25,8 @@ class BifourierAromeBalanceReadParameters : public BifourierBalanceReadParameter
 
 // -----------------------------------------------------------------------------
 
-class BifourierAromeBalanceWriteParameters : public BifourierBalanceWriteParameters {
-  OOPS_CONCRETE_PARAMETERS(BifourierAromeBalanceWriteParameters, BifourierBalanceWriteParameters)
+class BifourierAromeBalanceWriteParameters : public BifourierBalanceImplWriteParameters {
+  OOPS_CONCRETE_PARAMETERS(BifourierAromeBalanceWriteParameters, BifourierBalanceImplWriteParameters)
 
  public:
   // Output file
@@ -54,8 +54,8 @@ class BalancedAirPressureParameters : public oops::Parameters {
 
 // -----------------------------------------------------------------------------
 
-class BifourierAromeBalanceParameters : public BifourierBalanceParameters {
-  OOPS_CONCRETE_PARAMETERS(BifourierAromeBalanceParameters, BifourierBalanceParameters)
+class BifourierAromeBalanceParameters : public BifourierBalanceImplParameters {
+  OOPS_CONCRETE_PARAMETERS(BifourierAromeBalanceParameters, BifourierBalanceImplParameters)
 
  public:
   // Read parameters
