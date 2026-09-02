@@ -46,7 +46,7 @@ BifourierCovarianceImpl::BifourierCovarianceImpl(const oops::GeometryData & geom
     // User-defined vertical profile for each variable
 
     // Index fields views
-    const atlas::functionspace::StructuredColumns fs(trans_->geometryData().functionSpace());
+    const atlas::functionspace::StructuredColumns fs(trans_->gpFspace());
     const auto indexIView = make_indexview<int, 1>(fs.index_i());
     const auto indexJView = make_indexview<int, 1>(fs.index_j());
 
